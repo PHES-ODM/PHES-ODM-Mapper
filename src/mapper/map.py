@@ -43,7 +43,7 @@ from utils.general_utils import (
     parse_df_values,
     clear_dirs,
 )
-from filter import run_filter
+from filter import DataFilter
 from cleaner import DataCleaner
 from id_generator import IDGenerator
 
@@ -649,10 +649,11 @@ def map_and_filter(
 
     # Filter all the DataFrames
     if filter_config_file:
+        data_filter = DataFilter(filter_config_file)
         filtered_mapped_data = {}
         for target_type, df in all_mapped_data.items():
             data = {target_type: df}
-            data, _ = run_filter(filter_config_file, data=data)
+            data, _ = data_filter.run_filter(data=data)
             for target_class, target_df in data.items():
                 if target_class not in filtered_mapped_data:
                     filtered_mapped_data[target_class] = []
