@@ -44,7 +44,7 @@ from utils.general_utils import (
     clear_dirs,
 )
 from filter import run_filter
-from cleaner import clean_data_files
+from cleaner import DataCleaner
 from id_generator import IDGenerator
 
 logger = get_logger(__name__)
@@ -745,10 +745,10 @@ def full_map(
     mapped_data_dir = temp_dir / "mapped_data"
     cleaned_data_dir = temp_dir / "cleaned_data"
     clear_dirs([cleaned_data_dir, mapped_data_dir])
-    data_files = clean_data_files(
+    cleaner = DataCleaner(schema=module_config.source_schema)
+    data_files = cleaner.clean_data_files(
         data_files,
         output_dir=cleaned_data_dir,
-        schema=module_config.source_schema,
         max_rows=input_max_rows,
     )
 
