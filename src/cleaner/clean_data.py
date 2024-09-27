@@ -1,6 +1,6 @@
 # %%
 """
-Utility functions for cleaning data.
+Class for cleaning data.
 
 fix_data_with_schema will make sure column names have the correct capitalization (ie. they match the slots in the schema).
 It will also go through all columns that are enumerations and correct the capitalization of all values in the column.
