@@ -41,7 +41,7 @@ if __name__ == "__main__":
             # temp_dir = "../gen/nwss_reporting_to_v2/temp"
 
             max_processes = 1
-            input_max_rows = 500
+            input_max_rows = 50
             id_debug = False
     else:
         args = argparse.ArgumentParser(
