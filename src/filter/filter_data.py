@@ -64,12 +64,14 @@ class DataFilter(object):
         self.config_df = self.config_df.astype(str)
 
         # Drop empty rows
-        self.config_df = self.config_df[self.config_df.apply(lambda x: (x != "").any(), axis=1)]
+        self.config_df = self.config_df[
+            self.config_df.apply(lambda x: (x != "").any(), axis=1)
+        ]
         # Load values as YAML
-        self.config_df[FilterConfigColumns.VALUE] = self.config_df[FilterConfigColumns.VALUE].map(
-            yaml.safe_load
-        )
-        
+        self.config_df[FilterConfigColumns.VALUE] = self.config_df[
+            FilterConfigColumns.VALUE
+        ].map(yaml.safe_load)
+
     def load_data(
         self,
         data_files: Dict[str, Union[Path, str]],
@@ -109,7 +111,6 @@ class DataFilter(object):
 
         return data
 
-
     def save_data(
         self, data: Dict[str, pd.DataFrame], output_data_dir: Union[Path, str]
     ) -> Dict[str, List[Path]]:
@@ -137,7 +138,6 @@ class DataFilter(object):
                 output_files[cur_class] = []
             output_files[cur_class].append(output_file)
         return output_files
-
 
     def run_filter(
         self,
@@ -171,7 +171,7 @@ class DataFilter(object):
         if data is None:
             data = self.load_data(
                 data_files,
-                recognized_classes=list(self.config_df[FilterConfigColumns.CLASS].unique()),
+                # recognized_classes=list(self.config_df[FilterConfigColumns.CLASS].unique()),
             )
         else:
             # Make a shallow copy of the dictionary, since we might be changing it. We return the copy.
@@ -219,8 +219,8 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
 
         class opts:
-            data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
-            data_files = None
+            input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
+            input_data_files = None
             filter_config_file = "../../data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv"
             output_data_dir = "../../gen/nwss_reporting_to_v2/filtered_mapped_data"
     else:
@@ -240,7 +240,6 @@ if __name__ == "__main__":
             help="List of all input files to filter, and the source class for each file. Format is 'class_name file.csv [class_name2 file2.csv ...]'",
             required=False,
         )
-
         args.add_argument(
             "--filter_config_file",
             type=str,
@@ -255,12 +254,12 @@ if __name__ == "__main__":
         )
         opts = args.parse_args()
 
-    preid_data_files = get_input_data_files(opts.data_files, opts.data_dir)
+    preid_data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
     data_files = {}
     for class_name, files in preid_data_files.items():
         class_name = class_name.replace("_preid", "")
         data_files[class_name] = files
-    
+
     filterer = DataFilter(opts.filter_config_file)
     filterer.run_filter(
         data_files=data_files,
