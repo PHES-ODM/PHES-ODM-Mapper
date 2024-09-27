@@ -1,0 +1,53 @@
+class_derivations:
+  protocolSteps[000,0000=quant_stan_type-stan_ref]:
+    name: protocolSteps[000,0000=quant_stan_type-stan_ref]
+    populated_from: nwss
+    slot_derivations:
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      stepID:
+        name: stepID
+        expr: ''''''
+      measure:
+        name: measure
+        expr: ''''''
+      method:
+        name: method
+        expr: '''tempType'''
+      value:
+        name: value
+        populated_from: quant_stan_type
+      unit:
+        name: unit
+        expr: ''''''
+      aggregation:
+        name: aggregation
+        expr: ''''''
+      refLink:
+        name: refLink
+        populated_from: stan_ref
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=quant_stan_type-stan_ref]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
+  ODMv2_enum_from_vs_quant_stan_type:
+    name: ODMv2_enum_from_vs_quant_stan_type
+    mirror_source: false
+    populated_from: vs_quant_stan_type
+    permissible_value_derivations:
+      dna:
+        name: dna
+        populated_from: dna
+      rna:
+        name: rna
+        populated_from: rna

@@ -1,0 +1,43 @@
+class_derivations:
+  protocolRelationships[000,0000=ext_blank-extraction_method-major_lab_method]:
+    name: protocolRelationships[000,0000=ext_blank-extraction_method-major_lab_method]
+    populated_from: nwss
+    slot_derivations:
+      protocolRelationshipsID:
+        name: protocolRelationshipsID
+        expr: ''''''
+      protocolIDContainer:
+        name: protocolIDContainer
+        populated_from: major_lab_method
+      protocolIDObj:
+        name: protocolIDObj
+        expr: ''''''
+      stepIDObj:
+        name: stepIDObj
+        populated_from: ext_blank
+      relationshipID:
+        name: relationshipID
+        expr: '''specifies'''
+      protocolIDSub:
+        name: protocolIDSub
+        expr: ''''''
+      stepIDSub:
+        name: stepIDSub
+        populated_from: extraction_method
+      notes:
+        name: notes
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolRelationships[000,0000=ext_blank-extraction_method-major_lab_method]:
+        populated_from: nwss
+enum_derivations:
+  vs_yne[ext_blank][=mirrored=]:
+    name: vs_yne[ext_blank][=mirrored=]
+    mirror_source: true
+    populated_from: vs_yne[ext_blank]
+  vs_extraction_method[=mirrored=]:
+    name: vs_extraction_method[=mirrored=]
+    mirror_source: true
+    populated_from: vs_extraction_method

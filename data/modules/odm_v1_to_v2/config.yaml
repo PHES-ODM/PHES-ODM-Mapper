@@ -1,0 +1,8 @@
+title: ODM v1 to ODM v2
+
+source_schema: schemas/odm_v1.yaml
+target_schema: schemas/odm_v2.yaml
+mappers: mappers
+filters: None
+id_code: ids/odm_v1_to_v2_id_code.xlsx
+id_config: ids/odm_v1_to_v2_id_config.yaml

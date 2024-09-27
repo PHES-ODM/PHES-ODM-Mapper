@@ -1,0 +1,5 @@
+pyyaml
+tqdm
+pandas>=2.1
+numpy>=2.1
+linkml-map

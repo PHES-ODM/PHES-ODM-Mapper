@@ -1,0 +1,66 @@
+class_derivations:
+  measures[000,0000=equiv_sewage_amt]:
+    name: measures[000,0000=equiv_sewage_amt]
+    populated_from: nwss
+    slot_derivations:
+      datasetID:
+        name: datasetID
+        populated_from: lab_id
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      protocolID:
+        name: protocolID
+        populated_from: major_lab_method
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      sampleID:
+        name: sampleID
+        populated_from: sample_id
+      aDateEnd:
+        name: aDateEnd
+        populated_from: test_result_date
+      compartment:
+        name: compartment
+        expr: '"wat"'
+      measureRepID:
+        name: measureRepID
+        expr: ''''''
+      purpose:
+        name: purpose
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''sewEq'''
+      value:
+        name: value
+        populated_from: equiv_sewage_amt
+      unit:
+        name: unit
+        expr: '''mlORg'''
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+      refLink:
+        name: refLink
+        expr: ''''''
+      group:
+        name: group
+        expr: ''''''
+      notes:
+        name: notes
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=equiv_sewage_amt]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction

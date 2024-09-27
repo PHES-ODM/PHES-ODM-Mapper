@@ -1,0 +1,126 @@
+class_derivations:
+  measures[000,0000=hum_frac_chem_conc-hum_frac_chem_unit-hum_frac_target_chem-hum_frac_target_chem_ref]:
+    name: measures[000,0000=hum_frac_chem_conc-hum_frac_chem_unit-hum_frac_target_chem-hum_frac_target_chem_ref]
+    populated_from: nwss
+    slot_derivations:
+      datasetID:
+        name: datasetID
+        populated_from: lab_id
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      protocolID:
+        name: protocolID
+        populated_from: major_lab_method
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      sampleID:
+        name: sampleID
+        populated_from: sample_id
+      aDateEnd:
+        name: aDateEnd
+        populated_from: test_result_date
+      compartment:
+        name: compartment
+        expr: '"wat"'
+      measureRepID:
+        name: measureRepID
+        expr: ''''''
+      purpose:
+        name: purpose
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        populated_from: hum_frac_target_chem
+      value:
+        name: value
+        populated_from: hum_frac_chem_conc
+      unit:
+        name: unit
+        populated_from: hum_frac_chem_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+      refLink:
+        name: refLink
+        populated_from: hum_frac_target_chem_ref
+      group:
+        name: group
+        expr: ''''''
+      notes:
+        name: notes
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=hum_frac_chem_conc-hum_frac_chem_unit-hum_frac_target_chem-hum_frac_target_chem_ref]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
+  ODMv2_enum_from_vs_hum_frac_target_chem:
+    name: ODMv2_enum_from_vs_hum_frac_target_chem
+    mirror_source: false
+    populated_from: vs_hum_frac_target_chem
+    permissible_value_derivations:
+      caff:
+        name: caff
+        populated_from: caffeine
+      crea:
+        name: crea
+        populated_from: creatinine
+      suc:
+        name: suc
+        populated_from: sucralose
+      ibu:
+        name: ibu
+        populated_from: ibuprofen
+      <ignore>:
+        name: <ignore>
+        populated_from: ''
+  ODMv2_enum_from_vs_mic_chem_units_e:
+    name: ODMv2_enum_from_vs_mic_chem_units_e
+    mirror_source: false
+    populated_from: vs_mic_chem_units_e
+    permissible_value_derivations:
+      gcL:
+        name: gcL
+        populated_from: copies/L wastewater
+      log10cpL:
+        name: log10cpL
+        populated_from: log10 copies/L wastewater
+      gCGS:
+        name: gCGS
+        sources:
+        - copies/g wet sludge
+        - copies/g dry sludge
+      log10cpG:
+        name: log10cpG
+        sources:
+        - log10 copies/g wet sludge
+        - log10 copies/g dry sludge
+      ugL:
+        name: ugL
+        populated_from: micrograms/L wastewater
+      log10ugL:
+        name: log10ugL
+        populated_from: log10 micrograms/L wastewater
+      ugG:
+        name: ugG
+        sources:
+        - micrograms/g wet sludge
+        - micrograms/g dry sludge
+      log10ugG:
+        name: log10ugG
+        sources:
+        - log10 micrograms/g wet sludge
+        - log10 micrograms/g dry sludge
+      <ignore>:
+        name: <ignore>
+        populated_from: ''

@@ -1,0 +1,41 @@
+class_derivations:
+  protocolSteps[000,0000=date-instrumentID-referenceLink-summary-surrogateRecovery-version]:
+    name: protocolSteps[000,0000=date-instrumentID-referenceLink-summary-surrogateRecovery-version]
+    populated_from: AssayMethod
+    slot_derivations:
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+      instrumentID:
+        name: instrumentID
+        populated_from: instrumentID
+      lastEdited:
+        name: lastEdited
+        populated_from: date
+      measure:
+        name: measure
+        expr: '''percRec'''
+      refLink:
+        name: refLink
+        populated_from: referenceLink
+      stepVer:
+        name: stepVer
+        populated_from: version
+      summ:
+        name: summ
+        populated_from: summary
+      unit:
+        name: unit
+        expr: '''perc'''
+      value:
+        name: value
+        populated_from: surrogateRecovery
+      method:
+        name: method
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=date-instrumentID-referenceLink-summary-surrogateRecovery-version]:
+        populated_from: AssayMethod
+enum_derivations: {}

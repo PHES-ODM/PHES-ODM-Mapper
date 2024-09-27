@@ -1,0 +1,14 @@
+class_derivations:
+  datasets:
+    name: datasets
+    populated_from: nwss
+    slot_derivations:
+      datasetID:
+        name: datasetID
+        populated_from: lab_id
+  Container:
+    name: Container
+    slot_derivations:
+      datasets:
+        populated_from: nwss
+enum_derivations: {}

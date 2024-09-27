@@ -1,0 +1,67 @@
+class_derivations:
+  protocolSteps[000,0000=pcr_type]:
+    name: protocolSteps[000,0000=pcr_type]
+    populated_from: nwss
+    slot_derivations:
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      stepID:
+        name: stepID
+        expr: ''''''
+      measure:
+        name: measure
+        expr: ''''''
+      method:
+        name: method
+        expr: '''pcrmeth'''
+      value:
+        name: value
+        populated_from: pcr_type
+      unit:
+        name: unit
+        expr: ''''''
+      aggregation:
+        name: aggregation
+        expr: ''''''
+      refLink:
+        name: refLink
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=pcr_type]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
+  ODMv2_enum_from_vs_pcr_type:
+    name: ODMv2_enum_from_vs_pcr_type
+    mirror_source: false
+    populated_from: vs_pcr_type
+    permissible_value_derivations:
+      qpcr:
+        name: qpcr
+        populated_from: qpcr
+      ddpcr:
+        name: ddpcr
+        sources:
+        - ddpcr
+        - dpcr
+      qgDpcr:
+        name: qgDpcr
+        populated_from: qiagen dpcr
+      fluiDpcr:
+        name: fluiDpcr
+        populated_from: fluidigm dpcr
+      ltDpcr:
+        name: ltDpcr
+        populated_from: life technologies dpcr
+      rainDpcr:
+        name: rainDpcr
+        populated_from: raindance dpcr
