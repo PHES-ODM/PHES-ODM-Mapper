@@ -255,12 +255,23 @@ def parse_numeric(value: str) -> Any:
     """
     if not isinstance(value, str) or not re.search(r"[0-9]", value):
         return value
+    # In newer versions of Python, underscores are allowed in numbers (eg. ints and floats) and
+    # are ignored when converting from string to int/float.
+    if "_" in value:
+        return value
+    
+    # We make the conversion fairly strict. So for example the string "09021" is treated as a string,
+    # not an integer. The numeric version of the value must match the string version of the value exactly.
     try:
-        return int(value)
+        int_v = int(value)
+        if str(int_v) == value:
+            return int_v
     except (TypeError, ValueError):
         pass
     try:
-        return float(value)
+        float_v = float(value)
+        if str(float_v) == value:
+            return float(value)
     except (TypeError, ValueError, OverflowError):
         return value
 
