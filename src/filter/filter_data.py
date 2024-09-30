@@ -6,7 +6,7 @@ Filter DataFrames (or data on disk) using configuration files.
 
 ```python
 # Filter .csv, .tsv, and .txt (tab-separated) files and save
-# to output_data_dir.
+# to "data/output".
 data_files = {
     "measures": ["path/to/measures.csv"],
     "samples": ["path/to/samples.csv"],
@@ -15,7 +15,7 @@ filter = DataFilter("filter_config_file.csv")
 filtered_data, filtered_files = filter.run_filter(data_files=data_files,
                                                   output_data_dir="data/output")
 
-# Filter DataFrames.
+# Filter DataFrames (don't save to disk).
 data = {
     "measures" : measures_df,
     "qualityReports" : qualityReports_df,
@@ -217,12 +217,13 @@ class DataFilter(object):
 
 if __name__ == "__main__":
     if "get_ipython" in globals():
-
+        # fmt: off
         class opts:
             input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
             input_data_files = None
             filter_config_file = "../../data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv"
             output_data_dir = "../../gen/nwss_reporting_to_v2/filtered_mapped_data"
+        # fmt: on
     else:
         args = argparse.ArgumentParser(
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -254,11 +255,7 @@ if __name__ == "__main__":
         )
         opts = args.parse_args()
 
-    preid_data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
-    data_files = {}
-    for class_name, files in preid_data_files.items():
-        class_name = class_name.replace("_preid", "")
-        data_files[class_name] = files
+    data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
 
     filterer = DataFilter(opts.filter_config_file)
     filterer.run_filter(
