@@ -22,7 +22,12 @@ class_derivations:
           \ = get_collType(src.sample_type)"
       collNum:
         name: collNum
-        populated_from: composite_freq
+        expr: "if str(src.sample_type).endswith(\"time-weighted composite\") and (src.composite_freq\
+          \ == \"\" or src.composite_freq is None):\n    target = 24\nelse:\n    target\
+          \ = src.composite_freq"
+      collDT:
+        name: collDT
+        expr: sample_collect_date + '/' + sample_collect_time + '/' + time_zone
       reportable:
         name: reportable
         expr: case(((dashboard_ignore == 'yes') + (analysis_ignore == 'yes'), 'false'),
@@ -42,9 +47,6 @@ class_derivations:
       protocolID:
         name: protocolID
         populated_from: major_lab_method
-      collDT:
-        name: collDT
-        expr: sample_collect_date + '/' + sample_collect_time + '/' + time_zone
       datasetID:
         name: datasetID
         populated_from: lab_id
