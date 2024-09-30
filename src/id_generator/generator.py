@@ -1436,26 +1436,26 @@ class IDGenerator(object):
 
 if __name__ == "__main__":
     if "get_ipython" in globals():
-
+        # fmt: off
         class opts:
             # NWSS to ODM v2
-            # input_data_dir = "../../gen/nwss_reporting_to_v2/mapped_data"
-            # input_data_files = None
-            # output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
-            # id_code_file = "../../data/odm_v2/odm_v2_id_code.xlsx"
+            input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
+            input_data_files = None
+            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
+            id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
+            id_code_sheet = "id_code"
+            config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
 
             # ODM v1 to ODM v2
-            input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
-            input_data_files = None
-            output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
-            id_code_file = (
-                "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
-            )
-            id_code_sheet = "id_code"
-            config_file = (
-                "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
-            )
+            # input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
+            # input_data_files = None
+            # output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
+            # id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
+            # id_code_sheet = "id_code"
+            # config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
+
             debug = True
+        # fmt: on
     else:
         args = argparse.ArgumentParser(
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -1502,13 +1502,7 @@ if __name__ == "__main__":
         )
         opts = args.parse_args()
 
-    # The class names in the input_data_dir are of the form "className_preid" (since the files
-    # are named "className_preid.csv"). Remove the "_preid" part
-    preid_data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
-    data_files = {}
-    for class_name, files in preid_data_files.items():
-        class_name = class_name.replace("_preid", "")
-        data_files[class_name] = files
+    data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
 
     clear_dirs([opts.output_dir])
     gen = IDGenerator(
