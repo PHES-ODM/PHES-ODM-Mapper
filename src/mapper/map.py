@@ -642,7 +642,6 @@ def map_and_filter(
     # Combine the DataFrames in all_mapped_data
     for target_type, all_df in all_mapped_data.items():
         df = pd.concat(all_df, axis=0)
-        parse_df_values(df, inline=True)
         # Retain the original order by sorting by the TrackingSlots.
         df = sort_mapped_data(df, drop_sorting_column=False)
         all_mapped_data[target_type] = df
@@ -668,7 +667,7 @@ def map_and_filter(
     all_mapped_files = {}
     if data_output_dir is not None:
         for class_name, df in all_mapped_data.items():
-            output_data_file = os.path.join(data_output_dir, f"{class_name}_preid.csv")
+            output_data_file = os.path.join(data_output_dir, f"{class_name}[preid].csv")
             if os.path.exists(output_data_file):
                 raise ValueError(f"Output data file already exists: {output_data_file}")
             logger.info(
@@ -780,6 +779,7 @@ def full_map(
         drop_duplicates=not id_debug,
     )
 
+    # Delete temporary directory
     if temp_dir_obj is not None:
         temp_dir_obj.cleanup()
 
