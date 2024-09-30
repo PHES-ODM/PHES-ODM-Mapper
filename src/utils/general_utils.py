@@ -259,7 +259,7 @@ def parse_numeric(value: str) -> Any:
     # are ignored when converting from string to int/float.
     if "_" in value:
         return value
-    
+
     # We make the conversion fairly strict. So for example the string "09021" is treated as a string,
     # not an integer. The numeric version of the value must match the string version of the value exactly.
     try:
