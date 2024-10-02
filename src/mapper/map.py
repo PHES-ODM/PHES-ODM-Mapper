@@ -57,12 +57,24 @@ logger = get_logger(__name__)
 SAVE_UNMERGED_DATA = False
 
 
+# All tracking slots. These slots are added to the data to map before mapping occurs.
+# Slot derivations are also added to all LinkML-Map schemas to copy these tracking slots to
+# the output data. This allows us to determine which source class, source row, and source file
+# that the output rows were populated from.
 class TrackingSlots:
     SOURCE_CLASS = "(__source_class__)"
     SOURCE_ROW = "(__source_row__)"
     SOURCE_FILE = "(__source_file__)"
     SOURCE_FILE_AND_ROW = "(__source_file_and_row__)"
 
+
+# The data types for TrackingSlots. Default is "string"
+TrackingSlotsTypes = {
+    TrackingSlots.SOURCE_CLASS: "string",
+    TrackingSlots.SOURCE_ROW: "integer",
+    TrackingSlots.SOURCE_FILE: "string",
+    TrackingSlots.SOURCE_FILE_AND_ROW: "string",
+}
 
 # Change the logging level of the Transformer. For very large datasets we will get way too many WARNINGs in
 # the output.
@@ -140,8 +152,9 @@ def load_data(
             df[TrackingSlots.SOURCE_ROW] = df.index
             df[TrackingSlots.SOURCE_CLASS] = class_name
             df[TrackingSlots.SOURCE_FILE] = file
+            max_row_digits = len(str(df[TrackingSlots.SOURCE_ROW].max()))
             df[TrackingSlots.SOURCE_FILE_AND_ROW] = df.apply(
-                lambda x: f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]}",
+                lambda x: f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]:0{max_row_digits}d}",
                 axis=1,
             )
 
@@ -294,8 +307,9 @@ def add_tracking_slots_to_schema(schema: SchemaView):
         slot_definition.slots.extend(all_tracking_slots)
 
     for slot in all_tracking_slots:
+        rng = TrackingSlotsTypes.get(slot, "string")
         schema.schema.slots[slot] = SlotDefinition(
-            name=slot, from_schema=schema.schema.id
+            name=slot, from_schema=schema.schema.id, range=rng
         )
 
 
