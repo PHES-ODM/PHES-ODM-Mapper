@@ -31,6 +31,7 @@ from utils.general_utils import (
     get_logger,
     clear_dirs,
 )
+from utils.tracking_slots import TrackingSlots
 from utils.cli_utils import get_input_data_files
 from id_generator.id_function_bindings import FunctionBindings
 from id_generator.id_data_bindings import DataBindings
@@ -48,13 +49,6 @@ PK_INDEX_SLOT = f"{ORIG_ID_PREFIX*2}pk_index"
 # we retain all rows and add a column named DROP_COLUMN which is True if the row would have been dropped
 # if not in debug mode.
 DROP_COLUMN = "__drop"
-
-
-class TrackingSlots:
-    SOURCE_CLASS = "(__source_class__)"
-    SOURCE_ROW = "(__source_row__)"
-    SOURCE_FILE = "(__source_file__)"
-    SOURCE_FILE_AND_ROW = "(__source_file_and_row__)"
 
 
 # All columns that should be in the ID code generation config file
@@ -1135,8 +1129,6 @@ class IDGenerator(object):
         # in the code), we use that value as the generated ID and stop looping over the code
         # columns. If we have executed all the code columns and all of them have generated an
         # empty value, we return without setting the ID
-        # @TODO: Deal with case where all code columns results in an empty value. May want to set
-        # the ID in the Numpy data to an empty string.
         v = None
         code_idx = -1
         while True:

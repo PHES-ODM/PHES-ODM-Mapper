@@ -42,6 +42,7 @@ from utils.general_utils import (
     get_class_name_from_file_name,
     clear_dirs,
 )
+from utils.tracking_slots import TrackingSlots, TrackingSlotsTypes
 from filter import DataFilter
 from cleaner import DataCleaner
 from id_generator import IDGenerator
@@ -56,25 +57,6 @@ logger = get_logger(__name__)
 # This is mainly for debugging purposes, and should typically be set to False if not debugging.
 SAVE_UNMERGED_DATA = False
 
-
-# All tracking slots. These slots are added to the data to map before mapping occurs.
-# Slot derivations are also added to all LinkML-Map schemas to copy these tracking slots to
-# the output data. This allows us to determine which source class, source row, and source file
-# that the output rows were populated from.
-class TrackingSlots:
-    SOURCE_CLASS = "(__source_class__)"
-    SOURCE_ROW = "(__source_row__)"
-    SOURCE_FILE = "(__source_file__)"
-    SOURCE_FILE_AND_ROW = "(__source_file_and_row__)"
-
-
-# The data types for TrackingSlots. Default is "string"
-TrackingSlotsTypes = {
-    TrackingSlots.SOURCE_CLASS: "string",
-    TrackingSlots.SOURCE_ROW: "integer",
-    TrackingSlots.SOURCE_FILE: "string",
-    TrackingSlots.SOURCE_FILE_AND_ROW: "string",
-}
 
 # Change the logging level of the Transformer. For very large datasets we will get way too many WARNINGs in
 # the output.
