@@ -256,7 +256,9 @@ def parse_numeric(value: str) -> Any:
     if not isinstance(value, str) or not re.search(r"[0-9]", value):
         return value
     # In newer versions of Python, underscores are allowed in numbers (eg. ints and floats) and
-    # are ignored when converting from string to int/float.
+    # are ignored when converting from string to int/float. We want to avoid this new behavior
+    # and treat any string with an underscore as a string (not a number) (eg. "123_456" is
+    # treated as a string, not the number 123456).
     if "_" in value:
         return value
 
