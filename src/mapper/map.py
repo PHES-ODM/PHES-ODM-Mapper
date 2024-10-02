@@ -152,6 +152,10 @@ def load_data(
             df[TrackingSlots.SOURCE_ROW] = df.index
             df[TrackingSlots.SOURCE_CLASS] = class_name
             df[TrackingSlots.SOURCE_FILE] = file
+            # We zero-pad the source row number in the SOURCE_FILE_AND_ROW string. This is to ensure if we sort
+            # by SOURCE_FILE_AND_ROW the row number will be in the proper order
+            # eg. Sorting the strings "2" and "10" will result in the incorrect order ["10", "2"], but sorting the strings
+            # "02" and "10" will result in the correct order ["02", "10"].
             max_row_digits = len(str(df[TrackingSlots.SOURCE_ROW].max()))
             df[TrackingSlots.SOURCE_FILE_AND_ROW] = df.apply(
                 lambda x: f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]:0{max_row_digits}d}",
