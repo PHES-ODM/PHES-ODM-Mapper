@@ -231,7 +231,9 @@ def parse_df_values(df: pd.DataFrame, inline: bool = True) -> pd.DataFrame:
             the orginal DataFrame is left unchanged and a parsed copy is returned. Defaults to True.
 
     Returns:
-        pd.DataFrame: _description_
+        pd.DataFrame: The input DataFrame modified to have string values converted to integers or
+            floats where possible. If inline is True then the input DataFrame is also modified,
+            otherwise it is left unchanged and a copy is returned.
     """
     if not inline:
         df = df.copy()
