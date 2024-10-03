@@ -61,26 +61,16 @@ def set_named_filter(filt: pd.Series, name: str, filters: Dict[str, pd.Series]):
     filters[name] = filt
 
 
-def get_named_filter(
-    name: str, filters: Dict[str, pd.Series], data: Dict[str, pd.DataFrame], cls: str
-) -> pd.Series:
+def get_named_filter(name: str, filters: Dict[str, pd.Series]) -> pd.Series:
     """Get the filter with the specified name. The filter must have been previously created, using the create_filter operation or as an
     outputFilter in the configuration file.
 
     Args:
         name (str): The name of the filter to get.
-        filters (Dict[str, pd.Series]): All the named filters. We retrieve the filter form this,
-            or if the name does not yet exist we create the filter and modify the dictionary to contain
-            the new filter (ie. filters[name] = new_filt).
-        data (Dict[str, pd.DataFrame]): The data that the filters reference. The keys are the class names and
-            the values are the DataFrames.
-        cls (str): The class that the filter is for. This corresponds to the keys in data. Note that
-            data and cls are only used when the filter for the gorup does not yet exist, and so has to be
-            created.
+        filters (Dict[str, pd.Series]): All the named filters. We retrieve the filter form this.
 
     Returns:
-        pd.Series: The current filter with the specified name. If the filter did not yet exist then a new
-            filter with all True values is created for the class in the data.
+        pd.Series: The current filter with the specified name.
     """
     if name not in filters:
         raise ValueError(
@@ -112,7 +102,7 @@ def do_drop_duplicates(
         value (str): If "keep_first" (default) then keep the first row among all duplicates. If "keep_last" then keep the
             last row among all duplicates.
     """
-    filt = get_named_filter(input_name, filters, data, cls)
+    filt = get_named_filter(input_name, filters)
 
     df = data[cls]
     if value == "keep_first":
@@ -148,7 +138,7 @@ def do_exclude_equals(
         slot (str): The slot. Any row where this slot is equal to value will be excluded.
         value (Any): The value. Any row where the slot is equal to this value will be excluded.
     """
-    filt = get_named_filter(input_name, filters, data, cls)
+    filt = get_named_filter(input_name, filters)
     df = data[cls]
 
     # Convert the value into a list if it isn't already a list
@@ -197,7 +187,7 @@ def do_include_equals(
         slot (str): The slot. Any row where this slot is equal to value will be included.
         value (Any): The value. Any row where the slot is equal to this value will be included.
     """
-    filt = get_named_filter(input_name, filters, data, cls)
+    filt = get_named_filter(input_name, filters)
     df = data[cls]
 
     # Convert the value into a list if it isn't already a list
@@ -255,7 +245,7 @@ def do_apply_filter(
         value (Any): The class to save the filtered DataFrame to (in data).
     """
     # Save the data by applying the current name's filter to the data for class cls
-    filt = get_named_filter(input_name, filters, data, cls)
+    filt = get_named_filter(input_name, filters)
     init_num_rows = len(data[cls])
     data[value] = data[cls][filt]
     num_rows = len(data[value])
@@ -280,7 +270,7 @@ def do_copy_filter(
     """
     if input_name not in filters:
         raise ValueError(f"No filter with name '{input_name}' found.")
-    filt = get_named_filter(input_name, filters, None, None)
+    filt = get_named_filter(input_name, filters)
     set_named_filter(filt, output_name, filters)
 
 
@@ -309,10 +299,8 @@ def do_copy_class(data: Dict[str, pd.DataFrame], cls: str, value: str, **kwargs)
 
 def do_invert_filter(
     filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
     input_name: str,
     output_name: str,
-    cls: str,
     **kwargs,
 ):
     """Negate/invert a filter.
@@ -324,15 +312,13 @@ def do_invert_filter(
         output_name (str): The filter name to save the inverted filter to.
         cls (str): The class the filter applies to.
     """
-    filt = ~get_named_filter(input_name, filters, data, cls)
+    filt = ~get_named_filter(input_name, filters)
     set_named_filter(filt, output_name, filters)
 
 
 def do_or_filters(
     filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
     output_name: str,
-    cls: str,
     value: Any,
     **kwargs,
 ):
@@ -345,16 +331,14 @@ def do_or_filters(
         value (Any): Array of all filter names to OR together.
         cls (str): The class the filter applies to.
     """
-    filts = [get_named_filter(str(f), filters, data, cls) for f in value]
+    filts = [get_named_filter(str(f), filters) for f in value]
     filt = reduce(lambda x, y: x | y, filts)
     set_named_filter(filt, output_name, filters)
 
 
 def do_and_filters(
     filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
     output_name: str,
-    cls: str,
     value: Any,
     **kwargs,
 ):
@@ -367,7 +351,7 @@ def do_and_filters(
         value (Any): Array of all filter names to AND together.
         cls (str): The class the filter applies to.
     """
-    filts = [get_named_filter(str(f), filters, data, cls) for f in value]
+    filts = [get_named_filter(str(f), filters) for f in value]
     filt = reduce(lambda x, y: x & y, filts)
     set_named_filter(filt, output_name, filters)
 
