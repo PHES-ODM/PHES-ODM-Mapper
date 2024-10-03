@@ -58,6 +58,12 @@ class RowIndexLookup:
         lookup_slot = list(dict.fromkeys([self._get_value_key(s) for s in lookup_slot]))
         self.data = {s: {} for s in lookup_slot}
 
+    def __repr__(self):
+        return repr(self.data)
+
+    def __str__(self):
+        return str(self.data)
+
     def _get_value_key(self, value: Any) -> Any:
         """Get the key in a lookup table corresponding to the value. This will map all NA
         values to None, and return other values unchanged. (NA values are all treated the same
@@ -160,9 +166,3 @@ class RowIndexLookup:
         """
         value = self._get_value_key(value)
         return self.data[slot][value]
-
-    def __repr__(self):
-        return repr(self.data)
-
-    def __str__(self):
-        return str(self.data)
