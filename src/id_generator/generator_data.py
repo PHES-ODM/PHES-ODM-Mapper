@@ -61,7 +61,6 @@ class GeneratorData:
         generated_slots: Optional[List[str]] = None,
     ):
         self.class_name = class_name
-        self.lookup = RowIndexLookup()
         self.primary_key = primary_key
         self.generated_slots = generated_slots if generated_slots else []
 
@@ -157,7 +156,7 @@ class GeneratorData:
 
         # Populate all slots in the lookup table
         for idx in range(len(self.data)):
-            for slot in self.lookup.all_slots():
+            for slot in self.lookup.all_lookup_slots():
                 row = self.data[idx, :]
                 val = row[self.get_column_index(slot)]
                 self.lookup.add_index(slot, val, idx)
