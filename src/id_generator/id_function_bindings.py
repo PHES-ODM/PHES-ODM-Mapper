@@ -213,5 +213,5 @@ class FunctionBindings:
         Returns:
             int: The number of rows in the class where the value in the slot matches equals.
         """
-        rows = self.generator.get_rows_equal(class_name, slot, equals)
+        rows = self.generator.data[class_name].get_rows_equal(slot, equals)
         return len(rows) if rows is not None else 0
