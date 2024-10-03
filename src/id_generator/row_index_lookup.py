@@ -25,7 +25,7 @@ print(lookup.is_lookup_slot("slot1"))
 # Prints False
 print(lookup.is_lookup_slot("otherSlot"))
 # Prints ['slot1', 'slot2']
-print(lookup.all_slots())
+print(lookup.all_lookup_slots())
 
 # Prints [0, 1, 2]
 print(lookup.get_indices("slot1", "valA"))
@@ -49,18 +49,40 @@ import bisect
 
 
 class RowIndexLookup:
-    def __init__(self, initial_slots: List[Any] = {}):
-        initial_slots = list(
-            dict.fromkeys([self._get_value_key(s) for s in initial_slots])
-        )
-        self.data = {s: {} for s in initial_slots}
+    def __init__(self, lookup_slot: List[Any]):
+        """Constructor for RowIndexLookup.
 
-    def _get_value_key(self, key):
-        if pd.isna(key):
+        Args:
+            lookup_slot (List[Any]): List of slots that should have a lookup table.
+        """
+        lookup_slot = list(
+            dict.fromkeys([self._get_value_key(s) for s in lookup_slot])
+        )
+        self.data = {s: {} for s in lookup_slot}
+
+    def _get_value_key(self, value: Any) -> Any:
+        """Get the key in a lookup table corresponding to the value. This will map all NA
+        values to None, and return other values unchanged. (NA values are all treated the same
+        in a looup table).
+
+        Args:
+            value (Any): The value to convert to a key.
+
+        Returns:
+            Any: The key corresponding to the value.
+        """
+        if pd.isna(value):
             return None
-        return key
+        return value
 
     def add_index(self, slot: str, value: Any, idx: int):
+        """Add a row index that the value should map to.
+
+        Args:
+            slot (str): The slot to add the index to.
+            value (Any): The value that gets mapped to the index.
+            idx (int): The row index to add, for the value.
+        """
         key = self._get_value_key(value)
         if slot not in self.data:
             self.data[slot] = {}
@@ -68,16 +90,48 @@ class RowIndexLookup:
             self.data[slot][key] = []
         bisect.insort(self.data[slot][key], idx)
 
-    def is_lookup_slot(self, slot: str):
+    def is_lookup_slot(self, slot: str) -> bool:
+        """Determine if the specified slot has a lookup table.
+
+        Args:
+            slot (str): The slot to check.
+
+        Returns:
+            bool: True if slot has a lookup table, False otherwise.
+        """
         return slot in self.data
 
     def slot_has_value(self, slot: str, value: Any) -> bool:
+        """Determine if the slot has a lookup table and if the value (that maps
+        to row indices) is found as a key in the lookup table.
+
+        Args:
+            slot (str): The slot to check.
+            value (Any): The value to check.
+
+        Returns:
+            bool: True if the value is found in the lookup table for the slot (and hence
+                can be mapped to row indices). False otherwise.
+        """
         value = self._get_value_key(value)
         return slot in self.data and value in self.data[slot]
 
     def change_value_at_index(
         self, slot: str, idx: int, prev_value: Any, new_value: Any
     ):
+        """Remove the specified index for a value (prev_value) and move the index
+        to a new value (new_value), for a given slot. This should be called
+        whenever a value in the original data table that the lookup is for changes
+        from prev_value to new_value.
+
+        Args:
+            slot (str): The slot that the values and index are for.
+            idx (int): The index to move to a new value.
+            prev_value (Any): The value that points to the index, that is changing.
+            new_value (Any): The new value that is being set at the index (in the
+                specified slot). Once complete, the lookup table will include the row
+                index when new_value is looked up.
+        """
         prev_value = self._get_value_key(prev_value)
         new_value = self._get_value_key(new_value)
         if prev_value != new_value or (pd.isna(prev_value) != pd.isna(new_value)):
@@ -88,10 +142,24 @@ class RowIndexLookup:
                 self.data[slot][new_value] = []
             bisect.insort(self.data[slot][new_value], idx)
 
-    def all_slots(self) -> List[Any]:
+    def all_lookup_slots(self) -> List[Any]:
+        """Get a list of all lookup slots.
+
+        Returns:
+            List[Any]: List of lookup slots.
+        """
         return list(self.data.keys())
 
     def get_indices(self, slot: str, value: Any) -> List[int]:
+        """Get all row indices that have the specified value in the specified slot.
+
+        Args:
+            slot (str): The slot.
+            value (Any): The value to get the indices for (in the slot).
+
+        Returns:
+            List[int]: List of row indices where the slot is equal to value.
+        """
         value = self._get_value_key(value)
         return self.data[slot][value]
 
