@@ -11,7 +11,7 @@ There are two configuration files that must be created:
 1. *General Configuration File*: Specifies some general settings, such as which slot is the primary key for each class.
 2. *Code Configuration File*: Species the Python code that is executed to generate the IDs or values of the various slots.
 
-See below for details of both files.
+The location of these files within a conversion module are specified in the module configuration file ([Custom Modules](custom_modules.md)). See below for details of both files.
 
 ## General Configuration File
 
