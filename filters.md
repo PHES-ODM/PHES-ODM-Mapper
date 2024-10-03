@@ -59,7 +59,7 @@ The following filter operations are available:
 | :---------- | :----------- | :------------- | :---------- | :------------- | :------------- |
 |             | 0            | measures       |             | and_filters    | [0, 1]         |
 
-AND all the filters listed in the array specified in `value`. The resulting filter will be saved as `outputFilter`. While the class is not used it must still be specified.
+AND all the filters listed in the array specified in `value`. The resulting filter will be saved as `outputFilter`. While the class is not used it should still be specified for clarity.
 
 ### apply_filter
 
@@ -139,7 +139,7 @@ Modify the filter specified by `inputFilter` to include any row in the DataFrame
 | :---------- | :----------- | :------------- | :---------- | :------------- | :------------- |
 | 0           | 0            | measures       |             | invert_filter  |                |
 
-Invert/negate the specified filter. This will replace all True values in the filter to False, and all False values in the filter to True. The inverted filter will be saved with the name in `outputFilter`. While the class is not used it must still be specified.
+Invert/negate the specified filter. This will replace all True values in the filter to False, and all False values in the filter to True. The inverted filter will be saved with the name in `outputFilter`. While the class is not used it should still be specified for clarity.
 
 ### or_filters
 
@@ -147,4 +147,4 @@ Invert/negate the specified filter. This will replace all True values in the fil
 | :---------- | :----------- | :------------- | :---------- | :------------- | :------------- |
 |             | 0            | measures       |             | or_filters     | [0, 1]         |
 
-OR all the filters listed in the array specified in `value`. The resulting filter will be saved as `outputFilter`. While the class is not used it must still be specified.
+OR all the filters listed in the array specified in `value`. The resulting filter will be saved as `outputFilter`. While the class is not used it should still be specified for clarity.
