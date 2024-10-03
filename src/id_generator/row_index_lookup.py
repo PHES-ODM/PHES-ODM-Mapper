@@ -55,9 +55,7 @@ class RowIndexLookup:
         Args:
             lookup_slot (List[Any]): List of slots that should have a lookup table.
         """
-        lookup_slot = list(
-            dict.fromkeys([self._get_value_key(s) for s in lookup_slot])
-        )
+        lookup_slot = list(dict.fromkeys([self._get_value_key(s) for s in lookup_slot]))
         self.data = {s: {} for s in lookup_slot}
 
     def _get_value_key(self, value: Any) -> Any:

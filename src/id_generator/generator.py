@@ -232,8 +232,12 @@ class IDGenerator(object):
             # Rename the SOURCE_SLOT and TARGET_SLOT so that they point to the columns where the original
             # values for the slots are stored. This applies only to generated slots (ie. that need to be generated
             # through ID code).
-            linkage[LinkageKeys.SOURCE_SLOT] = self.data[source_class].make_orig_slot_names_if_generated_slots(linkage[LinkageKeys.SOURCE_SLOT])
-            linkage[LinkageKeys.TARGET_SLOT] = self.data[target_class].make_orig_slot_names_if_generated_slots(linkage[LinkageKeys.TARGET_SLOT])
+            linkage[LinkageKeys.SOURCE_SLOT] = self.data[
+                source_class
+            ].make_orig_slot_names_if_generated_slots(linkage[LinkageKeys.SOURCE_SLOT])
+            linkage[LinkageKeys.TARGET_SLOT] = self.data[
+                target_class
+            ].make_orig_slot_names_if_generated_slots(linkage[LinkageKeys.TARGET_SLOT])
 
             prev_class = linkage[LinkageKeys.TARGET_CLASS]
 

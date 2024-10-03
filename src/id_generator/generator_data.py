@@ -16,6 +16,7 @@ data = GeneratorData(
 )
 ```
 """
+
 import sys
 import os
 
@@ -92,12 +93,13 @@ class GeneratorData:
 
         if lookup_slots:
             self.init_lookup_table(lookup_slots)
-        
 
     def __len__(self):
         return len(self.data)
 
-    def make_orig_slot_names_if_generated_slots(self, slots: Union[str, List[str]]) -> List[str]:
+    def make_orig_slot_names_if_generated_slots(
+        self, slots: Union[str, List[str]]
+    ) -> List[str]:
         """If any of the specified slots is for a slot that is generated adjust the slot name so
         that it refers to the slot containing the ORIGINAL value for the slot as it was loaded from
         disk. For example, if sampleID is a generated slot, then we will typically replace it
