@@ -8,6 +8,7 @@ They provide access to linked values within all the known target tables. Follow 
 
 import pandas as pd
 from typing import Optional, List, Union, Dict, Any
+import traceback
 
 # Value to use if a value from one of the classes/tables is empty.
 EMPTY_VALUE = "empty"
@@ -70,7 +71,12 @@ class DataBindings:
         if self.sub_classes:
             return self.sub_classes[name]
 
-        return self.get_first_linked_value(name)
+        try:
+            v = self.get_first_linked_value(name)
+        except Exception as e:
+            print(traceback.format_exc())
+            raise e
+        return v
 
     def get_first_linked_value(
         self, target_slot: str, linkage_path: Union[Dict, List[Dict]] = None
