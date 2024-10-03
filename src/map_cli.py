@@ -25,24 +25,24 @@ if __name__ == "__main__":
         # fmt: off
         class opts:
             # ODM v1 to v2
-            # module = "odm_v1_to_v2"
-            # module_dir = None
-            # input_data_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
-            # input_data_files = None  # ["WWMeasure", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
-            # output_dir = "../gen/odm_v1_to_v2"
-            # temp_dir = "../gen/odm_v1_to_v2/temp"
+            module = "odm_v1_to_v2"
+            module_dir = None
+            input_data_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
+            input_data_files = None  # ["WWMeasure", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
+            output_dir = "../gen/odm_v1_to_v2"
+            temp_dir = "../gen/odm_v1_to_v2/temp"
 
             # NWSS to v2
-            module = "nwss_reporting_to_v2"
-            module_dir = None
-            input_data_dir = "../../../PHES-ODM-Data/nwss/private_renamed/"
-            input_data_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            output_dir = "../gen/nwss_reporting_to_v2"
-            temp_dir = "../gen/nwss_reporting_to_v2/temp"
+            # module = "nwss_reporting_to_v2"
+            # module_dir = None
+            # input_data_dir = "../../../PHES-ODM-Data/nwss/private_renamed/"
+            # input_data_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
+            # output_dir = "../gen/nwss_reporting_to_v2"
+            # temp_dir = "../gen/nwss_reporting_to_v2/temp"
 
             max_processes = 1
             input_max_rows = 50
-            id_debug = True
+            id_debug = False
         # fmt: on
     else:
         args = argparse.ArgumentParser(
