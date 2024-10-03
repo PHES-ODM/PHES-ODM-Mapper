@@ -37,13 +37,6 @@ from id_generator.generator_data import GeneratorData
 
 logger = get_logger(__name__)
 
-# We save the original ID values in the loaded DataFrames to new columns with the same column
-# name as the original preceded by ORIG_ID_PREFIX (ie. f"{ORIG_ID_PREFIX}{column_name}")
-ORIG_ID_PREFIX = "__"
-
-UNINDEXED_PK_SLOT = f"{ORIG_ID_PREFIX*2}pk_unindexed"
-PK_INDEX_SLOT = f"{ORIG_ID_PREFIX*2}pk_index"
-
 
 # All columns that should be in the ID code generation config file
 class IDCodeColumns:
@@ -68,7 +61,7 @@ class LinkageKeys:
 # The key "*" specifies that the list of slots applies to ALL classes.
 # The lookups will stored in the GeneratorData objects at self.data
 MAKE_ROW_INDEX_LOOKUPS = {
-    "*": [UNINDEXED_PK_SLOT, TrackingSlots.SOURCE_FILE_AND_ROW],
+    "*": [TrackingSlots.SOURCE_FILE_AND_ROW],
 }
 
 
@@ -109,11 +102,11 @@ class IDGenerator(object):
         # Prepare the code for calculating IDs
         self.prepare_id_code(id_code_file, id_code_sheet)
 
-        # Prepare the config file
-        self.prepare_config(config_file)
-
         # Load all data from disk
         self.load_all(data_files)
+
+        # Prepare the config linkage paths (by cleaning them)
+        self.prepare_config_linkage_paths()
 
         # Create the bindings (function and data bindings)
         self.create_bindings()
@@ -129,7 +122,7 @@ class IDGenerator(object):
                 Keys are the class names and values are lists of files belonging to the class.
         """
         self.data: Dict[str, GeneratorData] = {}
-        class_ids = self.get_all_class_ids_from_id_code()
+        generated_slots = self.get_all_generated_slots_from_id_code()
         star_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get("*", [])
         for class_name, files in data_files.items():
             class_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get(class_name, [])
@@ -138,7 +131,7 @@ class IDGenerator(object):
                 class_name,
                 files,
                 lookup_slots=lookup_slots,
-                class_ids=class_ids.get(class_name, []),
+                generated_slots=generated_slots.get(class_name, []),
                 primary_key=self.get_primary_key_from_config(class_name),
             )
 
@@ -173,8 +166,8 @@ class IDGenerator(object):
             "fn": FunctionBindings(self),
         }
 
-    def prepare_config(self, config: str):
-        """Load and prepare the configuration file for the ID generator.
+    def prepare_config_linkage_paths(self):
+        """Cleanup all linkage paths in the config file, acc
 
         Args:
             config (str): Path to the configuration file.
@@ -220,14 +213,6 @@ class IDGenerator(object):
                 that we follow in order.
         """
 
-        def _make_orig(class_name: str, slots: Union[str, List[str]]) -> str:
-            if isinstance(slots, str):
-                slots = [slots]
-            for idx, s in enumerate(slots):
-                if s in self.data[class_name].class_ids:
-                    slots[idx] = f"{ORIG_ID_PREFIX}{s}"
-            return slots
-
         if not isinstance(linkages, list):
             linkages = [linkages]
         prev_class = source_class
@@ -245,15 +230,10 @@ class IDGenerator(object):
                 linkage[LinkageKeys.TARGET_CLASS] = target_class
 
             # Rename the SOURCE_SLOT and TARGET_SLOT so that they point to the columns where the original
-            # IDs are contained. These original slots will remain unchanged. For example, we rename the
-            # slot datasetID to {ORIG_ID_PREFIX}datasetID. datasetID will contain the newly calculated ID
-            # whereas {ORIG_ID_PREFIX}datasetID will always contain the original unmodified ID.
-            linkage[LinkageKeys.SOURCE_SLOT] = _make_orig(
-                source_class, linkage[LinkageKeys.SOURCE_SLOT]
-            )
-            linkage[LinkageKeys.TARGET_SLOT] = _make_orig(
-                target_class, linkage[LinkageKeys.TARGET_SLOT]
-            )
+            # values for the slots are stored. This applies only to generated slots (ie. that need to be generated
+            # through ID code).
+            linkage[LinkageKeys.SOURCE_SLOT] = self.data[source_class].make_orig_slot_names_if_generated_slots(linkage[LinkageKeys.SOURCE_SLOT])
+            linkage[LinkageKeys.TARGET_SLOT] = self.data[target_class].make_orig_slot_names_if_generated_slots(linkage[LinkageKeys.TARGET_SLOT])
 
             prev_class = linkage[LinkageKeys.TARGET_CLASS]
 
@@ -297,17 +277,17 @@ class IDGenerator(object):
         )
         self.id_code_df = id_code_df
 
-    def get_all_class_ids_from_id_code(self):
+    def get_all_generated_slots_from_id_code(self):
         # Determine all the ID slots that need to be calculated (in all classes).
-        class_ids = {}
+        generated_slots = {}
         for _, row in self.id_code_df.iterrows():
             class_name = row[IDCodeColumns.CLASS]
             slot = row[IDCodeColumns.SLOT]
-            if class_name not in class_ids:
-                class_ids[class_name] = []
-            if slot not in class_ids[class_name]:
-                class_ids[class_name].append(slot)
-        return class_ids
+            if class_name not in generated_slots:
+                generated_slots[class_name] = []
+            if slot not in generated_slots[class_name]:
+                generated_slots[class_name].append(slot)
+        return generated_slots
 
     def make_all_ids(
         self,
@@ -358,7 +338,7 @@ class IDGenerator(object):
 
         # Total number of ID cells to generate. This is to report progress.
         total_ids = np.sum(
-            [len(self.data[c]) * len(self.data[c].class_ids) for c in class_names]
+            [len(self.data[c]) * len(self.data[c].generated_slots) for c in class_names]
         )
         processed_ids = 0
 
@@ -368,7 +348,7 @@ class IDGenerator(object):
             )
 
             # All the slots in the class that are IDs that need to be generated
-            all_slots = self.data[class_name].class_ids
+            all_slots = self.data[class_name].generated_slots
 
             # Determine the rows to iterate over (based on row_indices parameter)
             row_indices = orig_row_indices
@@ -674,7 +654,7 @@ class IDGenerator(object):
             return None
 
         # If the target slot is an ID that needs to be generated, then generate it and return the value
-        if target_slot in self.data[target_class].class_ids and pd.isna(
+        if target_slot in self.data[target_class].generated_slots and pd.isna(
             self.data[target_class].get_value_from_row(row, target_slot)
         ):
             return self.calculate_id(target_class, target_slot, idx)
