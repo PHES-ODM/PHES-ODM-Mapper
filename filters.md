@@ -6,6 +6,8 @@ Once data have been mapped with LinkML-Map we may want to filter the resulting d
 
 An example filter configuration file can be found at [/data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv](/data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv).
 
+The location of the filter configuration file within a conversion module are specified in the module configuration file ([Custom Modules](custom_modules.md))
+
 ## Filters Example
 
 The following is an example filters configuration. It will drop all rows in the `measures` table where the value in the `measure` or `unit` column is `<ignore>`, or any row that has a `value` of blank or `-1`. It will also perform similar filtering to the `protocolSteps` table.
@@ -23,7 +25,7 @@ The following is an example filters configuration. It will drop all rows in the 
 | 1           | 1            | protocolSteps | value      | exclude_equals |               |
 | 1           |              | protocolSteps |            | apply_filter   | protocolSteps |
 
-Filtering is performed using boolean filters that are given names and that are applied to various classes (ie. DataFrames). The names given to the filters in the example configuration table above are referenced in the `inputFilter` and `outputFilter` columns. The names can be any user-defined string.
+Filtering is performed using boolean filters that are given names and that are applied to various classes (ie. DataFrames). The filters contain one boolean value for each row of a DataFrame, with a value of `True` meaning to include the corresponding row, and a value of `False` to exclude the corresponding row. The names given to the filters in the example configuration table above are referenced in the `inputFilter` and `outputFilter` columns. The names can be any user-defined string.
 
 A filter must first be created. This can be done with the [create_filter](#create_filter) operation, or from another operation where the filter's name is specified as an `outputFilter`. In the example table above, the first row creates the filter named `0`, setting all values to `TRUE`. A value of `TRUE` means that all rows in the table (in this case the measures table) are initially included. A value of `FALSE` would mean that all rows in the table are initially not included.
 
