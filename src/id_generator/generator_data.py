@@ -1,3 +1,21 @@
+"""
+Manage data for a class, including creating lookup tables for faster access to rows within the table (for certain slots).
+
+## Usage
+
+```python
+# Create data for class 'measures', load data from 'measures.csv', create lookup tables for faster access
+# for slots in lookup_slots, initialize for generating IDs for slots in generated_slots, and set the primary
+# key for the data to "measureRepID".
+data = GeneratorData(
+    class_name="measures",
+    data_files=["measures.csv"],
+    lookup_slots=["measureRepID", "(__source_file_and_row__)"],
+    generated_slots=["measureRepID", "siteID", "organizationID"],
+    primary_key="measureRepID",
+)
+```
+"""
 import sys
 import os
 
@@ -37,15 +55,15 @@ class GeneratorData:
     def __init__(
         self,
         class_name: str,
-        data_files: List[str],
+        data_files: List[Union[str, Path]],
         primary_key: str,
         lookup_slots: Optional[List[str]] = None,
-        class_ids: Optional[List[str]] = None,
+        generated_slots: Optional[List[str]] = None,
     ):
         self.class_name = class_name
         self.lookup = RowIndexLookup()
         self.primary_key = primary_key
-        self.class_ids = class_ids if class_ids else []
+        self.generated_slots = generated_slots if generated_slots else []
 
         for file in data_files:
             logger.info(f"Loading data from {str(file)}")
@@ -75,9 +93,33 @@ class GeneratorData:
 
         if lookup_slots:
             self.init_lookup_table(lookup_slots)
+        
 
     def __len__(self):
         return len(self.data)
+
+    def make_orig_slot_names_if_generated_slots(self, slots: Union[str, List[str]]) -> List[str]:
+        """If any of the specified slots is for a slot that is generated adjust the slot name so
+        that it refers to the slot containing the ORIGINAL value for the slot as it was loaded from
+        disk. For example, if sampleID is a generated slot, then we will typically replace it
+        with __sampleID, where the original values are stored.
+
+        Args:
+            slots (Union[str, List[str]]): Either a single slot (str) or a list of slots.
+
+        Returns:
+            List[str]: The slots parameter (converted to a list if required) with all slots
+                that are generated replaced with the slot to reference the original values
+                as loaded form disk for that slot.
+        """
+        if isinstance(slots, str):
+            slots = [slots]
+        else:
+            slots = slots.copy()
+        for idx, s in enumerate(slots):
+            if s in self.generated_slots:
+                slots[idx] = f"{ORIG_ID_PREFIX}{s}"
+        return slots
 
     def prepare_ids(self):
         """Do some preparation of the ID columns in the loaded DataFrame.
@@ -96,18 +138,21 @@ class GeneratorData:
         # original column. Once make_all_ids is called, if the original column has a None value
         # then that means we need to calculate the ID for that column (while the double-underscore
         # column remains unchanged).
-        slots = [s for s in self.class_ids if s in self.orig_df.columns]
+        slots = [s for s in self.generated_slots if s in self.orig_df.columns]
         if len(slots) > 0:
             orig_values_slots = [f"{ORIG_ID_PREFIX}{s}" for s in slots]
             self.orig_df[orig_values_slots] = self.orig_df[slots]
             self.orig_df[slots] = None
 
     def init_lookup_table(self, lookup_slots: List[str]):
-        """Initialize the lookup table and populate them.
+        """Initialize the lookup tables and populate them.
 
         Args:
             lookup_slots (List[str]): All slots with our class that should have a lookup table.
         """
+        # We always include UNINDEXED_PK_SLOT
+        if UNINDEXED_PK_SLOT not in lookup_slots:
+            lookup_slots = lookup_slots + [UNINDEXED_PK_SLOT]
         self.lookup = RowIndexLookup(lookup_slots)
 
         # Populate all slots in the lookup table
