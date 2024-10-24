@@ -33,7 +33,7 @@ from utils.tracking_slots import TrackingSlots
 from utils.cli_utils import get_input_data_files, merge_input_data_files
 from id_generator.id_function_bindings import FunctionBindings
 from id_generator.id_data_bindings import DataBindings
-from id_generator.generator_data import GeneratorData
+from id_generator.generator_data import GeneratorData, IDValue
 
 logger = get_logger(__name__)
 
@@ -113,6 +113,7 @@ class IDGenerator(object):
 
         # Create the interpreter for executing Python code (the code is in the form of strings)
         self.interpreter = Interpreter(usersyms=self.bindings)
+        self.interpreter_clean_symtable = self.interpreter.symtable.copy()
 
     def load_all(self, data_files: Dict[str, List[Union[str, Path]]]):
         """Load all data from disk and create a GeneratorData object for all the data.
@@ -387,7 +388,7 @@ class IDGenerator(object):
                     # Get the current value for the ID in the data. If it is non-null then it has already been
                     # generated and we can continue to the next loop.
                     v = self.data[class_name].get_data_value(slot, idx)
-                    if not pd.isna(v):
+                    if not self.is_id_empty(v):
                         continue
 
                     # Calculate the ID
@@ -658,10 +659,10 @@ class IDGenerator(object):
             return None
 
         # If the target slot is an ID that needs to be generated, then generate it and return the value
-        if target_slot in self.data[target_class].generated_slots and pd.isna(
-            self.data[target_class].get_value_from_row(row, target_slot)
-        ):
-            return self.calculate_id(target_class, target_slot, idx)
+        if target_slot in self.data[target_class].generated_slots:
+            cur_value = self.data[target_class].get_value_from_row(row, target_slot)
+            if self.is_id_empty(cur_value):
+                return self.calculate_id(target_class, target_slot, idx)
 
         # return row[self.get_column_index(target_class, target_slot)]
         return self.data[target_class].get_value_from_row(row, target_slot)
@@ -706,6 +707,11 @@ class IDGenerator(object):
         linkage = self.config[ConfigKeys.CLASS_LINKAGES][source_class]
         return linkage.get(target_class, None)
 
+    def is_id_empty(self, v: IDValue) -> bool:
+        if isinstance(v, IDValue):
+            return v.is_empty()
+        return v is None
+
     def calculate_id(self, class_name: str, slot: str, row_index: int) -> Any:
         """Calculate the ID for the slot in the class at the specified row index. The ID is
         calculated based on the ID generation code for the class/slot combination, and is found
@@ -728,6 +734,9 @@ class IDGenerator(object):
         # columns. If we have executed all the code columns and all of them have generated an
         # empty value, we return without setting the ID
         v = None
+        interpreter = self.interpreter
+        orig_symtable = interpreter.symtable
+
         code_idx = -1
         while True:
             code_idx += 1
@@ -742,10 +751,9 @@ class IDGenerator(object):
             self.current_class = class_name
             self.current_row_index = row_index
 
-            if "target" in self.interpreter.symtable:
-                del self.interpreter.symtable["target"]
+            interpreter.symtable = self.interpreter_clean_symtable.copy()
             try:
-                v = self.interpreter(code, raise_errors=True)
+                v = interpreter(code, raise_errors=True)
             except Exception as e:
                 # format_exc() will provide extra traceback information related to the exception that occurred
                 # when executing the code string.
@@ -760,8 +768,8 @@ class IDGenerator(object):
                 self.current_row_index = orig_current_row_index
 
             # If the variable "target" has been set by the code, then use that value instead
-            if "target" in self.interpreter.symtable:
-                v = self.interpreter.symtable["target"]
+            if "target" in interpreter.symtable:
+                v = interpreter.symtable["target"]
 
             # If the code resulted in an empty value, continue to the next code column
             if pd.isna(v) or v == "":
@@ -769,9 +777,13 @@ class IDGenerator(object):
 
             break
 
+        interpreter.symtable = orig_symtable
+
         if pd.isna(v):
             v = ""
 
+        if not isinstance(v, IDValue):
+            v = IDValue(v)
         self.data[class_name].set_data_value(slot, row_index, v)
 
         # If the slot is the primary key, then calculate the remainder of the row, so we can determine if the
@@ -846,20 +858,20 @@ if __name__ == "__main__":
         # fmt: off
         class opts:
             # NWSS to ODM v2
-            # input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
-            # input_data_files = None
-            # output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
-            # id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
-            # id_code_sheet = "id_code"
-            # config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
+            input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
+            input_data_files = None
+            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
+            id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
+            id_code_sheet = "id_code"
+            config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
 
             # ODM v1 to ODM v2
-            input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
-            input_data_files = None
-            output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
-            id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
-            id_code_sheet = "id_code"
-            config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
+            # input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
+            # input_data_files = None
+            # output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
+            # id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
+            # id_code_sheet = "id_code"
+            # config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
 
             debug = True
         # fmt: on
