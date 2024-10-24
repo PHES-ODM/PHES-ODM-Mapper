@@ -1,7 +1,8 @@
 # %%
 """
-A lookup table, where values within slots get mapped to a list of row indices, where
-the indices are all rows where the value in the slot are equal to the requested value.
+A lookup table, mapping values (for a given slot) to row indices, so we can quickly get the
+indices for the values.
+
 A single lookup table represents the data for a single 2D table. Only the slots
 specified in the constructor will have lookup tables.
 
@@ -43,9 +44,15 @@ print(lookup.get_indices("slot1", "valB"))
 ```
 """
 
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from typing import Any, List
 import pandas as pd
-import bisect
+from sortedcontainers import SortedList
+from id_generator.id_value import IDValue
 
 
 class RowIndexLookup:
@@ -75,9 +82,9 @@ class RowIndexLookup:
         Returns:
             Any: The key corresponding to the value.
         """
-        if pd.isna(value):
+        if pd.isna(value) or (isinstance(value, IDValue) and value.is_empty()):
             return None
-        return value
+        return str(value)
 
     def add_index(self, slot: str, value: Any, idx: int):
         """Add a row index that the value should map to.
@@ -91,8 +98,8 @@ class RowIndexLookup:
         if slot not in self.data:
             self.data[slot] = {}
         if key not in self.data[slot]:
-            self.data[slot][key] = []
-        bisect.insort(self.data[slot][key], idx)
+            self.data[slot][key] = SortedList()
+        self.data[slot][key].add(idx)
 
     def is_lookup_slot(self, slot: str) -> bool:
         """Determine if the specified slot has a lookup table.
@@ -143,8 +150,8 @@ class RowIndexLookup:
             if len(self.data[slot][prev_value]) == 0:
                 del self.data[slot][prev_value]
             if new_value not in self.data[slot]:
-                self.data[slot][new_value] = []
-            bisect.insort(self.data[slot][new_value], idx)
+                self.data[slot][new_value] = SortedList()
+            self.data[slot][new_value].add(idx)
 
     def all_lookup_slots(self) -> List[Any]:
         """Get a list of all lookup slots.
@@ -163,6 +170,7 @@ class RowIndexLookup:
 
         Returns:
             List[int]: List of row indices where the slot is equal to value.
+                If the value does not exist, then an empty list [] is returned.
         """
         value = self._get_value_key(value)
-        return self.data[slot][value]
+        return self.data[slot].get(value, [])
