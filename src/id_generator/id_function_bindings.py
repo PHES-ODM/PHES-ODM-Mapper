@@ -17,6 +17,7 @@ from dateutil.parser import parse
 import pytz
 
 from utils.general_utils import get_logger
+from id_generator.id_value import IDValue
 
 logger = get_logger(__name__)
 
@@ -87,6 +88,12 @@ class FunctionBindings:
         firstcap = False
         if not args:
             return None
+
+        # We only use the unindexed_value of IDValues. This is because it's possible that
+        # the index has not been calculated yet (it gets calculated in the generator when
+        # group_primary_key is called to ensure that the primary keys are unique when
+        # required)
+        args = [v.unindexed_value if isinstance(v, IDValue) else v for v in args]
         args = [str(v).replace(" ", "") for v in args]
         args = [v for v in args if len(v)]
         # Make first character of each element uppercase. The first element has a first character that is
