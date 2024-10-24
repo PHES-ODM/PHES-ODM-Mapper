@@ -29,6 +29,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from id_generator.row_index_lookup import RowIndexLookup
+from id_generator.id_value import IDValue
 from utils.tracking_slots import TrackingSlots
 
 from utils.general_utils import (
@@ -91,8 +92,7 @@ class GeneratorData:
         # Convert the DataFrame to a Numpy array
         self.data = self.orig_df.to_numpy()
 
-        if lookup_slots:
-            self.init_lookup_table(lookup_slots)
+        self.init_lookup_table(lookup_slots)
 
     def __len__(self):
         return len(self.data)
@@ -143,7 +143,7 @@ class GeneratorData:
         if len(slots) > 0:
             orig_values_slots = [f"{ORIG_ID_PREFIX}{s}" for s in slots]
             self.orig_df[orig_values_slots] = self.orig_df[slots]
-            self.orig_df[slots] = None
+            self.orig_df[slots] = IDValue(None)
 
     def init_lookup_table(self, lookup_slots: List[str]):
         """Initialize the lookup tables and populate them.
@@ -151,9 +151,14 @@ class GeneratorData:
         Args:
             lookup_slots (List[str]): All slots with our class that should have a lookup table.
         """
-        # We always include UNINDEXED_PK_SLOT
+        if lookup_slots is None:
+            lookup_slots = []
+        # We always include UNINDEXED_PK_SLOT and self.primary_key, they are both used frequently
+        # by group_primary_key so we include them for performance reasons.
         if UNINDEXED_PK_SLOT not in lookup_slots:
             lookup_slots = lookup_slots + [UNINDEXED_PK_SLOT]
+        if self.primary_key not in lookup_slots:
+            lookup_slots = lookup_slots + [self.primary_key]
         self.lookup = RowIndexLookup(lookup_slots)
 
         # Populate all slots in the lookup table
@@ -231,6 +236,9 @@ class GeneratorData:
             row_index (int): The row index.
             v (Any): The value to set at the slot and row.
         """
+        if slot in self.generated_slots and not isinstance(v, IDValue):
+            v = IDValue(v)
+
         if self.lookup.is_lookup_slot(slot):
             prev_value = self.get_data_value(slot, row_index)
             self.lookup.change_value_at_index(slot, row_index, prev_value, v)
@@ -419,8 +427,11 @@ class GeneratorData:
             """
             self.set_data_value(PK_INDEX_SLOT, row_index, pk_index)
             self.set_data_value(UNINDEXED_PK_SLOT, row_index, unindexed_pk)
-            indexed_pk_value = _make_indexed_pk(unindexed_pk, pk_index)
-            self.set_data_value(self.primary_key, row_index, indexed_pk_value)
+            # indexed_pk_value = _make_indexed_pk(unindexed_pk, pk_index)
+            # self.set_data_value(self.primary_key, row_index, indexed_pk_value)
+            self.set_data_value(
+                self.primary_key, row_index, IDValue(unindexed_pk, pk_index)
+            )
 
         # The unindex PK value is currently at self.primary_key. Copy the value over to the UNINDEXED_PK_SLOT
         # then clear self.primary_key (since we will recalculate it)
@@ -485,11 +496,16 @@ class GeneratorData:
                 indexed_pk_value = _make_indexed_pk(unindexed_pk_value, pk_index)
                 # If indexed_pk_value is unique in column self.primary_key then use it.
                 # Note that we have previously set the value in column self.primary_key for the current row to None
-                if (
-                    indexed_pk_value
-                    not in self.data[:, self.get_column_index(self.primary_key)]
-                ):
+                indices = self.lookup.get_indices(self.primary_key, indexed_pk_value)
+                if len(indices) == 0:
                     break
+                # We used to use the following (instead of the indices test above) to see if
+                # the indexed_pk_value is not in use. This is MUCH slower
+                # if (
+                #     indexed_pk_value
+                #     not in self.data[:, self.get_column_index(self.primary_key)]
+                # ):
+                #     break
                 pk_index += 1
             _set_current_row_values(unindexed_pk_value, pk_index)
 
