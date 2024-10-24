@@ -67,7 +67,7 @@ class DataBindings:
             sub_classes = list(self.sub_classes.keys())
         return f"DataBindings(root_class={self.root_class}, sub_classes={sub_classes})"
 
-    def __getattr__(self, name):
+    def __getattr__(self, name) -> Any:
         if self.sub_classes:
             return self.sub_classes[name]
 
@@ -77,6 +77,9 @@ class DataBindings:
             print(traceback.format_exc())
             raise e
         return v
+
+    def get(self, name) -> Any:
+        return self.__getattr__(name)
 
     def get_first_linked_value(
         self, target_slot: str, linkage_path: Union[Dict, List[Dict]] = None
