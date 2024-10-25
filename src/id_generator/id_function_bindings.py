@@ -1,3 +1,4 @@
+# %%
 """
 All members of class FunctionBindings are accessible from ID code files (in Python code) via the namespace "fn".
 
@@ -43,7 +44,7 @@ DATE_TIME_TIMEZONE_FORMATS = [
         # "%I:%M %p",
     ],
     # Timezone formats
-    ["UTC%z", "%z", "pytz"],
+    ["UTC%z", "%z", "pytz", "customtz"],
 ]
 
 # Output format for date, time, and time-zone for fn.datetimetz (as passed to datetime.strftime)
@@ -105,6 +106,49 @@ class FunctionBindings:
         v = "".join(args)
         return v
 
+    def _customtz(self, val: str) -> datetime:
+        """Customized parsing of a timezone that isn't handled by other parsing methods.
+
+        This function handles cases such as UTC+4, which we convert to +0400 and pass
+        to datetime.strptime(tz, "%z")
+
+        Args:
+            val (str): The value to try to parse as a timezone.
+
+        Raises:
+            ValueError: val could not be parsed as a timezone.
+
+        Returns:
+            datetime: A datetime object that has the timezone set. The date and
+                time components of the object should be ignored and the timezone used.
+                It can be converted to a string by using %z in datetime.strftime.
+        """
+        if isinstance(val, str):
+            orig_val = val
+            val = val.upper()
+            if val.startswith("UTC-") or val.startswith("UTC+"):
+                delta = val.split("UTC")[1]
+            else:
+                delta = None
+            # delta is the value after the UTC part (eg. 4 for "UTC+4")
+            if delta and "_" not in delta:
+                # Convert to integer, retrieve the sign and make delta positive
+                delta = int(delta)
+                if delta < 0:
+                    delta = -delta
+                    sign = "-"
+                else:
+                    sign = "+"
+                # Add "00" to the end of delta (eg. 4 becomes "400", ie 4 hours)
+                if delta >= 0 and delta <= 99:
+                    delta *= 100
+                # Create the new timezone string and parse it
+                val = f"{sign}{delta:04d}"
+                tz_obj = datetime.strptime(val, "%z")
+                return tz_obj
+
+        raise ValueError(f"Cannot parse value as timezone: {orig_val}")
+
     def datetimetz(self, d: List[str]) -> str:
         """Convert the input date, time, and timezone strings into a single string in the format
         YYYY-mm-ddTHH:MM:SS+/-hhmm (eg. 2024-09-16T10:10:00-0700)
@@ -145,6 +189,8 @@ class FunctionBindings:
                 try:
                     if fmt == "pytz":
                         date_obj = pytz.timezone(val)
+                    elif fmt == "customtz":
+                        date_obj = self._customtz(val)
                     elif fmt == "dateutil":
                         date_obj = parse(val)
                     else:
