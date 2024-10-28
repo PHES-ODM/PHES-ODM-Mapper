@@ -50,9 +50,16 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from typing import Any, List
-import pandas as pd
 from sortedcontainers import SortedList
+from bisect import insort
+
 from id_generator.id_value import IDValue
+from id_generator.id_na import isna
+
+# If True, then use SortedList for the list of indices. If False then use a regular Python list (and
+# keep the list sorted by using bisect.insort to insert new values). They both give the same results,
+# but one might be faster than the other.
+USE_SORTED_LIST = True
 
 
 class RowIndexLookup:
@@ -82,7 +89,7 @@ class RowIndexLookup:
         Returns:
             Any: The key corresponding to the value.
         """
-        if pd.isna(value) or (isinstance(value, IDValue) and value.is_empty()):
+        if isna(value) or (isinstance(value, IDValue) and value.is_empty()):
             return None
         return str(value)
 
@@ -98,8 +105,11 @@ class RowIndexLookup:
         if slot not in self.data:
             self.data[slot] = {}
         if key not in self.data[slot]:
-            self.data[slot][key] = SortedList()
-        self.data[slot][key].add(idx)
+            self.data[slot][key] = SortedList() if USE_SORTED_LIST else []
+        if USE_SORTED_LIST:
+            self.data[slot][key].add(idx)
+        else:
+            insort(self.data[slot][key], idx)
 
     def is_lookup_slot(self, slot: str) -> bool:
         """Determine if the specified slot has a lookup table.
@@ -145,13 +155,16 @@ class RowIndexLookup:
         """
         prev_value = self._get_value_key(prev_value)
         new_value = self._get_value_key(new_value)
-        if prev_value != new_value or (pd.isna(prev_value) != pd.isna(new_value)):
+        if prev_value != new_value or (isna(prev_value) != isna(new_value)):
             self.data[slot][prev_value].remove(idx)
             if len(self.data[slot][prev_value]) == 0:
                 del self.data[slot][prev_value]
             if new_value not in self.data[slot]:
-                self.data[slot][new_value] = SortedList()
-            self.data[slot][new_value].add(idx)
+                self.data[slot][new_value] = SortedList() if USE_SORTED_LIST else []
+            if USE_SORTED_LIST:
+                self.data[slot][new_value].add(idx)
+            else:
+                insort(self.data[slot][new_value], idx)
 
     def all_lookup_slots(self) -> List[Any]:
         """Get a list of all lookup slots.
