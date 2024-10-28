@@ -792,6 +792,13 @@ class IDGenerator(object):
         if isna(v):
             v = ""
 
+        # During calculation of the value above, it's possible that we recursed into calculating
+        # other IDs, which eventually led to calculating of the current ID (for class_name, slot, and
+        # row_index). If that occurs, then we can stop here.
+        new_v = self.data[class_name].get_data_value(slot, row_index)
+        if isinstance(new_v, IDValue):
+            return new_v
+        
         v = self.data[class_name].set_data_value(slot, row_index, v)
 
         # If the slot is the primary key, then calculate the remainder of the row, so we can determine if the
@@ -848,16 +855,21 @@ class IDGenerator(object):
         tic = datetime.now()
         logger.info(f"Saving all data to {output_dir}")
         output_data_files = {}
+        total_rows = total_rows_minus_dropped_rows = total_dropped_rows = 0
         for data in self.data.values():
-            cur_output_data_files = data.save_data(
+            cur_output_data_files, cur_total_rows, cur_total_rows_minus_dropped_rows, cur_total_dropped_rows = data.save_data(
                 output_dir,
                 orig_columns_only=orig_columns_only,
                 drop_duplicates=drop_duplicates,
             )
+            total_rows += cur_total_rows
+            total_rows_minus_dropped_rows += cur_total_rows_minus_dropped_rows
+            total_dropped_rows += cur_total_dropped_rows
             output_data_files = merge_input_data_files(
                 [output_data_files, cur_output_data_files]
             )
 
+        logger.info(f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}")
         logger.info(f"Finished saving: {datetime.now() - tic}")
         return output_data_files
 
@@ -875,20 +887,20 @@ if __name__ == "__main__":
             # config_file = "../../data/modules/test/ids.yaml"
             
             # NWSS to ODM v2
-            # input_data_dir = "../../gen/nwss_reporting_to_v2/temp-all/mapped_data"
-            # input_data_files = None
-            # output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
-            # id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
-            # id_code_sheet = "id_code"
-            # config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
+            input_data_dir = "../../gen/nwss_reporting_to_v2/temp-100/mapped_data"
+            input_data_files = None
+            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids-100-pklist"
+            id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
+            id_code_sheet = "id_code"
+            config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
 
             # ODM v1 to ODM v2
-            input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data-all"
-            input_data_files = None
-            output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids-new"
-            id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
-            id_code_sheet = "id_code"
-            config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
+            # input_data_dir = "../../gen/odm_v1_to_v2/temp-all/mapped_data"
+            # input_data_files = None
+            # output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids-pk"
+            # id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
+            # id_code_sheet = "id_code"
+            # config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
 
             debug = True
         # fmt: on
