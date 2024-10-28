@@ -30,6 +30,7 @@ from pathlib import Path
 
 from id_generator.row_index_lookup import RowIndexLookup
 from id_generator.id_value import IDValue
+from id_generator.id_na import EMPTY_OBJ, isna
 from utils.tracking_slots import TrackingSlots
 
 from utils.general_utils import (
@@ -44,6 +45,10 @@ logger = get_logger(__name__)
 # we retain all rows and add a column named DROP_COLUMN which is True if the row would have been dropped
 # if not in debug mode.
 DROP_COLUMN = "__drop"
+
+# Column to store the row hashes in. Row hashes are created by make_row_hash, and allows faster lookup
+# of matching rows.
+HASH_COLUMN = "__hash"
 
 # We save the original ID values in the loaded DataFrames to new columns with the same column
 # name as the original preceded by ORIG_ID_PREFIX (ie. f"{ORIG_ID_PREFIX}{column_name}")
@@ -65,6 +70,7 @@ class GeneratorData:
         self.class_name = class_name
         self.primary_key = primary_key
         self.generated_slots = generated_slots if generated_slots else []
+        self.largest_pk_indices = {}
 
         for file in data_files:
             logger.info(f"Loading data from {str(file)}")
@@ -87,10 +93,20 @@ class GeneratorData:
         # Add the primary key slot
         self.orig_df[UNINDEXED_PK_SLOT] = None
         self.orig_df[PK_INDEX_SLOT] = None
+        self.orig_df[HASH_COLUMN] = None
         self.columns = list(self.orig_df.columns)
+
+        # Create list of columns used for identifying identical rows excludes the primary key column
+        # but includes the column at UNINDEXED_PK_SLOT (ie the unindexed primary key).
+        self.match_columns = [
+            self.get_column_index(c) for c in self.orig_columns if c != self.primary_key
+        ]
+        self.match_columns.append(self.get_column_index(UNINDEXED_PK_SLOT))
 
         # Convert the DataFrame to a Numpy array
         self.data = self.orig_df.to_numpy()
+        # Set all NA values to EMPTY_OBJ
+        self.data[pd.isna(self.data)] = EMPTY_OBJ
 
         self.init_lookup_table(lookup_slots)
 
@@ -143,7 +159,7 @@ class GeneratorData:
         if len(slots) > 0:
             orig_values_slots = [f"{ORIG_ID_PREFIX}{s}" for s in slots]
             self.orig_df[orig_values_slots] = self.orig_df[slots]
-            self.orig_df[slots] = IDValue(None)
+            self.orig_df[slots] = None  # IDValue(None)
 
     def init_lookup_table(self, lookup_slots: List[str]):
         """Initialize the lookup tables and populate them.
@@ -153,12 +169,13 @@ class GeneratorData:
         """
         if lookup_slots is None:
             lookup_slots = []
+
         # We always include UNINDEXED_PK_SLOT and self.primary_key, they are both used frequently
         # by group_primary_key so we include them for performance reasons.
-        if UNINDEXED_PK_SLOT not in lookup_slots:
-            lookup_slots = lookup_slots + [UNINDEXED_PK_SLOT]
         if self.primary_key not in lookup_slots:
             lookup_slots = lookup_slots + [self.primary_key]
+        if HASH_COLUMN not in lookup_slots:
+            lookup_slots = lookup_slots + [HASH_COLUMN]
         self.lookup = RowIndexLookup(lookup_slots)
 
         # Populate all slots in the lookup table
@@ -228,13 +245,16 @@ class GeneratorData:
     def get_value_from_row(self, row: np.ndarray, slot: str) -> Any:
         return row[self.get_column_index(slot)]
 
-    def set_data_value(self, slot: str, row_index: int, v: Any):
+    def set_data_value(self, slot: str, row_index: int, v: Any) -> Any:
         """Set the value in the data for the specified slot and row index.
 
         Args:
             slot (str): The slot.
             row_index (int): The row index.
             v (Any): The value to set at the slot and row.
+
+        Returns:
+            Any: The value that was set, which might be different than v.
         """
         if slot in self.generated_slots and not isinstance(v, IDValue):
             v = IDValue(v)
@@ -244,6 +264,14 @@ class GeneratorData:
             self.lookup.change_value_at_index(slot, row_index, prev_value, v)
 
         self.data[row_index, self.get_column_index(slot)] = v
+
+        # If we're setting a primary key value, then update the largest index used by
+        # the primary key
+        if slot == self.primary_key and isinstance(v, IDValue):
+            prev_value = self.largest_pk_indices.get(v.unindexed_value, -1)
+            self.largest_pk_indices[v.unindexed_value] = max(v.index, prev_value)
+
+        return v
 
     def get_rows_equal(
         self,
@@ -290,8 +318,8 @@ class GeneratorData:
 
         def _ismatch(v1: Any, v2: Any) -> bool:
             # Test if v1 is equal to v2. We treat all NaNs and "" as equal.
-            v1_na = pd.isna(v1) or v1 == ""
-            v2_na = pd.isna(v2) or v2 == ""
+            v1_na = isna(v1) or v1 == ""
+            v2_na = isna(v2) or v2 == ""
             return v1 == v2 or (v1_na and v2_na)
 
         def _row_matches(row: np.ndarray, match_value: Any) -> bool:
@@ -386,6 +414,21 @@ class GeneratorData:
             index = [index]
         return self.data[index]
 
+    def make_row_hash(self, row: np.ndarray) -> int:
+        """Make a hash of the row.
+
+        Args:
+            row (np.ndarray): _description_
+
+        Returns:
+            int: _description_
+        """
+        if row.ndim == 2:
+            row = row[0]
+        val = "//".join([str(c) for c in row])
+        hash_value = hash(val)
+        return hash_value
+
     def group_primary_key(self, row_index: int) -> Any:
         """For the (unindexed) primary key value currently found at the row index,
         either group it with other rows generated so far that are identical to the row at row_index
@@ -421,7 +464,9 @@ class GeneratorData:
             else:
                 return unindexed_pk
 
-        def _set_current_row_values(unindexed_pk: str, pk_index: int):
+        def _set_current_row_values(
+            unindexed_pk: str, pk_index: int, is_identical_row: bool = False
+        ):
             """Set the ID values for the current row (the indexed pk value in self.primary_key, the
             unindexed pk value in UNINDEXED_PK_SLOT, and the index in PK_INDEX_SLOT).
             """
@@ -430,8 +475,14 @@ class GeneratorData:
             # indexed_pk_value = _make_indexed_pk(unindexed_pk, pk_index)
             # self.set_data_value(self.primary_key, row_index, indexed_pk_value)
             self.set_data_value(
-                self.primary_key, row_index, IDValue(unindexed_pk, pk_index)
+                self.primary_key,
+                row_index,
+                IDValue(unindexed_pk, pk_index, index_in_progress=False),
             )
+
+            new_row = self.get_row_at_index(row_index)[self.match_columns]
+            hash_value = self.make_row_hash(new_row)
+            self.set_data_value(HASH_COLUMN, row_index, hash_value)
 
         # The unindex PK value is currently at self.primary_key. Copy the value over to the UNINDEXED_PK_SLOT
         # then clear self.primary_key (since we will recalculate it)
@@ -443,55 +494,45 @@ class GeneratorData:
         # Get the current row (at row_index)
         current_row = self.get_rows_at_index(row_index)
 
-        # Get all rows that have the same unindexed primary key value
-        rows, _ = self.get_rows_equal(
-            UNINDEXED_PK_SLOT,
-            unindexed_pk_value,
-            ignore_indices=[row_index],
-            return_indices=True,
-        )
+        # Collect all rows that are identical to the current row
+        current_row_match = current_row[:, self.match_columns]
+        current_hash = self.make_row_hash(current_row_match)
+        match_indices = self.lookup.get_indices(HASH_COLUMN, current_hash)
 
-        if rows is None:
-            rows = []
+        # Go through all rows that have the same hash, and find an identical match. We need to do the
+        # identical match test because of the way that a hash is made, by concatenating the cells of a
+        # row as strings. It's possible that non-identical rows will have the same string. For example,
+        # the following two rows will have the same hash/string (if we concatenate the strings with no
+        # separator):
+        #    animal1     animal2
+        #    Hamster!    Frog
+        #    Hamster     !Frog
+        # Note too that it's likely we will find a match immediately, since instances like the above example
+        # are rare.
+        # We go in reverse order of match_indices, because it's more likely that rows close to eachother
+        # will be similar (and we generally generate rows from top to bottom), so we might find a match
+        # sooner in reverse order.
+        identical_row_idx = None
+        for i in match_indices[::-1]:
+            if i == row_index:
+                continue
 
-        if len(rows) > 0:
-            # Get the rows that are identical to current_row
-            # The columns we use for matching are all of the original columns in the loaded DataFrame, without the primary key column
-            # but with the column at UNINDEXED_PK_SLOT.
-            columns = [
-                self.get_column_index(c)
-                for c in self.orig_columns
-                if c != self.primary_key
-            ]
-            columns.append(self.get_column_index(UNINDEXED_PK_SLOT))
+            cur_row = self.data[i, self.match_columns]
+            if np.equal(cur_row, current_row_match).all(axis=1):
+                identical_row_idx = i
+                break
 
-            # Replace NANs so that they can be equated to each other (normally, float("nan") == float("nan") is False, but we
-            # want it to be true by replacing the nan values with a single comparable value)
-            nanobj = object()
-            rows_nan = rows[:, columns].copy()
-            current_row_nan = current_row[:, columns].copy()
-            rows_nan[np.where(pd.isna(rows_nan))] = nanobj
-            current_row_nan[np.where(pd.isna(current_row_nan))] = nanobj
-
-            # Collect all rows that are identical to the current row
-            identical_rows_filt = np.equal(rows_nan, current_row_nan).all(axis=1)
-            identical_rows = rows[identical_rows_filt, :]
-        else:
-            # There are no identical rows
-            identical_rows = []
-
-        if len(identical_rows) > 0:
+        if identical_row_idx is not None:
             # There are identical rows, so use the PK index found in the first identical row
-            pk_index = identical_rows[0, self.get_column_index(PK_INDEX_SLOT)]
-            _set_current_row_values(unindexed_pk_value, pk_index)
+            # pk_index = identical_rows[0, self.get_column_index(PK_INDEX_SLOT)]
+            pk_index = self.data[
+                identical_row_idx, self.get_column_index(PK_INDEX_SLOT)
+            ]
+            _set_current_row_values(unindexed_pk_value, pk_index, True)
         else:
             # There are no identical rows, so get a PK index that results in a unique indexed PK
-            pk_index = 0
-            if len(rows) > 0:
-                index_values = rows[:, self.get_column_index(PK_INDEX_SLOT)]
-                index_values = index_values[~pd.isna(index_values)]
-                if len(index_values) > 0:
-                    pk_index = index_values.max() + 1
+            # pk_index = 0
+            pk_index = self.largest_pk_indices.get(unindexed_pk_value, 0)
             while True:
                 indexed_pk_value = _make_indexed_pk(unindexed_pk_value, pk_index)
                 # If indexed_pk_value is unique in column self.primary_key then use it.
@@ -499,13 +540,6 @@ class GeneratorData:
                 indices = self.lookup.get_indices(self.primary_key, indexed_pk_value)
                 if len(indices) == 0:
                     break
-                # We used to use the following (instead of the indices test above) to see if
-                # the indexed_pk_value is not in use. This is MUCH slower
-                # if (
-                #     indexed_pk_value
-                #     not in self.data[:, self.get_column_index(self.primary_key)]
-                # ):
-                #     break
                 pk_index += 1
             _set_current_row_values(unindexed_pk_value, pk_index)
 
@@ -538,6 +572,7 @@ class GeneratorData:
             os.makedirs(output_dir, exist_ok=True)
 
         output_file = os.path.join(output_dir, f"{self.class_name}.csv")
+        self.data[self.data == EMPTY_OBJ] = None
         data = pd.DataFrame(self.data, columns=self.columns)
 
         # Drop rows where primary key is a duplicate
