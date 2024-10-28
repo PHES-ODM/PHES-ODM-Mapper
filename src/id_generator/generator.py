@@ -34,6 +34,7 @@ from utils.cli_utils import get_input_data_files, merge_input_data_files
 from id_generator.id_function_bindings import FunctionBindings
 from id_generator.id_data_bindings import DataBindings
 from id_generator.generator_data import GeneratorData, IDValue
+from id_generator.id_na import isna, EMPTY_OBJ
 
 logger = get_logger(__name__)
 
@@ -710,7 +711,7 @@ class IDGenerator(object):
     def is_id_empty(self, v: IDValue) -> bool:
         if isinstance(v, IDValue):
             return v.is_empty()
-        return v is None
+        return v is None or v is EMPTY_OBJ
 
     def calculate_id(self, class_name: str, slot: str, row_index: int) -> Any:
         """Calculate the ID for the slot in the class at the specified row index. The ID is
@@ -727,6 +728,10 @@ class IDGenerator(object):
         """
         if class_name not in self.data:
             return None
+
+        orig_v = self.data[class_name].get_data_value(slot, row_index)
+        if isinstance(orig_v, IDValue):
+            return orig_v
 
         # We loop through all code columns for the slot. Once executing the code generates a
         # non-empty value (either returned from the code or with the "target" variable being set
@@ -772,33 +777,37 @@ class IDGenerator(object):
                 v = interpreter.symtable["target"]
 
             # If the code resulted in an empty value, continue to the next code column
-            if pd.isna(v) or v == "":
+            if isna(v) or v == "":
                 continue
 
             break
 
         interpreter.symtable = orig_symtable
 
-        if pd.isna(v):
+        if isinstance(v, IDValue) and v.index_in_progress:
+            raise ValueError(
+                f"Retrieved in-progress IDValue in calculate_id for {class_name}.{slot}:{row_index}: {v}"
+            )
+
+        if isna(v):
             v = ""
 
-        if not isinstance(v, IDValue):
-            v = IDValue(v)
-        self.data[class_name].set_data_value(slot, row_index, v)
+        v = self.data[class_name].set_data_value(slot, row_index, v)
 
         # If the slot is the primary key, then calculate the remainder of the row, so we can determine if the
         # row is a duplicate or not of all other rows generated so far that have the same primary key value.
         # If it is a duplicate, we reuse an existing primary key ID from the duplicates. If it is not
         # a duplicate we make sure the primary key value is unique.
         if self.data[class_name].primary_key == slot:
+            v.index_in_progress = True
             self.make_all_ids(class_name, row_index)
             # Grouping the primary keys will either group the new calculated ID with an existing
             # ID where the rows are identical, or will add an index to the end of the new ID
             # if there are no identical rows but the new ID is already in use (ie. we will
             # make the new ID unique)
-            self.data[class_name].group_primary_key(row_index)
+            v = self.data[class_name].group_primary_key(row_index)
 
-        return self.data[class_name].get_data_value(slot, row_index)
+        return v
 
     def get_source_class_and_row(
         self, class_name: str, row_index: int
@@ -857,21 +866,29 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         class opts:
+            # Test
+            # input_data_dir = "../../gen/test/source_data"
+            # input_data_files = None
+            # output_dir = "../../gen/test/mapped_data_ids-new"
+            # id_code_file = "../../data/modules/test/ids.xlsx"
+            # id_code_sheet = "id_code"
+            # config_file = "../../data/modules/test/ids.yaml"
+            
             # NWSS to ODM v2
-            input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
-            input_data_files = None
-            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
-            id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
-            id_code_sheet = "id_code"
-            config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
+            # input_data_dir = "../../gen/nwss_reporting_to_v2/temp-all/mapped_data"
+            # input_data_files = None
+            # output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
+            # id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
+            # id_code_sheet = "id_code"
+            # config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
 
             # ODM v1 to ODM v2
-            # input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
-            # input_data_files = None
-            # output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
-            # id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
-            # id_code_sheet = "id_code"
-            # config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
+            input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data-all"
+            input_data_files = None
+            output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids-new"
+            id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
+            id_code_sheet = "id_code"
+            config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
 
             debug = True
         # fmt: on
