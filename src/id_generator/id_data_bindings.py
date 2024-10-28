@@ -6,9 +6,15 @@ They provide access to linked values within all the known target tables. Follow 
     dat.addresses.get_first_linked_value("addressID")
 """
 
-import pandas as pd
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from typing import Optional, List, Union, Dict, Any
 import traceback
+
+from id_generator.id_na import isna
 
 # Value to use if a value from one of the classes/tables is empty.
 EMPTY_VALUE = "empty"
@@ -100,16 +106,16 @@ class DataBindings:
         )
 
         # Convert float to integer if it has no decimals
-        if isinstance(v, float) and not pd.isna(v):
+        if isinstance(v, float) and not isna(v):
             if int(v) == v:
                 v = int(v)
 
         # Replace empty values
         if self.replace_empty_values:
-            if pd.isna(v) or v == "":
+            if isna(v) or v == "":
                 v = EMPTY_VALUE
         else:
-            if pd.isna(v):
+            if isna(v):
                 v = ""
 
         return v
