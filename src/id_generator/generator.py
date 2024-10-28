@@ -798,7 +798,7 @@ class IDGenerator(object):
         new_v = self.data[class_name].get_data_value(slot, row_index)
         if isinstance(new_v, IDValue):
             return new_v
-        
+
         v = self.data[class_name].set_data_value(slot, row_index, v)
 
         # If the slot is the primary key, then calculate the remainder of the row, so we can determine if the
@@ -857,7 +857,12 @@ class IDGenerator(object):
         output_data_files = {}
         total_rows = total_rows_minus_dropped_rows = total_dropped_rows = 0
         for data in self.data.values():
-            cur_output_data_files, cur_total_rows, cur_total_rows_minus_dropped_rows, cur_total_dropped_rows = data.save_data(
+            (
+                cur_output_data_files,
+                cur_total_rows,
+                cur_total_rows_minus_dropped_rows,
+                cur_total_dropped_rows,
+            ) = data.save_data(
                 output_dir,
                 orig_columns_only=orig_columns_only,
                 drop_duplicates=drop_duplicates,
@@ -869,7 +874,9 @@ class IDGenerator(object):
                 [output_data_files, cur_output_data_files]
             )
 
-        logger.info(f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}")
+        logger.info(
+            f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}"
+        )
         logger.info(f"Finished saving: {datetime.now() - tic}")
         return output_data_files
 

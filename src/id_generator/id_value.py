@@ -65,7 +65,7 @@ class IDValue(object):
         if self._str_value is None:
             self._str_value = self.make_id_str(self._root_id, self._index)
         return self._str_value
-    
+
     @classmethod
     def make_id_str(self, unindexed_value: str, index: str) -> str:
         index_str = f"{index:03d}" if index else ""

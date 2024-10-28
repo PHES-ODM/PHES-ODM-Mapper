@@ -97,7 +97,7 @@ class GeneratorData:
         self.orig_df[PK_INDEX_SLOT] = None
         self.orig_df[HASH_COLUMN] = None
         self.columns = list(self.orig_df.columns)
-        
+
         if USE_PRIMARY_KEY_LIST:
             self.used_primary_keys = {}
 
@@ -460,6 +460,7 @@ class GeneratorData:
         Returns:
             Any: The value of the primary key at row row_index, after any grouping is performed.
         """
+
         def _set_current_row_values(unindexed_pk: str, pk_index: int):
             """Set the ID values for the current row (the indexed pk value in self.primary_key, the
             unindexed pk value in UNINDEXED_PK_SLOT, and the index in PK_INDEX_SLOT).
@@ -476,7 +477,7 @@ class GeneratorData:
             new_row = self.get_row_at_index(row_index)[self.match_columns]
             hash_value = self.make_row_hash(new_row)
             self.set_data_value(HASH_COLUMN, row_index, hash_value)
-            
+
             if USE_PRIMARY_KEY_LIST:
                 self.used_primary_keys[str(id_value)] = 1
 
@@ -529,7 +530,7 @@ class GeneratorData:
             # There are no identical rows, so get a PK index that results in a unique indexed PK
             # pk_index = 0
             pk_index = self.largest_pk_indices.get(unindexed_pk_value, 0)
-            
+
             while True:
                 indexed_pk_value = IDValue.make_id_str(unindexed_pk_value, pk_index)
                 # If indexed_pk_value is unique in column self.primary_key then use it.
@@ -538,7 +539,9 @@ class GeneratorData:
                     if indexed_pk_value not in self.used_primary_keys:
                         break
                 else:
-                    indices = self.lookup.get_indices(self.primary_key, indexed_pk_value)
+                    indices = self.lookup.get_indices(
+                        self.primary_key, indexed_pk_value
+                    )
                     if len(indices) == 0:
                         break
                 pk_index += 1
@@ -566,7 +569,7 @@ class GeneratorData:
                 the DROP_COLUMN column will only be retained if orig_columns_only is False. Defaults to True.
 
         Returns:
-            Tuple[Dict[str, List[Path]], int, int, int]: 
+            Tuple[Dict[str, List[Path]], int, int, int]:
                 Dict[str, List[Path]]: All saved files, where the keys are the target class names and the values
                     are lists of output files for the class.
                 int: Number of total rows, before dropping duplicates
@@ -579,7 +582,7 @@ class GeneratorData:
         output_file = os.path.join(output_dir, f"{self.class_name}.csv")
         self.data[self.data == EMPTY_OBJ] = None
         data = pd.DataFrame(self.data, columns=self.columns)
-        
+
         total_rows = len(data)
         total_dropped_rows = 0
 
@@ -612,4 +615,9 @@ class GeneratorData:
         save_data_frame(data, output_file, index=False)
 
         output_data_files = {self.class_name: [Path(output_file)]}
-        return output_data_files, total_rows, total_rows - total_dropped_rows, total_dropped_rows
+        return (
+            output_data_files,
+            total_rows,
+            total_rows - total_dropped_rows,
+            total_dropped_rows,
+        )
