@@ -57,6 +57,8 @@ ORIG_ID_PREFIX = "__"
 UNINDEXED_PK_SLOT = f"{ORIG_ID_PREFIX*2}pk_unindexed"
 PK_INDEX_SLOT = f"{ORIG_ID_PREFIX*2}pk_index"
 
+USE_PRIMARY_KEY_LIST = True
+
 
 class GeneratorData:
     def __init__(
@@ -95,8 +97,11 @@ class GeneratorData:
         self.orig_df[PK_INDEX_SLOT] = None
         self.orig_df[HASH_COLUMN] = None
         self.columns = list(self.orig_df.columns)
+        
+        if USE_PRIMARY_KEY_LIST:
+            self.used_primary_keys = {}
 
-        # Create list of columns used for identifying identical rows excludes the primary key column
+        # Create list of columns used for identifying identical rows. Excludes the primary key column
         # but includes the column at UNINDEXED_PK_SLOT (ie the unindexed primary key).
         self.match_columns = [
             self.get_column_index(c) for c in self.orig_columns if c != self.primary_key
@@ -172,7 +177,7 @@ class GeneratorData:
 
         # We always include UNINDEXED_PK_SLOT and self.primary_key, they are both used frequently
         # by group_primary_key so we include them for performance reasons.
-        if self.primary_key not in lookup_slots:
+        if not USE_PRIMARY_KEY_LIST and self.primary_key not in lookup_slots:
             lookup_slots = lookup_slots + [self.primary_key]
         if HASH_COLUMN not in lookup_slots:
             lookup_slots = lookup_slots + [HASH_COLUMN]
@@ -455,34 +460,25 @@ class GeneratorData:
         Returns:
             Any: The value of the primary key at row row_index, after any grouping is performed.
         """
-
-        def _make_indexed_pk(unindexed_pk: str, pk_index: int) -> str:
-            """Make an indexed primary key value, based on the unindexed primary key value and
-            a numerical index."""
-            if pk_index:
-                return f"{unindexed_pk}{pk_index:03d}"
-            else:
-                return unindexed_pk
-
-        def _set_current_row_values(
-            unindexed_pk: str, pk_index: int, is_identical_row: bool = False
-        ):
+        def _set_current_row_values(unindexed_pk: str, pk_index: int):
             """Set the ID values for the current row (the indexed pk value in self.primary_key, the
             unindexed pk value in UNINDEXED_PK_SLOT, and the index in PK_INDEX_SLOT).
             """
             self.set_data_value(PK_INDEX_SLOT, row_index, pk_index)
             self.set_data_value(UNINDEXED_PK_SLOT, row_index, unindexed_pk)
-            # indexed_pk_value = _make_indexed_pk(unindexed_pk, pk_index)
-            # self.set_data_value(self.primary_key, row_index, indexed_pk_value)
+            id_value = IDValue(unindexed_pk, pk_index, index_in_progress=False)
             self.set_data_value(
                 self.primary_key,
                 row_index,
-                IDValue(unindexed_pk, pk_index, index_in_progress=False),
+                id_value,
             )
 
             new_row = self.get_row_at_index(row_index)[self.match_columns]
             hash_value = self.make_row_hash(new_row)
             self.set_data_value(HASH_COLUMN, row_index, hash_value)
+            
+            if USE_PRIMARY_KEY_LIST:
+                self.used_primary_keys[str(id_value)] = 1
 
         # The unindex PK value is currently at self.primary_key. Copy the value over to the UNINDEXED_PK_SLOT
         # then clear self.primary_key (since we will recalculate it)
@@ -528,18 +524,23 @@ class GeneratorData:
             pk_index = self.data[
                 identical_row_idx, self.get_column_index(PK_INDEX_SLOT)
             ]
-            _set_current_row_values(unindexed_pk_value, pk_index, True)
+            _set_current_row_values(unindexed_pk_value, pk_index)
         else:
             # There are no identical rows, so get a PK index that results in a unique indexed PK
             # pk_index = 0
             pk_index = self.largest_pk_indices.get(unindexed_pk_value, 0)
+            
             while True:
-                indexed_pk_value = _make_indexed_pk(unindexed_pk_value, pk_index)
+                indexed_pk_value = IDValue.make_id_str(unindexed_pk_value, pk_index)
                 # If indexed_pk_value is unique in column self.primary_key then use it.
                 # Note that we have previously set the value in column self.primary_key for the current row to None
-                indices = self.lookup.get_indices(self.primary_key, indexed_pk_value)
-                if len(indices) == 0:
-                    break
+                if USE_PRIMARY_KEY_LIST:
+                    if indexed_pk_value not in self.used_primary_keys:
+                        break
+                else:
+                    indices = self.lookup.get_indices(self.primary_key, indexed_pk_value)
+                    if len(indices) == 0:
+                        break
                 pk_index += 1
             _set_current_row_values(unindexed_pk_value, pk_index)
 
@@ -550,7 +551,7 @@ class GeneratorData:
         output_dir: str,
         orig_columns_only: bool = True,
         drop_duplicates: bool = True,
-    ) -> Dict[str, List[Path]]:
+    ) -> Tuple[Dict[str, List[Path]], int, int, int]:
         """Save the data to disk.
 
         Args:
@@ -565,8 +566,12 @@ class GeneratorData:
                 the DROP_COLUMN column will only be retained if orig_columns_only is False. Defaults to True.
 
         Returns:
-            Dict[str, List[Path]]: All saved files, where the keys are the target class names and the values
-                are lists of output files for the class.
+            Tuple[Dict[str, List[Path]], int, int, int]: 
+                Dict[str, List[Path]]: All saved files, where the keys are the target class names and the values
+                    are lists of output files for the class.
+                int: Number of total rows, before dropping duplicates
+                int: Number of total rows, after dropping duplicates
+                int: Number of dropped duplicates
         """
         if output_dir:
             os.makedirs(output_dir, exist_ok=True)
@@ -574,6 +579,9 @@ class GeneratorData:
         output_file = os.path.join(output_dir, f"{self.class_name}.csv")
         self.data[self.data == EMPTY_OBJ] = None
         data = pd.DataFrame(self.data, columns=self.columns)
+        
+        total_rows = len(data)
+        total_dropped_rows = 0
 
         # Drop rows where primary key is a duplicate
         if self.primary_key:
@@ -591,8 +599,10 @@ class GeneratorData:
                 data = data[[DROP_COLUMN] + columns]
                 new_len = orig_len - data[DROP_COLUMN].sum()
 
+            total_dropped_rows = total_rows - new_len
+
             logger.info(
-                f"Dropped duplicate primary keys for class '{self.class_name}': {orig_len} -> {new_len} ({new_len-orig_len})"
+                f"Dropped duplicate primary keys for class '{self.class_name}': {orig_len} -> {new_len} (-{total_dropped_rows})"
             )
 
         if orig_columns_only:
@@ -602,4 +612,4 @@ class GeneratorData:
         save_data_frame(data, output_file, index=False)
 
         output_data_files = {self.class_name: [Path(output_file)]}
-        return output_data_files
+        return output_data_files, total_rows, total_rows - total_dropped_rows, total_dropped_rows
