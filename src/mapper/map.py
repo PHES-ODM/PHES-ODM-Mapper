@@ -548,6 +548,8 @@ def map_and_filter(
 
     logger.info(f"Beginning mapping at {tic}")
 
+    map_tic = datetime.now()
+
     if not max_processes or max_processes <= 0:
         max_processes = cpu_count()
 
@@ -644,9 +646,12 @@ def map_and_filter(
         # Retain the original order by sorting by the TrackingSlots.
         df = sort_mapped_data(df, drop_sorting_column=False)
         all_mapped_data[target_type] = df
+        
+    logger.info(f"Total time for mapping: {datetime.now() - map_tic}")
 
     # Filter all the DataFrames
     if filter_config_file:
+        filter_tic = datetime.now()
         data_filter = DataFilter(filter_config_file)
         filtered_mapped_data = {}
         for target_type, df in all_mapped_data.items():
@@ -661,10 +666,12 @@ def map_and_filter(
             df = pd.concat(all_df, axis=0).reset_index(drop=True)
             filtered_mapped_data[target_class] = df
         all_mapped_data = filtered_mapped_data
+        logger.info(f"Total time for filtering: {datetime.now() - filter_tic}")
 
     # Save data to disk
     all_mapped_files = {}
     if data_output_dir is not None:
+        save_tic = datetime.now()
         for class_name, df in all_mapped_data.items():
             output_data_file = os.path.join(data_output_dir, f"{class_name}[preid].csv")
             if os.path.exists(output_data_file):
@@ -676,6 +683,7 @@ def map_and_filter(
             if class_name not in all_mapped_files:
                 all_mapped_files[class_name] = []
             all_mapped_files[class_name].append(output_data_file)
+        logger.info(f"Total time for saving: {datetime.now() - save_tic}")
 
     return all_mapped_data, all_mapped_files
 
