@@ -63,9 +63,13 @@ class IDValue(object):
 
     def __str__(self) -> str:
         if self._str_value is None:
-            index_str = f"{self._index:03d}" if self._index else ""
-            self._str_value = f"{self._root_id}{index_str}"
+            self._str_value = self.make_id_str(self._root_id, self._index)
         return self._str_value
+    
+    @classmethod
+    def make_id_str(self, unindexed_value: str, index: str) -> str:
+        index_str = f"{index:03d}" if index else ""
+        return f"{unindexed_value}{index_str}"
 
     def __repr__(self) -> str:
         if self._repr_value is None:
