@@ -646,7 +646,7 @@ def map_and_filter(
         # Retain the original order by sorting by the TrackingSlots.
         df = sort_mapped_data(df, drop_sorting_column=False)
         all_mapped_data[target_type] = df
-        
+
     logger.info(f"Total time for mapping: {datetime.now() - map_tic}")
 
     # Filter all the DataFrames
