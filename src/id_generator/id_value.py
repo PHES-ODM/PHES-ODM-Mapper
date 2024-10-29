@@ -33,7 +33,7 @@ print(id_value)
 ```
 """
 
-from typing import Optional
+from typing import Optional, Union
 
 
 class IDValue(object):
@@ -95,6 +95,9 @@ class IDValue(object):
 
     def is_empty(self) -> bool:
         return self._root_id is None
+
+    def __getitem__(self, key: Union[slice, int]) -> str:
+        return self._root_id[key]
 
     @property
     def unindexed_value(self) -> Optional[str]:
