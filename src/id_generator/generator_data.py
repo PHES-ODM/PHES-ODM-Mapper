@@ -479,7 +479,7 @@ class GeneratorData:
             self.set_data_value(HASH_COLUMN, row_index, hash_value)
 
             if USE_PRIMARY_KEY_LIST:
-                self.used_primary_keys[str(id_value)] = 1
+                self.used_primary_keys[str(id_value)] = True
 
         # The unindex PK value is currently at self.primary_key. Copy the value over to the UNINDEXED_PK_SLOT
         # then clear self.primary_key (since we will recalculate it)
