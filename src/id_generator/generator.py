@@ -397,7 +397,9 @@ class IDGenerator(object):
                     self.current_class = class_name
                     self.current_row_index = idx
                     self.calculate_id(class_name, slot, idx)
-            _log_info(f"Made all IDs for class '{class_name}': {datetime.now() - class_tic}")
+            _log_info(
+                f"Made all IDs for class '{class_name}': {datetime.now() - class_tic}"
+            )
 
         # Restore current_class and current_row_index in case make_all_ids has been called recursively
         self.current_class = orig_current_class
