@@ -349,6 +349,7 @@ class IDGenerator(object):
         processed_ids = 0
 
         for idx, class_name in enumerate(class_names):
+            class_tic = datetime.now()
             _log_info(
                 f"Making IDs for class '{class_name}' ({idx+1}/{len(class_names)})"
             )
@@ -396,6 +397,7 @@ class IDGenerator(object):
                     self.current_class = class_name
                     self.current_row_index = idx
                     self.calculate_id(class_name, slot, idx)
+            _log_info(f"Made all IDs for class '{class_name}': {datetime.now() - class_tic}")
 
         # Restore current_class and current_row_index in case make_all_ids has been called recursively
         self.current_class = orig_current_class
