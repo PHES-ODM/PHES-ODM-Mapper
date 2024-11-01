@@ -175,6 +175,14 @@ class SingleBar(object):
             self.bar.close()
         self.bar = None
 
+    def set_bar_title(self, title: str):
+        """Set the title/description of the bar.
+
+        Args:
+            title (str): The new title/description of the bar.
+        """
+        self.bar.set_description(title)
+
     def update(self, inc: int):
         """Update the bar count by increasing the progress by inc.
 
@@ -326,6 +334,17 @@ class ProgressCounter(object):
         bar_width = BAR_WIDTH - max_desc
         bar_format = BAR_FORMAT % {"maxdesc": max_desc, "barwidth": bar_width}
         return bar_format
+
+    def set_bar_title(self, barid: str, title: str):
+        """Set the title/description of the specified bar.
+
+        Args:
+            barid (str): The ID of the bar to set the title of. Should be one of the barids passed as the totals parameter
+                to the ProgressCounter constructor, or TOTAL_BARID for the total bar.
+            title (str): The new title/description of the bar.
+        """
+        bar = self.progress_bars[barid]
+        bar.set_bar_title(title)
 
     def has_bar(self, barid: str) -> bool:
         """Determine if the bar with the specified barid exists.
