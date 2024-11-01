@@ -21,28 +21,29 @@ from mapper import full_map
 from utils.cli_utils import get_input_data_files
 
 if __name__ == "__main__":
-    if "get_ipython" in globals():
+    if True or "get_ipython" in globals():
         # fmt: off
         class opts:
             # ODM v1 to v2
-            module = "odm_v1_to_v2"
-            module_dir = None
-            input_data_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
-            input_data_files = None  # ["WWMeasure", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
-            output_dir = "../gen/odm_v1_to_v2"
-            temp_dir = "../gen/odm_v1_to_v2/temp"
+            # module = "odm_v1_to_v2"
+            # module_dir = None
+            # input_data_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
+            # input_data_files = None  # ["WWMeasure", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
+            # output_dir = "../gen/odm_v1_to_v2"
+            # temp_dir = "../gen/odm_v1_to_v2/temp-1000"
 
             # NWSS to v2
-            # module = "nwss_reporting_to_v2"
-            # module_dir = None
-            # input_data_dir = "../../../PHES-ODM-Data/nwss/private_renamed/"
-            # input_data_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            # output_dir = "../gen/nwss_reporting_to_v2"
-            # temp_dir = "../gen/nwss_reporting_to_v2/temp"
+            module = "nwss_reporting_to_v2"
+            module_dir = None
+            # input_data_dir = "../../../PHES-ODM-Data/nwss/private_renamed_test/"
+            input_data_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            input_data_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
+            output_dir = "../gen/nwss_reporting_to_v2"
+            temp_dir = f"../gen/nwss_reporting_to_v2/temp"
 
             max_processes = 1
             input_max_rows = 50
-            id_debug = False
+            id_debug = True
         # fmt: on
     else:
         args = argparse.ArgumentParser(
@@ -118,4 +119,5 @@ if __name__ == "__main__":
         input_max_rows=opts.input_max_rows,
         id_debug=opts.id_debug,
         max_processes=opts.max_processes,
+        multi_bar_progress="get_ipython" not in globals()
     )
