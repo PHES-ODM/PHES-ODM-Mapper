@@ -279,7 +279,7 @@ class ProgressCounter(object):
         titles = list(totals.keys()) + [self.total_title]
         bar_format = self.calc_bar_format(titles)
 
-        # Create all progress bars
+        # Create all progress bars (except for total bar)
         self.progress_bars = {
             title: SingleBar(
                 title=title,
@@ -302,7 +302,7 @@ class ProgressCounter(object):
             bar_format=bar_format,
             total=total,
             position=total_position,
-            show_bar=True,
+            show_bar=multiple_bars,
         )
 
     def calc_bar_format(self, titles: List[str]) -> str:
@@ -498,6 +498,22 @@ if __name__ == "__main__":
         bar_totals, multiple_bars=not is_ipython, install_output_hooks=not is_ipython
     )
     with progress:
+        # import random
+        # bar_counts = { title: 0 for title in bar_totals.keys() }
+        # i = -1
+        # while True:
+        #     i += 1
+        #     titles = [k for k, v in bar_counts.items() if v < bar_totals[k]]
+        #     if len(titles) == 0:
+        #         break
+        #     title = random.choice(titles)
+        #     inc = 1
+        #     bar_counts[title] += inc
+        #     progress.update(title, inc)
+        #     if i % 1000 == 0:
+        #         print("Progress:", progress.get_progress_report())
+        #     time.sleep(0.0005)
+
         for current_bar, current_total in bar_totals.items():
             progress.show_bar(
                 current_bar
