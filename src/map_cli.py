@@ -21,7 +21,7 @@ from mapper import full_map
 from utils.cli_utils import get_input_data_files
 
 if __name__ == "__main__":
-    if True or "get_ipython" in globals():
+    if "get_ipython" in globals():
         # fmt: off
         class opts:
             # ODM v1 to v2
@@ -39,10 +39,10 @@ if __name__ == "__main__":
             input_data_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
             input_data_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
             output_dir = "../gen/nwss_reporting_to_v2"
-            temp_dir = f"../gen/nwss_reporting_to_v2/temp"
+            temp_dir = "../gen/nwss_reporting_to_v2/temp"
 
             max_processes = 1
-            input_max_rows = 50
+            input_max_rows = 1000
             id_debug = True
         # fmt: on
     else:
@@ -119,5 +119,5 @@ if __name__ == "__main__":
         input_max_rows=opts.input_max_rows,
         id_debug=opts.id_debug,
         max_processes=opts.max_processes,
-        multi_bar_progress="get_ipython" not in globals()
+        multi_bar_progress="get_ipython" not in globals(),
     )
