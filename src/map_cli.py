@@ -17,7 +17,7 @@ python3 map_cli.py \
 import argparse
 from datetime import datetime
 
-from mapper import full_map
+from mapper import Mapper
 from utils.cli_utils import get_input_data_files
 
 if __name__ == "__main__":
@@ -110,14 +110,17 @@ if __name__ == "__main__":
     tic = datetime.now()
 
     data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
-    full_map(
+    
+    mapper = Mapper(
         module=opts.module,
-        module_dir=opts.module_dir,
+        module_dir=opts.module_dir,        
+        id_debug=opts.id_debug,
+        multi_bar_progress="get_ipython" not in globals(),
+    )
+    mapper.full_map(
         data_files=data_files,
         output_dir=opts.output_dir,
         temp_dir=opts.temp_dir,
         input_max_rows=opts.input_max_rows,
-        id_debug=opts.id_debug,
         max_processes=opts.max_processes,
-        multi_bar_progress="get_ipython" not in globals(),
     )
