@@ -64,7 +64,7 @@ class GeneratorData:
     def __init__(
         self,
         class_name: str,
-        data_files: List[Union[str, Path]],
+        input_data: List[Union[str, Path, pd.DataFrame]],
         primary_key: str,
         lookup_slots: Optional[List[str]] = None,
         generated_slots: Optional[List[str]] = None,
@@ -73,22 +73,43 @@ class GeneratorData:
         self.primary_key = primary_key
         self.generated_slots = generated_slots if generated_slots else []
         self.largest_pk_indices = {}
+        
+        all_dfs = []
+        for cur_data in input_data:
+            file = None
+            if isinstance(cur_data, (str, Path)):
+                file = cur_data
+                logger.info(f"Loading data from {str(file)}")
+                df = read_data_frame(file, keep_default_na=False, na_values=None)
+            elif isinstance(cur_data, pd.DataFrame):
+                file = None
+                df = cur_data
+            else:
+                raise TypeError(f"Unrecognized type for input to GeneratorData: type={type(cur_data)}")
 
-        for file in data_files:
-            logger.info(f"Loading data from {str(file)}")
-            df = read_data_frame(file)
+            # Make sure the columns match
+            if len(all_dfs) > 0:
+                first_df = all_dfs[0]
+                missing_cur_columns = [c for c in first_df.columns if c not in df.columns]
+                if len(missing_cur_columns) > 0:
+                    raise ValueError(f"DataFrame for file '{file}' has missing columns: {missing_cur_columns}")
+                missing_full_columns = [c for c in df.columns if c not in first_df.columns]
+                if len(missing_full_columns) > 0:
+                    raise ValueError(f"DataFrame for file '{file}' has extra columns: {missing_full_columns}")
 
-            self.orig_df = df
+            all_dfs.append(df)
+            
+        self.orig_df = pd.concat(all_dfs, axis=0, ignore_index=True).reset_index(drop=True)
 
-            # Create a list of all original columns found in the dataset
-            columns = list(df.columns)
-            for s in self.get_all_tracking_slots():
-                if s not in columns:
-                    raise ValueError(
-                        f"Tracking column '{s}' must exist in the data at {str(file)}"
-                    )
-                columns.remove(s)
-            self.orig_columns = columns
+        # Create a list of all original columns found in the dataset
+        columns = list(df.columns)
+        for s in self.get_all_tracking_slots():
+            if s not in columns:
+                raise ValueError(
+                    f"Tracking column '{s}' must exist in the data at {str(file)}"
+                )
+            columns.remove(s)
+        self.orig_columns = columns
 
         self.prepare_ids()
 
