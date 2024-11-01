@@ -27,7 +27,7 @@ class_derivations:
           \ = src.composite_freq"
       collDT:
         name: collDT
-        expr: sample_collect_date + '/' + sample_collect_time + '/' + time_zone
+        expr: sample_collect_date + '/!/' + sample_collect_time + '/!/' + time_zone
       reportable:
         name: reportable
         expr: case(((dashboard_ignore == 'yes') + (analysis_ignore == 'yes'), 'false'),
