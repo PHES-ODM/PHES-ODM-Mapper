@@ -18,7 +18,6 @@ import yaml
 from pathlib import Path
 import pandas as pd
 from datetime import datetime
-from tqdm import tqdm
 from asteval import Interpreter
 import argparse
 import numpy as np
@@ -31,6 +30,7 @@ from utils.general_utils import (
 )
 from utils.tracking_slots import TrackingSlots
 from utils.cli_utils import get_input_data_files, merge_input_data_files
+from utils.progress_counter import ProgressCounter, EmptyCounter
 from id_generator.id_function_bindings import FunctionBindings
 from id_generator.id_data_bindings import DataBindings
 from id_generator.generator_data import GeneratorData, IDValue
@@ -79,6 +79,7 @@ class IDGenerator(object):
         config_file: str,
         id_code_file: str,
         id_code_sheet: str = None,
+        multi_bar_progress: bool = True,
     ):
         """Constructor for IDGenerator.
 
@@ -91,7 +92,13 @@ class IDGenerator(object):
                 id_code_sheet should also be set.
             id_code_sheet (str, optional): If id_code_file is an Excel file, then the sheet name to load that contains
                 the ID generation code. Defaults to None.
+            multi_bar_progress (bool, optional): If True then output multiple progress bars at the same time showing all classes we will be
+                generating IDs for. If False then only one progress bar is shown at a time (for the class name we are currently
+                generating IDs for).
         """
+        # Sort data_files by key (class name), and sort all the values (file names)
+        # data_files = { k: sorted(v) for k, v in sorted(data_files.items())}
+
         self.config = {}
         if config_file:
             with open(config_file, "r") as f:
@@ -99,6 +106,7 @@ class IDGenerator(object):
 
         self.current_class = None
         self.current_row_index = None
+        self.multi_bar_progress = multi_bar_progress
 
         # Prepare the code for calculating IDs
         self.prepare_id_code(id_code_file, id_code_sheet)
@@ -327,6 +335,7 @@ class IDGenerator(object):
         def _log_info(s: str):
             if output_progress:
                 logger.info(s)
+            pass
 
         _log_info("Making all IDs...")
 
@@ -343,63 +352,74 @@ class IDGenerator(object):
             class_names = [class_names]
 
         # Total number of ID cells to generate. This is to report progress.
-        total_ids = np.sum(
+        self.total_ids = np.sum(
             [len(self.data[c]) * len(self.data[c].generated_slots) for c in class_names]
         )
-        processed_ids = 0
-
-        for idx, class_name in enumerate(class_names):
-            class_tic = datetime.now()
-            _log_info(
-                f"Making IDs for class '{class_name}' ({idx+1}/{len(class_names)})"
+        if output_progress:
+            # Set up the ProgressCounter to show progress bars
+            totals = [
+                len(self.data[c]) * len(self.data[c].generated_slots)
+                for c in class_names
+            ]
+            bar_totals = {
+                class_name: total
+                for class_name, total in zip(class_names, totals)
+                if total
+            }
+            self.progress = ProgressCounter(
+                bar_totals,
+                multiple_bars=self.multi_bar_progress,
+                install_output_hooks=self.multi_bar_progress,
             )
+            progress = self.progress
+        else:
+            progress = EmptyCounter()
 
-            # All the slots in the class that are IDs that need to be generated
-            all_slots = self.data[class_name].generated_slots
+        with progress:
+            for idx, class_name in enumerate(class_names):
+                if progress.has_bar(class_name):
+                    progress.show_bar(class_name)
+                class_tic = datetime.now()
+                _log_info(
+                    f"Making IDs for class '{class_name}' ({idx+1}/{len(class_names)})"
+                )
 
-            # Determine the rows to iterate over (based on row_indices parameter)
-            row_indices = orig_row_indices
-            if row_indices is None:
-                # Generate IDs for all rows
-                row_indices = range(0, len(self.data[class_name]))
-            else:
-                # Only generate IDs for the rows in row_indices. Make sure it's an array.
-                if not isinstance(row_indices, Iterable):
-                    row_indices = [row_indices]
+                # All the slots in the class that are IDs that need to be generated
+                all_slots = self.data[class_name].generated_slots
 
-            # Iterate over all rows to generate the IDs
-            processed_indices = 0  # For progress tracking
-            for idx in tqdm(row_indices) if output_progress else row_indices:
-                processed_indices += 1
-                # Iterate over all slots to generate an ID for in the current row
-                for slot in all_slots:
-                    processed_ids += 1
-                    if output_progress:
-                        current_progress = processed_indices / len(row_indices) * 100
-                        self.report_progress(
-                            processed_ids,
-                            total_ids,
-                            f" (Current={processed_indices}/{len(row_indices)}, {current_progress:0.1f}%)",
-                        )
+                # Determine the rows to iterate over (based on row_indices parameter)
+                row_indices = orig_row_indices
+                if row_indices is None:
+                    # Generate IDs for all rows
+                    row_indices = range(0, len(self.data[class_name]))
+                else:
+                    # Only generate IDs for the rows in row_indices. Make sure it's an array.
+                    if not isinstance(row_indices, Iterable):
+                        row_indices = [row_indices]
 
-                    if slot not in self.data[class_name].columns:
-                        raise ValueError(
-                            f"Found slot '{slot}' in class '{class_name}' in ID code file that does not exist in the source data."
-                        )
+                # Iterate over all rows to generate the IDs
+                for idx in row_indices:
+                    # Iterate over all slots to generate an ID for in the current row
+                    for slot in all_slots:
+                        if slot not in self.data[class_name].columns:
+                            raise ValueError(
+                                f"Found slot '{slot}' in class '{class_name}' in ID code file that does not exist in the source data."
+                            )
 
-                    # Get the current value for the ID in the data. If it is non-null then it has already been
-                    # generated and we can continue to the next loop.
-                    v = self.data[class_name].get_data_value(slot, idx)
-                    if not self.is_id_empty(v):
-                        continue
+                        # Get the current value for the ID in the data. If it is non-null then it has already been
+                        # generated and we can continue to the next loop.
+                        v = self.data[class_name].get_data_value(slot, idx)
+                        if not self.is_id_empty(v):
+                            continue
 
-                    # Calculate the ID
-                    self.current_class = class_name
-                    self.current_row_index = idx
-                    self.calculate_id(class_name, slot, idx)
-            _log_info(
-                f"Made all IDs for class '{class_name}': {datetime.now() - class_tic}"
-            )
+                        # Calculate the ID
+                        self.current_class = class_name
+                        self.current_row_index = idx
+                        self.calculate_id(class_name, slot, idx)
+                _log_info(
+                    f"Made all IDs for class '{class_name}': {datetime.now() - class_tic}"
+                )
+                # _log_info(f"Progress: {self.progress.get_progress_report()}")
 
         # Restore current_class and current_row_index in case make_all_ids has been called recursively
         self.current_class = orig_current_class
@@ -472,11 +492,15 @@ class IDGenerator(object):
             return None
         return self.config[ConfigKeys.PRIMARY_KEYS].get(class_name, None)
 
-    def report_progress(self, processed_ids: int, total_ids: int, extra_info: str = ""):
-        if processed_ids % 500 == 0:
-            # percent_complete = processed_ids / total_ids * 100
-            # print(f"Progress: {percent_complete:0.1f}%{extra_info}", end="\r")
-            pass
+    def update_progress(self, class_name: str, inc: int):
+        """Update the progress of the specified class with the progress bars.
+
+        Args:
+            class_name (str): The class name to update the progress for.
+            inc (int): The number to increment the progress by. Each single generated ID should result
+                in a single increment.
+        """
+        self.progress.update(class_name, inc)
 
     def get_linked_rows(
         self,
@@ -818,6 +842,8 @@ class IDGenerator(object):
             # make the new ID unique)
             v = self.data[class_name].group_primary_key(row_index)
 
+        self.update_progress(class_name, 1)
+
         return v
 
     def get_source_class_and_row(
@@ -892,23 +918,23 @@ if __name__ == "__main__":
             # Test
             # input_data_dir = "../../gen/test/source_data"
             # input_data_files = None
-            # output_dir = "../../gen/test/mapped_data_ids-new"
+            # output_dir = "../../gen/test/mapped_data_ids"
             # id_code_file = "../../data/modules/test/ids.xlsx"
             # id_code_sheet = "id_code"
             # config_file = "../../data/modules/test/ids.yaml"
             
             # NWSS to ODM v2
-            input_data_dir = "../../gen/nwss_reporting_to_v2/temp-100/mapped_data"
+            input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
             input_data_files = None
-            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids-100-pklist"
+            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
             id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
             id_code_sheet = "id_code"
             config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
 
             # ODM v1 to ODM v2
-            # input_data_dir = "../../gen/odm_v1_to_v2/temp-all/mapped_data"
+            # input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
             # input_data_files = None
-            # output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids-pk"
+            # output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
             # id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
             # id_code_sheet = "id_code"
             # config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
@@ -965,7 +991,11 @@ if __name__ == "__main__":
 
     clear_dirs([opts.output_dir])
     gen = IDGenerator(
-        data_files, opts.config_file, opts.id_code_file, opts.id_code_sheet
+        data_files,
+        opts.config_file,
+        opts.id_code_file,
+        opts.id_code_sheet,
+        multi_bar_progress="get_ipython" not in globals(),
     )
     gen.make_all_ids()
     res = gen.save_all(
