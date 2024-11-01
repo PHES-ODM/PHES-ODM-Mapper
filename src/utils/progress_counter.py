@@ -499,7 +499,7 @@ if __name__ == "__main__":
 
     is_ipython = "get_ipython" in globals()
     progress = ProgressCounter(
-        bar_totals, multiple_bars=False, install_output_hooks=not is_ipython
+        bar_totals, multiple_bars=not is_ipython, install_output_hooks=not is_ipython
     )
     with progress:
         # import random
