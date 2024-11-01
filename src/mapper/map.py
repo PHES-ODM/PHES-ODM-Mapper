@@ -697,6 +697,7 @@ def full_map(
     input_max_rows: int = None,
     max_processes: int = 1,
     id_debug: bool = False,
+    multi_bar_progress: bool = True,
 ) -> Dict[str, List[Path]]:
     """Perform a full mapping, including filtering and ID generation.
 
@@ -722,6 +723,8 @@ def full_map(
             unmodified IDs before generation occurred, etc.), and will also not drop rows where duplicate
             primary keys are found, instead an additional column named "__drop" will be added to the output
             and set to TRUE if the row would be dropped when not in debug mode. Defaults to False.
+        multi_bar_progress (bool, optional): If True then output multiple progress bars at the same time
+            when appropriate. If False then only show one progress bar at a time.
 
     Returns:
         Dict[str, List[Path]]: Lists all final mapped files saved to disk. The keys are the output class
@@ -778,6 +781,7 @@ def full_map(
         config_file=module_config.id_config,
         id_code_file=module_config.id_code,
         id_code_sheet=None,
+        multi_bar_progress=multi_bar_progress,
     )
     gen.make_all_ids()
     data_files = gen.save_all(
