@@ -133,6 +133,8 @@ Concatenate all arguments into a single string with spaces removed. The first ch
 fn.makeid(datEmpty.addresses.country, datEmpty.addresses.pCode, datEmpty.addresses.city[:3])
 ```
 
+If an ID is passed as an argument to `fn.makeid` (eg. `datEmpty.sites.siteID`), then the ID's index will be removed. The ID's index is an extra number added to the end of an ID to differentiate it from other IDs that have the same value (eg. If two rows have a primary key equal to `ott`, but the rows are different, then an index will be added at the end of the second ID, eg. `ott001`, to make sure that all primary key IDs are unique).
+
 #### fn.rownum
 
 Attribute (integer): The zero-based row number of the current row. For example, it is used in the final argument to `fn.makeid` below:
