@@ -92,10 +92,11 @@ class GeneratorData:
 
         self.prepare_ids()
 
-        # Add the primary key slot
+        # Add extra slots
         self.orig_df[UNINDEXED_PK_SLOT] = None
         self.orig_df[PK_INDEX_SLOT] = None
         self.orig_df[HASH_COLUMN] = None
+
         self.columns = list(self.orig_df.columns)
 
         if USE_PRIMARY_KEY_LIST:
