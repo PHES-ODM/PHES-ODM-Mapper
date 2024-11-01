@@ -51,7 +51,7 @@ TQDM_MININTERVAL = 0.2
 TQDM_MAXINTERVAL = 10.0
 
 # Key used to access the total bar (eg. when calling ProgressCounter.show_bar() and ProgressCounter.has_bar())
-TOTAL_BAR = None
+TOTAL_BARID = None
 
 
 class HookWriter(object):
@@ -211,12 +211,12 @@ class EmptyCounter(object):
     def __exit__(self, exception_type, exception_value, exception_traceback):
         exception_type, exception_value, exception_traceback
 
-    def show_bar(self, title: Optional[str]):
-        title
+    def show_bar(self, barid: Optional[str]):
+        barid
         pass
 
-    def update(self, title: str, inc: int):
-        title, inc
+    def update(self, barid: str, inc: int):
+        barid, inc
         pass
 
     def refresh_next_update(self):
@@ -229,8 +229,8 @@ class EmptyCounter(object):
         separator
         return "Empty Counter"
 
-    def has_bar(self, title: str) -> bool:
-        title
+    def has_bar(self, barid: str) -> bool:
+        barid
         return False
 
 
@@ -248,7 +248,7 @@ class ProgressCounter(object):
         at once, or just a single progress bar can be shown at a time.
 
         Args:
-            totals (Dict): A dictionary where the keys are the titles of all progress bars to create, and the values are the
+            totals (Dict): A dictionary where the keys are the barids of all progress bars to create, and the values are the
                 total count value of each progress bar. For example, the following will create a bar called "measures" with
                 a maximum total count of 1000, and another called "samples" with a total of 500:
                     {
@@ -280,19 +280,19 @@ class ProgressCounter(object):
         self.install_output_hooks = install_output_hooks
 
         # Create the bar format
-        titles = list(totals.keys()) + [self.total_title]
-        bar_format = self.calc_bar_format(titles)
+        barids = list(totals.keys()) + [self.total_title]
+        bar_format = self.calc_bar_format(barids)
 
         # Create all progress bars (except for total bar)
         self.progress_bars = {
-            title: SingleBar(
-                title=title,
+            barid: SingleBar(
+                title=barid,
                 bar_format=bar_format,
                 total=total,
                 position=i if multiple_bars else 0,
                 show_bar=multiple_bars,
             )
-            for i, (title, total) in enumerate(totals.items())
+            for i, (barid, total) in enumerate(totals.items())
         }
 
         self.multiple_bars = multiple_bars
@@ -301,7 +301,7 @@ class ProgressCounter(object):
         # Create the main total bar (at bottom)
         total = sum(totals.values())
         total_position = len(self.progress_bars) if self.multiple_bars else 0
-        self.progress_bars[TOTAL_BAR] = SingleBar(
+        self.progress_bars[TOTAL_BARID] = SingleBar(
             title=self.total_title,
             bar_format=bar_format,
             total=total,
@@ -327,35 +327,35 @@ class ProgressCounter(object):
         bar_format = BAR_FORMAT % {"maxdesc": max_desc, "barwidth": bar_width}
         return bar_format
 
-    def has_bar(self, title: str) -> bool:
-        """Determine if the bar with the specified title exists.
+    def has_bar(self, barid: str) -> bool:
+        """Determine if the bar with the specified barid exists.
 
         Args:
-            title (str): The title to test. Should be one of the titles passed as the totals parameter to the ProgressCounter
-                constructor, or TOTAL_BAR for the total bar.
+            barid (str): The barid to test. Should be one of the barids passed as the totals parameter to the ProgressCounter
+                constructor, or TOTAL_BARID for the total bar.
 
         Returns:
-            bool: True if a bar with the specified title exists, False otherwise. If True then other functions such as show_bar
-                can be called with the title.
+            bool: True if a bar with the specified barid exists, False otherwise. If True then other functions such as show_bar
+                can be called with the barid.
         """
-        return title in self.progress_bars
+        return barid in self.progress_bars
 
-    def show_bar(self, title: str):
-        """Show/create the bar with the specified title.
+    def show_bar(self, barid: str):
+        """Show/create the bar with the specified barid.
 
         If the ProgressCounter was created with multiple_bars=False, then all other bars will be hidden and deleted before
         the new bar is shown.
 
         Args:
-            title (str): The title of the bar to show. Should be one of the titles passed as the totals parameter to the
-                ProgressCounter constructor, or TOTAL_BAR for the total bar.
+            barid (str): The barid of the bar to show. Should be one of the barids passed as the totals parameter to the
+                ProgressCounter constructor, or TOTAL_BARID for the total bar.
         """
         if not self.multiple_bars:
             # Hide all other bars
-            for cur_title, cur_bar in self.progress_bars.items():
-                if cur_title != title:
+            for cur_barid, cur_bar in self.progress_bars.items():
+                if cur_barid != barid:
                     cur_bar.hide_bar()
-        self.progress_bars[title].show_bar()
+        self.progress_bars[barid].show_bar()
 
     def __enter__(self):
         self._install_hooks()
@@ -368,21 +368,21 @@ class ProgressCounter(object):
         """Call this to force a redraw of all visible bars in the next call to update()."""
         self.refresh_next = True
 
-    def update(self, title: str, inc: int):
-        """Update the bar with the specified title by increasing its count by inc.
+    def update(self, barid: str, inc: int):
+        """Update the bar with the specified barid by increasing its count by inc.
 
         Args:
-            title (str): The title of the bar to update. Should be one of the titles passed as the totals parameter to the
-                ProgressCounter constructor. Do not pass TOTAL_BAR, as the total bar is updated automatically when each
+            barid (str): The barid of the bar to update. Should be one of the barids passed as the totals parameter to the
+                ProgressCounter constructor. Do not pass TOTAL_BARID, as the total bar is updated automatically when each
                 of the other bars are updated.
             inc (int): Amount to increase the bar's count by.
         """
-        assert title != TOTAL_BAR
+        assert barid != TOTAL_BARID
 
-        bar = self.progress_bars[title]
+        bar = self.progress_bars[barid]
         bar.update(inc)
 
-        total_bar = self.progress_bars[TOTAL_BAR]
+        total_bar = self.progress_bars[TOTAL_BARID]
         total_bar.update(inc)
 
         # Refresh all bars every self.full_refresh_iters iterations or self.full_refresh_duration seconds
@@ -503,17 +503,17 @@ if __name__ == "__main__":
     )
     with progress:
         # import random
-        # bar_counts = { title: 0 for title in bar_totals.keys() }
+        # bar_counts = { barid: 0 for barid in bar_totals.keys() }
         # i = -1
         # while True:
         #     i += 1
-        #     titles = [k for k, v in bar_counts.items() if v < bar_totals[k]]
-        #     if len(titles) == 0:
+        #     barids = [k for k, v in bar_counts.items() if v < bar_totals[k]]
+        #     if len(barids) == 0:
         #         break
-        #     title = random.choice(titles)
+        #     barid = random.choice(barids)
         #     inc = 1
-        #     bar_counts[title] += inc
-        #     progress.update(title, inc)
+        #     bar_counts[barid] += inc
+        #     progress.update(barid, inc)
         #     if i % 1000 == 0:
         #         print("Progress:", progress.get_progress_report())
         #     time.sleep(0.0005)
