@@ -32,6 +32,7 @@ import sys
 from typing import Dict, Optional, List
 import logging
 import time
+from abc import abstractmethod, ABC
 
 DEFAULT_ENCODING = sys.getdefaultencoding()
 
@@ -97,7 +98,6 @@ class HookWriter(object):
         """
         if isinstance(msg, bytes):
             msg = msg.decode(DEFAULT_ENCODING)
-        orig_msg = msg
 
         if self.at_new_line:
             # Clear whole line and force return to start of line
@@ -105,7 +105,7 @@ class HookWriter(object):
 
         # For this particular Writer, we are at the beginning of a line when at_new_line is True.
         # In the next call to write, we will clear the line when at_new_line is True
-        self.at_new_line = orig_msg.endswith("\n")
+        self.at_new_line = msg.endswith("\n")
 
         # Any new lines should consist of a new line followed immediately by a clear line
         msg = msg.replace("\n", "\n\x1b[2K")
@@ -208,7 +208,37 @@ class SingleBar(object):
             self.bar = None
 
 
-class EmptyCounter(object):
+class BaseCounter(ABC):
+    def __init__(self, *args, **kwargs):
+        args, kwargs
+        pass
+
+    @abstractmethod
+    def __enter__(self): ...
+
+    @abstractmethod
+    def __exit__(self, exception_type, exception_value, exception_traceback): ...
+
+    @abstractmethod
+    def show_bar(self, barid: Optional[str]): ...
+
+    @abstractmethod
+    def update(self, barid: str, inc: int): ...
+
+    @abstractmethod
+    def refresh_next_update(self): ...
+
+    @abstractmethod
+    def close(self): ...
+
+    @abstractmethod
+    def get_progress_report(self, separator: str = " / ") -> str: ...
+
+    @abstractmethod
+    def has_bar(self, barid: str) -> bool: ...
+
+
+class EmptyCounter(BaseCounter):
     def __init__(self, *args, **kwargs):
         args, kwargs
         pass
@@ -218,6 +248,7 @@ class EmptyCounter(object):
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
         exception_type, exception_value, exception_traceback
+        pass
 
     def show_bar(self, barid: Optional[str]):
         barid
@@ -242,7 +273,7 @@ class EmptyCounter(object):
         return False
 
 
-class ProgressCounter(object):
+class ProgressCounter(BaseCounter):
     def __init__(
         self,
         totals: Dict,
@@ -545,5 +576,5 @@ if __name__ == "__main__":
                 if i % 1000 == 0:
                     print("Progress:", progress.get_progress_report())
                 progress.update(current_bar, 1)
-                time.sleep(0.0005)
+                time.sleep(0.0001)
     print("Final Progress:", progress.get_progress_report())
