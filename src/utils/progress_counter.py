@@ -51,7 +51,7 @@ TQDM_MININTERVAL = 0.2
 TQDM_MAXINTERVAL = 10.0
 
 # Key used to access the total bar (eg. when calling ProgressCounter.show_bar() and ProgressCounter.has_bar())
-TOTAL_KEY = None
+TOTAL_BAR = None
 
 
 class HookWriter(object):
@@ -301,7 +301,7 @@ class ProgressCounter(object):
         # Create the main total bar (at bottom)
         total = sum(totals.values())
         total_position = len(self.progress_bars) if self.multiple_bars else 0
-        self.progress_bars[TOTAL_KEY] = SingleBar(
+        self.progress_bars[TOTAL_BAR] = SingleBar(
             title=self.total_title,
             bar_format=bar_format,
             total=total,
@@ -332,7 +332,7 @@ class ProgressCounter(object):
 
         Args:
             title (str): The title to test. Should be one of the titles passed as the totals parameter to the ProgressCounter
-                constructor, or TOTAL_KEY for the total bar.
+                constructor, or TOTAL_BAR for the total bar.
 
         Returns:
             bool: True if a bar with the specified title exists, False otherwise. If True then other functions such as show_bar
@@ -348,7 +348,7 @@ class ProgressCounter(object):
 
         Args:
             title (str): The title of the bar to show. Should be one of the titles passed as the totals parameter to the
-                ProgressCounter constructor, or TOTAL_KEY for the total bar.
+                ProgressCounter constructor, or TOTAL_BAR for the total bar.
         """
         if not self.multiple_bars:
             # Hide all other bars
@@ -373,16 +373,16 @@ class ProgressCounter(object):
 
         Args:
             title (str): The title of the bar to update. Should be one of the titles passed as the totals parameter to the
-                ProgressCounter constructor. Do not pass TOTAL_KEY, as the total bar is updated automatically when each
+                ProgressCounter constructor. Do not pass TOTAL_BAR, as the total bar is updated automatically when each
                 of the other bars are updated.
             inc (int): Amount to increase the bar's count by.
         """
-        assert title != TOTAL_KEY
+        assert title != TOTAL_BAR
 
         bar = self.progress_bars[title]
         bar.update(inc)
 
-        total_bar = self.progress_bars[TOTAL_KEY]
+        total_bar = self.progress_bars[TOTAL_BAR]
         total_bar.update(inc)
 
         # Refresh all bars every self.full_refresh_iters iterations or self.full_refresh_duration seconds
@@ -499,7 +499,7 @@ if __name__ == "__main__":
 
     is_ipython = "get_ipython" in globals()
     progress = ProgressCounter(
-        bar_totals, multiple_bars=not is_ipython, install_output_hooks=not is_ipython
+        bar_totals, multiple_bars=False, install_output_hooks=not is_ipython
     )
     with progress:
         # import random
