@@ -121,6 +121,10 @@ class HookWriter(object):
     def flush(self):
         self.output_stream.flush()
 
+    @property
+    def encoding(self):
+        return self.output_stream.encoding
+
 
 class SingleBar(object):
     def __init__(
