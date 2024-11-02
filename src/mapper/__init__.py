@@ -1,1 +1,1 @@
-from mapper.map import full_map as full_map
+from mapper.map import Mapper
