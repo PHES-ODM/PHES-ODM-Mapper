@@ -110,10 +110,10 @@ if __name__ == "__main__":
     tic = datetime.now()
 
     data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
-    
+
     mapper = Mapper(
         module=opts.module,
-        module_dir=opts.module_dir,        
+        module_dir=opts.module_dir,
         id_debug=opts.id_debug,
         multi_bar_progress="get_ipython" not in globals(),
     )

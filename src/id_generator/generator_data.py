@@ -73,7 +73,7 @@ class GeneratorData:
         self.primary_key = primary_key
         self.generated_slots = generated_slots if generated_slots else []
         self.largest_pk_indices = {}
-        
+
         all_dfs = []
         for cur_data in input_data:
             file = None
@@ -85,21 +85,33 @@ class GeneratorData:
                 file = None
                 df = cur_data
             else:
-                raise TypeError(f"Unrecognized type for input to GeneratorData: type={type(cur_data)}")
+                raise TypeError(
+                    f"Unrecognized type for input to GeneratorData: type={type(cur_data)}"
+                )
 
             # Make sure the columns match
             if len(all_dfs) > 0:
                 first_df = all_dfs[0]
-                missing_cur_columns = [c for c in first_df.columns if c not in df.columns]
+                missing_cur_columns = [
+                    c for c in first_df.columns if c not in df.columns
+                ]
                 if len(missing_cur_columns) > 0:
-                    raise ValueError(f"DataFrame for file '{file}' has missing columns: {missing_cur_columns}")
-                missing_full_columns = [c for c in df.columns if c not in first_df.columns]
+                    raise ValueError(
+                        f"DataFrame for file '{file}' has missing columns: {missing_cur_columns}"
+                    )
+                missing_full_columns = [
+                    c for c in df.columns if c not in first_df.columns
+                ]
                 if len(missing_full_columns) > 0:
-                    raise ValueError(f"DataFrame for file '{file}' has extra columns: {missing_full_columns}")
+                    raise ValueError(
+                        f"DataFrame for file '{file}' has extra columns: {missing_full_columns}"
+                    )
 
             all_dfs.append(df)
-            
-        self.orig_df = pd.concat(all_dfs, axis=0, ignore_index=True).reset_index(drop=True)
+
+        self.orig_df = pd.concat(all_dfs, axis=0, ignore_index=True).reset_index(
+            drop=True
+        )
 
         # Create a list of all original columns found in the dataset
         columns = list(df.columns)

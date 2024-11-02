@@ -1,4 +1,4 @@
-#%%
+# %%
 """
 Map data using a transformation module.
 
@@ -16,6 +16,7 @@ full_map(
     output_dir="../gen/odm_v1_to_v2",
     )
 """
+
 import sys
 import os
 
@@ -117,14 +118,18 @@ class Mapper(object):
             else module_dir
         )
         self.module_config = ModuleConfig(module_dir)
-        
-    def add_tracking_columns(self, df: pd.DataFrame, class_name: str, file: Union[str, Path]):
+
+    def add_tracking_columns(
+        self, df: pd.DataFrame, class_name: str, file: Union[str, Path]
+    ):
         # Add the tracking columns (eg. source class and source row), which are used for sorting
         # and other downstream operations such as ID generation.
         # First make sure the tracking columns don't already exist (this would be due to a name
         # conflict, where the source data already has columns with the same name as a tracking
         # column)
-        existing_tracking_slots = set(df.columns).intersection(self.get_all_tracking_slots())
+        existing_tracking_slots = set(df.columns).intersection(
+            self.get_all_tracking_slots()
+        )
         if len(existing_tracking_slots) > 0:
             raise ValueError(
                 f"Loaded data already has one or more columns with the same name as a tracking column: {existing_tracking_slots}"
@@ -141,8 +146,7 @@ class Mapper(object):
             lambda x: f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]:0{max_row_digits}d}",
             axis=1,
         )
-        
-    
+
     def load_and_parse_data(
         self,
         data_files: Dict[str, List[Union[str, Path]]],
@@ -152,7 +156,7 @@ class Mapper(object):
         """Parse all data in a format compatible with the LinkML Mapper.
 
         Args:
-        
+
             data_files (Dict[str, List[Union[str, Path]]]): All files to load and parse. Keys are the
                 source class name and values are lists of files that belong to the class.
             data_frames (Dict[str, List[pd.DataFrame]]): A DataFrames to parse. Keys are the source class
@@ -187,8 +191,10 @@ class Mapper(object):
                     file = None
                     df = cur_data
                 else:
-                    raise ValueError(f"Unrecognized type of item found for class '{class_name}': type={type(cur_data)}, (data={cur_data})")
-                
+                    raise ValueError(
+                        f"Unrecognized type of item found for class '{class_name}': type={type(cur_data)}, (data={cur_data})"
+                    )
+
                 if df is None or len(df.index) == 0:
                     continue
 
@@ -225,7 +231,6 @@ class Mapper(object):
 
         return data
 
-
     def _cast_types(self, v: Any, cast_types: str) -> Any:
         """Try to cast a value to the types specified in cast_types. We iterate over all cast types until
         the casting works without throwing an exception. If none of the casting works then the value is returned
@@ -254,7 +259,6 @@ class Mapper(object):
             except Exception as _:
                 pass
         return v
-
 
     def get_cast_functions(self, schema: SchemaView) -> Dict[str, Dict[str, Callable]]:
         """Get a dictionary specifying how all slots/attributes in all classes of the schema should
@@ -290,7 +294,9 @@ class Mapper(object):
                 # Get the range of the slot. It is a string (even if it's a list of ranges),
                 # so we must convert it to a list using yaml. If it is not a list then
                 # yaml will just keep it as a string.
-                slot_defn = schema.induced_slot(slot_name=slot_name, class_name=class_name)
+                slot_defn = schema.induced_slot(
+                    slot_name=slot_name, class_name=class_name
+                )
                 rng = yaml.safe_load(slot_defn.range)
                 # Add the casting function according to the range
                 if isinstance(rng, list):
@@ -301,9 +307,13 @@ class Mapper(object):
                     order = ["float", "int", "*"]
                     rng = sorted(
                         rng,
-                        key=lambda x: order.index(x) if x in order else order.index("*"),
+                        key=lambda x: order.index(x)
+                        if x in order
+                        else order.index("*"),
                     )
-                    cur_cast_functions[slot_name] = partial(self._cast_types, cast_types=rng)
+                    cur_cast_functions[slot_name] = partial(
+                        self._cast_types, cast_types=rng
+                    )
                 elif rng in ["float", "double"]:
                     cur_cast_functions[slot_name] = partial(
                         self._cast_types, cast_types=["float"]
@@ -318,7 +328,6 @@ class Mapper(object):
                     )
         return cast_functions
 
-
     def add_tracking_slots_derivations(self, spec: Dict, target_schema: SchemaView):
         """Add slot derivations for all class derivations in the mapper spec to copy over the tracking columns
         (from TrackingSlots) to the output. The tracking slots include the source class and source row number
@@ -330,7 +339,9 @@ class Mapper(object):
             target_schema (SchemaView): The LinkML schema for the target database that the spec maps onto.
         """
         tree_root = [
-            c for c in target_schema.all_classes() if target_schema.get_class(c).tree_root
+            c
+            for c in target_schema.all_classes()
+            if target_schema.get_class(c).tree_root
         ][0]
 
         all_tracking_slots = self.get_all_tracking_slots()
@@ -343,7 +354,6 @@ class Mapper(object):
                     "name": col,
                     "populated_from": col,
                 }
-
 
     def add_tracking_slots_to_schema(self, schema: SchemaView):
         """Add all tracking slots to all classes in the schema.
@@ -365,7 +375,6 @@ class Mapper(object):
                 name=slot, from_schema=schema.schema.id, range=rng
             )
 
-
     def get_all_tracking_slots(self) -> List[str]:
         """Get all the tracking slots, which are all the columns specified in TrackingSlots.
 
@@ -377,9 +386,10 @@ class Mapper(object):
             List[str]: List of all tracking slots.
         """
         return [
-            getattr(TrackingSlots, v) for v in vars(TrackingSlots) if not v.startswith("__")
+            getattr(TrackingSlots, v)
+            for v in vars(TrackingSlots)
+            if not v.startswith("__")
         ]
-
 
     def run_mapper(
         self,
@@ -430,7 +440,7 @@ class Mapper(object):
 
         # Run the mapper to get the mapped data
         # logger.info(f"Mapping data with mapper spec {mapper_file}")
-        trans_tic = datetime.now()
+        # trans_tic = datetime.now()
         session.set_object_transformer(mapper_spec)
         session.object_transformer.unrestricted_eval = unrestricted_eval
         mapped_data = session.transform(data)
@@ -491,7 +501,6 @@ class Mapper(object):
 
         return file_index, all_mapped_data
 
-
     def _run_mapper_with_kwargs(self, kwargs: Dict) -> Dict[str, List[Dict]]:
         """Call run_mapper with the specified kwargs as named parameters.
 
@@ -502,7 +511,6 @@ class Mapper(object):
             Dict[str, List[Dict]]: The result of running run_mapper.
         """
         return self.run_mapper(**kwargs)
-
 
     def make_data_splits(
         self, data: Dict[str, List], num_splits: int, min_split_size: int = 100
@@ -547,8 +555,9 @@ class Mapper(object):
             split_num += 1
         return data_splits
 
-
-    def sort_mapped_data(self, df: pd.DataFrame, *, drop_sorting_column: bool) -> pd.DataFrame:
+    def sort_mapped_data(
+        self, df: pd.DataFrame, *, drop_sorting_column: bool
+    ) -> pd.DataFrame:
         """Sort a mapped DataFrame using the sorting column that was injected into the DataFrame before mapping occurred, to
         maintain the original order of rows and to also ensure the order of the rows match the ordering in the mapping configuration
         file's wide map configuration.
@@ -639,7 +648,9 @@ class Mapper(object):
             self.add_tracking_slots_to_schema(target_schema)
 
         # Read all the data from disk.
-        data = self.load_and_parse_data(data_files=data_files, data_frames=data_frames, schema=source_schema)
+        data = self.load_and_parse_data(
+            data_files=data_files, data_frames=data_frames, schema=source_schema
+        )
 
         if len(data) == 0:
             logger.warning(
@@ -699,7 +710,9 @@ class Mapper(object):
             logging.info("Running without multiprocessing")
         else:
             logging.info(f"Running with {max_processes} processes")
-        self.run_mapper_progress = ProgressCounter({MAP_BARID:len(map_args)}, total_title="Mapping", multiple_bars=False)
+        self.run_mapper_progress = ProgressCounter(
+            {MAP_BARID: len(map_args)}, total_title="Mapping", multiple_bars=False
+        )
         self.run_mapper_progress.show_bar(MAP_BARID)
         with self.run_mapper_progress:
             if max_processes == 1:
@@ -757,9 +770,13 @@ class Mapper(object):
             for class_name, dfs in all_mapped_data.items():
                 # There is only one DataFrame per class (they got concatenated)
                 df = dfs[0]
-                output_data_file = os.path.join(data_output_dir, f"{class_name}[preid].csv")
+                output_data_file = os.path.join(
+                    data_output_dir, f"{class_name}[preid].csv"
+                )
                 if os.path.exists(output_data_file):
-                    raise ValueError(f"Output data file already exists: {output_data_file}")
+                    raise ValueError(
+                        f"Output data file already exists: {output_data_file}"
+                    )
                 logger.info(
                     f"Saving merged mapped data file for {class_name} ({len(all_df)} source frame(s), {len(df.index)} rows): {output_data_file}"
                 )
@@ -822,16 +839,16 @@ class Mapper(object):
             output_dir=cleaned_data_dir,
             max_rows=input_max_rows,
         )
-        
+
         # Add tracking columns
         for class_name, dfs in data_frames.items():
             files = orig_data_files[class_name]
             for file, df in zip(files, dfs):
                 self.add_tracking_columns(df, class_name, file)
-        
+
         # data_files = cleaned_data_files
         # data_frames = None
-        
+
         # Map the cleaned data
         mapped_data_dir = self.temp_dir / "mapped_data"
         clear_dirs([mapped_data_dir])
@@ -839,7 +856,7 @@ class Mapper(object):
             source_schema_file=self.module_config.source_schema,
             target_schema_file=self.module_config.target_schema,
             mapper_dir=self.module_config.mapper_dir,
-            data_files=None, #data_files,
+            data_files=None,  # data_files,
             data_frames=data_frames,
             data_output_dir=mapped_data_dir,
             filter_config_file=self.module_config.filters,
@@ -850,7 +867,7 @@ class Mapper(object):
         id_output_dir = output_dir
         clear_dirs([id_output_dir])
         gen = IDGenerator(
-            data_files=None, #data_files,
+            data_files=None,  # data_files,
             data_frames=data_frames,
             config_file=self.module_config.id_config,
             id_code_file=self.module_config.id_code,
@@ -872,6 +889,7 @@ class Mapper(object):
         logger.info(f"Total runtime: {datetime.now() - tic}")
 
         return data_files
+
 
 if __name__ == "__main__":
     if "get_ipython" in globals():
@@ -963,12 +981,12 @@ if __name__ == "__main__":
     tic = datetime.now()
 
     data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
-    
+
     mapper = Mapper(
         module=opts.module,
         module_dir=opts.module_dir,
         id_debug=opts.id_debug,
-        multi_bar_progress="get_ipython" not in globals()        
+        multi_bar_progress="get_ipython" not in globals(),
     )
     mapper.full_map(
         data_files=data_files,

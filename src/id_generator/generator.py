@@ -87,7 +87,7 @@ class IDGenerator(object):
 
         Args:
             data_files (Dict[str, List[Union[str, Path]]]): All input data files to load for adding IDs to (in addition to the DataFrames in
-                data_frames). The keys are the class name and the values are lists of files belonging to that class. These can be CSV, TSV, 
+                data_frames). The keys are the class name and the values are lists of files belonging to that class. These can be CSV, TSV,
                 TXT, YAML, or YML files.
             data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
                 and the values are lists of DataFrames belonging to the class.
@@ -129,12 +129,16 @@ class IDGenerator(object):
         self.interpreter = Interpreter(usersyms=self.bindings)
         self.interpreter_clean_symtable = self.interpreter.symtable.copy()
 
-    def load_all(self, data_files: Dict[str, List[Union[str, Path]]], data_frames: Dict[str, List[pd.DataFrame]]):
+    def load_all(
+        self,
+        data_files: Dict[str, List[Union[str, Path]]],
+        data_frames: Dict[str, List[pd.DataFrame]],
+    ):
         """Load all data from disk and create a GeneratorData object for all the data.
 
         Args:
             data_files (Dict[str, List[Union[str, Path]]]): All input data files to load for adding IDs to (in addition to the DataFrames in
-                data_frames). The keys are the class name and the values are lists of files belonging to that class. These can be CSV, TSV, 
+                data_frames). The keys are the class name and the values are lists of files belonging to that class. These can be CSV, TSV,
                 TXT, YAML, or YML files.
             data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
                 and the values are lists of DataFrames belonging to the class.
@@ -828,7 +832,7 @@ class IDGenerator(object):
 
         if isna(v):
             v = ""
-        
+
         # IDs must be strings. Numbers like "1.0" will be loaded as an integer by Excel and possibly
         # other tools, so is indistinguishable from "1". To avoid this, get rid of the ".0" if it exists
         try:
@@ -839,7 +843,7 @@ class IDGenerator(object):
                     v = f"{int(f)}"
         except Exception:
             pass
-                
+
         # During calculation of the value above, it's possible that we recursed into calculating
         # other IDs, which eventually led to calculating of the current ID (for class_name, slot, and
         # row_index). If that occurs, then we can stop here.

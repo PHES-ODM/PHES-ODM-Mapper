@@ -219,7 +219,7 @@ class DataCleaner(object):
             input_file,
             nrows=None if RANDOM_SAMPLE_DATA else (max_rows if max_rows else None),
             keep_default_na=False,
-            na_values=None, #[""],
+            na_values=None,  # [""],
         )
 
         if RANDOM_SAMPLE_DATA and max_rows and len(df) > max_rows:
@@ -247,7 +247,7 @@ class DataCleaner(object):
         to the specified output directory, ensuring that all output files names are unique and no existing
         file in output_dir is modified.
 
-        Cleaning involves changing the format of dates, making sure columns are capitalized correctly, and 
+        Cleaning involves changing the format of dates, making sure columns are capitalized correctly, and
         making sure enumerations are capitalized correctly.
 
         Args:
@@ -266,7 +266,7 @@ class DataCleaner(object):
                 cleaned_data_files: Dictionary of all outputed cleaned data files. The keys are the class name
                     the file belongs to and the values are lists of files. This is the same as the parameter
                     data_files, but with the lists of files being a list of the cleaned files (in the same
-                    order as found in the input parameter). If output_dir is None then data_files will be 
+                    order as found in the input parameter). If output_dir is None then data_files will be
                     None (ie. no data saved to disk), instead see data_frames.
                 cleaned_data_frames: Dictionary of all cleaned DataFrames. The keys are the class names and the
                     values are lists of cleaned DataFrames. The lists are in the same order as found
@@ -295,7 +295,9 @@ class DataCleaner(object):
                     class_name=class_name,
                     max_rows=max_rows,
                 )
-                output_data_files[class_name].append(Path(output_file) if output_file else None)
+                output_data_files[class_name].append(
+                    Path(output_file) if output_file else None
+                )
                 output_data_frames[class_name].append(output_data_frame)
 
         return output_data_files, output_data_frames
@@ -303,7 +305,7 @@ class DataCleaner(object):
 
 if __name__ == "__main__":
     if "get_ipython" in globals():
-
+        # fmt: off
         class opts:
             # input_data_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
             # input_data_files = None
@@ -316,6 +318,7 @@ if __name__ == "__main__":
             output_dir = "../../gen/nwss_reporting_to_v2-test/cleaned_data"
             max_rows = 100
             schema = "../../data/modules/nwss_reporting_to_v2/schemas/nwss_reporting.yaml"
+        # fmt: on
     else:
         args = argparse.ArgumentParser(
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -361,5 +364,5 @@ if __name__ == "__main__":
         output_dir=opts.output_dir,
         max_rows=opts.max_rows,
     )
-    
+
     logger.info("Finished!")
