@@ -27,9 +27,10 @@ from utils.general_utils import (
     read_data_frame,
     get_logger,
     clear_dirs,
+    merge_dicts_of_lists,
 )
 from utils.tracking_slots import TrackingSlots
-from utils.cli_utils import get_input_data_files, merge_input_data_files
+from utils.cli_utils import get_input_data_files
 from utils.progress_counter import ProgressCounter, EmptyCounter
 from id_generator.id_function_bindings import FunctionBindings
 from id_generator.id_data_bindings import DataBindings
@@ -76,6 +77,7 @@ class IDGenerator(object):
     def __init__(
         self,
         data_files: Dict[str, List[Union[str, Path]]],
+        data_frames: Dict[str, List[pd.DataFrame]],
         config_file: str,
         id_code_file: str,
         id_code_sheet: str = None,
@@ -84,8 +86,11 @@ class IDGenerator(object):
         """Constructor for IDGenerator.
 
         Args:
-            data_files (Dict[str, List[Union[str, Path]]]): All input data files to load for adding IDs to. The keys are the class name and the
-                values are lists of files belonging to that class. These can be CSV, TSV, TXT, YAML, or YML files.
+            data_files (Dict[str, List[Union[str, Path]]]): All input data files to load for adding IDs to (in addition to the DataFrames in
+                data_frames). The keys are the class name and the values are lists of files belonging to that class. These can be CSV, TSV, 
+                TXT, YAML, or YML files.
+            data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
+                and the values are lists of DataFrames belonging to the class.
             config_file (str): The configuration file.
             id_code_file (str): The tabular file containing the ID generation code for each class/slot that represents
                 an ID to be generated. Can be an XLSX, CSV, TSV, TXT, YAML, or YML file. If an Excel file then
@@ -112,7 +117,7 @@ class IDGenerator(object):
         self.prepare_id_code(id_code_file, id_code_sheet)
 
         # Load all data from disk
-        self.load_all(data_files)
+        self.load_all(data_files=data_files, data_frames=data_frames)
 
         # Prepare the config linkage paths (by cleaning them)
         self.prepare_config_linkage_paths()
@@ -124,22 +129,26 @@ class IDGenerator(object):
         self.interpreter = Interpreter(usersyms=self.bindings)
         self.interpreter_clean_symtable = self.interpreter.symtable.copy()
 
-    def load_all(self, data_files: Dict[str, List[Union[str, Path]]]):
+    def load_all(self, data_files: Dict[str, List[Union[str, Path]]], data_frames: Dict[str, List[pd.DataFrame]]):
         """Load all data from disk and create a GeneratorData object for all the data.
 
         Args:
-            data_files (Dict[str, List[Union[str, Path]]]): All data files to load for adding IDs to.
-                Keys are the class names and values are lists of files belonging to the class.
+            data_files (Dict[str, List[Union[str, Path]]]): All input data files to load for adding IDs to (in addition to the DataFrames in
+                data_frames). The keys are the class name and the values are lists of files belonging to that class. These can be CSV, TSV, 
+                TXT, YAML, or YML files.
+            data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
+                and the values are lists of DataFrames belonging to the class.
         """
         self.data: Dict[str, GeneratorData] = {}
         generated_slots = self.get_all_generated_slots_from_id_code()
         star_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get("*", [])
-        for class_name, files in data_files.items():
+        all_data = merge_dicts_of_lists([data_files, data_frames])
+        for class_name, cur_data in all_data.items():
             class_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get(class_name, [])
             lookup_slots = list(set(class_lookup_slots + star_lookup_slots))
             self.data[class_name] = GeneratorData(
                 class_name,
-                files,
+                cur_data,
                 lookup_slots=lookup_slots,
                 generated_slots=generated_slots.get(class_name, []),
                 primary_key=self.get_primary_key_from_config(class_name),
@@ -369,7 +378,7 @@ class IDGenerator(object):
             self.progress = ProgressCounter(
                 bar_totals,
                 multiple_bars=self.multi_bar_progress,
-                install_output_hooks=self.multi_bar_progress,
+                install_output_hooks=True,
             )
             progress = self.progress
         else:
@@ -819,7 +828,18 @@ class IDGenerator(object):
 
         if isna(v):
             v = ""
-
+        
+        # IDs must be strings. Numbers like "1.0" will be loaded as an integer by Excel and possibly
+        # other tools, so is indistinguishable from "1". To avoid this, get rid of the ".0" if it exists
+        try:
+            # It's alright for numbers that have a "_" in it (which is allowed in Python)
+            if isinstance(v, str) and "." in v and "_" not in v:
+                f = float(v)
+                if f == int(f):
+                    v = f"{int(f)}"
+        except Exception:
+            pass
+                
         # During calculation of the value above, it's possible that we recursed into calculating
         # other IDs, which eventually led to calculating of the current ID (for class_name, slot, and
         # row_index). If that occurs, then we can stop here.
@@ -900,7 +920,7 @@ class IDGenerator(object):
             total_rows += cur_total_rows
             total_rows_minus_dropped_rows += cur_total_rows_minus_dropped_rows
             total_dropped_rows += cur_total_dropped_rows
-            output_data_files = merge_input_data_files(
+            output_data_files = merge_dicts_of_lists(
                 [output_data_files, cur_output_data_files]
             )
 
@@ -924,9 +944,9 @@ if __name__ == "__main__":
             # config_file = "../../data/modules/test/ids.yaml"
             
             # NWSS to ODM v2
-            input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
+            input_data_dir = "../../gen/nwss_reporting_to_v2/temp-test/mapped_data"
             input_data_files = None
-            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids"
+            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids-test"
             id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
             id_code_sheet = "id_code"
             config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
@@ -991,10 +1011,11 @@ if __name__ == "__main__":
 
     clear_dirs([opts.output_dir])
     gen = IDGenerator(
-        data_files,
-        opts.config_file,
-        opts.id_code_file,
-        opts.id_code_sheet,
+        data_files=data_files,
+        data_frames=None,
+        config_file=opts.config_file,
+        id_code_file=opts.id_code_file,
+        id_code_sheet=opts.id_code_sheet,
         multi_bar_progress="get_ipython" not in globals(),
     )
     gen.make_all_ids()
