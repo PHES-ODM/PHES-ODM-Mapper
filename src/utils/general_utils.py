@@ -319,3 +319,28 @@ def get_unique_output_file(file: Union[str, Path]) -> Path:
         file = f"%s[{idx:03d}]%s" % os.path.splitext(orig_file)
         idx += 1
     return Path(file)
+
+
+def merge_dicts_of_lists(
+    dicts: List[Dict[Any, List]],
+) -> Dict[Any, List[Any]]:
+    """Combine multiple Dictionaries where the values are lists. When multiple dictionaries
+    have the same keys, their lists are combined.
+
+    Args:
+        dicts (List[Dict[Any, List]]): List of all dictionaries to merge. If multiple dictionaries
+            have the same key, then the lists for those keys are combined to include all values.
+
+    Returns:
+        Dict[Any, List[Any]]: Dictionary where the keys are the keys found in the source dicitionaries
+            and the values are lists containing all values found in the source dictionary.
+    """
+    d = {}
+    for cur_dict in dicts:
+        if cur_dict is None:
+            continue
+        for k, v in cur_dict.items():
+            if k not in d:
+                d[k] = []
+            d[k].extend(v)
+    return d

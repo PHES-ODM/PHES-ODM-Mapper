@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from typing import Dict, List, Union, Optional
 from pathlib import Path
-from utils.general_utils import get_class_name_from_file_name
+from utils.general_utils import get_class_name_from_file_name, merge_dicts_of_lists
 
 
 def parse_input_data_files_cli_args(cli_args: List[str]) -> Dict[str, List[Path]]:
@@ -92,35 +92,8 @@ def get_input_data_files(
     d = {}
     if cli_args is not None:
         cli_d = parse_input_data_files_cli_args(cli_args)
-        d = merge_input_data_files([d, cli_d])
+        d = merge_dicts_of_lists([d, cli_d])
     if dir is not None:
         dir_d = get_input_data_files_from_dir(dir)
-        d = merge_input_data_files([d, dir_d])
-    return d
-
-
-def merge_input_data_files(
-    data_files: List[Dict[str, List[Path]]],
-) -> Dict[str, List[Path]]:
-    """Combine multiple input data files dictionaries (created by parse_input_data_files_cli_args
-    and/or get_input_data_files_from_dir) into a single dictionary.
-
-    Args:
-        data_files (List[Dict[str, List[Path]]]): List of all input data files dictionaries. Each
-            dictionary has keys that are class names and values that are lists of files for the
-            class. If multiple dictionaries have the same key, then the lists for those keys
-            are combined to include all values.
-
-    Returns:
-        Dict[str, List[Path]]: Dictionary where the keys are class names (they might not be valid
-            class names, so should be checked by callers) and the values are lists of files representing
-            data for those classes. The lists of files include all files found in the original
-            data_files.
-    """
-    d = {}
-    for cur_data_files in data_files:
-        for k, v in cur_data_files.items():
-            if k not in d:
-                d[k] = []
-            d[k].extend(v)
+        d = merge_dicts_of_lists([d, dir_d])
     return d
