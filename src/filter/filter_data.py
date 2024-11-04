@@ -104,7 +104,7 @@ class DataFilter(object):
                 else:
                     data[class_name] = pd.concat(
                         [data[class_name], df], ignore_index=True
-                    ).reset_index(drop=True)
+                    )
 
         for df in data.values():
             parse_df_values(df, inline=True)
