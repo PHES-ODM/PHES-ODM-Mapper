@@ -59,6 +59,8 @@ from utils.progress_counter import ProgressCounter
 
 logger = get_logger(__name__)
 
+SAVE_INTERMEDIATE_TO_DISK = True
+
 # During mapping several DataFrames are created, and there may be multiple DataFrames for a single class.
 # If SAVE_UNMERGED_DATA is True (and a data_output_dir is specified) then we save these DataFrames to disk as separate files.
 # If SAVE_UNMERGED_DATA is False then we do not save this data to disk.
@@ -735,7 +737,7 @@ class Mapper(object):
 
         # Combine the DataFrames in all_mapped_data
         for target_type, all_df in all_mapped_data.items():
-            df = pd.concat(all_df, axis=0)
+            df = pd.concat(all_df, ignore_index=True, axis=0)
             # Retain the original order by sorting by the TrackingSlots.
             df = self.sort_mapped_data(df, drop_sorting_column=False)
             all_mapped_data[target_type] = [df]
@@ -748,8 +750,7 @@ class Mapper(object):
             data_filter = DataFilter(filter_config_file)
             filtered_mapped_data = {}
             for target_type, dfs in all_mapped_data.items():
-                # There is only one DataFrame per class (they got concatenated)
-                df = dfs[0]
+                df = pd.concat(dfs, ignore_index=True, axis=0)
                 data = {target_type: df}
                 data, _ = data_filter.run_filter(data=data)
                 for target_class, target_df in data.items():
@@ -758,7 +759,7 @@ class Mapper(object):
                     filtered_mapped_data[target_class].append(target_df)
             # Combine the DataFrames in filtered_mapped_data
             for target_class, all_df in filtered_mapped_data.items():
-                df = pd.concat(all_df, axis=0).reset_index(drop=True)
+                df = pd.concat(all_df, ignore_index=True, axis=0)
                 filtered_mapped_data[target_class] = [df]
             all_mapped_data = filtered_mapped_data
             logger.info(f"Total time for filtering: {datetime.now() - filter_tic}")
@@ -768,8 +769,7 @@ class Mapper(object):
         if data_output_dir is not None:
             save_tic = datetime.now()
             for class_name, dfs in all_mapped_data.items():
-                # There is only one DataFrame per class (they got concatenated)
-                df = dfs[0]
+                df = pd.concat(dfs, ignore_index=True, axis=0)
                 output_data_file = os.path.join(
                     data_output_dir, f"{class_name}[preid].csv"
                 )
@@ -836,7 +836,7 @@ class Mapper(object):
         orig_data_files = data_files
         data_files, data_frames = cleaner.clean_data_files(
             data_files,
-            output_dir=cleaned_data_dir,
+            output_dir=cleaned_data_dir if SAVE_INTERMEDIATE_TO_DISK else None,
             max_rows=input_max_rows,
         )
 
@@ -845,9 +845,6 @@ class Mapper(object):
             files = orig_data_files[class_name]
             for file, df in zip(files, dfs):
                 self.add_tracking_columns(df, class_name, file)
-
-        # data_files = cleaned_data_files
-        # data_frames = None
 
         # Map the cleaned data
         mapped_data_dir = self.temp_dir / "mapped_data"
@@ -858,7 +855,7 @@ class Mapper(object):
             mapper_dir=self.module_config.mapper_dir,
             data_files=None,  # data_files,
             data_frames=data_frames,
-            data_output_dir=mapped_data_dir,
+            data_output_dir=mapped_data_dir if SAVE_INTERMEDIATE_TO_DISK else None,
             filter_config_file=self.module_config.filters,
             max_processes=max_processes,
         )
