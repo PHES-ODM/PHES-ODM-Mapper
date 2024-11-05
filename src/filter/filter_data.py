@@ -29,7 +29,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from typing import Union, Dict, List, Optional, Tuple
+from typing import Union, Dict, List, Tuple
 import yaml
 import pandas as pd
 import argparse
@@ -73,17 +73,13 @@ class DataFilter(object):
         ].map(yaml.safe_load)
 
     def load_data(
-        self,
-        data_files: Dict[str, Union[Path, str]],
-        recognized_classes: Optional[List[str]] = None,
+        self, data_files: Dict[str, Union[Path, str]]
     ) -> Dict[str, pd.DataFrame]:
         """Load all data specified in data_files.
 
         Args:
             data_files (Dict[str, Union[Path, str]]): All data files to load. The keys are the class names
                 and the values are list of data files to load belonging to the class.
-            recognized_classes (Optional[List[str]], optional): If specified, then only load data files for
-                classes in this list. The class for a data file is the file name (excluding the extension).
 
         Returns:
             Dict[str, pd.DataFrame]: Dictionary where the keys are the class names and the values are
@@ -92,9 +88,6 @@ class DataFilter(object):
         data = {}
         for class_name, files in data_files.items():
             for file in files:
-                if recognized_classes and class_name not in recognized_classes:
-                    continue
-
                 logger.info(f"Loading data from {file} (class='{class_name}')")
 
                 # Load the data and append to any existing data for the class
@@ -169,10 +162,7 @@ class DataFilter(object):
 
         # If no data is provided, then load the data from data_dir
         if data is None:
-            data = self.load_data(
-                data_files,
-                # recognized_classes=list(self.config_df[FilterConfigColumns.CLASS].unique()),
-            )
+            data = self.load_data(data_files)
         else:
             # Make a shallow copy of the dictionary, since we might be changing it. We return the copy.
             data = data.copy()
