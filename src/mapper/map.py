@@ -880,8 +880,8 @@ class Mapper(object):
 
         # Save intermediate mapped and filtered (without ID generation) data to disk
         mapped_data_dir = self.temp_dir / "mapped_data"
-        clear_dirs([mapped_data_dir])
         if SAVE_INTERMEDIATE_TO_DISK and mapped_data_dir:
+            clear_dirs([mapped_data_dir])
             data_files = self.save_data(
                 data_frames=data_frames,
                 output_dir=mapped_data_dir,
