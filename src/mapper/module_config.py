@@ -13,6 +13,7 @@ module.target_schema    # Path to the target schema
 module.mapper_dir       # Directory containing the LinkML-Map schema files
 module.filters          # CSV or TSV file with the filtering rules
 module.id_code          # File containing the ID generation code
+module.id_code_sheet    # If id_code is an Excel file, then the name of the sheet to use, or None for the first sheet.
 module.id_config        # Configuration for ID generation
 ```
 """
@@ -56,6 +57,7 @@ class ModuleConfig(object):
 
         # IDs
         self.id_code = self._get_config_file("id_code")
+        self.id_code_sheet = self.config.get("id_code_sheet", None)
         self.id_config = self._get_config_file("id_config")
 
         logger.info(f"Module source schema: {self.source_schema}")
@@ -63,6 +65,7 @@ class ModuleConfig(object):
         logger.info(f"Module mapper directory: {self.mapper_dir}")
         logger.info(f"Module filters file: {self.filters}")
         logger.info(f"Module ID code file: {self.id_code}")
+        logger.info(f"Module ID code sheet: {self.id_code_sheet}")
         logger.info(f"Module ID config file: {self.id_config}")
 
     def _get_config_file(

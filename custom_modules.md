@@ -26,6 +26,7 @@ target_schema: schemas/odm_v2.yaml
 mappers: mappers
 filters: filters/nwss_reporting_to_v2_filters.csv
 id_code: ids/nwss_reporting_to_v2_id_code.xlsx
+id_code_sheet: id_code
 id_config: ids/nwss_reporting_to_v2_id_config.yaml
 ```
 
@@ -39,6 +40,7 @@ Some of these fields can be left blank. See below for a description of all field
 | mappers       | Yes      | Directory containing all the LinkML-Map schemas to perform the mapping (see [LinkML-Map Mappers](#linkml-map-mappers) below). |
 | filters       | No       | Filter configuration file specifying how to filter the data after mapping is performed, but before the ID generation step (See [Filters](#filters) below). |
 | id_code       | No       | Configuration/code for generating IDs after the initial mapping and filtering is performed (See [ID Generator](#id-generator) below). |
+| id_code_sheet | No       | If `id_code` is an Excel file, then this is the name of the sheet to use. If missing or `None` then the first sheet is used. (See [ID Generator](#id-generator) below). |
 | id_config     | No       | Additional configuration file for ID generation (See [ID Generator](#id-generator) below). |
 
 ## Source and Target Schemas
