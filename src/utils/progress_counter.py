@@ -74,7 +74,11 @@ class HookWriter(object):
             # For StreamHandlers (ie. a handler for logging), replace the stream with ourself
             # so we can intercept all output to modify it.
             self.output_stream = stream.stream
-            self.stream.setStream(self)
+            try:
+                self.stream.setStream(self)
+            except Exception:
+                # logging.error(f"Could not set HookWriter for stream {self.stream}")
+                pass
         else:
             # For non-StreamHandlers (eg. stdout and stderr), just save the stream, we will
             # write our modified output to it.
@@ -209,9 +213,7 @@ class SingleBar(object):
 
 
 class BaseCounter(ABC):
-    def __init__(self, *args, **kwargs):
-        args, kwargs
-        pass
+    def __init__(self, *args, **kwargs): ...
 
     @abstractmethod
     def __enter__(self): ...
@@ -543,9 +545,24 @@ if __name__ == "__main__":
 
     bar_totals = {
         "measures": 5000,
-        "protocols": 10000,
+        "instruments": 200,
+        "organizations": 500,
+        "polygons": 100,
+        "protocolSteps": 250,
+        "protocols": 1000,
+        "qualityReports": 800,
         "samples": 500,
+        "sites": 250,
     }
+    for key in bar_totals.keys():
+        bar_totals[key] *= 100
+
+    logging.basicConfig(
+        handlers=[logging.StreamHandler(sys.stdout)],
+        format="%(levelname)s %(asctime)s %(filename)s:%(lineno)d: %(message)s",
+        level=logging.INFO,
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
     is_ipython = "get_ipython" in globals()
     progress = ProgressCounter(
@@ -568,13 +585,15 @@ if __name__ == "__main__":
         #         print("Progress:", progress.get_progress_report())
         #     time.sleep(0.0005)
 
+        import random
+
         for current_bar, current_total in bar_totals.items():
             progress.show_bar(
                 current_bar
             )  # Only has an effect if multiple_bars is False
             for i in range(current_total):
-                if i % 1000 == 0:
+                if random.randint(0, 10000) == 1:
                     print("Progress:", progress.get_progress_report())
                 progress.update(current_bar, 1)
                 time.sleep(0.0001)
-    print("Final Progress:", progress.get_progress_report())
+    print(f"Final Progress: {progress.get_progress_report()}")
