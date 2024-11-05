@@ -38,7 +38,6 @@ import argparse
 from linkml_map.session import Session
 
 from linkml_runtime import SchemaView
-from linkml_runtime.linkml_model import SlotDefinition
 
 from mapper.module_config import ModuleConfig
 from utils.general_utils import (
@@ -50,7 +49,13 @@ from utils.general_utils import (
     clear_dirs,
     merge_dicts_of_lists,
 )
-from utils.tracking_slots import TrackingSlots, TrackingSlotsTypes
+from utils.tracking_slots import (
+    TrackingSlots,
+    add_tracking_columns,
+    get_all_tracking_slots,
+    load_schema_with_tracking_slots,
+    add_tracking_slots_derivations,
+)
 from filter import DataFilter
 from cleaner import DataCleaner
 from id_generator import IDGenerator
@@ -61,15 +66,9 @@ logger = get_logger(__name__)
 
 SAVE_INTERMEDIATE_TO_DISK = True
 
-# During mapping several DataFrames are created, and there may be multiple DataFrames for a single class.
-# If SAVE_UNMERGED_DATA is True (and a data_output_dir is specified) then we save these DataFrames to disk as separate files.
-# If SAVE_UNMERGED_DATA is False then we do not save this data to disk.
-# In all cases (if a data_output_dir is specified), once all mapping is complete, we merge these DataFrames into single DataFrames
-# for each class, and then save them to disk. Typically, we do not need the unmerged data as it gets saved at the end as the merged data.
-# This is mainly for debugging purposes, and should typically be set to False if not debugging.
-SAVE_UNMERGED_DATA = False
-
 MAP_BARID = "Mapper"
+
+RANDOM_SAMPLE_DATA = False
 
 # Change the logging level of the Transformer. For very large datasets we will get way too many WARNINGs in
 # the output.
@@ -82,16 +81,77 @@ for logger_name in [
     trlogger.setLevel("ERROR")
 
 
+def run_mapper(
+    data: Dict[str, List],
+    mapper_file: Union[str, Path],
+    source_schema: SchemaView,
+    target_schema: SchemaView,
+    source_schema_file: str,
+    target_schema_file: str,
+    file_index: Optional[int] = None,
+    unrestricted_eval: bool = False,
+) -> Dict[str, List[Dict]]:
+    """Run the mapper on the specified data using the specified mapper YAML file and save the
+    results to disk.
+
+    Args:
+        data (Dict): The input data to map. The keys specify the table/class names and the values are the rows of
+            the tables. The rows are dictionaries.
+        session (Session): The linkml_map.session.Session object to use for running the mapper.
+        data_output_dir (Union[str, Path]): Directory to save the output to. The outputs are CSV files
+            with a name based on the mapper_file name.
+        mapper_file (Union[str, Path]): The mapper config (YAML) file for the mapper to use.
+        source_schema (SchemaView): The SchemaView of the source schema.
+        target_schema (SchemaView): The SchemaView of the target schema.
+        file_index (Optional[int]): Optional file index to add to the output file name. It's just an extra number
+            so that we can differentiate between different runs of the mapper when using the same
+            mapper_file. It is required if we run the mapper more than once with the same
+            mapper_file, as it ensures that the filename of the output is different for each run
+            (assuming we properly use unique file_index values for each run).
+        unrestricted_eval (Optional[bool]): If True then run expr code in slot derivations in unrestricted mode
+            (ie. allow any Python code to execute).
+        filter_config_file (Optional[Union[str, Path]], optional): The filter configuration file, to filter the
+            final transformed data (eg. remove rows that should be ignored due to missing data). Defaults to None.
+
+    Returns:
+        Dict[str, List[Dict]]: The mapped data, where the keys are the output class names and the
+            values are the rows. The rows are dictionaries.
+    """
+    if source_schema is None:
+        source_schema = load_schema_with_tracking_slots(source_schema_file)
+    if target_schema is None and target_schema_file:
+        target_schema = load_schema_with_tracking_slots(target_schema_file)
+
+    session = Session()
+    session.set_source_schema(source_schema)
+
+    # Load the mapper spec
+    with open(mapper_file, "r") as f:
+        mapper_spec = yaml.safe_load(f)
+
+    # Add all tracking slot derivations. This will copy all slots found in TrackingSlots, such as the source
+    # class and source row number that the output row was derived from. These slots can be used for sorting
+    # and other downstream operations such as ID generation.
+    add_tracking_slots_derivations(mapper_spec, target_schema)
+
+    # Run the mapper to get the mapped data
+    # logger.info(f"Mapping data with mapper spec {mapper_file}")
+    # trans_tic = datetime.now()
+    session.set_object_transformer(mapper_spec)
+    session.object_transformer.unrestricted_eval = unrestricted_eval
+    mapped_data = session.transform(data)
+    # logger.info(
+    #     f"Mapped in {datetime.now() - trans_tic} (for mapper spec {mapper_file})"
+    # )
+
+    return file_index, mapped_data
+
+
 class Mapper(object):
     def __init__(
         self,
         module: str,
         module_dir: str,
-        # data_files: Dict[str, List[Union[str, Path]]],
-        # output_dir: str,
-        # temp_dir: Union[str, Path] = None,
-        # input_max_rows: int = None,
-        # max_processes: int = 1,
         id_debug: bool = False,
         multi_bar_progress: bool = True,
     ):
@@ -121,34 +181,6 @@ class Mapper(object):
         )
         self.module_config = ModuleConfig(module_dir)
 
-    def add_tracking_columns(
-        self, df: pd.DataFrame, class_name: str, file: Union[str, Path]
-    ):
-        # Add the tracking columns (eg. source class and source row), which are used for sorting
-        # and other downstream operations such as ID generation.
-        # First make sure the tracking columns don't already exist (this would be due to a name
-        # conflict, where the source data already has columns with the same name as a tracking
-        # column)
-        existing_tracking_slots = set(df.columns).intersection(
-            self.get_all_tracking_slots()
-        )
-        if len(existing_tracking_slots) > 0:
-            raise ValueError(
-                f"Loaded data already has one or more columns with the same name as a tracking column: {existing_tracking_slots}"
-            )
-        df[TrackingSlots.SOURCE_ROW] = df.index
-        df[TrackingSlots.SOURCE_CLASS] = class_name
-        df[TrackingSlots.SOURCE_FILE] = str(file)
-        # We zero-pad the source row number in the SOURCE_FILE_AND_ROW string. This is to ensure if we sort
-        # by SOURCE_FILE_AND_ROW the row number will be in the proper order
-        # eg. Sorting the strings "2" and "10" will result in the incorrect order ["10", "2"], but sorting the strings
-        # "02" and "10" will result in the correct order ["02", "10"].
-        max_row_digits = len(str(df[TrackingSlots.SOURCE_ROW].max()))
-        df[TrackingSlots.SOURCE_FILE_AND_ROW] = df.apply(
-            lambda x: f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]:0{max_row_digits}d}",
-            axis=1,
-        )
-
     def load_and_parse_data(
         self,
         data_files: Dict[str, List[Union[str, Path]]],
@@ -163,7 +195,7 @@ class Mapper(object):
                 source class name and values are lists of files that belong to the class.
             data_frames (Dict[str, List[pd.DataFrame]]): A DataFrames to parse. Keys are the source class
                 name and values are lists of DataFrames that belong to the class. The tracking columns
-                should have already been added by calling self.add_tracking_columns on each DataFrame.
+                should have already been added by calling add_tracking_columns on each DataFrame.
             schema (Union[str, SchemaView]): The schema that the data should conform to. We will only use
                 DataFrames of a recognized class and cast all values to the correct type.
 
@@ -202,7 +234,7 @@ class Mapper(object):
 
                 # Make sure all columns exist (except for TrackingSlots, which we add later)
                 class_definition = schema.induced_class(class_name)
-                all_tracking_slots = self.get_all_tracking_slots()
+                all_tracking_slots = get_all_tracking_slots()
                 missing_slots = [
                     s
                     for s in class_definition.attributes
@@ -217,7 +249,7 @@ class Mapper(object):
                 df = df[recognized_slots]
 
                 if file is not None:
-                    self.add_tracking_columns(df, class_name, file)
+                    add_tracking_columns(df, class_name, file)
 
                 # Reorient the data to a format recognized by the mapper (an array of rows, where
                 # each row is a dictionary of the form {column_name:value, ...})
@@ -330,126 +362,9 @@ class Mapper(object):
                     )
         return cast_functions
 
-    def add_tracking_slots_derivations(self, spec: Dict, target_schema: SchemaView):
-        """Add slot derivations for all class derivations in the mapper spec to copy over the tracking columns
-        (from TrackingSlots) to the output. The tracking slots include the source class and source row number
-        that mapped data was mapped from. It helps with sorting the output and other down-stream operations
-        (eg. might be used when generating IDs that depend on which source class the row originated from)
-
-        Args:
-            spec (Dict): The mapper spec to add a row number slot derivation to all classes.
-            target_schema (SchemaView): The LinkML schema for the target database that the spec maps onto.
-        """
-        tree_root = [
-            c
-            for c in target_schema.all_classes()
-            if target_schema.get_class(c).tree_root
-        ][0]
-
-        all_tracking_slots = self.get_all_tracking_slots()
-        for class_name, class_derivation in spec["class_derivations"].items():
-            if class_name == tree_root:
-                continue
-
-            for col in all_tracking_slots:
-                class_derivation["slot_derivations"][col] = {
-                    "name": col,
-                    "populated_from": col,
-                }
-
-    def add_tracking_slots_to_schema(self, schema: SchemaView):
-        """Add all tracking slots to all classes in the schema.
-
-        Tracking slots include the source row number and class name of a row. These get copied over
-        to the mapped data so we know which class and row and output row was derived from. It can
-        be used for sorting and other downstream operations, such as for ID generation.
-
-        Args:
-            schema (SchemaView): The schema to add the tracking slots to (for all classes).
-        """
-        all_tracking_slots = self.get_all_tracking_slots()
-        for slot_definition in schema.schema.classes.values():
-            slot_definition.slots.extend(all_tracking_slots)
-
-        for slot in all_tracking_slots:
-            rng = TrackingSlotsTypes.get(slot, "string")
-            schema.schema.slots[slot] = SlotDefinition(
-                name=slot, from_schema=schema.schema.id, range=rng
-            )
-
-    def get_all_tracking_slots(self) -> List[str]:
-        """Get all the tracking slots, which are all the columns specified in TrackingSlots.
-
-        Tracking slots include the source row number and class name of a row. These get copied over
-        to the mapped data so we know which class and row and output row was derived from. It can
-        be used for sorting and other downstream operations, such as for ID generation.
-
-        Returns:
-            List[str]: List of all tracking slots.
-        """
-        return [
-            getattr(TrackingSlots, v)
-            for v in vars(TrackingSlots)
-            if not v.startswith("__")
-        ]
-
-    def run_mapper(
-        self,
-        data: Dict[str, List],
-        session: Session,
-        data_output_dir: Union[str, Path],
-        mapper_file: Union[str, Path],
-        source_schema: SchemaView,
-        target_schema: SchemaView,
-        file_index: Optional[int] = None,
-        unrestricted_eval: bool = False,
-        filter_config_file: Optional[Union[str, Path]] = None,
-    ) -> Dict[str, List[Dict]]:
-        """Run the mapper on the specified data using the specified mapper YAML file and save the
-        results to disk.
-
-        Args:
-            data (Dict): The input data to map. The keys specify the table/class names and the values are the rows of
-                the tables. The rows are dictionaries.
-            session (Session): The linkml_map.session.Session object to use for running the mapper.
-            data_output_dir (Union[str, Path]): Directory to save the output to. The outputs are CSV files
-                with a name based on the mapper_file name.
-            mapper_file (Union[str, Path]): The mapper config (YAML) file for the mapper to use.
-            source_schema (SchemaView): The SchemaView of the source schema.
-            target_schema (SchemaView): The SchemaView of the target schema.
-            file_index (Optional[int]): Optional file index to add to the output file name. It's just an extra number
-                so that we can differentiate between different runs of the mapper when using the same
-                mapper_file. It is required if we run the mapper more than once with the same
-                mapper_file, as it ensures that the filename of the output is different for each run
-                (assuming we properly use unique file_index values for each run).
-            unrestricted_eval (Optional[bool]): If True then run expr code in slot derivations in unrestricted mode
-                (ie. allow any Python code to execute).
-            filter_config_file (Optional[Union[str, Path]], optional): The filter configuration file, to filter the
-                final transformed data (eg. remove rows that should be ignored due to missing data). Defaults to None.
-
-        Returns:
-            Dict[str, List[Dict]]: The mapped data, where the keys are the output class names and the
-                values are the rows. The rows are dictionaries.
-        """
-        # Load the mapper spec
-        with open(mapper_file, "r") as f:
-            mapper_spec = yaml.safe_load(f)
-
-        # Add all tracking slot derivations. This will copy all slots found in TrackingSlots, such as the source
-        # class and source row number that the output row was derived from. These slots can be used for sorting
-        # and other downstream operations such as ID generation.
-        self.add_tracking_slots_derivations(mapper_spec, target_schema)
-
-        # Run the mapper to get the mapped data
-        # logger.info(f"Mapping data with mapper spec {mapper_file}")
-        # trans_tic = datetime.now()
-        session.set_object_transformer(mapper_spec)
-        session.object_transformer.unrestricted_eval = unrestricted_eval
-        mapped_data = session.transform(data)
-        # logger.info(
-        #     f"Mapped in {datetime.now() - trans_tic} (for mapper spec {mapper_file})"
-        # )
-
+    def convert_mapped_data_to_dataframes(
+        self, mapped_data: Dict[str, List], target_schema: SchemaView
+    ):
         # Convert the data to a DataFrame, store in all_mapped_data, and save to disk
         all_mapped_data = {}
         for target_type, target_data in mapped_data.items():
@@ -481,38 +396,7 @@ class Mapper(object):
                 all_mapped_data[target_type] = []
             all_mapped_data[target_type].append(df)
 
-            # Save the unmerged mapped data to disk (typically just for debugging purposes, we save
-            # the whole filtered and sorted data later on)
-            if SAVE_UNMERGED_DATA and len(df.index) > 0 and data_output_dir is not None:
-                file_index_tag = f"-{file_index:010d}" if file_index is not None else ""
-                output_data_file = os.path.join(
-                    data_output_dir,
-                    f"%s-{target_type}{file_index_tag}.csv"
-                    % os.path.splitext(os.path.basename(mapper_file))[0],
-                )
-                logger.info(
-                    f"Saving mapped data file for {target_type} ({len(df.index)} rows): {output_data_file}"
-                )
-                # all_tracking_slots = get_all_tracking_slots()
-                # keep_columns = [c for c in df.columns if c not in all_tracking_slots]
-                keep_columns = df.columns
-                save_data_frame(df[keep_columns], output_data_file, index=False)
-
-        # @TODO: Acquire lock
-        self.run_mapper_progress.update(MAP_BARID, 1)
-
-        return file_index, all_mapped_data
-
-    def _run_mapper_with_kwargs(self, kwargs: Dict) -> Dict[str, List[Dict]]:
-        """Call run_mapper with the specified kwargs as named parameters.
-
-        Args:
-            kwargs (Dict): Dictionary of key-values to pass to run_mapper.
-
-        Returns:
-            Dict[str, List[Dict]]: The result of running run_mapper.
-        """
-        return self.run_mapper(**kwargs)
+        return all_mapped_data
 
     def make_data_splits(
         self, data: Dict[str, List], num_splits: int, min_split_size: int = 100
@@ -577,30 +461,59 @@ class Mapper(object):
             [TrackingSlots.SOURCE_FILE, TrackingSlots.SOURCE_ROW], axis=0, kind="stable"
         )
         if drop_sorting_column:
-            df = df.drop(self.get_all_tracking_slots(), axis=1)
+            df = df.drop(get_all_tracking_slots(), axis=1)
         df = df.reset_index(drop=True)
         return df
 
-    def map_and_filter(
+    def clean_data(
+        self,
+        data_files: Dict[str, List[Union[str, Path]]],
+        data_frames: Dict[str, List[pd.DataFrame]],
+        output_dir: Union[str, Path],
+        max_rows: Optional[int] = None,
+    ) -> Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]:
+        """Clean the data in the specified data files and DataFrames.
+
+        Args:
+            data_files (Dict[str, List[Union[str, Path]]]): Dictionary of input data files, where the keys are the
+                class names and the values are lists of files to clean. Both data_files and data_frames are cleaned.
+            data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of DataFrames, where the keys are the class names
+                and the values are lists of DataFrames for that class to clean. Both data_files and data_frames are
+                cleaned.
+            output_dir (Union[str, Path]): The directory to save the cleaned data to. If None then the data is not
+                saved, but is still cleaned and returned as DataFrames.
+            max_rows (Optional[int], optional): Maximum number of rows to clean from each data file or DataFrame.
+                The saved data files and returned DataFrames have at most this many rows each. If 0 or None then
+                all rows are cleaned. Defaults to None.
+
+        Returns:
+            Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]: Tuple of (data_files, data_frames):
+                    data_files: Dictionary where the keys are the class names and the values are lists of files that
+                        are cleaned.
+                    data_frames: Dictionary where the keys are the class names and the values are lists of DataFrames
+                        that are cleaned.
+                Note that data_files["class_name"][idx] corresponds to the file where data_frames["class_name"][idx]
+                is saved.
+        """
+        cleaner = DataCleaner(schema=self.module_config.source_schema)
+        data_files, data_frames = cleaner.clean_data(
+            data_files=data_files,
+            data_frames=data_frames,
+            output_dir=output_dir,
+            max_rows=max_rows,
+        )
+        return data_files, data_frames
+
+    def map_data(
         self,
         source_schema_file: Union[str, Path],
         target_schema_file: Union[str, Path],
         mapper_dir: Union[str, Path],
         data_files: Dict[str, List[Union[str, Path]]],
         data_frames: Dict[str, List[pd.DataFrame]],
-        data_output_dir: Optional[Union[str, Path]] = None,
-        filter_config_file: Optional[Union[str, Path]] = None,
         max_processes: Optional[int] = 1,
-    ) -> Tuple[Dict[str, List[Path]], Dict[str, List[pd.DataFrame]]]:
-        """Map all the files specified in data_files using all mapper files found in the specified mapper directory,
-        and optionally filter the results.
-
-        This funciton will not generate IDs. To do the full mapping plus ID generation call full_map instead.
-
-        The results will be saved to data_output_dir if specified. The file names will be the name of the output
-        class.
-
-        The results are returned and optionally saved to disk.
+    ) -> Dict[str, List[pd.DataFrame]]:
+        """Map all the files specified in data_files using all mapper files found in the specified mapper directory.
 
         Args:
             source_schema_file (Union[str, Path]): The LinkML schema for the source database.
@@ -613,22 +526,14 @@ class Mapper(object):
             data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of source DataFrames to map (in addition to the
                 files in data_files). The keys are the source class names and the values are lists of
                 DataFrames belonging to the class, which should each be mapped.
-            data_output_dir (Optional[Union[str, Path]], optional): Directory to save the mapped output to. If None
-                then the mapped data are not saved to disk, but are still returned. Defaults to None.
-            filter_config_file (Optional[Union[str, Path]], optional): The filter configuration file, to filter the
-                final transformed data (eg. remove rows that should be ignored due to missing data). Defaults to None.
             max_processes (Optional[int], optional): Maximum number of processes to use for multi-processing.
                 If 1 then no multi-processing will be performed. If None or 0 then the maximum number
                 (as obtained by cpu_count()) will be used. Note that for mapping small tables multi-processing
                 might be slower. Defaults to 1.
 
         Returns:
-            Tuple[Dict[str, List[Path]], Dict[str, List[pd.DataFrame]]]: The mapped data as a tuple
-                (all_mapped_files, all_mapped_data).
-                all_mapped_files (Dict[str, List[Path]]): Keys are the target class names and values are a list of
-                    the output data files of the mapped data for the class.
-                all_mapped_data (Dict[str, List[pd.DataFrame]]): Keys are the target class names and the values are the mapped
-                    data (a single DataFrame) for that class.
+            Dict[str, List[pd.DataFrame]]: Keys are the target class names and the values are the mapped data for
+            that class.
         """
         tic = datetime.now()
 
@@ -639,15 +544,11 @@ class Mapper(object):
         if not max_processes or max_processes <= 0:
             max_processes = cpu_count()
 
-        source_schema = SchemaView(source_schema_file)
-        target_schema = SchemaView(target_schema_file) if target_schema_file else None
-
-        # Add all tracking slots to the source schema. These include the source class and source row number.
-        # Later on, after loading the mapper spec, we add a slot derivation for all classes to copy the tracking slots to
-        # the output (see add_tracking_slots_derivations)
-        self.add_tracking_slots_to_schema(source_schema)
-        if target_schema:
-            self.add_tracking_slots_to_schema(target_schema)
+        source_schema = load_schema_with_tracking_slots(source_schema_file)
+        if target_schema_file:
+            target_schema = load_schema_with_tracking_slots(target_schema_file)
+        else:
+            target_schema = None
 
         # Read all the data from disk.
         data = self.load_and_parse_data(
@@ -667,13 +568,6 @@ class Mapper(object):
         else:
             split_data = self.make_data_splits(data, num_splits=max_processes)
 
-        # Set up the LinkML Mapper Session
-        logger.info("Creating Session for mapping")
-        t = datetime.now()
-        session = Session()
-        session.set_source_schema(source_schema)
-        logger.info(f"Finished creating Session for mapping in {datetime.now() - t}")
-
         # Collect all mapper config (yaml) files
         mapper_files = [
             f
@@ -688,20 +582,27 @@ class Mapper(object):
         # source_class_sizes = { f: len(data.get(c, [])) for f, c in source_classes.items() }
         # mapper_files = sorted(mapper_files, key=lambda c: -source_class_sizes[c])
 
-        # Create arguments to pass to _run_mapper for each mapper config file.
+        # Create arguments to pass to run_mapper for each mapper config file.
         map_args = []
+        self.run_mapper_progress = ProgressCounter(
+            {MAP_BARID: len(split_data) * len(mapper_files)},
+            total_title="Mapping",
+            multiple_bars=False,
+        )
         for split_num, split in enumerate(split_data):
             cur_args = [
                 {
                     "file_index": split_num + file_num * len(mapper_files),
                     "data": split,
-                    "data_output_dir": data_output_dir,
-                    "session": session,
+                    # "data_output_dir": data_output_dir,
+                    # "session": session,
                     "mapper_file": mapper_file,
+                    "source_schema_file": source_schema_file,
+                    "target_schema_file": target_schema_file,
                     "source_schema": source_schema,
                     "target_schema": target_schema,
                     "unrestricted_eval": True,
-                    "filter_config_file": filter_config_file,
+                    # "filter_config_file": filter_config_file,
                 }
                 for file_num, mapper_file in enumerate(mapper_files)
             ]
@@ -712,28 +613,37 @@ class Mapper(object):
             logging.info("Running without multiprocessing")
         else:
             logging.info(f"Running with {max_processes} processes")
-        self.run_mapper_progress = ProgressCounter(
-            {MAP_BARID: len(map_args)}, total_title="Mapping", multiple_bars=False
-        )
         self.run_mapper_progress.show_bar(MAP_BARID)
         with self.run_mapper_progress:
             if max_processes == 1:
                 results = []
-                for args in map_args:
-                    results.append(self._run_mapper_with_kwargs(args))
+                for kwargs in map_args:
+                    results.append(run_mapper(**kwargs))
+                    self.run_mapper_progress.update(MAP_BARID, 1)
             else:
-                pool = Pool(max_processes)
-                results = pool.map(self._run_mapper_with_kwargs, map_args)
+                pool = Pool(processes=max_processes)
+                results = []
+                results = [
+                    pool.apply_async(
+                        run_mapper,
+                        (),
+                        map_arg,
+                        callback=lambda x: self.run_mapper_progress.update(
+                            MAP_BARID, 1
+                        ),
+                    )
+                    for map_arg in map_args
+                ]
+                results = [r.get() for r in results]
 
-        # Collect all the results in a single Dictionary. The keys are the target class and the
-        # values are Lists of the resulting DataFrames.
+        # Convert mapped data to DataFrames
         all_mapped_data = {}
         results = sorted(results, key=lambda x: x[0])
         for _, cur_mapped_data in results:
-            for cls, mapped_data in cur_mapped_data.items():
-                if cls not in all_mapped_data:
-                    all_mapped_data[cls] = []
-                all_mapped_data[cls].extend(mapped_data)
+            cur_mapped_dfs = self.convert_mapped_data_to_dataframes(
+                cur_mapped_data, target_schema
+            )
+            all_mapped_data = merge_dicts_of_lists([all_mapped_data, cur_mapped_dfs])
 
         # Combine the DataFrames in all_mapped_data
         for target_type, all_df in all_mapped_data.items():
@@ -744,49 +654,156 @@ class Mapper(object):
 
         logger.info(f"Total time for mapping: {datetime.now() - map_tic}")
 
-        # Filter all the DataFrames
-        if filter_config_file:
-            filter_tic = datetime.now()
-            data_filter = DataFilter(filter_config_file)
-            filtered_mapped_data = {}
-            for target_type, dfs in all_mapped_data.items():
-                df = pd.concat(dfs, ignore_index=True, axis=0)
-                data = {target_type: df}
-                data, _ = data_filter.run_filter(data=data)
-                for target_class, target_df in data.items():
-                    if target_class not in filtered_mapped_data:
-                        filtered_mapped_data[target_class] = []
-                    filtered_mapped_data[target_class].append(target_df)
-            # Combine the DataFrames in filtered_mapped_data
-            for target_class, all_df in filtered_mapped_data.items():
-                df = pd.concat(all_df, ignore_index=True, axis=0)
-                filtered_mapped_data[target_class] = [df]
-            all_mapped_data = filtered_mapped_data
-            logger.info(f"Total time for filtering: {datetime.now() - filter_tic}")
+        return all_mapped_data
 
+    def filter_data(
+        self,
+        data_frames: Dict[str, List[pd.DataFrame]],
+        filter_config_file: Union[str, Path],
+    ) -> Dict[str, List[pd.DataFrame]]:
+        """Filter DataFrames according to a filter configuration file.
+
+        Args:
+            data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of DataFrames, where the keys are
+                the class names and the values are lists of DataFrames belonging to the class.
+            filter_config_file (Union[str, Path]): The filter configuration file to use (a CSV file)
+
+        Returns:
+            Dict[str, List[pd.DataFrame]]: The filtered DataFrames. Keys are the class names and values
+                are lists of filtered DataFrames for that class.
+        """
+        logger.info("Filtering all data...")
+        filter_tic = datetime.now()
+        data_filter = DataFilter(filter_config_file)
+        filtered_mapped_data = {}
+        for target_type, dfs in data_frames.items():
+            df = pd.concat(dfs, ignore_index=True, axis=0)
+            data = {target_type: df}
+            data, _ = data_filter.run_filter(data=data)
+            for target_class, target_df in data.items():
+                if target_class not in filtered_mapped_data:
+                    filtered_mapped_data[target_class] = []
+                filtered_mapped_data[target_class].append(target_df)
+        # Combine the DataFrames in filtered_mapped_data
+        for target_class, all_df in filtered_mapped_data.items():
+            df = pd.concat(all_df, ignore_index=True, axis=0)
+            filtered_mapped_data[target_class] = [df]
+
+        logger.info(f"Total time for filtering: {datetime.now() - filter_tic}")
+        return filtered_mapped_data
+
+    def save_data(
+        self,
+        data_frames: Dict[str, List[pd.DataFrame]],
+        output_dir: Union[str, Path],
+        name_format: str = "{class_name}.csv",
+        exception_if_exists: bool = True,
+    ) -> Dict[str, List[str]]:
+        """Save the specified DataFrames to disk.
+
+        Args:
+            data_frames (Dict[str, List[pd.DataFrame]]): The data to save. The keys are the class names and the values
+                are lists of DataFrames belonging to the class. For each key, the list of DataFrames are concatenated
+                into a single DataFrame.
+            output_dir (Union[str, Path]): The directory to save the DataFrames to.
+            name_format (str, optional): The string interpolation format of the file names, accepts the variable class_name.
+                Defaults to "{class_name}.csv"
+            exception_if_exists (bool, optional): If True then raise an exception if a file already exists with the same
+                name as a file we are trying to save. If False then overwrite the file. Defaults to True.
+
+        Raises:
+            ValueError: Only raised if exception_if_exists is True. The data could not be saved because one of the output
+                files already exists. Be sure to delete the files in output_dir before callings save_data.
+
+        Returns:
+            Dict[str, List[str]]: A dictionary where the keys are class names and the values are lists
+                of files saved to disk for that class.
+        """
         # Save data to disk
         all_mapped_files = {}
-        if data_output_dir is not None:
-            save_tic = datetime.now()
-            for class_name, dfs in all_mapped_data.items():
-                df = pd.concat(dfs, ignore_index=True, axis=0)
-                output_data_file = os.path.join(
-                    data_output_dir, f"{class_name}[preid].csv"
-                )
-                if os.path.exists(output_data_file):
-                    raise ValueError(
-                        f"Output data file already exists: {output_data_file}"
-                    )
-                logger.info(
-                    f"Saving merged mapped data file for {class_name} ({len(all_df)} source frame(s), {len(df.index)} rows): {output_data_file}"
-                )
-                save_data_frame(df, output_data_file, index=False)
-                if class_name not in all_mapped_files:
-                    all_mapped_files[class_name] = []
-                all_mapped_files[class_name].append(output_data_file)
-            logger.info(f"Total time for saving: {datetime.now() - save_tic}")
+        save_tic = datetime.now()
+        for class_name, dfs in data_frames.items():
+            df = pd.concat(dfs, ignore_index=True, axis=0)
+            output_data_file = os.path.join(
+                output_dir, name_format.format(class_name=class_name)
+            )
+            if exception_if_exists and os.path.exists(output_data_file):
+                raise ValueError(f"Output data file already exists: {output_data_file}")
+            logger.info(
+                f"Saving merged mapped data file for {class_name} ({len(dfs)} source frame(s), {len(df.index)} rows): {output_data_file}"
+            )
+            save_data_frame(df, output_data_file, index=False)
+            if class_name not in all_mapped_files:
+                all_mapped_files[class_name] = []
+            all_mapped_files[class_name].append(output_data_file)
+        logger.info(f"Total time for saving: {datetime.now() - save_tic}")
 
-        return all_mapped_files, all_mapped_data
+        return all_mapped_files
+
+    def generate_ids(
+        self,
+        data_files: Dict[str, List[Union[str, Path]]],
+        data_frames: Dict[str, List[pd.DataFrame]],
+    ) -> Dict[str, List[pd.DataFrame]]:
+        """Generate IDs in the data.
+
+        Args:
+            data_files (Dict[str, List[Union[str, Path]]]): The data files to load, which we will add IDs to.
+                The keys are the class names and the values are lists of data files belonging to that class.
+                Data from both data_files and data_frames are merged and processed.
+            data_frames (Dict[str, List[pd.DataFrame]]): The data frames to add IDs to. Data from both
+                data_files and data_frames are merged and processed.
+
+        Returns:
+            Dict[str, List[pd.DataFrame]]: Dictionary of DataFrames containing the data with IDs generated. The keys are
+                the class names and the values are lists of DataFrames containing the generated data.
+        """
+        gen = IDGenerator(
+            data_files=data_files,
+            data_frames=data_frames,
+            config_file=self.module_config.id_config,
+            id_code_file=self.module_config.id_code,
+            id_code_sheet=self.module_config.id_code_sheet,
+            multi_bar_progress=self.multi_bar_progress,
+        )
+        return gen.run_generator(
+            orig_columns_only=not self.id_debug, remove_duplicates=not self.id_debug
+        )
+
+    def load_data(
+        self, data_files: Dict[str, List[Union[str, Path]]], max_rows: Optional[int] = 0
+    ) -> Dict[str, List[pd.DataFrame]]:
+        """Load all data from disk (as DataFrames) and add the tracking columns.
+
+        Args:
+            data_files (Dict[str, List[Union[str, Path]]]): Dictionary of all files to load. The keys are the class
+                names and the values are lists of files belonging to that class.
+            max_rows (Optional[int], optional): Maximum number of rows to load from each file. If 0 or None then all
+                rows are loaded. Defaults to 0.
+
+        Returns:
+            Dict[str, List[pd.DataFrame]]: The loaded DataFrames. The keys are the class names and the values
+                are lists of DataFrames belonging to that class. The order of the DataFrames within each class are the
+                same as the order of the files in data_files for the same class.
+        """
+        data_frames = {}
+        for class_name, files in data_files.items():
+            if class_name not in data_frames:
+                data_frames[class_name] = []
+            for file in files:
+                df = read_data_frame(
+                    file,
+                    nrows=None
+                    if RANDOM_SAMPLE_DATA
+                    else (max_rows if max_rows else None),
+                    keep_default_na=False,
+                    na_values=None,
+                )
+                # Add tracking columns
+                add_tracking_columns(df, class_name, file)
+
+                data_frames[class_name].append(df)
+        return data_frames
 
     def full_map(
         self,
@@ -829,54 +846,50 @@ class Mapper(object):
             self.temp_dir = Path(temp_dir)
         logger.info(f"Using temporary directory {self.temp_dir}")
 
+        # Load all data
+        data_frames = self.load_data(data_files=data_files, max_rows=input_max_rows)
+
         # Clean the data
         cleaned_data_dir = self.temp_dir / "cleaned_data"
         clear_dirs([cleaned_data_dir])
-        cleaner = DataCleaner(schema=self.module_config.source_schema)
-        orig_data_files = data_files
-        data_files, data_frames = cleaner.clean_data_files(
-            data_files,
+        data_files, data_frames = self.clean_data(
+            data_files=None,
+            data_frames=data_frames,
             output_dir=cleaned_data_dir if SAVE_INTERMEDIATE_TO_DISK else None,
-            max_rows=input_max_rows,
         )
-
-        # Add tracking columns
-        for class_name, dfs in data_frames.items():
-            files = orig_data_files[class_name]
-            for file, df in zip(files, dfs):
-                self.add_tracking_columns(df, class_name, file)
 
         # Map the cleaned data
         mapped_data_dir = self.temp_dir / "mapped_data"
         clear_dirs([mapped_data_dir])
-        data_files, data_frames = self.map_and_filter(
+        data_frames = self.map_data(
             source_schema_file=self.module_config.source_schema,
             target_schema_file=self.module_config.target_schema,
             mapper_dir=self.module_config.mapper_dir,
             data_files=None,  # data_files,
             data_frames=data_frames,
-            data_output_dir=mapped_data_dir if SAVE_INTERMEDIATE_TO_DISK else None,
-            filter_config_file=self.module_config.filters,
             max_processes=max_processes,
         )
 
+        # Filter the data
+        if self.module_config.filters:
+            data_frames = self.filter_data(
+                data_frames=data_frames, filter_config_file=self.module_config.filters
+            )
+
+        # Save intermediate mapped and filtered (without ID generation) data to disk
+        if SAVE_INTERMEDIATE_TO_DISK and mapped_data_dir:
+            data_files = self.save_data(
+                data_frames=data_frames,
+                output_dir=mapped_data_dir,
+                name_format="{class_name}[preid].csv",
+            )
+
         # Generate IDs in the mapped data
-        id_output_dir = output_dir
-        clear_dirs([id_output_dir])
-        gen = IDGenerator(
-            data_files=None,  # data_files,
-            data_frames=data_frames,
-            config_file=self.module_config.id_config,
-            id_code_file=self.module_config.id_code,
-            id_code_sheet=None,
-            multi_bar_progress=self.multi_bar_progress,
-        )
-        gen.make_all_ids()
-        data_files = gen.save_all(
-            output_dir=id_output_dir,
-            orig_columns_only=not self.id_debug,
-            drop_duplicates=not self.id_debug,
-        )
+        data_frames = self.generate_ids(data_files=None, data_frames=data_frames)
+
+        # Save data to disk
+        clear_dirs([output_dir])
+        data_files = self.save_data(data_frames, output_dir=output_dir)
 
         # Delete temporary directory
         if self.temp_dir_obj is not None:
@@ -893,24 +906,24 @@ if __name__ == "__main__":
         # fmt: off
         class opts:
             # ODM v1 to v2
-            # module = "odm_v1_to_v2"
-            # module_dir = None
-            # input_data_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
-            # input_data_files = None  # ["WWMeasure", "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
-            # output_dir = "../../gen/odm_v1_to_v2"
-            # temp_dir = "../../gen/odm_v1_to_v2/temp-1000"
+            module = "odm_v1_to_v2"
+            module_dir = None
+            input_data_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
+            input_data_files = None  # ["WWMeasure", "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
+            output_dir = "../../gen/odm_v1_to_v2"
+            temp_dir = "../../gen/odm_v1_to_v2/temp-100"
 
             # NWSS to v2
-            module = "nwss_reporting_to_v2"
-            module_dir = None
-            # input_data_dir = "../../../../PHES-ODM-Data/nwss/private_renamed_test/"
-            input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
-            input_data_files = None # [ "nwss", "../../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            output_dir = "../../gen/nwss_reporting_to_v2-test"
-            temp_dir = "../../gen/nwss_reporting_to_v2-test/temp"
+            # module = "nwss_reporting_to_v2"
+            # module_dir = None
+            # # input_data_dir = "../../../../PHES-ODM-Data/nwss/private_renamed_test/"
+            # input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            # input_data_files = None # [ "nwss", "../../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
+            # output_dir = "../../gen/nwss_reporting_to_v2-test-multi"
+            # temp_dir = "../../gen/nwss_reporting_to_v2-test-multi/temp"
 
             max_processes = 1
-            input_max_rows = 1000
+            input_max_rows = 100
             id_debug = True
         # fmt: on
     else:
