@@ -858,8 +858,6 @@ class Mapper(object):
         )
 
         # Map the cleaned data
-        mapped_data_dir = self.temp_dir / "mapped_data"
-        clear_dirs([mapped_data_dir])
         data_frames = self.map_data(
             source_schema_file=self.module_config.source_schema,
             target_schema_file=self.module_config.target_schema,
@@ -877,6 +875,8 @@ class Mapper(object):
             )
 
         # Save intermediate mapped and filtered (without ID generation) data to disk
+        mapped_data_dir = self.temp_dir / "mapped_data"
+        clear_dirs([mapped_data_dir])
         if SAVE_INTERMEDIATE_TO_DISK and mapped_data_dir:
             data_files = self.save_data(
                 data_frames=data_frames,
