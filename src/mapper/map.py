@@ -367,24 +367,24 @@ class Mapper(object):
     ):
         # Convert the data to a DataFrame, store in all_mapped_data, and save to disk
         all_mapped_data = {}
-        for target_type, target_data in mapped_data.items():
+        for class_name, target_data in mapped_data.items():
             if target_data is None:
                 continue
 
-            # Remove any extra info from the target_type
+            # Remove any extra info from the class_name
             # eg "protocolSteps[inhibition]" becomes "protocolSteps"
-            target_type = get_class_name_from_file_name(target_type, target_schema)
+            class_name = get_class_name_from_file_name(class_name, target_schema)
 
             df = pd.DataFrame(target_data)
 
             # Add any missing columns and order them according to the target schema
             if target_schema is not None:
-                class_definition = target_schema.induced_class(target_type)
+                class_definition = target_schema.induced_class(class_name)
                 all_slots = list(class_definition.attributes.keys())
                 unrecognized = [s for s in df.columns if s not in all_slots]
                 if len(unrecognized) > 0:
                     raise ValueError(
-                        f"Found unrecognized slot(s) in mapped data for class '{target_type}': {unrecognized}"
+                        f"Found unrecognized slot(s) in mapped data for class '{class_name}': {unrecognized}"
                     )
                 missing = [s for s in all_slots if s not in df.columns]
                 if len(missing) > 0:
@@ -392,9 +392,9 @@ class Mapper(object):
                 df = order_columns(df, all_slots)
 
             # Keep a copy of the mapped data
-            if target_type not in all_mapped_data:
-                all_mapped_data[target_type] = []
-            all_mapped_data[target_type].append(df)
+            if class_name not in all_mapped_data:
+                all_mapped_data[class_name] = []
+            all_mapped_data[class_name].append(df)
 
         return all_mapped_data
 
@@ -646,11 +646,11 @@ class Mapper(object):
             all_mapped_data = merge_dicts_of_lists([all_mapped_data, cur_mapped_dfs])
 
         # Combine the DataFrames in all_mapped_data
-        for target_type, all_df in all_mapped_data.items():
+        for class_name, all_df in all_mapped_data.items():
             df = pd.concat(all_df, ignore_index=True, axis=0)
             # Retain the original order by sorting by the TrackingSlots.
             df = self.sort_mapped_data(df, drop_sorting_column=False)
-            all_mapped_data[target_type] = [df]
+            all_mapped_data[class_name] = [df]
 
         logger.info(f"Total time for mapping: {datetime.now() - map_tic}")
 
@@ -676,9 +676,9 @@ class Mapper(object):
         filter_tic = datetime.now()
         data_filter = DataFilter(filter_config_file)
         filtered_mapped_data = {}
-        for target_type, dfs in data_frames.items():
+        for class_name, dfs in data_frames.items():
             df = pd.concat(dfs, ignore_index=True, axis=0)
-            data = {target_type: df}
+            data = {class_name: df}
             data, _ = data_filter.run_filter(data=data)
             for target_class, target_df in data.items():
                 if target_class not in filtered_mapped_data:
