@@ -27,6 +27,7 @@ from utils.general_utils import (
     clear_dirs,
     get_unique_output_file,
 )
+from utils.tracking_slots import get_all_tracking_slots
 from utils.cli_utils import get_input_data_files
 from utils.schema_utils import get_ranges_of_slot
 
@@ -84,7 +85,11 @@ class DataCleaner(object):
 
         # Fix enumerations (Use correct capitalization), and only keep recognized slots
         keep_columns = []
+        all_tracking_slots = get_all_tracking_slots()
         for slot_name in df.columns:
+            if slot_name in all_tracking_slots:
+                keep_columns.append(slot_name)
+                continue
             if slot_name not in class_definition.attributes:
                 continue
             keep_columns.append(slot_name)
@@ -179,48 +184,56 @@ class DataCleaner(object):
 
         return df
 
-    def clean_data_file(
+    def clean_single_data(
         self,
-        input_file: Union[str, Path],
+        data_file: Optional[Union[str, Path]],
+        data_frame: Optional[pd.DataFrame],
         output_file: Optional[Union[str, Path]],
         class_name: str,
         max_rows: Optional[int] = 0,
     ) -> Tuple[str, pd.DataFrame]:
-        """Clean the specified file and save to the specified output directory. The file should be a tsv, csv, or txt
-        file (txt files are treated as tab-separated).
+        """Clean either a single data file or a single DataFrame.
 
         Args:
-            input_file (Union[str, Path]): The file to clean.
-            output_file (Optional[Union[str, Path]]): The file to save the cleaned data file to. This should
+            data_file (Optional[Union[str, Path]]): The file to clean. If specified then data_frame must be None.
+            data_frame (Optional[pd.DataFrame]): The DataFrame to clean. If specified then data_file must be None.
+            output_file (Optional[Union[str, Path]]): The file to save the cleaned data to. This should
                 be different than the input_file to avoid overwriting the original. If None then the cleaned
                 data is not saved to disk, but the cleaned DataFrame is still returned.
-            class_name (str): The class name that the input_file is for. This should be a class name found in
+            class_name (str): The class name that the data_file or data_frame is for. This should be a class name found in
                 the schema.
-            max_rows (Optional[int]): Maximum nuimber of rows to load and clean from the file. If 0 then clean
-                all rows. Defaults to 0.
+            max_rows (Optional[int]): Maximum number of rows to clean from the file or DataFrame. The returned DataFrame
+                and save data will have at most this many rows. If 0 or None then clean all rows. Defaults to 0.
 
         Returns:
             Tuple[str, pd.DataFrame]: A tuple of (new file name, data frame). The DataFrame
                 is the contents of the file with any required processing performed (eg.
                 putting dates and datetimes into the correct string format)
         """
-        if output_file is not None and output_file == input_file:
+        if (
+            output_file is not None
+            and data_file is not None
+            and output_file == data_file
+        ):
             raise ValueError(
-                f"The input_file and output_file must be different: {input_file=}, {output_file=}"
+                f"The input file and output file must be different: {data_file=}, {output_file=}"
             )
 
         if output_file is not None and os.path.dirname(output_file):
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-        logger.info(f"Cleaning data from {input_file}")
+        if data_file is not None:
+            logger.info(f"Cleaning data from {data_file}")
 
-        # Read the DataFrame from disk
-        df = read_data_frame(
-            input_file,
-            nrows=None if RANDOM_SAMPLE_DATA else (max_rows if max_rows else None),
-            keep_default_na=False,
-            na_values=None,  # [""],
-        )
+            # Read the DataFrame from disk
+            df = read_data_frame(
+                data_file,
+                nrows=None if RANDOM_SAMPLE_DATA else (max_rows if max_rows else None),
+                keep_default_na=False,
+                na_values=None,  # [""],
+            )
+        else:
+            df = data_frame
 
         if RANDOM_SAMPLE_DATA and max_rows and len(df) > max_rows:
             df = df.sample(max_rows, random_state=0).reset_index(drop=True)
@@ -237,22 +250,26 @@ class DataCleaner(object):
 
         return output_file, df
 
-    def clean_data_files(
+    def clean_data(
         self,
-        data_files: Dict[str, Union[str, Path]],
+        data_files: Dict[str, List[Union[str, Path]]],
+        data_frames: Dict[str, List[pd.DataFrame]],
         output_dir: Union[str, Path],
         max_rows: int = 0,
     ) -> Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]:
-        """Clean all TSV, TXT, and CSV data files specified data_files dictionary and save the cleaned data
-        to the specified output directory, ensuring that all output files names are unique and no existing
-        file in output_dir is modified.
+        """Clean all data files and DataFrames and optionally save the cleaned data to the specified output
+        directory, ensuring that all output files names are unique and no existing file in output_dir is modified.
 
-        Cleaning involves changing the format of dates, making sure columns are capitalized correctly, and
-        making sure enumerations are capitalized correctly.
+        Cleaning involve making sure columns are capitalized correctly, and making sure enumerations are capitalized
+        correctly, and possibly other operations.
 
         Args:
-            data_files (Dict[str, Union[str, Path]]): Dictionary of all TSV/TXT/CSV files to clean. The keys are
-                the class name for the data file and the values are lists of file paths.
+            data_files (List[Union[str, Path]]]): Dictionary of all data files to clean. The keys are
+                the class names and the values are lists of file paths belonging to that class. Both data_files
+                and data_frames are cleaned.
+            data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of all DataFrames to clean. The keys are
+                the class names and the values are lists of DataFrames belonging to that class. Both data_files
+                and data_frames are cleaned.
             output_dir (Union[str, Path]): Output directory to save the cleaned data files to. To avoid overwriting
                 files in data_files that have the same name, we ensure that all output files have unique file names.
                 The returned dictionary will contain the updated file name, if a file name is changed.
@@ -264,13 +281,10 @@ class DataCleaner(object):
         Returns:
             Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]: A tuple of [cleaned_data_files, cleaned_data_frames]:
                 cleaned_data_files: Dictionary of all outputed cleaned data files. The keys are the class name
-                    the file belongs to and the values are lists of files. This is the same as the parameter
-                    data_files, but with the lists of files being a list of the cleaned files (in the same
-                    order as found in the input parameter). If output_dir is None then data_files will be
+                    the file belongs to and the values are lists of files. If output_dir is None then data_files will be
                     None (ie. no data saved to disk), instead see data_frames.
                 cleaned_data_frames: Dictionary of all cleaned DataFrames. The keys are the class names and the
-                    values are lists of cleaned DataFrames. The lists are in the same order as found
-                    in the input parmaeter data_files.
+                    values are lists of cleaned DataFrames.
         """
         if output_dir:
             clear_dirs([output_dir])
@@ -278,27 +292,42 @@ class DataCleaner(object):
         output_data_files = {}
         output_data_frames = {}
 
-        for class_name, input_files in data_files.items():
-            output_data_files[class_name] = []
-            output_data_frames[class_name] = []
-            for input_file in input_files:
-                if output_dir is not None:
-                    output_file = os.path.join(output_dir, os.path.basename(input_file))
-                    # Make sure the output file doesn't already exist
-                    output_file = get_unique_output_file(output_file)
-                else:
-                    output_file = None
+        for all_data in [data_files, data_frames]:
+            if not all_data:
+                continue
+            for class_name, sub_data in all_data.items():
+                if class_name not in output_data_files:
+                    output_data_files[class_name] = []
+                if class_name not in output_data_frames:
+                    output_data_frames[class_name] = []
+                for data in sub_data:
+                    data_file = data if isinstance(data, (str, Path)) else None
+                    data_frame = data if isinstance(data, pd.DataFrame) else None
+                    assert (data_file is None) != (data_frame is None)
 
-                output_file, output_data_frame = self.clean_data_file(
-                    input_file,
-                    output_file,
-                    class_name=class_name,
-                    max_rows=max_rows,
-                )
-                output_data_files[class_name].append(
-                    Path(output_file) if output_file else None
-                )
-                output_data_frames[class_name].append(output_data_frame)
+                    if output_dir is not None:
+                        if data_file:
+                            output_file = os.path.join(
+                                output_dir, os.path.basename(data_file)
+                            )
+                        else:
+                            output_file = os.path.join(output_dir, f"{class_name}.csv")
+                        # Make sure the output file doesn't already exist
+                        output_file = get_unique_output_file(output_file)
+                    else:
+                        output_file = None
+
+                    output_file, output_data_frame = self.clean_single_data(
+                        data_file=data_file,
+                        data_frame=data_frame,
+                        output_file=output_file,
+                        class_name=class_name,
+                        max_rows=max_rows,
+                    )
+                    output_data_files[class_name].append(
+                        Path(output_file) if output_file else None
+                    )
+                    output_data_frames[class_name].append(output_data_frame)
 
         return output_data_files, output_data_frames
 
@@ -359,8 +388,9 @@ if __name__ == "__main__":
 
     data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
     cleaner = DataCleaner(schema=opts.schema)
-    data_files, data_frames = cleaner.clean_data_files(
-        data_files,
+    data_files, data_frames = cleaner.clean_data(
+        data_files=data_files,
+        data_frames=None,
         output_dir=opts.output_dir,
         max_rows=opts.max_rows,
     )
