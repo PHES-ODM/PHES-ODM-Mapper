@@ -96,7 +96,7 @@ class IDGenerator(object):
                 an ID to be generated. Can be an XLSX, CSV, TSV, TXT, YAML, or YML file. If an Excel file then
                 id_code_sheet should also be set.
             id_code_sheet (str, optional): If id_code_file is an Excel file, then the sheet name to load that contains
-                the ID generation code. Defaults to None.
+                the ID generation code. If an Excel file and this is None, then the first sheet in the Excel file is used. Defaults to None.
             multi_bar_progress (bool, optional): If True then output multiple progress bars at the same time showing all classes we will be
                 generating IDs for. If False then only one progress bar is shown at a time (for the class name we are currently
                 generating IDs for).
@@ -315,6 +315,48 @@ class IDGenerator(object):
             if slot not in generated_slots[class_name]:
                 generated_slots[class_name].append(slot)
         return generated_slots
+
+    def run_generator(
+        self, orig_columns_only: bool, remove_duplicates: bool
+    ) -> Dict[str, List[pd.DataFrame]]:
+        """Run the generator and retrieve the final DataFrames.
+
+        Args:
+            orig_columns_only (bool): If True then only include the same columns that originally existed in
+                the original DataFrames before the generator was run. In production this is typically True.
+                If False then additional columns are retained in the final DataFrame, such as the tracking
+                columns, the original ID values (saved in new columns), and other columns useful for
+                debugging purposes.
+            remove_duplicates (bool): If True then remove duplicates based on the primary keys of each
+                class. In production this is typically True.
+
+        Returns:
+            Dict[str, List[pd.DataFrame]]: Dictionary where the keys are the class names and the values are
+                lists of DataFrames belonging to the class, where all IDs have been generated.
+        """
+        self.make_all_ids()
+        data_frames = {}
+        total_rows = 0
+        total_rows_minus_dropped_rows = 0
+        total_dropped_rows = 0
+        for _, data in self.data.items():
+            (
+                cur_data_frames,
+                cur_total_rows,
+                cur_total_rows_minus_dropped_rows,
+                cur_total_dropped_rows,
+            ) = data.finalize_data(
+                orig_columns_only=orig_columns_only, remove_duplicates=remove_duplicates
+            )
+            total_rows += cur_total_rows
+            total_rows_minus_dropped_rows += cur_total_rows_minus_dropped_rows
+            total_dropped_rows += cur_total_dropped_rows
+            data_frames = merge_dicts_of_lists([data_frames, cur_data_frames])
+        logger.info(
+            f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}"
+        )
+        self.data_frames = data_frames
+        return self.data_frames
 
     def make_all_ids(
         self,
@@ -903,36 +945,22 @@ class IDGenerator(object):
     def save_all(
         self,
         output_dir: str,
-        orig_columns_only: bool = True,
-        drop_duplicates: bool = True,
-    ) -> Dict[str, List[Path]]:
+    ) -> Tuple[Dict[str, List[Path]], Dict[str, List[pd.DataFrame]]]:
         tic = datetime.now()
         logger.info(f"Saving all data to {output_dir}")
         output_data_files = {}
-        total_rows = total_rows_minus_dropped_rows = total_dropped_rows = 0
+        output_data_frames = {}
         for data in self.data.values():
-            (
-                cur_output_data_files,
-                cur_total_rows,
-                cur_total_rows_minus_dropped_rows,
-                cur_total_dropped_rows,
-            ) = data.save_data(
-                output_dir,
-                orig_columns_only=orig_columns_only,
-                drop_duplicates=drop_duplicates,
-            )
-            total_rows += cur_total_rows
-            total_rows_minus_dropped_rows += cur_total_rows_minus_dropped_rows
-            total_dropped_rows += cur_total_dropped_rows
+            cur_output_data_files, cur_output_data_frames = data.save_data(output_dir)
             output_data_files = merge_dicts_of_lists(
                 [output_data_files, cur_output_data_files]
             )
+            output_data_frames = merge_dicts_of_lists(
+                [output_data_frames, cur_output_data_frames]
+            )
 
-        logger.info(
-            f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}"
-        )
         logger.info(f"Finished saving: {datetime.now() - tic}")
-        return output_data_files
+        return output_data_files, output_data_frames
 
 
 if __name__ == "__main__":
@@ -1022,9 +1050,7 @@ if __name__ == "__main__":
         id_code_sheet=opts.id_code_sheet,
         multi_bar_progress="get_ipython" not in globals(),
     )
-    gen.make_all_ids()
-    res = gen.save_all(
-        opts.output_dir,
-        orig_columns_only=not opts.debug,
-        drop_duplicates=not opts.debug,
+    gen.run_generator(
+        orig_columns_only=not opts.debug, remove_duplicates=not opts.debug
     )
+    res = gen.save_all(opts.output_dir)
