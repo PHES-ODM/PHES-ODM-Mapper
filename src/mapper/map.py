@@ -3,18 +3,22 @@
 Map data using a transformation module.
 
 ```python
-from mapper import full_map
+from mapper import Mapper
 
-full_map(
+mapper = Mapper(
     module="odm_v1_to_v2",
     module_dir=None,
+    id_debug=False,
+    multi_bar_progress=False
+)
+mapper.full_map(
     data_files={
         "measures": ["path/to/measures.csv"],
         "samples": ["path/to/samples.csv"],
         # ...
     },
     output_dir="../gen/odm_v1_to_v2",
-    )
+)
 """
 
 import sys
