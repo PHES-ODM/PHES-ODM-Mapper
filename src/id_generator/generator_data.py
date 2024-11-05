@@ -9,11 +9,15 @@ Manage data for a class, including creating lookup tables for faster access to r
 # key for the data to "measureRepID".
 data = GeneratorData(
     class_name="measures",
-    data_files=["measures.csv"],
+    input_data=["measures.csv"],
+    primary_key="measureRepID",
     lookup_slots=["measureRepID", "(__source_file_and_row__)"],
     generated_slots=["measureRepID", "siteID", "organizationID"],
-    primary_key="measureRepID",
 )
+
+# ... process the data, generate IDs, etc ...
+
+data_frames, *_ = data.finalize_data(orig_columns_only=True, remove_duplicates=True)
 ```
 """
 
@@ -75,13 +79,16 @@ class GeneratorData:
         self.largest_pk_indices = {}
 
         all_dfs = []
+        # Load all data in input_data, store in all_dfs so we can concatenate them
         for cur_data in input_data:
             file = None
             if isinstance(cur_data, (str, Path)):
+                # Load DataFrame from file
                 file = cur_data
                 logger.info(f"Loading data from {str(file)}")
                 df = read_data_frame(file, keep_default_na=False, na_values=None)
             elif isinstance(cur_data, pd.DataFrame):
+                # Data is already in DataFrame format
                 file = None
                 df = cur_data
             else:
@@ -89,7 +96,7 @@ class GeneratorData:
                     f"Unrecognized type for input to GeneratorData: type={type(cur_data)}"
                 )
 
-            # Make sure the columns match
+            # Make sure the columns in df match what we have loaded previously
             if len(all_dfs) > 0:
                 first_df = all_dfs[0]
                 missing_cur_columns = [
@@ -109,9 +116,8 @@ class GeneratorData:
 
             all_dfs.append(df)
 
-        self.orig_df = pd.concat(all_dfs, axis=0, ignore_index=True).reset_index(
-            drop=True
-        )
+        # Concatenate all loaded DataFrames into a single DataFrame
+        self.orig_df = pd.concat(all_dfs, ignore_index=True, axis=0)
 
         # Create a list of all original columns found in the dataset
         columns = list(df.columns)
@@ -583,58 +589,55 @@ class GeneratorData:
 
         return self.get_data_value(self.primary_key, row_index)
 
-    def save_data(
-        self,
-        output_dir: str,
-        orig_columns_only: bool = True,
-        drop_duplicates: bool = True,
-    ) -> Tuple[Dict[str, List[Path]], int, int, int]:
-        """Save the data to disk.
+    def finalize_data(
+        self, orig_columns_only: bool, remove_duplicates: bool
+    ) -> Tuple[Dict[str, List[pd.DataFrame]], int, int, int]:
+        """Finalize the data by converting it to a DataFrame and dropping duplicates based on the
+        primary key.
 
         Args:
-            output_dir (str): Directory to save DataFrame to.
-            orig_columns_only (bool, optional): If True then only save the original columns that were part
-                of the source database and table as initially loaded from disk. If False then all columns are saved,
-                including any columns temporarily created for mapping operations and debugging columns.
-                Defaults to True.
-            drop_duplicates (bool, optional): If True then drop all rows where the primary key is a duplicate
-                (except for the first duplicate). If False then all rows are retained, instead a column named
-                DROP_COLUMN is added and set to True if the row would have been dropped. Note that
-                the DROP_COLUMN column will only be retained if orig_columns_only is False. Defaults to True.
+            orig_columns_only (bool): If True then only include the same columns that originally existed in
+                the original DataFrames before the generator was run. In production this is typically True.
+                If False then additional columns are retained in the final DataFrame, such as the tracking
+                columns, the original ID values (saved in new columns), and other columns useful for
+                debugging purposes.
+            remove_duplicates (bool): If True then the duplicate rows are removed. If False then the
+                duplicate rows are retained, but an additional column called DROP_COLUMN is added
+                and set to True for any row that would be dropped due to having a duplicate primary key.
+                This should be True in production, use False for debugging purposes.
 
         Returns:
-            Tuple[Dict[str, List[Path]], int, int, int]:
-                Dict[str, List[Path]]: All saved files, where the keys are the target class names and the values
+            Tuple[Dict[str, List[pd.DataFrame]], int, int, int]:
+                Dict[str, List[pd.DataFrame]]: All DataFrames, where the keys are the target class names and the values
                     are lists of output files for the class.
                 int: Number of total rows, before dropping duplicates
                 int: Number of total rows, after dropping duplicates
                 int: Number of dropped duplicates
         """
-        if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
-
-        output_file = os.path.join(output_dir, f"{self.class_name}.csv")
         self.data[self.data == EMPTY_OBJ] = None
-        data = pd.DataFrame(self.data, columns=self.columns)
+        self.df = pd.DataFrame(self.data, columns=self.columns)
+        if orig_columns_only:
+            # Remove additional columns that were added temporarily for execution purposes
+            self.df = self.df[self.orig_columns]
 
-        total_rows = len(data)
+        total_rows = len(self.df)
         total_dropped_rows = 0
 
         # Drop rows where primary key is a duplicate
         if self.primary_key:
-            orig_len = len(data)
+            orig_len = len(self.df)
 
-            if drop_duplicates:
+            if remove_duplicates:
                 # Drop rows where self.primary_key is a duplicate
-                data = data.drop_duplicates(self.primary_key, keep="first")
-                new_len = len(data)
+                self.df = self.df.drop_duplicates(self.primary_key, keep="first")
+                new_len = len(self.df)
             else:
                 # Add "drop" column for testing
-                columns = list(data.columns)
-                dupes_filt = data.duplicated(self.primary_key, keep="first")
-                data.loc[dupes_filt, DROP_COLUMN] = True
-                data = data[[DROP_COLUMN] + columns]
-                new_len = orig_len - data[DROP_COLUMN].sum()
+                columns = list(self.df.columns)
+                dupes_filt = self.df.duplicated(self.primary_key, keep="first")
+                self.df.loc[dupes_filt, DROP_COLUMN] = True
+                self.df = self.df[[DROP_COLUMN] + columns]
+                new_len = orig_len - self.df[DROP_COLUMN].sum()
 
             total_dropped_rows = total_rows - new_len
 
@@ -642,16 +645,41 @@ class GeneratorData:
                 f"Dropped duplicate primary keys for class '{self.class_name}': {orig_len} -> {new_len} (-{total_dropped_rows})"
             )
 
-        if orig_columns_only:
-            # Remove additional columns that were added temporarily for execution purposes
-            data = data[self.orig_columns]
+        self.total_rows = total_rows
+        self.total_rows_minus_dropped_rows = total_rows - total_dropped_rows
+        self.total_dropped_rows = total_dropped_rows
 
-        save_data_frame(data, output_file, index=False)
-
-        output_data_files = {self.class_name: [Path(output_file)]}
         return (
-            output_data_files,
-            total_rows,
-            total_rows - total_dropped_rows,
-            total_dropped_rows,
+            {self.class_name: [self.df]},
+            self.total_rows,
+            self.total_rows_minus_dropped_rows,
+            self.total_dropped_rows,
         )
+
+    def save_data(
+        self,
+        output_dir: str,
+    ) -> Tuple[Dict[str, List[Path]], Dict[str, List[pd.DataFrame]]]:
+        """Save the data to disk.
+
+        Args:
+            output_dir (str): Directory to save DataFrame to.
+
+        Returns:
+            Tuple[Dict[str, List[Path]], Dict[str, List[pd.DataFrame]]]: A tuple of two dictionaries corresponding
+                to (saved_files, data_frames):
+                    saved_files: All saved files, where the keys are the target class names and the values
+                        are lists of output files for the class.
+                    data_frames: All saved DataFrames, where the keys are the target class names
+                        and the values are lists of DataFrames for the class.
+                Note that saved_files["class_name"][idx] corresponds to the file that data_frames["class_name"][idx]
+                was saved to.
+        """
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
+        output_file = os.path.join(output_dir, f"{self.class_name}.csv")
+
+        save_data_frame(self.df, output_file, index=False)
+
+        return {self.class_name: [Path(output_file)]}, {self.class_name: [self.df]}
