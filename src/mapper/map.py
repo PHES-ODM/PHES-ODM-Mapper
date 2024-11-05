@@ -664,8 +664,9 @@ class Mapper(object):
         """Filter DataFrames according to a filter configuration file.
 
         Args:
-            data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of DataFrames, where the keys are
-                the class names and the values are lists of DataFrames belonging to the class.
+            data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of DataFrames to filter, where the
+                keys are the class names and the values are lists of DataFrames belonging to the class.
+                All DataFrames from the same class are merged then filtered.
             filter_config_file (Union[str, Path]): The filter configuration file to use (a CSV file)
 
         Returns:
@@ -675,22 +676,20 @@ class Mapper(object):
         logger.info("Filtering all data...")
         filter_tic = datetime.now()
         data_filter = DataFilter(filter_config_file)
-        filtered_mapped_data = {}
+
+        # Merge data
+        merged_data = {}
         for class_name, dfs in data_frames.items():
             df = pd.concat(dfs, ignore_index=True, axis=0)
-            data = {class_name: df}
-            data, _ = data_filter.run_filter(data=data)
-            for target_class, target_df in data.items():
-                if target_class not in filtered_mapped_data:
-                    filtered_mapped_data[target_class] = []
-                filtered_mapped_data[target_class].append(target_df)
-        # Combine the DataFrames in filtered_mapped_data
-        for target_class, all_df in filtered_mapped_data.items():
-            df = pd.concat(all_df, ignore_index=True, axis=0)
-            filtered_mapped_data[target_class] = [df]
+            merged_data[class_name] = df
+
+        # Filter data
+        filtered_data, _ = data_filter.run_filter(data=merged_data)
+        filtered_data = {k: [v] for k, v in filtered_data.items()}
 
         logger.info(f"Total time for filtering: {datetime.now() - filter_tic}")
-        return filtered_mapped_data
+
+        return filtered_data
 
     def save_data(
         self,
@@ -873,7 +872,8 @@ class Mapper(object):
         # Filter the data
         if self.module_config.filters:
             data_frames = self.filter_data(
-                data_frames=data_frames, filter_config_file=self.module_config.filters
+                data_frames=data_frames,
+                filter_config_file=self.module_config.filters,
             )
 
         # Save intermediate mapped and filtered (without ID generation) data to disk
@@ -906,21 +906,21 @@ if __name__ == "__main__":
         # fmt: off
         class opts:
             # ODM v1 to v2
-            module = "odm_v1_to_v2"
-            module_dir = None
-            input_data_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
-            input_data_files = None  # ["WWMeasure", "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
-            output_dir = "../../gen/odm_v1_to_v2"
-            temp_dir = "../../gen/odm_v1_to_v2/temp-100"
+            # module = "odm_v1_to_v2"
+            # module_dir = None
+            # input_data_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
+            # input_data_files = None  # ["WWMeasure", "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
+            # output_dir = "../../gen/odm_v1_to_v2"
+            # temp_dir = "../../gen/odm_v1_to_v2/temp-100"
 
             # NWSS to v2
-            # module = "nwss_reporting_to_v2"
-            # module_dir = None
-            # # input_data_dir = "../../../../PHES-ODM-Data/nwss/private_renamed_test/"
-            # input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
-            # input_data_files = None # [ "nwss", "../../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            # output_dir = "../../gen/nwss_reporting_to_v2-test-multi"
-            # temp_dir = "../../gen/nwss_reporting_to_v2-test-multi/temp"
+            module = "nwss_reporting_to_v2"
+            module_dir = None
+            # input_data_dir = "../../../../PHES-ODM-Data/nwss/private_renamed_test/"
+            input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            input_data_files = None # [ "nwss", "../../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
+            output_dir = "../../gen/nwss_reporting_to_v2-test-multi"
+            temp_dir = "../../gen/nwss_reporting_to_v2-test-multi/temp"
 
             max_processes = 1
             input_max_rows = 100
