@@ -292,6 +292,7 @@ class DataCleaner(object):
         output_data_files = {}
         output_data_frames = {}
 
+        # Loop through all data_files and data_frames
         for all_data in [data_files, data_frames]:
             if not all_data:
                 continue
@@ -300,11 +301,13 @@ class DataCleaner(object):
                     output_data_files[class_name] = []
                 if class_name not in output_data_frames:
                     output_data_frames[class_name] = []
+                # sub_data is either a list of files or a list of DataFrames
                 for data in sub_data:
                     data_file = data if isinstance(data, (str, Path)) else None
                     data_frame = data if isinstance(data, pd.DataFrame) else None
                     assert (data_file is None) != (data_frame is None)
 
+                    # Determine the output_file
                     if output_dir is not None:
                         if data_file:
                             output_file = os.path.join(
@@ -317,6 +320,7 @@ class DataCleaner(object):
                     else:
                         output_file = None
 
+                    # Clean the data
                     output_file, output_data_frame = self.clean_single_data(
                         data_file=data_file,
                         data_frame=data_frame,
@@ -324,6 +328,8 @@ class DataCleaner(object):
                         class_name=class_name,
                         max_rows=max_rows,
                     )
+
+                    # Keep the cleaned data for returning
                     output_data_files[class_name].append(
                         Path(output_file) if output_file else None
                     )
