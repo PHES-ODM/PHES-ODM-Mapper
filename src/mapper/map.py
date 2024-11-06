@@ -265,9 +265,11 @@ class Mapper(object):
                 if class_name not in data:
                     data[class_name] = []
                 data[class_name].extend(cur_data)
-                
+
                 from_str = f"from file: {file}" if file else "from preloaded DataFrame"
-                logger.info(f"Data from class '{class_name}' has {len(cur_data)} rows ({from_str})")
+                logger.info(
+                    f"Data from class '{class_name}' has {len(cur_data)} rows ({from_str})"
+                )
 
         return data
 
