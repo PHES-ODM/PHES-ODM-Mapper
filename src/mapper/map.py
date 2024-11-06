@@ -265,7 +265,9 @@ class Mapper(object):
                 if class_name not in data:
                     data[class_name] = []
                 data[class_name].extend(cur_data)
-                logger.info(f"Data file has {len(cur_data)} rows: {file}")
+                
+                from_str = f"from file: {file}" if file else "from preloaded DataFrame"
+                logger.info(f"Data from class '{class_name}' has {len(cur_data)} rows ({from_str})")
 
         return data
 
@@ -923,11 +925,11 @@ if __name__ == "__main__":
             # input_data_dir = "../../../../PHES-ODM-Data/nwss/private_renamed_test/"
             input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
             input_data_files = None # [ "nwss", "../../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            output_dir = "../../gen/nwss_reporting_to_v2-test-multi"
-            temp_dir = "../../gen/nwss_reporting_to_v2-test-multi/temp"
+            output_dir = "../../gen/nwss_reporting_to_v2-all"
+            temp_dir = "../../gen/nwss_reporting_to_v2-all/temp"
 
             max_processes = 1
-            input_max_rows = 100
+            input_max_rows = None
             id_debug = True
         # fmt: on
     else:
