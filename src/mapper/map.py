@@ -64,13 +64,14 @@ from filter import DataFilter
 from cleaner import DataCleaner
 from id_generator import IDGenerator
 from utils.cli_utils import get_input_data_files
-from utils.progress_counter import ProgressCounter
+from progress import ProgressCounter
 
 logger = get_logger(__name__)
 
 SAVE_INTERMEDIATE_TO_DISK = True
 
 MAP_BARID = "Mapper"
+LOADING_BARID = "Loading Data"
 
 RANDOM_SAMPLE_DATA = False
 
@@ -793,23 +794,28 @@ class Mapper(object):
                 are lists of DataFrames belonging to that class. The order of the DataFrames within each class are the
                 same as the order of the files in data_files for the same class.
         """
-        data_frames = {}
-        for class_name, files in data_files.items():
-            if class_name not in data_frames:
-                data_frames[class_name] = []
-            for file in files:
-                df = read_data_frame(
-                    file,
-                    nrows=None
-                    if RANDOM_SAMPLE_DATA
-                    else (max_rows if max_rows else None),
-                    keep_default_na=False,
-                    na_values=None,
-                )
-                # Add tracking columns
-                add_tracking_columns(df, class_name, file)
+        total_items = sum([len(d) for d in data_files.values()])
+        progress = ProgressCounter({LOADING_BARID: total_items}, multiple_bars=False)
+        progress.show_bar(LOADING_BARID)
+        with progress:
+            data_frames = {}
+            for class_name, files in data_files.items():
+                if class_name not in data_frames:
+                    data_frames[class_name] = []
+                for file in files:
+                    df = read_data_frame(
+                        file,
+                        nrows=None
+                        if RANDOM_SAMPLE_DATA
+                        else (max_rows if max_rows else None),
+                        keep_default_na=False,
+                        na_values=None,
+                    )
+                    # Add tracking columns
+                    add_tracking_columns(df, class_name, file)
 
-                data_frames[class_name].append(df)
+                    data_frames[class_name].append(df)
+                    progress.update(LOADING_BARID, 1)
         return data_frames
 
     def full_map(

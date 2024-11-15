@@ -13,8 +13,8 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from typing import Any, List, Dict, Union, Optional, Tuple
-from collections.abc import Iterable
 import yaml
+from collections.abc import Iterable
 from pathlib import Path
 import pandas as pd
 from datetime import datetime
@@ -31,11 +31,13 @@ from utils.general_utils import (
 )
 from utils.tracking_slots import TrackingSlots
 from utils.cli_utils import get_input_data_files
-from utils.progress_counter import ProgressCounter, EmptyCounter
+from progress import ProgressCounter, EmptyCounter
 from id_generator.id_function_bindings import FunctionBindings
 from id_generator.id_data_bindings import DataBindings
 from id_generator.generator_data import GeneratorData, IDValue
 from id_generator.id_na import isna, EMPTY_OBJ
+
+LOADING_BARID = "Preparing Data"
 
 logger = get_logger(__name__)
 
@@ -147,16 +149,22 @@ class IDGenerator(object):
         generated_slots = self.get_all_generated_slots_from_id_code()
         star_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get("*", [])
         all_data = merge_dicts_of_lists([data_files, data_frames])
-        for class_name, cur_data in all_data.items():
-            class_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get(class_name, [])
-            lookup_slots = list(set(class_lookup_slots + star_lookup_slots))
-            self.data[class_name] = GeneratorData(
-                class_name,
-                cur_data,
-                lookup_slots=lookup_slots,
-                generated_slots=generated_slots.get(class_name, []),
-                primary_key=self.get_primary_key_from_config(class_name),
-            )
+        progress = ProgressCounter(
+            {LOADING_BARID: len(all_data)}, multiple_bars=False
+        )
+        progress.show_bar(LOADING_BARID)
+        with progress:
+            for class_name, cur_data in all_data.items():
+                class_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get(class_name, [])
+                lookup_slots = list(set(class_lookup_slots + star_lookup_slots))
+                self.data[class_name] = GeneratorData(
+                    class_name,
+                    cur_data,
+                    lookup_slots=lookup_slots,
+                    generated_slots=generated_slots.get(class_name, []),
+                    primary_key=self.get_primary_key_from_config(class_name),
+                )
+                progress.update(LOADING_BARID, 1)
 
     def create_bindings(self):
         """Create the function and data bindings. Should be called once all data has been loaded
@@ -976,7 +984,7 @@ if __name__ == "__main__":
             # config_file = "../../data/modules/test/ids.yaml"
             
             # NWSS to ODM v2
-            input_data_dir = "../../gen/nwss_reporting_to_v2/temp-test/mapped_data"
+            input_data_dir = "../../gen/nwss_reporting_to_v2/temp-1000/mapped_data"
             input_data_files = None
             output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids-test"
             id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
