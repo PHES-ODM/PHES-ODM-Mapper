@@ -149,9 +149,7 @@ class IDGenerator(object):
         generated_slots = self.get_all_generated_slots_from_id_code()
         star_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get("*", [])
         all_data = merge_dicts_of_lists([data_files, data_frames])
-        progress = ProgressCounter(
-            {LOADING_BARID: len(all_data)}, multiple_bars=False
-        )
+        progress = ProgressCounter({LOADING_BARID: len(all_data)}, multiple_bars=False)
         progress.show_bar(LOADING_BARID)
         with progress:
             for class_name, cur_data in all_data.items():
