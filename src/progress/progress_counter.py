@@ -27,19 +27,22 @@ print("Final Progress:", progress.get_progress_report())
 ```
 """
 
-from tqdm import tqdm
 import sys
+import os
 from typing import Dict, Optional, List
 import logging
 import time
-from abc import abstractmethod, ABC
 
-DEFAULT_ENCODING = sys.getdefaultencoding()
+sys.path.append(os.path.dirname(__file__))
+
+from hook_writer import HookWriter
+from single_bar import SingleBar
+from base_counter import BaseCounter
 
 # Maximum allowable width (in characters) of the description of a tqdm bar
 MAX_DESC_WIDTH = 20
 # Width (in characters) of the slider portion of the progress bar.
-BAR_WIDTH = 80
+BAR_WIDTH = 70
 # Format of a tqdm bar passed tqdm() constructor as bar_format parameter.
 # %(maxdesc) and %(barwidth) receive the width of the description and the
 # width of the slider part of the bar.
@@ -47,197 +50,15 @@ BAR_FORMAT = (
     "{desc:<%(maxdesc)d.%(maxdesc)d}{percentage:3.0f}%%|{bar:%(barwidth)d}{r_bar}\x1b[K"
 )
 
-# Passed as mininterval and maxinterval to tqdm() constructor
-TQDM_MININTERVAL = 0.2
-TQDM_MAXINTERVAL = 10.0
-
 # Key used to access the total bar (eg. when calling ProgressCounter.show_bar() and ProgressCounter.has_bar())
 TOTAL_BARID = None
 
+# Hide cursor when progress bar is visible. Unfortunately if the user presses Ctrl+C the cursor is not
+# reshown (since __exit__ is not called). So we may want to keep this at False
+HIDE_CURSOR = False
 
-class HookWriter(object):
-    """
-    Intercepts output (eg. to a logging.StreamHandler, sys.stdout, or sys.stderr) and modifies the text
-    to ensure that output looks nice while a ProgressCounter is running. The main purpose is to clear
-    the output line before writing output, to clear any artifacts left by a tqdm bar.
-    """
-
-    def __init__(self, stream, progress_counter):
-        # at_new_line is True whenever we are at the start of a line for this particular HookWriter.
-        # If we are at the start of a line then we clear the line and force return to the start
-        # before writing text.
-        # If we're not at the start we do not clear the line or return to the start before writing text.
-        self.at_new_line = True
-        self.progress_counter = progress_counter
-        self.stream = stream
-        if isinstance(stream, logging.StreamHandler):
-            # For StreamHandlers (ie. a handler for logging), replace the stream with ourself
-            # so we can intercept all output to modify it.
-            self.output_stream = stream.stream
-            try:
-                self.stream.setStream(self)
-            except Exception:
-                # logging.error(f"Could not set HookWriter for stream {self.stream}")
-                pass
-        else:
-            # For non-StreamHandlers (eg. stdout and stderr), just save the stream, we will
-            # write our modified output to it.
-            self.output_stream = stream
-        self.flush()
-
-    def restore(self):
-        """Restore the original stream so that we no longer intercept output of the stream.
-
-        This will restore streams for a logging.StreamHandler. For others, such as sys.stdout
-        and sys.stderr, they should be restored manually by the caller (eg. sys.stdout = original_stdout)
-        """
-        if isinstance(self.stream, logging.StreamHandler):
-            self.stream.setStream(self.output_stream)
-
-    def write(self, msg):
-        """Write handler. Called when writing to the original stream that we're intercepting.
-
-        Args:
-            msg: The text to write.
-        """
-        if isinstance(msg, bytes):
-            msg = msg.decode(DEFAULT_ENCODING)
-
-        if self.at_new_line:
-            # Clear whole line and force return to start of line
-            self.output_stream.write("\x1b[2K\r")
-
-        # For this particular Writer, we are at the beginning of a line when at_new_line is True.
-        # In the next call to write, we will clear the line when at_new_line is True
-        self.at_new_line = msg.endswith("\n")
-
-        # Any new lines should consist of a new line followed immediately by a clear line
-        msg = msg.replace("\n", "\n\x1b[2K")
-
-        # Output the text
-        self.output_stream.write(msg)
-
-        if self.progress_counter:
-            # A ProgressCounter is currently running, so tell it to redraw the progress bars on
-            # the next frame
-            self.progress_counter.refresh_next_update()
-
-    def flush(self):
-        self.output_stream.flush()
-
-    @property
-    def encoding(self):
-        return self.output_stream.encoding
-
-
-class SingleBar(object):
-    def __init__(
-        self, title: str, bar_format: str, total: int, position: int, show_bar: bool
-    ):
-        """Create a single progress bar. This is a wrapper to a tqdm bar.
-
-        Args:
-            title (str): The title/description of the bar, passed to tqdm constructor as the desc
-                parameter.
-            bar_format (str): The format of the bar, passed to tqdm constructor.
-            total (int): The total count for the bar, passed to tqdm constructor.
-            position (int): The vertical position of the bar, passed to tqdm constructor.
-            show_bar (bool): If True then immediately create and show the bar. If False then the
-                bar is not created, it must be created later by calling show_bar().
-        """
-        self.title = title
-        self.bar_format = bar_format
-        self.position = position
-        self.total = total
-        self.count = 0
-        self.percent_complete = 0
-        self.bar = None
-
-        if show_bar:
-            self.show_bar()
-
-    def show_bar(self):
-        """Show the bar by creating the tqdm bar."""
-        if self.bar is None:
-            self.bar = tqdm(
-                desc=self.title,
-                bar_format=self.bar_format,
-                total=self.total,
-                position=self.position,
-                mininterval=TQDM_MININTERVAL,
-                maxinterval=TQDM_MAXINTERVAL,
-            )
-            self.bar.update(self.count)
-
-    def hide_bar(self):
-        """Close the bar.
-
-        The bar is first refreshed then destroyed. Any previous output is not erased, but the bar is no longer updated and no longer exists.
-        """
-        if self.bar is not None:
-            self.bar.refresh()
-            self.bar.close()
-        self.bar = None
-
-    def set_bar_title(self, title: str):
-        """Set the title/description of the bar.
-
-        Args:
-            title (str): The new title/description of the bar.
-        """
-        self.bar.set_description(title)
-
-    def update(self, inc: int):
-        """Update the bar count by increasing the progress by inc.
-
-        Args:
-            inc (int): The number of increments to increase the bar count by. This is passed to tqdm.update(inc)
-        """
-        self.count += inc
-        self.percent_complete = self.count / self.total * 100
-        if self.bar is not None:
-            self.bar.update(inc)
-            if self.count >= self.total:
-                self.refresh()
-
-    def refresh(self):
-        """Redraw the bar."""
-        if self.bar:
-            self.bar.refresh()
-
-    def close(self):
-        """Close and delete the bar."""
-        if self.bar is not None:
-            self.bar.close()
-            self.bar = None
-
-
-class BaseCounter(ABC):
-    def __init__(self, *args, **kwargs): ...
-
-    @abstractmethod
-    def __enter__(self): ...
-
-    @abstractmethod
-    def __exit__(self, exception_type, exception_value, exception_traceback): ...
-
-    @abstractmethod
-    def show_bar(self, barid: Optional[str]): ...
-
-    @abstractmethod
-    def update(self, barid: str, inc: int): ...
-
-    @abstractmethod
-    def refresh_next_update(self): ...
-
-    @abstractmethod
-    def close(self): ...
-
-    @abstractmethod
-    def get_progress_report(self, separator: str = " / ") -> str: ...
-
-    @abstractmethod
-    def has_bar(self, barid: str) -> bool: ...
+HOOK_STDOUT = True
+HOOK_STDERR = True
 
 
 class EmptyCounter(BaseCounter):
@@ -420,13 +241,16 @@ class ProgressCounter(BaseCounter):
         """Call this to force a redraw of all visible bars in the next call to update()."""
         self.refresh_next = True
 
-    def update(self, barid: str, inc: int):
+    def update(self, barid: str, inc: int, force_refresh: bool = False):
         """Update the bar with the specified barid by increasing its count by inc.
 
         Args:
             barid (str): The barid of the bar to update. Should be one of the barids passed as the totals parameter to the
                 ProgressCounter constructor. Do not pass TOTAL_BARID, as the total bar is updated automatically when each
                 of the other bars are updated.
+            force_refresh (bool): If True then refresh (re-output) all bars immediately. If False then only refresh the
+                if the minimum refresh duration or iterations have occurred (according to the full_refresh_duration or
+                full_refresh_iters parameters passed to the constructor).
             inc (int): Amount to increase the bar's count by.
         """
         assert barid != TOTAL_BARID
@@ -439,7 +263,8 @@ class ProgressCounter(BaseCounter):
 
         # Refresh all bars every self.full_refresh_iters iterations or self.full_refresh_duration seconds
         if (
-            self.refresh_next
+            force_refresh
+            or self.refresh_next
             or (
                 self.full_refresh_iters is not None
                 and total_bar.count - self.last_refresh_iter >= self.full_refresh_iters
@@ -449,13 +274,20 @@ class ProgressCounter(BaseCounter):
                 and (time.time() - self.last_refresh_time) >= self.full_refresh_duration
             )
         ):
-            self.refresh_next = False
-            self.last_refresh_time = time.time()
-            self.last_refresh_iter = total_bar.count
-            for bar in self.progress_bars.values():
-                if bar:
-                    bar.refresh()
-            total_bar.refresh()
+            self.refresh()
+
+    def refresh(self):
+        self.refresh_next = False
+        self.last_refresh_time = time.time()
+        self.last_refresh_iter = self.progress_bars[TOTAL_BARID].count
+        for bar in self.progress_bars.values():
+            if bar:
+                bar.refresh()
+
+    def flush(self):
+        for bar in self.progress_bars.values():
+            if bar:
+                bar.bar.fp.flush()
 
     def close(self):
         """Class/delete all tqdm bars and uninstall any output hooks."""
@@ -487,21 +319,26 @@ class ProgressCounter(BaseCounter):
             ]
         )
         # Install the hooks
-        self.hook_handlers = {h: HookWriter(h, self) for h in handlers}
+        self.hook_handlers = {h: HookWriter(h, self.refresh) for h in handlers}
         # Hide cursor
-        sys.stdout.write("\x1b[?25l")
+        if HIDE_CURSOR:
+            sys.stdout.write("\x1b[?25l")
         # Replace stdout and stderr (for intercepting calls to print() and any new StreamHandler created after
         # installing the hooks)
-        sys.stdout = self.stdout_hook = HookWriter(sys.stdout, self)
-        sys.stderr = self.stderr_hook = HookWriter(sys.stderr, self)
+        if HOOK_STDOUT:
+            sys.stdout = self.stdout_hook = HookWriter(sys.stdout, self.refresh)
+        if HOOK_STDERR:
+            sys.stderr = self.stderr_hook = HookWriter(sys.stderr, self.refresh)
 
     def _flush_hooks(self):
         """Flush all output hooks, if any were installed when calling the constructor with install_output_hooks=True."""
         if not self.install_output_hooks:
             return
 
-        self.stdout_hook.flush()
-        self.stderr_hook.flush()
+        if HOOK_STDOUT:
+            self.stdout_hook.flush()
+        if HOOK_STDERR:
+            self.stderr_hook.flush()
         for writer in self.hook_handlers.values():
             writer.flush()
 
@@ -513,14 +350,17 @@ class ProgressCounter(BaseCounter):
         self._flush_hooks()
 
         # Restore stdout and stderr
-        sys.stdout = self.stdout_hook.stream
-        sys.stderr = self.stderr_hook.stream
+        if HOOK_STDOUT:
+            sys.stdout = self.stdout_hook.stream
+        if HOOK_STDERR:
+            sys.stderr = self.stderr_hook.stream
         # Restore all StreamHandlers
         for writer in self.hook_handlers.values():
             writer.restore()
 
         # Show cursor
-        sys.stdout.write("\x1b[?25h")
+        if HIDE_CURSOR:
+            sys.stdout.write("\x1b[?25h")
 
     def get_progress_report(self, separator: str = " / ") -> str:
         """Get a descriptive string showing the progress (count/total and percent complete) of all
@@ -538,6 +378,9 @@ class ProgressCounter(BaseCounter):
         ]
 
         return separator.join(data)
+
+    def get_count(self, barid: str) -> int:
+        return self.progress_bars[barid].count
 
 
 if __name__ == "__main__":
@@ -565,9 +408,11 @@ if __name__ == "__main__":
     )
 
     is_ipython = "get_ipython" in globals()
+    loggerA = logging.getLogger(__name__)
     progress = ProgressCounter(
         bar_totals, multiple_bars=not is_ipython, install_output_hooks=not is_ipython
     )
+    loggerB = logging.getLogger(__name__)
     with progress:
         # import random
         # bar_counts = { barid: 0 for barid in bar_totals.keys() }
@@ -592,8 +437,10 @@ if __name__ == "__main__":
                 current_bar
             )  # Only has an effect if multiple_bars is False
             for i in range(current_total):
-                if random.randint(0, 10000) == 1:
-                    print("Progress:", progress.get_progress_report())
+                if random.randint(0, 1000) == 1:
+                    # print("Progress:", progress.get_progress_report())
+                    # print("Progress", "with", "test")
+                    print("Progress", progress.get_count(TOTAL_BARID))
                 progress.update(current_bar, 1)
                 time.sleep(0.0001)
     print(f"Final Progress: {progress.get_progress_report()}")
