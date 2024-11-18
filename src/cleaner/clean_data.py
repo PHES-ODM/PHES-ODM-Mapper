@@ -22,11 +22,11 @@ from linkml_runtime import SchemaView
 from utils.general_utils import (
     read_data_frame,
     save_data_frame,
-    get_logger,
     choose_ignore_case_value,
     clear_dirs,
     get_unique_output_file,
 )
+from utils.logger import get_logger
 from utils.tracking_slots import get_all_tracking_slots
 from utils.cli_utils import get_input_data_files
 from utils.schema_utils import get_ranges_of_slot
@@ -48,21 +48,24 @@ class DataCleaner(object):
         self,
         schema: Optional[Union[str, Path, SchemaView]] = None,
     ):
-        self.log = []
+        self.log = {}
         self.immediate_output_log = False
         if isinstance(schema, (str, Path)):
             self.schema = SchemaView(schema)
 
-    def add_to_log(self, msg):
-        self.log.append(msg)
+    def add_to_log(self, level: str, msg: str):
+        if level not in self.log:
+            self.log[level] = []
+        self.log[level].append(msg)
         if self.immediate_output_log:
             self.output_all_log(clear=True)
 
     def output_all_log(self, clear: bool):
-        for msg in self.log:
-            logger.info(msg)
+        for level, log in self.log.items():
+            for msg in log:
+                getattr(logger, level)(msg)
         if clear:
-            self.log = []
+            self.log = {}
 
     def fix_data_with_schema(self, df: pd.DataFrame, class_name: str) -> pd.DataFrame:
         """Using the schema, do some basic cleanup of the DataFrame so that it better matches
@@ -156,10 +159,11 @@ class DataCleaner(object):
                 slot_history[change_str] = f"{count} time{'s' if count != 1 else ''}"
             slot_history = [f"{k} ({c})" for k, c in slot_history.items()]
             # changes_str = "; ".join(slot_history)
-            changes_str = "\n      ".join([""] + slot_history)
+            changes_str = "\n       ".join([""] + slot_history)
             if changes_str:
                 self.add_to_log(
-                    f"The following enumeration values were automatically corrected for capitalization in column '{slot_name}' of table '{class_name}': {changes_str}"
+                    "warning",
+                    f"The following enumeration values were automatically corrected for capitalization in column '{slot_name}' of table '{class_name}': {changes_str}",
                 )
 
         return df[keep_columns]

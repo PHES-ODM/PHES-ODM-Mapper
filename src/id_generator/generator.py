@@ -23,9 +23,9 @@ import argparse
 import numpy as np
 import traceback
 
+from utils.logger import get_logger
 from utils.general_utils import (
     read_data_frame,
-    get_logger,
     clear_dirs,
     merge_dicts_of_lists,
 )

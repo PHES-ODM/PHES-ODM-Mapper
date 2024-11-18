@@ -17,7 +17,7 @@ from datetime import datetime
 from dateutil.parser import parse
 import pytz
 
-from utils.general_utils import get_logger
+from utils.logger import get_logger
 from id_generator.id_value import IDValue
 
 logger = get_logger(__name__)

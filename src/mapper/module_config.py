@@ -22,7 +22,7 @@ from typing import Union
 from pathlib import Path
 import yaml
 
-from utils.general_utils import get_logger
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

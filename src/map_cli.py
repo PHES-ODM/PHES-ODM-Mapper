@@ -18,7 +18,7 @@ import argparse
 from datetime import datetime
 
 from mapper import Mapper
-from utils.general_utils import get_logger
+from utils.logger import get_logger
 from utils.cli_utils import get_input_data_files
 from utils.clean_exit_error import CleanExitError
 

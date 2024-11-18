@@ -35,12 +35,12 @@ from pathlib import Path
 from id_generator.row_index_lookup import RowIndexLookup
 from id_generator.id_value import IDValue
 from id_generator.id_na import EMPTY_OBJ, isna
-from utils.tracking_slots import TrackingSlots
 
+from utils.logger import get_logger
+from utils.tracking_slots import TrackingSlots
 from utils.general_utils import (
     read_data_frame,
     save_data_frame,
-    get_logger,
 )
 
 logger = get_logger(__name__)

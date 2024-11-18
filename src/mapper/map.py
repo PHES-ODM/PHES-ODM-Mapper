@@ -44,14 +44,15 @@ from linkml_map.session import Session
 from linkml_runtime import SchemaView
 
 from mapper.module_config import ModuleConfig
+from utils.logger import get_logger
 from utils.general_utils import (
     save_data_frame,
     read_data_frame,
-    get_logger,
     order_columns,
     get_class_name_from_file_name,
     clear_dirs,
     merge_dicts_of_lists,
+    choose_ignore_case_value,
 )
 from utils.tracking_slots import (
     TrackingSlots,
@@ -868,6 +869,7 @@ class Mapper(object):
         progress = ProgressCounter({LOADING_BARID: total_items}, multiple_bars=False)
         progress.show_bar(LOADING_BARID)
 
+        warning_log = []
         with progress:
             data_frames = {}
             for class_name, files in data_files.items():
@@ -890,6 +892,48 @@ class Mapper(object):
                         keep_default_na=False,
                         na_values=None,
                     )
+
+                    # Check for missing required columns
+                    class_defn = schema.induced_class(class_name)
+                    required_attributes = [
+                        attr
+                        for attr, defn in class_defn.attributes.items()
+                        if defn.required
+                    ]
+                    missing_required_attributes = [
+                        r for r in required_attributes if r not in df.columns
+                    ]
+                    if missing_required_attributes:
+                        missing_required_attributes_str = "\n        ".join(
+                            [""] + missing_required_attributes
+                        )
+                        warning_log.append(
+                            f"The following required columns are missing in table '{class_name}' and will be treated as blank from file {file}:{missing_required_attributes_str}"
+                        )
+
+                    # Check for extra unrecognized columns
+                    all_attributes = list(class_defn.attributes.keys())
+                    unrecognized_attributes = [
+                        attr for attr in df.columns if attr not in all_attributes
+                    ]
+                    if unrecognized_attributes:
+                        recommended = [
+                            choose_ignore_case_value(
+                                c, all_attributes, return_same_if_missing=False
+                            )
+                            for c in unrecognized_attributes
+                        ]
+                        unrecognized_with_recommended = [
+                            f"{c}%s" % (f" (Recommended column name: {r})" if r else "")
+                            for c, r in zip(unrecognized_attributes, recommended)
+                        ]
+                        unrecognized_with_recommended_str = "\n        ".join(
+                            [""] + unrecognized_with_recommended
+                        )
+                        warning_log.append(
+                            f"The following unrecognized columns were found and will be ignored in table '{class_name}' from file {file}:{unrecognized_with_recommended_str}"
+                        )
+
                     # Add tracking columns
                     add_tracking_columns(df, class_name, file)
 
@@ -900,6 +944,10 @@ class Mapper(object):
                     )
 
                     progress.update(LOADING_BARID, 1)
+
+        if warning_log:
+            for msg in warning_log:
+                logger.warning(msg)
 
         return data_frames
 

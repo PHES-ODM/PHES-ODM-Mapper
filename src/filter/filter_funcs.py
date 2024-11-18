@@ -31,7 +31,7 @@ from typing import Dict, Any
 import pandas as pd
 from functools import reduce
 
-from utils.general_utils import get_logger
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

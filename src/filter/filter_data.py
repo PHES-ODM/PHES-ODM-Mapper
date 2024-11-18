@@ -37,11 +37,11 @@ from pathlib import Path
 import os
 from datetime import datetime
 
+from utils.logger import get_logger
 from utils.general_utils import (
     read_data_frame,
     save_data_frame,
     parse_df_values,
-    get_logger,
 )
 from utils.cli_utils import get_input_data_files
 from filter.filter_funcs import call_filter_func
