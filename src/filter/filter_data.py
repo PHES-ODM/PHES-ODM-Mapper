@@ -45,8 +45,11 @@ from utils.general_utils import (
 )
 from utils.cli_utils import get_input_data_files
 from filter.filter_funcs import call_filter_func
+from progress import ProgressCounter
 
 logger = get_logger(__name__)
+
+FILTER_BARID = "Filtering"
 
 
 class FilterConfigColumns:
@@ -88,7 +91,7 @@ class DataFilter(object):
         data = {}
         for class_name, files in data_files.items():
             for file in files:
-                logger.info(f"Loading data from {file} (class='{class_name}')")
+                logger.debug(f"Loading data from {file} (class='{class_name}')")
 
                 # Load the data and append to any existing data for the class
                 df = read_data_frame(file, keep_default_na=False, na_values=[""])
@@ -124,7 +127,7 @@ class DataFilter(object):
             output_data_dir.mkdir()
         for cur_class, cur_data in data.items():
             output_file = output_data_dir / f"{cur_class}.csv"
-            logger.info(f"Saving data to {output_file}")
+            logger.debug(f"Saving data to {output_file}")
             save_data_frame(cur_data, output_file, index=False)
 
             if cur_class not in output_files:
@@ -168,40 +171,47 @@ class DataFilter(object):
             data = data.copy()
 
         filters = {}
-        # Go through each row and perform the filtering
-        for _, config_row in self.config_df.iterrows():
-            input_filter = str(config_row[FilterConfigColumns.INPUT_FILTER])
-            output_filter = str(config_row[FilterConfigColumns.OUTPUT_FILTER])
-            cls = config_row[FilterConfigColumns.CLASS]
-            slot = config_row[FilterConfigColumns.SLOT]
-            op = config_row[FilterConfigColumns.OPERATION]
-            value = config_row[FilterConfigColumns.VALUE]
+        progress = ProgressCounter(
+            {FILTER_BARID: len(self.config_df)}, multiple_bars=False
+        )
+        progress.show_bar(FILTER_BARID)
+        with progress:
+            # Go through each row and perform the filtering
+            for _, config_row in self.config_df.iterrows():
+                input_filter = str(config_row[FilterConfigColumns.INPUT_FILTER])
+                output_filter = str(config_row[FilterConfigColumns.OUTPUT_FILTER])
+                cls = config_row[FilterConfigColumns.CLASS]
+                slot = config_row[FilterConfigColumns.SLOT]
+                op = config_row[FilterConfigColumns.OPERATION]
+                value = config_row[FilterConfigColumns.VALUE]
 
-            if cls and cls not in data:
-                # logger.info(f"Not running filter on class '{cls}', data for class does not exist")
-                continue
+                if cls and cls not in data:
+                    # logger.debug(f"Not running filter on class '{cls}', data for class does not exist")
+                    progress.update(FILTER_BARID, 1)
+                    continue
 
-            logger.info(
-                f"Running input filter '{input_filter}', output filter '{output_filter}' with operation '{op}' on class '{cls}', slot '{slot}', and value '{value}'"
-            )
+                logger.debug(
+                    f"Running input filter '{input_filter}', output filter '{output_filter}' with operation '{op}' on class '{cls}', slot '{slot}', and value '{value}'"
+                )
 
-            # Perform the filtering operation
-            call_filter_func(
-                op,
-                input_name=input_filter,
-                output_name=output_filter,
-                filters=filters,
-                data=data,
-                cls=cls,
-                slot=slot,
-                value=value,
-            )
+                # Perform the filtering operation
+                call_filter_func(
+                    op,
+                    input_name=input_filter,
+                    output_name=output_filter,
+                    filters=filters,
+                    data=data,
+                    cls=cls,
+                    slot=slot,
+                    value=value,
+                )
+                progress.update(FILTER_BARID, 1)
 
         output_files = {}
         if output_data_dir:
             output_files = self.save_data(data, output_data_dir)
 
-        logger.info(f"Filtered in {datetime.now() - tic}")
+        logger.debug(f"Filtered in {datetime.now() - tic}")
         return data, output_files
 
 
