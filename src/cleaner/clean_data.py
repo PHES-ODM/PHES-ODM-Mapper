@@ -30,6 +30,9 @@ from utils.general_utils import (
 from utils.tracking_slots import get_all_tracking_slots
 from utils.cli_utils import get_input_data_files
 from utils.schema_utils import get_ranges_of_slot
+from progress import ProgressCounter
+
+CLEAN_BARID = "Cleaning Data"
 
 # If True and max_rows is specified in clean_data_file, then when loading the input dataset, load the
 # full dataset then take a random sample from it. Note that the random state (seed) is kept constant
@@ -45,8 +48,21 @@ class DataCleaner(object):
         self,
         schema: Optional[Union[str, Path, SchemaView]] = None,
     ):
+        self.log = []
+        self.immediate_output_log = False
         if isinstance(schema, (str, Path)):
             self.schema = SchemaView(schema)
+
+    def add_to_log(self, msg):
+        self.log.append(msg)
+        if self.immediate_output_log:
+            self.output_all_log(clear=True)
+
+    def output_all_log(self, clear: bool):
+        for msg in self.log:
+            logger.info(msg)
+        if clear:
+            self.log = []
 
     def fix_data_with_schema(self, df: pd.DataFrame, class_name: str) -> pd.DataFrame:
         """Using the schema, do some basic cleanup of the DataFrame so that it better matches
@@ -61,21 +77,21 @@ class DataCleaner(object):
             pd.DataFrame: A copy of the DataFrame, with the basic cleanup performed.
         """
         if class_name not in self.schema.all_classes():
-            logger.info(
+            logger.debug(
                 f"Not cleaning data for class {class_name} since class is not recognized"
             )
             return df
 
-        logger.info(f"Cleaning data for class {class_name}")
+        logger.debug(f"Cleaning data for class {class_name}")
         df = df.copy()
 
         class_definition = self.schema.induced_class(class_name)
 
         # Fix up column names (Use correct capitalization)
-        df.columns = [
-            choose_ignore_case_value(col, list(class_definition.attributes.keys()))
-            for col in df.columns
-        ]
+        # df.columns = [
+        #     choose_ignore_case_value(col, list(class_definition.attributes.keys()))
+        #     for col in df.columns
+        # ]
 
         # changes_history stores a count of the changes made to enumeration values to correct for capitalization.
         # The keys are the slot name, and the values are a sub dictionary. The keys of the sub dictionary
@@ -138,11 +154,12 @@ class DataCleaner(object):
         for slot_name, slot_history in changes_history.items():
             for change_str, count in slot_history.items():
                 slot_history[change_str] = f"{count} time{'s' if count != 1 else ''}"
-            slot_history = [f"'{k}' {c}" for k, c in slot_history.items()]
-            changes_str = "; ".join(slot_history)
+            slot_history = [f"{k} ({c})" for k, c in slot_history.items()]
+            # changes_str = "; ".join(slot_history)
+            changes_str = "\n      ".join([""] + slot_history)
             if changes_str:
-                logger.info(
-                    f"The following enumeration values were automatically corrected for capitalization in slot '{slot_name}' of class '{class_name}': {changes_str}"
+                self.add_to_log(
+                    f"The following enumeration values were automatically corrected for capitalization in column '{slot_name}' of table '{class_name}': {changes_str}"
                 )
 
         return df[keep_columns]
@@ -223,7 +240,7 @@ class DataCleaner(object):
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         if data_file is not None:
-            logger.info(f"Cleaning data from {data_file}")
+            logger.debug(f"Cleaning data from {data_file}")
 
             # Read the DataFrame from disk
             df = read_data_frame(
@@ -245,7 +262,7 @@ class DataCleaner(object):
 
         # Save to disk
         if output_file is not None:
-            logger.info(f"Saving fixed data to {output_file}")
+            logger.debug(f"Saving fixed data to {output_file}")
             save_data_frame(df, output_file, index=False)
 
         return output_file, df
@@ -292,49 +309,60 @@ class DataCleaner(object):
         output_data_files = {}
         output_data_frames = {}
 
-        # Loop through all data_files and data_frames
-        for all_data in [data_files, data_frames]:
-            if not all_data:
-                continue
-            for class_name, sub_data in all_data.items():
-                if class_name not in output_data_files:
-                    output_data_files[class_name] = []
-                if class_name not in output_data_frames:
-                    output_data_frames[class_name] = []
-                # sub_data is either a list of files or a list of DataFrames
-                for data in sub_data:
-                    data_file = data if isinstance(data, (str, Path)) else None
-                    data_frame = data if isinstance(data, pd.DataFrame) else None
-                    assert (data_file is None) != (data_frame is None)
+        total = (len(data_files) if data_files else 0) + (
+            len(data_frames) if data_frames else 0
+        )
+        progress = ProgressCounter({CLEAN_BARID: total}, multiple_bars=False)
+        progress.show_bar(CLEAN_BARID)
 
-                    # Determine the output_file
-                    if output_dir is not None:
-                        if data_file:
-                            output_file = os.path.join(
-                                output_dir, os.path.basename(data_file)
-                            )
+        with progress:
+            # Loop through all data_files and data_frames
+            for all_data in [data_files, data_frames]:
+                if not all_data:
+                    continue
+                for class_name, sub_data in all_data.items():
+                    if class_name not in output_data_files:
+                        output_data_files[class_name] = []
+                    if class_name not in output_data_frames:
+                        output_data_frames[class_name] = []
+                    # sub_data is either a list of files or a list of DataFrames
+                    for data in sub_data:
+                        data_file = data if isinstance(data, (str, Path)) else None
+                        data_frame = data if isinstance(data, pd.DataFrame) else None
+                        assert (data_file is None) != (data_frame is None)
+
+                        # Determine the output_file
+                        if output_dir is not None:
+                            if data_file:
+                                output_file = os.path.join(
+                                    output_dir, os.path.basename(data_file)
+                                )
+                            else:
+                                output_file = os.path.join(
+                                    output_dir, f"{class_name}.csv"
+                                )
+                            # Make sure the output file doesn't already exist
+                            output_file = get_unique_output_file(output_file)
                         else:
-                            output_file = os.path.join(output_dir, f"{class_name}.csv")
-                        # Make sure the output file doesn't already exist
-                        output_file = get_unique_output_file(output_file)
-                    else:
-                        output_file = None
+                            output_file = None
 
-                    # Clean the data
-                    output_file, output_data_frame = self.clean_single_data(
-                        data_file=data_file,
-                        data_frame=data_frame,
-                        output_file=output_file,
-                        class_name=class_name,
-                        max_rows=max_rows,
-                    )
+                        # Clean the data
+                        output_file, output_data_frame = self.clean_single_data(
+                            data_file=data_file,
+                            data_frame=data_frame,
+                            output_file=output_file,
+                            class_name=class_name,
+                            max_rows=max_rows,
+                        )
 
-                    # Keep the cleaned data for returning
-                    output_data_files[class_name].append(
-                        Path(output_file) if output_file else None
-                    )
-                    output_data_frames[class_name].append(output_data_frame)
+                        # Keep the cleaned data for returning
+                        output_data_files[class_name].append(
+                            Path(output_file) if output_file else None
+                        )
+                        output_data_frames[class_name].append(output_data_frame)
+                        progress.update(CLEAN_BARID, 1)
 
+        self.output_all_log(clear=True)
         return output_data_files, output_data_frames
 
 
