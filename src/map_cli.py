@@ -18,9 +18,13 @@ import argparse
 from datetime import datetime
 
 from mapper import Mapper
+from utils.general_utils import get_logger
 from utils.cli_utils import get_input_data_files
+from utils.clean_exit_error import CleanExitError
 
 if __name__ == "__main__":
+    logger = get_logger(__name__)
+
     if "get_ipython" in globals():
         # fmt: off
         class opts:
@@ -29,8 +33,8 @@ if __name__ == "__main__":
             # module_dir = None
             # input_data_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
             # input_data_files = None  # ["WWMeasure", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
-            # output_dir = "../gen/odm_v1_to_v2"
-            # temp_dir = "../gen/odm_v1_to_v2/temp-1000"
+            # output_dir = "../gen/odm_v1_to_v2-test"
+            # temp_dir = "../gen/odm_v1_to_v2-test/temp"
 
             # NWSS to v2
             module = "nwss_reporting_to_v2"
@@ -38,8 +42,8 @@ if __name__ == "__main__":
             # input_data_dir = "../../../PHES-ODM-Data/nwss/private_renamed_test/"
             input_data_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
             input_data_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            output_dir = "../gen/nwss_reporting_to_v2"
-            temp_dir = "../gen/nwss_reporting_to_v2/temp"
+            output_dir = "../gen/nwss_reporting_to_v2-test"
+            temp_dir = "../gen/nwss_reporting_to_v2-test/temp"
 
             max_processes = 1
             input_max_rows = 1000
@@ -107,20 +111,22 @@ if __name__ == "__main__":
         )
         opts = args.parse_args()
 
-    tic = datetime.now()
+    try:
+        logger.info(f"Starting run at {datetime.now()}")
+        data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
 
-    data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
-
-    mapper = Mapper(
-        module=opts.module,
-        module_dir=opts.module_dir,
-        id_debug=opts.id_debug,
-        multi_bar_progress="get_ipython" not in globals(),
-    )
-    mapper.full_map(
-        data_files=data_files,
-        output_dir=opts.output_dir,
-        temp_dir=opts.temp_dir,
-        input_max_rows=opts.input_max_rows,
-        max_processes=opts.max_processes,
-    )
+        mapper = Mapper(
+            module=opts.module,
+            module_dir=opts.module_dir,
+            id_debug=opts.id_debug,
+            multi_bar_progress="get_ipython" not in globals(),
+        )
+        mapper.full_map(
+            data_files=data_files,
+            output_dir=opts.output_dir,
+            temp_dir=opts.temp_dir,
+            input_max_rows=opts.input_max_rows,
+            max_processes=opts.max_processes,
+        )
+    except CleanExitError as e:
+        logger.error(str(e))
