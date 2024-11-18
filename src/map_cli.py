@@ -130,3 +130,5 @@ if __name__ == "__main__":
         )
     except CleanExitError as e:
         logger.error(str(e))
+    except KeyboardInterrupt:
+        logger.error("Interrupted by user")
