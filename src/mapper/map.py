@@ -60,18 +60,22 @@ from utils.tracking_slots import (
     load_schema_with_tracking_slots,
     add_tracking_slots_derivations,
 )
+from utils.clean_exit_error import CleanExitError
 from filter import DataFilter
 from cleaner import DataCleaner
 from id_generator import IDGenerator
 from utils.cli_utils import get_input_data_files
-from progress import ProgressCounter
+from progress import ProgressCounter, EmptyCounter
 
 logger = get_logger(__name__)
 
-SAVE_INTERMEDIATE_TO_DISK = True
+SAVE_INTERMEDIATE_TO_DISK = False
 
-MAP_BARID = "Mapper"
+MAP_BARID = "Initial Mapping"
 LOADING_BARID = "Loading Data"
+SAVE_PREID_BARID = "Saving Mapped Data"
+SAVE_BARID = "Saving Data"
+PREPARE_BARID = "Preparing Data"
 
 RANDOM_SAMPLE_DATA = False
 
@@ -140,12 +144,12 @@ def run_mapper(
     add_tracking_slots_derivations(mapper_spec, target_schema)
 
     # Run the mapper to get the mapped data
-    # logger.info(f"Mapping data with mapper spec {mapper_file}")
+    # logger.debug(f"Mapping data with mapper spec {mapper_file}")
     # trans_tic = datetime.now()
     session.set_object_transformer(mapper_spec)
     session.object_transformer.unrestricted_eval = unrestricted_eval
     mapped_data = session.transform(data)
-    # logger.info(
+    # logger.debug(
     #     f"Mapped in {datetime.now() - trans_tic} (for mapper spec {mapper_file})"
     # )
 
@@ -178,6 +182,12 @@ class Mapper(object):
         self.id_debug = id_debug
         self.multi_bar_progress = multi_bar_progress
 
+        # Tell the user which module we're using
+        if module:
+            logger.info(f"Running with module '{module}'")
+        else:
+            logger.info(f"Running with module directory {module_dir}")
+
         # Load the data mapping module
         module_dir = (
             Path(os.path.dirname(__file__)) / ".." / ".." / "data" / "modules" / module
@@ -186,11 +196,12 @@ class Mapper(object):
         )
         self.module_config = ModuleConfig(module_dir)
 
-    def load_and_parse_data(
+    def prepare_data(
         self,
         data_files: Dict[str, List[Union[str, Path]]],
         data_frames: Dict[str, List[pd.DataFrame]],
         schema: Union[str, SchemaView],
+        max_rows: Optional[int] = 0,
     ) -> Dict[str, List[Dict]]:
         """Parse all data in a format compatible with the LinkML Mapper.
 
@@ -203,13 +214,14 @@ class Mapper(object):
                 should have already been added by calling add_tracking_columns on each DataFrame.
             schema (Union[str, SchemaView]): The schema that the data should conform to. We will only use
                 DataFrames of a recognized class and cast all values to the correct type.
+            max_rows (Optional[int], optional): Maximum number of rows to load from each file in data_files.
+                If 0 or None then all rows are loaded. Defaults to 0.
 
         Returns:
             Dict[str, List[Dict]]: Dictionary of all data. Keys are the class/table names and values are
                 the rows.
         """
-        # Read all the data from disk.
-        logger.info("Reading all data from disk...")
+        logger.debug("Preparing all data...")
 
         if isinstance(schema, str):
             schema = SchemaView(schema)
@@ -217,60 +229,76 @@ class Mapper(object):
         data = {}
         cast_functions = self.get_cast_functions(schema)
         source_data = merge_dicts_of_lists([data_files, data_frames])
-        for class_name, class_data in source_data.items():
-            # Skip if the class name is not a recognized class
-            if class_name not in schema.all_classes():
-                continue
-            logger.info(f"Parsing data for class '{class_name}'...")
-            for cur_data in class_data:
-                if isinstance(cur_data, (str, Path)):
-                    file = str(cur_data)
-                    df = read_data_frame(file, keep_default_na=False, na_values=None)
-                elif isinstance(cur_data, pd.DataFrame):
-                    file = None
-                    df = cur_data
-                else:
-                    raise ValueError(
-                        f"Unrecognized type of item found for class '{class_name}': type={type(cur_data)}, (data={cur_data})"
+        # Only process data that belong to a recognized class
+        source_data = {
+            class_name: class_data
+            for class_name, class_data in source_data.items()
+            if class_name in schema.all_classes()
+        }
+
+        total = len([d for sdata in source_data.values() for d in sdata])
+        progress = ProgressCounter({PREPARE_BARID: total})
+        progress.show_bar(PREPARE_BARID)
+
+        with progress:
+            for class_name, class_data in source_data.items():
+                logger.debug(f"Parsing data for class '{class_name}'...")
+                for cur_data in class_data:
+                    if isinstance(cur_data, (str, Path)):
+                        file = str(cur_data)
+                        # df = read_data_frame(file, keep_default_na=False, na_values=None)
+                        df = self.load_data_with_tracking_columns(
+                            {class_name: [file]}, max_rows=max_rows
+                        )[class_name][0]
+                    elif isinstance(cur_data, pd.DataFrame):
+                        file = None
+                        df = cur_data
+                    else:
+                        raise ValueError(
+                            f"Unrecognized type of item found for class '{class_name}': type={type(cur_data)}, (data={cur_data})"
+                        )
+
+                    if df is None or len(df.index) == 0:
+                        progress.update(PREPARE_BARID, 1)
+                        continue
+
+                    # Make sure all columns exist (except for TrackingSlots, which we add later)
+                    class_definition = schema.induced_class(class_name)
+                    all_tracking_slots = get_all_tracking_slots()
+                    missing_slots = [
+                        s
+                        for s in class_definition.attributes
+                        if s not in df.columns and s not in all_tracking_slots
+                    ]
+                    df[missing_slots] = ""
+
+                    # Only keep recognized slots
+                    recognized_slots = [
+                        s for s in df.columns if s in class_definition.attributes
+                    ]
+                    df = df[recognized_slots]
+
+                    # if file is not None:
+                    #     add_tracking_columns(df, class_name, file)
+
+                    # Reorient the data to a format recognized by the mapper (an array of rows, where
+                    # each row is a dictionary of the form {column_name:value, ...})
+                    cur_cast_functions = cast_functions[class_name]
+                    cur_data = [
+                        {c: cur_cast_functions[c](v) for c, v in r.items()}
+                        for _, r in df.iterrows()
+                    ]
+                    if class_name not in data:
+                        data[class_name] = []
+                    data[class_name].extend(cur_data)
+
+                    from_str = (
+                        f"from file: {file}" if file else "from preloaded DataFrame"
                     )
-
-                if df is None or len(df.index) == 0:
-                    continue
-
-                # Make sure all columns exist (except for TrackingSlots, which we add later)
-                class_definition = schema.induced_class(class_name)
-                all_tracking_slots = get_all_tracking_slots()
-                missing_slots = [
-                    s
-                    for s in class_definition.attributes
-                    if s not in df.columns and s not in all_tracking_slots
-                ]
-                df[missing_slots] = ""
-
-                # Only keep recognized slots
-                recognized_slots = [
-                    s for s in df.columns if s in class_definition.attributes
-                ]
-                df = df[recognized_slots]
-
-                if file is not None:
-                    add_tracking_columns(df, class_name, file)
-
-                # Reorient the data to a format recognized by the mapper (an array of rows, where
-                # each row is a dictionary of the form {column_name:value, ...})
-                cur_cast_functions = cast_functions[class_name]
-                cur_data = [
-                    {c: cur_cast_functions[c](v) for c, v in r.items()}
-                    for _, r in df.iterrows()
-                ]
-                if class_name not in data:
-                    data[class_name] = []
-                data[class_name].extend(cur_data)
-
-                from_str = f"from file: {file}" if file else "from preloaded DataFrame"
-                logger.info(
-                    f"Data from class '{class_name}' has {len(cur_data)} rows ({from_str})"
-                )
+                    logger.debug(
+                        f"Data from class '{class_name}' has {len(cur_data)} rows ({from_str})"
+                    )
+                    progress.update(PREPARE_BARID, 1)
 
         return data
 
@@ -520,6 +548,7 @@ class Mapper(object):
         mapper_dir: Union[str, Path],
         data_files: Dict[str, List[Union[str, Path]]],
         data_frames: Dict[str, List[pd.DataFrame]],
+        max_rows: Optional[int] = 0,
         max_processes: Optional[int] = 1,
     ) -> Dict[str, List[pd.DataFrame]]:
         """Map all the files specified in data_files using all mapper files found in the specified mapper directory.
@@ -535,6 +564,8 @@ class Mapper(object):
             data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of source DataFrames to map (in addition to the
                 files in data_files). The keys are the source class names and the values are lists of
                 DataFrames belonging to the class, which should each be mapped.
+            max_rows (Optional[int], optional): Maximum number of rows to load from each file in data_files. If 0 or None then all
+                rows are loaded. Defaults to 0.
             max_processes (Optional[int], optional): Maximum number of processes to use for multi-processing.
                 If 1 then no multi-processing will be performed. If None or 0 then the maximum number
                 (as obtained by cpu_count()) will be used. Note that for mapping small tables multi-processing
@@ -546,7 +577,7 @@ class Mapper(object):
         """
         tic = datetime.now()
 
-        logger.info(f"Beginning mapping at {tic}")
+        logger.debug(f"Beginning mapping at {tic}")
 
         map_tic = datetime.now()
 
@@ -559,9 +590,12 @@ class Mapper(object):
         else:
             target_schema = None
 
-        # Read all the data from disk.
-        data = self.load_and_parse_data(
-            data_files=data_files, data_frames=data_frames, schema=source_schema
+        # Prepare
+        data = self.prepare_data(
+            data_files=data_files,
+            data_frames=data_frames,
+            schema=source_schema,
+            max_rows=max_rows,
         )
 
         if len(data) == 0:
@@ -570,7 +604,7 @@ class Mapper(object):
             )
             return {}, {}
 
-        logger.info(f"Data loaded for source tables: {list(data.keys())}")
+        logger.debug(f"Data loaded for source tables: {list(data.keys())}")
 
         if max_processes == 1:
             split_data = [data]
@@ -619,9 +653,11 @@ class Mapper(object):
 
         # Call _run_mapper, either using multiple processes or one at a time
         if max_processes == 1:
-            logging.info("Running without multiprocessing")
+            logger.debug("Running without multiprocessing")
         else:
-            logging.info(f"Running with {max_processes} processes")
+            logger.debug(f"Running with {max_processes} processes")
+
+        logger.info("Performing initial mapping step, this may take some time...")
         self.run_mapper_progress.show_bar(MAP_BARID)
         with self.run_mapper_progress:
             if max_processes == 1:
@@ -661,7 +697,7 @@ class Mapper(object):
             df = self.sort_mapped_data(df, drop_sorting_column=False)
             all_mapped_data[class_name] = [df]
 
-        logger.info(f"Total time for mapping: {datetime.now() - map_tic}")
+        logger.debug(f"Total time for mapping: {datetime.now() - map_tic}")
 
         return all_mapped_data
 
@@ -682,7 +718,7 @@ class Mapper(object):
             Dict[str, List[pd.DataFrame]]: The filtered DataFrames. Keys are the class names and values
                 are lists of filtered DataFrames for that class.
         """
-        logger.info("Filtering all data...")
+        logger.debug("Filtering all data...")
         filter_tic = datetime.now()
         data_filter = DataFilter(filter_config_file)
 
@@ -696,7 +732,7 @@ class Mapper(object):
         filtered_data, _ = data_filter.run_filter(data=merged_data)
         filtered_data = {k: [v] for k, v in filtered_data.items()}
 
-        logger.info(f"Total time for filtering: {datetime.now() - filter_tic}")
+        logger.debug(f"Total time for filtering: {datetime.now() - filter_tic}")
 
         return filtered_data
 
@@ -704,6 +740,7 @@ class Mapper(object):
         self,
         data_frames: Dict[str, List[pd.DataFrame]],
         output_dir: Union[str, Path],
+        progress_barid: Optional[str] = None,
         name_format: str = "{class_name}.csv",
         exception_if_exists: bool = True,
     ) -> Dict[str, List[str]]:
@@ -730,21 +767,33 @@ class Mapper(object):
         # Save data to disk
         all_mapped_files = {}
         save_tic = datetime.now()
-        for class_name, dfs in data_frames.items():
-            df = pd.concat(dfs, ignore_index=True, axis=0)
-            output_data_file = os.path.join(
-                output_dir, name_format.format(class_name=class_name)
+        if progress_barid:
+            progress = ProgressCounter(
+                {progress_barid: len(data_frames)}, multiple_bars=False
             )
-            if exception_if_exists and os.path.exists(output_data_file):
-                raise ValueError(f"Output data file already exists: {output_data_file}")
-            logger.info(
-                f"Saving merged mapped data file for {class_name} ({len(dfs)} source frame(s), {len(df.index)} rows): {output_data_file}"
-            )
-            save_data_frame(df, output_data_file, index=False)
-            if class_name not in all_mapped_files:
-                all_mapped_files[class_name] = []
-            all_mapped_files[class_name].append(output_data_file)
-        logger.info(f"Total time for saving: {datetime.now() - save_tic}")
+        else:
+            progress = EmptyCounter()
+        progress.show_bar(progress_barid)
+
+        with progress:
+            for class_name, dfs in data_frames.items():
+                df = pd.concat(dfs, ignore_index=True, axis=0)
+                output_data_file = os.path.join(
+                    output_dir, name_format.format(class_name=class_name)
+                )
+                if exception_if_exists and os.path.exists(output_data_file):
+                    raise ValueError(
+                        f"Output data file already exists: {output_data_file}"
+                    )
+                logger.debug(
+                    f"Saving merged mapped data file for {class_name} ({len(dfs)} source frame(s), {len(df.index)} rows): {output_data_file}"
+                )
+                save_data_frame(df, output_data_file, index=False)
+                if class_name not in all_mapped_files:
+                    all_mapped_files[class_name] = []
+                all_mapped_files[class_name].append(output_data_file)
+                progress.update(progress_barid, 1)
+        logger.debug(f"Total time for saving: {datetime.now() - save_tic}")
 
         return all_mapped_files
 
@@ -778,14 +827,19 @@ class Mapper(object):
             orig_columns_only=not self.id_debug, remove_duplicates=not self.id_debug
         )
 
-    def load_data(
-        self, data_files: Dict[str, List[Union[str, Path]]], max_rows: Optional[int] = 0
+    def load_data_with_tracking_columns(
+        self,
+        data_files: Dict[str, List[Union[str, Path]]],
+        source_schema_file: Union[str, Path],
+        max_rows: Optional[int] = 0,
     ) -> Dict[str, List[pd.DataFrame]]:
         """Load all data from disk (as DataFrames) and add the tracking columns.
 
         Args:
             data_files (Dict[str, List[Union[str, Path]]]): Dictionary of all files to load. The keys are the class
                 names and the values are lists of files belonging to that class.
+            source_schema_file (Union[str, Path]): The source schema that contains the classes that the data_files
+                should belong to. Only files belonging to recognized classes are loaded.
             max_rows (Optional[int], optional): Maximum number of rows to load from each file. If 0 or None then all
                 rows are loaded. Defaults to 0.
 
@@ -794,12 +848,37 @@ class Mapper(object):
                 are lists of DataFrames belonging to that class. The order of the DataFrames within each class are the
                 same as the order of the files in data_files for the same class.
         """
+        schema = SchemaView(source_schema_file)
+        recognized_classes = schema.all_classes()
+
+        # Check for invalid class names
+        log = []
+        for class_name, files in data_files.items():
+            if class_name not in recognized_classes:
+                for file in files:
+                    log.append(f"Unrecognized input table '{class_name}': {file}")
+        if log:
+            msg = "\n".join(
+                log
+                + [f"Terminating due to unrecognized table{'s' if len(log)>1 else ''}"]
+            )
+            raise CleanExitError(msg)
+
         total_items = sum([len(d) for d in data_files.values()])
         progress = ProgressCounter({LOADING_BARID: total_items}, multiple_bars=False)
         progress.show_bar(LOADING_BARID)
+
         with progress:
             data_frames = {}
             for class_name, files in data_files.items():
+                if class_name not in recognized_classes:
+                    # Unrecognized class name, so ignore the file (but tell the user)
+                    for file in files:
+                        logger.info(
+                            f"Ignoring file from unrecognized table '{class_name}': {file}"
+                        )
+                        progress.update(LOADING_BARID, 1)
+                    continue
                 if class_name not in data_frames:
                     data_frames[class_name] = []
                 for file in files:
@@ -815,7 +894,13 @@ class Mapper(object):
                     add_tracking_columns(df, class_name, file)
 
                     data_frames[class_name].append(df)
+
+                    logger.info(
+                        f"Loaded {len(df)} rows for table '{class_name}': {file}"
+                    )
+
                     progress.update(LOADING_BARID, 1)
+
         return data_frames
 
     def full_map(
@@ -857,10 +942,14 @@ class Mapper(object):
         else:
             self.temp_dir_obj = None
             self.temp_dir = Path(temp_dir)
-        logger.info(f"Using temporary directory {self.temp_dir}")
+        logger.debug(f"Using temporary directory {self.temp_dir}")
 
         # Load all data
-        data_frames = self.load_data(data_files=data_files, max_rows=input_max_rows)
+        data_frames = self.load_data_with_tracking_columns(
+            data_files=data_files,
+            max_rows=input_max_rows,
+            source_schema_file=self.module_config.source_schema,
+        )
 
         # Clean the data
         cleaned_data_dir = self.temp_dir / "cleaned_data"
@@ -878,6 +967,7 @@ class Mapper(object):
             mapper_dir=self.module_config.mapper_dir,
             data_files=None,  # data_files,
             data_frames=data_frames,
+            max_rows=input_max_rows,
             max_processes=max_processes,
         )
 
@@ -895,6 +985,7 @@ class Mapper(object):
             data_files = self.save_data(
                 data_frames=data_frames,
                 output_dir=mapped_data_dir,
+                progress_barid=SAVE_PREID_BARID,
                 name_format="{class_name}[preid].csv",
             )
 
@@ -903,7 +994,10 @@ class Mapper(object):
 
         # Save data to disk
         clear_dirs([output_dir])
-        data_files = self.save_data(data_frames, output_dir=output_dir)
+        data_files = self.save_data(
+            data_frames, output_dir=output_dir, progress_barid=SAVE_BARID
+        )
+        logger.info(f"All data saved to {output_dir}")
 
         # Delete temporary directory
         if self.temp_dir_obj is not None:
@@ -933,11 +1027,11 @@ if __name__ == "__main__":
             # input_data_dir = "../../../../PHES-ODM-Data/nwss/private_renamed_test/"
             input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
             input_data_files = None # [ "nwss", "../../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            output_dir = "../../gen/nwss_reporting_to_v2-all"
-            temp_dir = "../../gen/nwss_reporting_to_v2-all/temp"
+            output_dir = "../../gen/nwss_reporting_to_v2-test"
+            temp_dir = "../../gen/nwss_reporting_to_v2-test/temp"
 
             max_processes = 1
-            input_max_rows = None
+            input_max_rows = 50
             id_debug = True
         # fmt: on
     else:
