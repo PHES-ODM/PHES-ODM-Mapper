@@ -160,17 +160,17 @@ def run_mapper(
 class Mapper(object):
     def __init__(
         self,
-        module: str,
-        module_dir: str,
+        module: Optional[str],
+        module_dir: Optional[Union[str, Path]],
         id_debug: bool = False,
         multi_bar_progress: bool = True,
     ):
         """Class to perform a full mapping, including filtering and ID generation.
 
         Args:
-            module (str): The built-in module for the mapping, eg. "odm_v1_to_v2" or "nwss_reporting_to_v2".
+            module (Optional[str]): The built-in module for the mapping, eg. "odm_v1_to_v2" or "nwss_reporting_to_v2".
                 If None then module_dir must be specified.
-            module_dir (str): The directory for the mapping module. If None then module must be specified.
+            module_dir (Optional[Union[str, Path]]): The directory for the mapping module. If None then module must be specified.
             id_debug (bool, optional): If True then run the ID generator in debug mode. Debug mode will result
                 in the output mapped data to include various columns that were used during ID generation
                 (such as the source database class name and row number used for populating a row, the original
@@ -190,12 +190,7 @@ class Mapper(object):
             logger.info(f"Running with module directory {module_dir}")
 
         # Load the data mapping module
-        module_dir = (
-            Path(os.path.dirname(__file__)) / ".." / ".." / "data" / "modules" / module
-            if module
-            else module_dir
-        )
-        self.module_config = ModuleConfig(module_dir)
+        self.module_config = ModuleConfig(module=module, module_dir=module_dir)
 
     def prepare_data(
         self,
@@ -850,19 +845,18 @@ class Mapper(object):
                 same as the order of the files in data_files for the same class.
         """
         schema = SchemaView(source_schema_file)
-        recognized_classes = schema.all_classes()
+        recognized_classes = list(schema.all_classes())
 
         # Check for invalid class names
-        log = []
+        has_unrecognized_class = False
         for class_name, files in data_files.items():
             if class_name not in recognized_classes:
+                has_unrecognized_class = True
                 for file in files:
-                    log.append(f"Unrecognized input table '{class_name}': {file}")
-        if log:
-            msg = "\n".join(
-                log
-                + [f"Terminating due to unrecognized table{'s' if len(log)>1 else ''}"]
-            )
+                    logger.error(f"Unrecognized input table '{class_name}': {file}")
+        if has_unrecognized_class:
+            tables = ", ".join(sorted(recognized_classes))
+            msg = f"Terminating due to unrecognized table(s). Allowable tables are: {tables}"
             raise CleanExitError(msg)
 
         total_items = sum([len(d) for d in data_files.values()])
@@ -948,6 +942,11 @@ class Mapper(object):
         if warning_log:
             for msg in warning_log:
                 logger.warning(msg)
+
+        if len(data_frames) == 0:
+            tables = ", ".join(sorted(recognized_classes))
+            msg = f"No recognized tables loaded. Allowable tables are: {tables}"
+            raise CleanExitError(msg)
 
         return data_frames
 
