@@ -159,7 +159,7 @@ def do_exclude_equals(
     exclude_rows = cur_filt.sum()
     filt = filt & ~cur_filt
     num_rows = filt.sum()
-    logger.info(
+    logger.debug(
         f"Excluded rows, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows}). Filter matched {exclude_rows} row(s)"
     )
 
@@ -207,7 +207,7 @@ def do_include_equals(
     exclude_rows = cur_filt.sum()
     filt = filt | cur_filt
     num_rows = filt.sum()
-    logger.info(
+    logger.debug(
         f"Included rows, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows}). Filter matched {exclude_rows} row(s)"
     )
 
@@ -249,7 +249,7 @@ def do_apply_filter(
     init_num_rows = len(data[cls])
     data[value] = data[cls][filt]
     num_rows = len(data[value])
-    logger.info(
+    logger.debug(
         f"Saved data from filter {input_name} to class {cls}, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows})"
     )
 

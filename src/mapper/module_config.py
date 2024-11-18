@@ -60,13 +60,13 @@ class ModuleConfig(object):
         self.id_code_sheet = self.config.get("id_code_sheet", None)
         self.id_config = self._get_config_file("id_config")
 
-        logger.info(f"Module source schema: {self.source_schema}")
-        logger.info(f"Module target schema: {self.target_schema}")
-        logger.info(f"Module mapper directory: {self.mapper_dir}")
-        logger.info(f"Module filters file: {self.filters}")
-        logger.info(f"Module ID code file: {self.id_code}")
-        logger.info(f"Module ID code sheet: {self.id_code_sheet}")
-        logger.info(f"Module ID config file: {self.id_config}")
+        logger.debug(f"Module source schema: {self.source_schema}")
+        logger.debug(f"Module target schema: {self.target_schema}")
+        logger.debug(f"Module mapper directory: {self.mapper_dir}")
+        logger.debug(f"Module filters file: {self.filters}")
+        logger.debug(f"Module ID code file: {self.id_code}")
+        logger.debug(f"Module ID code sheet: {self.id_code_sheet}")
+        logger.debug(f"Module ID config file: {self.id_config}")
 
     def _get_config_file(
         self, config_key: str, required: bool = False

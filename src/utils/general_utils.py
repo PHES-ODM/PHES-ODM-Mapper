@@ -21,6 +21,10 @@ TREE_ROOT_CLASS_NAME = "Container"
 
 RECOGNIZED_EXTENSIONS = [".tsv", ".txt", ".csv", ".yaml", ".yml"]
 
+# LOGGER_FORMAT = "%(levelname)s %(asctime)s %(filename)s:%(lineno)d: %(message)s"
+LOGGER_FORMAT = "%(message)s"
+LOGGER_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
 
 def get_logger(name: str, level: Optional[str] = logging.INFO) -> logging.Logger:
     """Get the logger with the specified name, setting is configuration as well as output format.
@@ -39,9 +43,9 @@ def get_logger(name: str, level: Optional[str] = logging.INFO) -> logging.Logger
     handlers = [logging.StreamHandler(sys.stdout)]
     logging.basicConfig(
         handlers=handlers,
-        format="%(levelname)s %(asctime)s %(filename)s:%(lineno)d: %(message)s",
+        format=LOGGER_FORMAT,
         level=level,
-        datefmt="%Y-%m-%d %H:%M:%S",
+        datefmt=LOGGER_DATE_FORMAT,
     )
 
     logger = logging.getLogger(name)
@@ -148,7 +152,7 @@ def clear_dirs(
     if isinstance(dirs, (str, Path)):
         dirs = [dirs]
     for d in dirs:
-        logger.info(f"Cleaning directory {d}")
+        logger.debug(f"Clearing directory {d}")
         if os.path.isdir(d):
             for f in os.listdir(d):
                 file = Path(d) / f

@@ -37,7 +37,8 @@ from id_generator.id_data_bindings import DataBindings
 from id_generator.generator_data import GeneratorData, IDValue
 from id_generator.id_na import isna, EMPTY_OBJ
 
-LOADING_BARID = "Preparing Data"
+PREPARING_BARID = "Preparing IDS"
+TOTAL_IDS_TITLE = "TOTAL IDs"
 
 logger = get_logger(__name__)
 
@@ -149,8 +150,10 @@ class IDGenerator(object):
         generated_slots = self.get_all_generated_slots_from_id_code()
         star_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get("*", [])
         all_data = merge_dicts_of_lists([data_files, data_frames])
-        progress = ProgressCounter({LOADING_BARID: len(all_data)}, multiple_bars=False)
-        progress.show_bar(LOADING_BARID)
+        progress = ProgressCounter(
+            {PREPARING_BARID: len(all_data)}, multiple_bars=False
+        )
+        progress.show_bar(PREPARING_BARID)
         with progress:
             for class_name, cur_data in all_data.items():
                 class_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get(class_name, [])
@@ -162,7 +165,7 @@ class IDGenerator(object):
                     generated_slots=generated_slots.get(class_name, []),
                     primary_key=self.get_primary_key_from_config(class_name),
                 )
-                progress.update(LOADING_BARID, 1)
+                progress.update(PREPARING_BARID, 1)
 
     def create_bindings(self):
         """Create the function and data bindings. Should be called once all data has been loaded
@@ -358,7 +361,7 @@ class IDGenerator(object):
             total_rows_minus_dropped_rows += cur_total_rows_minus_dropped_rows
             total_dropped_rows += cur_total_dropped_rows
             data_frames = merge_dicts_of_lists([data_frames, cur_data_frames])
-        logger.info(
+        logger.debug(
             f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}"
         )
         self.data_frames = data_frames
@@ -393,12 +396,12 @@ class IDGenerator(object):
         # This is the top-level call to make_all_ids and should only occur once.
         output_progress = class_names is None and row_indices is None
 
-        def _log_info(s: str):
+        def _log(level: str, s: str):
             if output_progress:
-                logger.info(s)
+                getattr(logger, level)(s)
             pass
 
-        _log_info("Making all IDs...")
+        _log("info", "Making all IDs, this may take some time...")
 
         # Get the current class and current row index that we are generating for. We will restore these
         # values once we're done with this function call. This will allow make_all_ids to be called
@@ -431,9 +434,11 @@ class IDGenerator(object):
                 bar_totals,
                 multiple_bars=self.multi_bar_progress,
                 install_output_hooks=True,
+                total_title=TOTAL_IDS_TITLE,
             )
             progress = self.progress
         else:
+            # We're not outputing progress, so use an EmptyCounter that has no output
             progress = EmptyCounter()
 
         with progress:
@@ -441,8 +446,9 @@ class IDGenerator(object):
                 if progress.has_bar(class_name):
                     progress.show_bar(class_name)
                 class_tic = datetime.now()
-                _log_info(
-                    f"Making IDs for class '{class_name}' ({idx+1}/{len(class_names)})"
+                _log(
+                    "debug",
+                    f"Making IDs for class '{class_name}' ({idx+1}/{len(class_names)})",
                 )
 
                 # All the slots in the class that are IDs that need to be generated
@@ -477,16 +483,17 @@ class IDGenerator(object):
                         self.current_class = class_name
                         self.current_row_index = idx
                         self.calculate_id(class_name, slot, idx)
-                _log_info(
-                    f"Made all IDs for class '{class_name}': {datetime.now() - class_tic}"
+                _log(
+                    "debug",
+                    f"Made all IDs for class '{class_name}': {datetime.now() - class_tic}",
                 )
-                # _log_info(f"Progress: {self.progress.get_progress_report()}")
+                # _log("debug", f"Progress: {self.progress.get_progress_report()}")
 
         # Restore current_class and current_row_index in case make_all_ids has been called recursively
         self.current_class = orig_current_class
         self.current_row_index = orig_current_row_index
 
-        _log_info(f"Finished making all IDs: {datetime.now() - tic}")
+        _log("debug", f"Finished making all IDs: {datetime.now() - tic}")
 
     def make_code_column_name(self, idx: int) -> str:
         """Get the name of the code column at the specified index in the ID code generation config table.

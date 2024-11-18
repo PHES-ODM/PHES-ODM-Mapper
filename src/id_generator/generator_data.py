@@ -85,7 +85,7 @@ class GeneratorData:
             if isinstance(cur_data, (str, Path)):
                 # Load DataFrame from file
                 file = cur_data
-                logger.info(f"Loading data from {str(file)}")
+                logger.debug(f"Loading data from {str(file)}")
                 df = read_data_frame(file, keep_default_na=False, na_values=None)
             elif isinstance(cur_data, pd.DataFrame):
                 # Data is already in DataFrame format
@@ -195,7 +195,7 @@ class GeneratorData:
         self.current_class = None
         self.current_row_index = None
 
-        logger.info(f"Preparing IDs for class '{self.class_name}'")
+        logger.debug(f"Preparing IDs for class '{self.class_name}'")
         # Copy all ID columns to new columns preceded by ORIG_ID_PREFIX (eg. __), and clear the
         # original column. Once make_all_ids is called, if the original column has a None value
         # then that means we need to calculate the ID for that column (while the double-underscore
@@ -641,7 +641,7 @@ class GeneratorData:
 
             total_dropped_rows = total_rows - new_len
 
-            logger.info(
+            logger.debug(
                 f"Dropped duplicate primary keys for class '{self.class_name}': {orig_len} -> {new_len} (-{total_dropped_rows})"
             )
 
