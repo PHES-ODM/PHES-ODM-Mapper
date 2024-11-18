@@ -18,29 +18,44 @@ module.id_config        # Configuration for ID generation
 ```
 """
 
-from typing import Union
+from typing import Union, List
 from pathlib import Path
 import yaml
+import os
 
 from utils.logger import get_logger
+from utils.clean_exit_error import CleanExitError
+
+MODULE_DIR = Path(os.path.dirname(__file__)) / ".." / ".." / "data" / "modules"
 
 logger = get_logger(__name__)
 
 
 class ModuleConfig(object):
-    def __init__(self, module_dir: Union[str, Path]):
+    def __init__(self, module: str, module_dir: Union[str, Path]):
+        module_dir = MODULE_DIR / module if module else Path(module_dir)
+
         self.module_dir = Path(module_dir).resolve()
 
-        with open(module_dir / "config.yaml") as f:
+        if not self.module_dir.is_dir():
+            if module:
+                all_modules = ", ".join(self.get_all_modules())
+                raise CleanExitError(
+                    f"Module does not exist: {module}. Allowabled modules are: {all_modules}"
+                )
+            else:
+                raise CleanExitError(
+                    f"Module directory does not exist: {str(module_dir.resolve())}"
+                )
+
+        config_file = module_dir / "config.yaml"
+        if not config_file.is_file():
+            raise CleanExitError(f"Module config file not found at {config_file}")
+        with open(config_file) as f:
             self.config = yaml.safe_load(f)
 
-        if not module_dir.exists():
-            raise RuntimeError(
-                f"Module directory does not exist: {str(module_dir.resolve())}"
-            )
-
         if "title" not in self.config:
-            raise RuntimeError(
+            raise CleanExitError(
                 "No title in the module configuration file was specified. Please ensure the `title` key is set."
             )
         self.title = self.config["title"]
@@ -94,20 +109,27 @@ class ModuleConfig(object):
                     2) If required is False, then None is returned.
         """
         val = self.config.get(config_key)
-        path = self.module_dir / val if val else None
-        if not path:
+        if not val:
             if required:
-                raise RuntimeError(
+                raise CleanExitError(
                     f"Required module configuration key '{config_key}' is required but does not exist in the module configuration file"
                 )
             return None
 
-        path = Path(path)
+        path = self.module_dir / val
         if not path.exists():
-            if required:
-                path_type = "file" if path.suffix else "directory"
-                raise RuntimeError(
-                    f"Required module {path_type} '{path.name}' does not exist at {str(path.resolve())}"
-                )
-            return None
+            path_type = "file" if path.suffix else "directory"
+            raise CleanExitError(
+                f"The specified {path_type} in the module configuration key '{config_key}' does not exist: {path}"
+            )
         return path
+
+    @classmethod
+    def get_all_modules(cls) -> List[str]:
+        """Get a list of all modules available in the modules directory.
+
+        Returns:
+            List[str]: List of all available modules.
+        """
+        dirs = [d for d in os.listdir(MODULE_DIR) if (MODULE_DIR / d).is_dir()]
+        return sorted(dirs)
