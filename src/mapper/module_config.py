@@ -32,6 +32,16 @@ logger = get_logger(__name__)
 
 CONFIG_FILE = "config.yaml"
 
+# All keys in the config file
+TITLE_KEY = "title"
+SOURCE_SCHEMA_KEY = "source_schema"
+TARGET_SCHEMA_KEY = "target_schema"
+MAPPERS_KEY = "mappers"
+FILTERS_KEY = "filters"
+ID_CODE_KEY = "id_code"
+ID_CODE_SHEET_KEY = "id_code_sheet"
+ID_CONFIG_KEY = "id_config"
+
 
 class ModuleConfig(object):
     def __init__(self, module: str, module_dir: Union[str, Path]):
@@ -58,26 +68,26 @@ class ModuleConfig(object):
         with open(config_file) as f:
             self.config = yaml.safe_load(f)
 
-        if "title" not in self.config:
+        if TITLE_KEY not in self.config:
             raise CleanExitError(
-                "No title in the module configuration file was specified. Please ensure the `title` key is set."
+                f"No title in the module configuration file was specified. Please ensure the `{TITLE_KEY}` key is set."
             )
-        self.title = self.config["title"]
+        self.title = self.config[TITLE_KEY]
 
         # Schemas (both required)
-        self.source_schema = self._get_config_file("source_schema", required=True)
-        self.target_schema = self._get_config_file("target_schema", required=True)
+        self.source_schema = self._get_config_file(SOURCE_SCHEMA_KEY, required=True)
+        self.target_schema = self._get_config_file(TARGET_SCHEMA_KEY, required=True)
 
         # Mappers (required)
-        self.mapper_dir = self._get_config_file("mappers", required=True)
+        self.mapper_dir = self._get_config_file(MAPPERS_KEY, required=True)
 
         # Filters (to apply after mapping)
-        self.filters = self._get_config_file("filters")
+        self.filters = self._get_config_file(FILTERS_KEY)
 
         # IDs
-        self.id_code = self._get_config_file("id_code")
-        self.id_code_sheet = self.config.get("id_code_sheet", None)
-        self.id_config = self._get_config_file("id_config")
+        self.id_code = self._get_config_file(ID_CODE_KEY)
+        self.id_code_sheet = self.config.get(ID_CODE_SHEET_KEY, None)
+        self.id_config = self._get_config_file(ID_CONFIG_KEY)
 
         logger.debug(f"Module source schema: {self.source_schema}")
         logger.debug(f"Module target schema: {self.target_schema}")
@@ -148,7 +158,7 @@ class ModuleConfig(object):
             def _add_with_title(module_name: str, title: str):
                 with_titles.append(f"{module_name} ({title})")
 
-            # Go through all modules and retrieve the "title" from the config file
+            # Go through all modules and retrieve the TITLE_KEY from the config file
             for module_name in modules:
                 config_file = MODULE_DIR / module_name / CONFIG_FILE
                 if not os.path.isfile(config_file):
@@ -156,7 +166,9 @@ class ModuleConfig(object):
                     continue
                 with open(config_file, "r") as f:
                     config = yaml.safe_load(f)
-                _add_with_title(module_name, config.get("title", "No title available"))
+                _add_with_title(
+                    module_name, config.get(TITLE_KEY, "No title available")
+                )
             modules = with_titles
 
         return modules
