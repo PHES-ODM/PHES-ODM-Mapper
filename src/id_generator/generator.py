@@ -955,6 +955,36 @@ class IDGenerator(object):
         """
         return self.get_source_class_and_row(self.current_class, self.current_row_index)
 
+    def get_source_file_and_row(
+        self, class_name: str, row_index: int
+    ) -> Tuple[Optional[str], Optional[int]]:
+        """Get the source file and source row that were used to populate the row at row_index (0-based) of
+        the table class_name.
+
+        Args:
+            class_name (str): The class name.
+            row_index (int): The row index (0-based) in the table for class_name that we want the source class
+                and source row of.
+
+        Returns:
+            Tuple[Optional[str], Optional[int]]: A tuple of the form ("source_file", source_row), or (None, None)
+                if the source file and row could not be retrieved.
+        """
+        data = self.data[class_name]
+        return (
+            data.get_data_value(TrackingSlots.SOURCE_FILE, row_index),
+            data.get_data_value(TrackingSlots.SOURCE_ROW, row_index),
+        )
+
+    def get_current_source_file_and_row(self) -> Tuple[Optional[str], Optional[int]]:
+        """Get the source file and source row that was used to populate the current class and current row.
+
+        Returns:
+            Tuple[Optional[str], Optional[int]]: A tuple of the form ("source_file", source_row), or (None, None)
+                if the source file and row could not be retrieved.
+        """
+        return self.get_source_file_and_row(self.current_class, self.current_row_index)
+
     def save_all(
         self,
         output_dir: str,
