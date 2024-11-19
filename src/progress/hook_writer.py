@@ -27,6 +27,8 @@ class HookWriter(object):
             try:
                 self.stream.setStream(self)
             except Exception:
+                # A StreamHandler might not allow setting the stream, for example logging._StderrHandler,
+                # which always uses the current sys.stderr
                 # logging.error(f"Could not set HookWriter for stream {self.stream}")
                 pass
         else:
