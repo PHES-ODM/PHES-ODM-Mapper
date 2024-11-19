@@ -157,7 +157,7 @@ class DataCleaner(object):
         for slot_name, slot_history in changes_history.items():
             for change_str, count in slot_history.items():
                 slot_history[change_str] = f"{count} time{'s' if count != 1 else ''}"
-            slot_history = [f"{k} ({c})" for k, c in slot_history.items()]
+            slot_history = sorted([f"{k} ({c})" for k, c in slot_history.items()])
             changes_str = make_logger_bullet_list(slot_history)
             if changes_str:
                 self.add_to_log(
