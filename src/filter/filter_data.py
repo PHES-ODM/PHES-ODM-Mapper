@@ -174,7 +174,6 @@ class DataFilter(object):
         progress = ProgressCounter(
             {FILTER_BARID: len(self.config_df)}, multiple_bars=False
         )
-        progress.show_bar(FILTER_BARID)
         with progress:
             # Go through each row and perform the filtering
             for _, config_row in self.config_df.iterrows():
