@@ -492,7 +492,7 @@ class IDGenerator(object):
         self.current_class = orig_current_class
         self.current_row_index = orig_current_row_index
 
-        _log("debug", f"Finished making all IDs: {datetime.now() - tic}")
+        _log("info", f"Finished making all IDs in {datetime.now() - tic}")
 
     def make_code_column_name(self, idx: int) -> str:
         """Get the name of the code column at the specified index in the ID code generation config table.
