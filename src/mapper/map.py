@@ -696,7 +696,7 @@ class Mapper(object):
             df = self.sort_mapped_data(df, drop_sorting_column=False)
             all_mapped_data[class_name] = [df]
 
-        logger.debug(f"Total time for mapping: {datetime.now() - map_tic}")
+        logger.info(f"Finished initial mapping in {datetime.now() - map_tic}")
 
         return all_mapped_data
 
