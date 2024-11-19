@@ -16,6 +16,7 @@ python3 map_cli.py \
 
 import argparse
 from datetime import datetime
+import sys
 
 from mapper import Mapper
 from utils.logger import get_logger
@@ -130,5 +131,9 @@ if __name__ == "__main__":
         )
     except CleanExitError as e:
         logger.error(str(e))
+        if "get_ipython" not in globals():
+            sys.exit(1)
     except KeyboardInterrupt:
         logger.error("Interrupted by user")
+        if "get_ipython" not in globals():
+            sys.exit(1)
