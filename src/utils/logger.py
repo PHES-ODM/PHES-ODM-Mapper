@@ -94,7 +94,8 @@ def make_logger_bullet_list(items: List, bullet: str = "- ", indent: int = 4) ->
             line and have an optional bullet string.
         bullet (str, optional): The string to use as a bullet, which immediately precedes
             each item in the output string. Can be set to "" if no bullet is desired.
-            Defaults to "- ".
+            The string interpolation parameter {idx} can be used to specify the 1-based
+            index of the item. Defaults to "- ".
         indent (int, optional): Number of blank characters to indent each item. The indent
             string will appear at the start of a line, immediately before the bullet.
             Can be set to 0 if no indent is desired. Defaults to 4.
