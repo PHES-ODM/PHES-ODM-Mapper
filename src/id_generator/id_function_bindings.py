@@ -200,7 +200,12 @@ class FunctionBindings:
                 except Exception:
                     pass
             if objects[idx] is None:
-                logger.warning(f"Could not parse {cur_format_name}: {val}")
+                source_file, source_row = (
+                    self.generator.get_current_source_file_and_row()
+                )
+                logger.warning(
+                    f"Could not parse {cur_format_name}: {val} (from row {source_row+1} of file {source_file})"
+                )
 
         date_obj, time_obj, time_zone_obj = objects
 
