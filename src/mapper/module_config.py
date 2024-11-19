@@ -23,7 +23,7 @@ from pathlib import Path
 import yaml
 import os
 
-from utils.logger import get_logger
+from utils.logger import get_logger, make_logger_bullet_list
 from utils.clean_exit_error import CleanExitError
 
 MODULE_DIR = Path(os.path.dirname(__file__)) / ".." / ".." / "data" / "modules"
@@ -39,9 +39,9 @@ class ModuleConfig(object):
 
         if not self.module_dir.is_dir():
             if module:
-                all_modules = ", ".join(self.get_all_modules())
+                all_modules = make_logger_bullet_list(self.get_all_modules())
                 raise CleanExitError(
-                    f"Module does not exist: {module}. Allowabled modules are: {all_modules}"
+                    f"Module '{module}' does not exist. Available modules are:\n{all_modules}"
                 )
             else:
                 raise CleanExitError(
