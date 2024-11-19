@@ -889,21 +889,37 @@ class Mapper(object):
                     )
 
                     class_defn = schema.induced_class(class_name)
-                    all_attributes = list(class_defn.attributes.keys())
 
-                    # Check for missing columns
-                    missing_attributes = [
-                        r for r in all_attributes if r not in df.columns
-                    ]
-                    if missing_attributes:
+                    # Check for missing required columns
+                    required_missing_attributes = sorted(
+                        [
+                            attr
+                            for attr, defn in class_defn.attributes.items()
+                            if attr not in df.columns and defn.required
+                        ]
+                    )
+                    # Check for missing (but not required) columns
+                    not_required_missing_attributes = sorted(
+                        [
+                            attr
+                            for attr, defn in class_defn.attributes.items()
+                            if attr not in df.columns and not defn.required
+                        ]
+                    )
+                    if required_missing_attributes or not_required_missing_attributes:
+                        # There are some missing attributes, tell the user
+                        missing_attributes = [
+                            f"{r} (REQUIRED)" for r in required_missing_attributes
+                        ] + not_required_missing_attributes
                         missing_attributes_str = make_logger_bullet_list(
-                            sorted(missing_attributes)
+                            missing_attributes
                         )
                         warning_log.append(
                             f"The following columns are missing in table '{class_name}' and will be treated as blank from file {file}:\n{missing_attributes_str}"
                         )
 
                     # Check for extra unrecognized columns
+                    all_attributes = list(class_defn.attributes.keys())
                     unrecognized_attributes = [
                         attr for attr in df.columns if attr not in all_attributes
                     ]
