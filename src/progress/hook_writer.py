@@ -62,8 +62,8 @@ class HookWriter(object):
         # self.at_new_line = "\n" in msg or "\r" in msg
         self.at_new_line = msg.endswith("\n") or msg.endswith("\r")
 
-        # Any new lines should consist of a new line followed immediately by a clear line
-        msg = msg.replace("\n", "\n\x1b[2K")
+        # Any new lines should consist of a clear to end of current line, new line, then clear full line
+        msg = msg.replace("\n", "\x1b[K\n\x1b[2K")
 
         # Output the text
         self.output_stream.write(msg)
