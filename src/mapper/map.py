@@ -1035,10 +1035,10 @@ class Mapper(object):
         )
 
         # Filter the data
-        if self.module_config.filters:
+        if self.module_config.pre_id_filters:
             data_frames = self.filter_data(
                 data_frames=data_frames,
-                filter_config_file=self.module_config.filters,
+                filter_config_file=self.module_config.pre_id_filters,
             )
 
         # Save intermediate mapped and filtered (without ID generation) data to disk

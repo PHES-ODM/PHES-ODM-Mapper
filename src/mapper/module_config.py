@@ -11,7 +11,7 @@ module.title            # Title of the module
 module.source_schema    # Path to the source schema
 module.target_schema    # Path to the target schema
 module.mapper_dir       # Directory containing the LinkML-Map schema files
-module.filters          # CSV or TSV file with the filtering rules
+module.pre_id_filters   # CSV or TSV file with the filtering rules that are applied before ID generation
 module.id_code          # File containing the ID generation code
 module.id_code_sheet    # If id_code is an Excel file, then the name of the sheet to use, or None for the first sheet.
 module.id_config        # Configuration for ID generation
@@ -37,7 +37,7 @@ TITLE_KEY = "title"
 SOURCE_SCHEMA_KEY = "source_schema"
 TARGET_SCHEMA_KEY = "target_schema"
 MAPPERS_KEY = "mappers"
-FILTERS_KEY = "filters"
+PRE_ID_FILTERS_KEY = "pre_id_filters"
 ID_CODE_KEY = "id_code"
 ID_CODE_SHEET_KEY = "id_code_sheet"
 ID_CONFIG_KEY = "id_config"
@@ -82,7 +82,7 @@ class ModuleConfig(object):
         self.mapper_dir = self._get_config_file(MAPPERS_KEY, required=True)
 
         # Filters (to apply after mapping)
-        self.filters = self._get_config_file(FILTERS_KEY)
+        self.pre_id_filters = self._get_config_file(PRE_ID_FILTERS_KEY)
 
         # IDs
         self.id_code = self._get_config_file(ID_CODE_KEY)
@@ -92,7 +92,7 @@ class ModuleConfig(object):
         logger.debug(f"Module source schema: {self.source_schema}")
         logger.debug(f"Module target schema: {self.target_schema}")
         logger.debug(f"Module mapper directory: {self.mapper_dir}")
-        logger.debug(f"Module filters file: {self.filters}")
+        logger.debug(f"Module pre-id filters file: {self.pre_id_filters}")
         logger.debug(f"Module ID code file: {self.id_code}")
         logger.debug(f"Module ID code sheet: {self.id_code_sheet}")
         logger.debug(f"Module ID config file: {self.id_config}")

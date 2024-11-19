@@ -9,7 +9,7 @@ The following is a list of components of a module, which are described in this a
 1. *[Module Configuration](#module-configuration)*: The general configuration of the module, primarily specifying where within the module directory that the various required files are located. This is a simple YAML file.
 2. *[Source and Target Schemas](#source-and-target-schemas)*: The LinkML schemas representing the source and target databases.
 3. *[LinkML-Map Mappers](#linkml-map-mappers)*: The LinkML-Map schemas that define how to map from the source to target databases.
-4. *[Filters](#filters)*: Optional rules to filter the mapped data, for example to remove unwanted rows or rows with missing information.
+4. *[Pre-ID Filters](#pre-id-filters)*: Optional rules to filter the mapped data after the LinkML Mappers are run but before ID generation, for example to remove unwanted rows or rows with missing information.
 5. *[ID Generator](#id-generator)*: Optional rules for generating IDs within the mapped and filtered data. ID generation is fairly flexible and can also allow linking between output database tables (eg. creating primary and foreign keys). It can also generate non-ID fields, such as properly formatting dates and times.
 
 This document, including its sub-documents, describes how to create your own module.
@@ -24,7 +24,7 @@ title: NWSS Reporting to ODM v2
 source_schema: schemas/nwss_reporting.yaml
 target_schema: schemas/odm_v2.yaml
 mappers: mappers
-filters: filters/nwss_reporting_to_v2_filters.csv
+pre_id_filters: pre_id_filters/nwss_reporting_to_v2_filters.csv
 id_code: ids/nwss_reporting_to_v2_id_code.xlsx
 id_code_sheet: id_code
 id_config: ids/nwss_reporting_to_v2_id_config.yaml
@@ -32,16 +32,16 @@ id_config: ids/nwss_reporting_to_v2_id_config.yaml
 
 Some of these fields can be left blank. See below for a description of all fields:
 
-| Field         | Required | Description |
-| :------------ | :------- | :---------- |
-| title         | Yes      | A descriptive title to give to the module. |
-| source_schema | Yes      | Location of the LinkML schema for the source database (eg. NWSS) (see [Source and Target Schemas](#source-and-target-schemas) below). |
-| target_schema | Yes      | Location of the LinkML schema for the target database (eg. ODM v2). (see [Source and Target Schemas](#source-and-target-schemas) below). |
-| mappers       | Yes      | Directory containing all the LinkML-Map schemas to perform the mapping (see [LinkML-Map Mappers](#linkml-map-mappers) below). |
-| filters       | No       | Filter configuration file specifying how to filter the data after mapping is performed, but before the ID generation step (See [Filters](#filters) below). |
-| id_code       | No       | Configuration/code for generating IDs after the initial mapping and filtering is performed (See [ID Generator](#id-generator) below). |
-| id_code_sheet | No       | If `id_code` is an Excel file, then this is the name of the sheet to use. If missing or `None` then the first sheet is used. (See [ID Generator](#id-generator) below). |
-| id_config     | No       | Additional configuration file for ID generation (See [ID Generator](#id-generator) below). |
+| Field          | Required | Description |
+| :------------- | :------- | :---------- |
+| title          | Yes      | A descriptive title to give to the module. |
+| source_schema  | Yes      | Location of the LinkML schema for the source database (eg. NWSS) (see [Source and Target Schemas](#source-and-target-schemas) below). |
+| target_schema  | Yes      | Location of the LinkML schema for the target database (eg. ODM v2). (see [Source and Target Schemas](#source-and-target-schemas) below). |
+| mappers        | Yes      | Directory containing all the LinkML-Map schemas to perform the mapping (see [LinkML-Map Mappers](#linkml-map-mappers) below). |
+| pre_id_filters | No       | Filter configuration file specifying how to filter the data after mapping is performed, but before the ID generation step (See [Pre-ID Filters](#pre-id-filters) below). |
+| id_code        | No       | Configuration/code for generating IDs after the initial mapping and filtering is performed (See [ID Generator](#id-generator) below). |
+| id_code_sheet  | No       | If `id_code` is an Excel file, then this is the name of the sheet to use. If missing or `None` then the first sheet is used. (See [ID Generator](#id-generator) below). |
+| id_config      | No       | Additional configuration file for ID generation (See [ID Generator](#id-generator) below). |
 
 ## Source and Target Schemas
 
@@ -77,7 +77,7 @@ class_derivations:
         populated_from: WWMeasure
 ```
 
-## Filters
+## Pre-ID Filters
 
 After LinkML-Map is run using all the YAML mappers, but before the ID generator is run (see below), all output tables/classes can be optionally filtered to remove various rows. For example, rows where the `value` column is blank, or where the `measure` column is equal to `<ignore>`, can be removed. For details on how to configure the filters, see [Filtering Data](filters.md).
 

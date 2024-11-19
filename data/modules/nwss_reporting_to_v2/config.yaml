@@ -3,6 +3,6 @@ title: NWSS Reporting to ODM v2
 source_schema: schemas/nwss_reporting.yaml
 target_schema: schemas/odm_v2.yaml
 mappers: mappers
-filters: filters/nwss_reporting_to_v2_filters.csv
+pre_id_filters: pre_id_filters/nwss_reporting_to_v2_filters.csv
 id_code: ids/nwss_reporting_to_v2_id_code.xlsx
 id_config: ids/nwss_reporting_to_v2_id_config.yaml
