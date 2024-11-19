@@ -26,7 +26,7 @@ from utils.general_utils import (
     clear_dirs,
     get_unique_output_file,
 )
-from utils.logger import get_logger
+from utils.logger import get_logger, make_logger_bullet_list
 from utils.tracking_slots import get_all_tracking_slots
 from utils.cli_utils import get_input_data_files
 from utils.schema_utils import get_ranges_of_slot
@@ -158,12 +158,11 @@ class DataCleaner(object):
             for change_str, count in slot_history.items():
                 slot_history[change_str] = f"{count} time{'s' if count != 1 else ''}"
             slot_history = [f"{k} ({c})" for k, c in slot_history.items()]
-            # changes_str = "; ".join(slot_history)
-            changes_str = "\n       ".join([""] + slot_history)
+            changes_str = make_logger_bullet_list(slot_history)
             if changes_str:
                 self.add_to_log(
                     "warning",
-                    f"The following enumeration values were automatically corrected for capitalization in column '{slot_name}' of table '{class_name}': {changes_str}",
+                    f"The following enumeration values were automatically corrected for capitalization in column '{slot_name}' of table '{class_name}':\n{changes_str}",
                 )
 
         return df[keep_columns]
@@ -317,7 +316,6 @@ class DataCleaner(object):
             len(data_frames) if data_frames else 0
         )
         progress = ProgressCounter({CLEAN_BARID: total}, multiple_bars=False)
-        progress.show_bar(CLEAN_BARID)
 
         with progress:
             # Loop through all data_files and data_frames
