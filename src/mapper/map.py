@@ -44,7 +44,7 @@ from linkml_map.session import Session
 from linkml_runtime import SchemaView
 
 from mapper.module_config import ModuleConfig
-from utils.logger import get_logger
+from utils.logger import get_logger, make_logger_bullet_list
 from utils.general_utils import (
     save_data_frame,
     read_data_frame,
@@ -70,14 +70,21 @@ from progress import ProgressCounter, EmptyCounter
 
 logger = get_logger(__name__)
 
-SAVE_INTERMEDIATE_TO_DISK = False
+# If True then save intermediate data to disk. This is typically used for debugging and should usually be
+# False. Intermediate data are saved to the temporary directory and include the cleaned data and
+# the mapped data before ID generation is performed.
+SAVE_INTERMEDIATE_TO_DISK = True
 
+# Progress bar IDs/titles
 MAP_BARID = "Initial Mapping"
 LOADING_BARID = "Loading Data"
 SAVE_PREID_BARID = "Saving Mapped Data"
 SAVE_BARID = "Saving Data"
 PREPARE_BARID = "Preparing Data"
 
+# If True then if input_max_rows is specified then we load a random sample of input_max_rows
+# rows. If False then we load the first input_max_rows rows. Should usually be False. Use
+# True for debugging purposes.
 RANDOM_SAMPLE_DATA = False
 
 # Change the logging level of the Transformer. For very large datasets we will get way too many WARNINGs in
@@ -234,7 +241,6 @@ class Mapper(object):
 
         total = len([d for sdata in source_data.values() for d in sdata])
         progress = ProgressCounter({PREPARE_BARID: total})
-        progress.show_bar(PREPARE_BARID)
 
         with progress:
             for class_name, class_data in source_data.items():
@@ -623,11 +629,6 @@ class Mapper(object):
 
         # Create arguments to pass to run_mapper for each mapper config file.
         map_args = []
-        self.run_mapper_progress = ProgressCounter(
-            {MAP_BARID: len(split_data) * len(mapper_files)},
-            total_title="Mapping",
-            multiple_bars=False,
-        )
         for split_num, split in enumerate(split_data):
             cur_args = [
                 {
@@ -654,7 +655,9 @@ class Mapper(object):
             logger.debug(f"Running with {max_processes} processes")
 
         logger.info("Performing initial mapping step, this may take some time...")
-        self.run_mapper_progress.show_bar(MAP_BARID)
+        self.run_mapper_progress = ProgressCounter(
+            {MAP_BARID: len(split_data) * len(mapper_files)}
+        )
         with self.run_mapper_progress:
             if max_processes == 1:
                 results = []
@@ -769,7 +772,6 @@ class Mapper(object):
             )
         else:
             progress = EmptyCounter()
-        progress.show_bar(progress_barid)
 
         with progress:
             for class_name, dfs in data_frames.items():
@@ -861,7 +863,6 @@ class Mapper(object):
 
         total_items = sum([len(d) for d in data_files.values()])
         progress = ProgressCounter({LOADING_BARID: total_items}, multiple_bars=False)
-        progress.show_bar(LOADING_BARID)
 
         warning_log = []
         with progress:
@@ -887,30 +888,29 @@ class Mapper(object):
                         na_values=None,
                     )
 
-                    # Check for missing required columns
                     class_defn = schema.induced_class(class_name)
-                    required_attributes = [
-                        attr
-                        for attr, defn in class_defn.attributes.items()
-                        if defn.required
+                    all_attributes = list(class_defn.attributes.keys())
+
+                    # Check for missing columns
+                    missing_attributes = [
+                        r for r in all_attributes if r not in df.columns
                     ]
-                    missing_required_attributes = [
-                        r for r in required_attributes if r not in df.columns
-                    ]
-                    if missing_required_attributes:
-                        missing_required_attributes_str = "\n        ".join(
-                            [""] + missing_required_attributes
+                    if missing_attributes:
+                        missing_attributes_str = make_logger_bullet_list(
+                            sorted(missing_attributes)
                         )
                         warning_log.append(
-                            f"The following required columns are missing in table '{class_name}' and will be treated as blank from file {file}:{missing_required_attributes_str}"
+                            f"The following columns are missing in table '{class_name}' and will be treated as blank from file {file}:\n{missing_attributes_str}"
                         )
 
                     # Check for extra unrecognized columns
-                    all_attributes = list(class_defn.attributes.keys())
                     unrecognized_attributes = [
                         attr for attr in df.columns if attr not in all_attributes
                     ]
                     if unrecognized_attributes:
+                        # Collect any recommended renaming of attributes (based purely on capitalization. eg. If
+                        # sampleID is a recognized attribute but the DataFrame has an attribute named SampleID, then
+                        # we will recommend to the user to rename it to sampleID)
                         recommended = [
                             choose_ignore_case_value(
                                 c, all_attributes, return_same_if_missing=False
@@ -921,11 +921,11 @@ class Mapper(object):
                             f"{c}%s" % (f" (Recommended column name: {r})" if r else "")
                             for c, r in zip(unrecognized_attributes, recommended)
                         ]
-                        unrecognized_with_recommended_str = "\n        ".join(
-                            [""] + unrecognized_with_recommended
+                        unrecognized_with_recommended_str = make_logger_bullet_list(
+                            sorted(unrecognized_with_recommended)
                         )
                         warning_log.append(
-                            f"The following unrecognized columns were found and will be ignored in table '{class_name}' from file {file}:{unrecognized_with_recommended_str}"
+                            f"The following unrecognized columns were found and will be ignored in table '{class_name}' from file {file}:\n{unrecognized_with_recommended_str}"
                         )
 
                     # Add tracking columns
