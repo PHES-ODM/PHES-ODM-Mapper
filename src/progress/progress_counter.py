@@ -14,7 +14,7 @@ bar_totals = {
 }
 
 is_ipython = "get_ipython" in globals()
-progress = ProgressCounter(bar_totals, multiple_bars=not is_ipython, install_output_hooks=not is_ipython)
+progress = ProgressCounter(bar_totals, multiple_bars=not is_ipython, hide_all=is_ipython)
 with progress:
     for current_bar, current_total in bar_totals.items():
         progress.show_bar(current_bar)      # Only has an effect if multiple_bars is False
@@ -67,6 +67,7 @@ class ProgressCounter(BaseCounter):
         totals: Dict,
         multiple_bars: bool = False,
         total_title: str = "TOTAL",
+        hide_all: bool = False,
         full_refresh_duration: Optional[float] = 0.5,
         full_refresh_iters: Optional[int] = None,
         install_output_hooks: bool = True,
@@ -88,6 +89,7 @@ class ProgressCounter(BaseCounter):
                 Defaults to False.
             total_title (str, optional): The description to use for the total progress bar, which shows the overall total of
                 all counts combined. Defaults to "TOTAL".
+            hide_all (bool, optional): If True then initially hide all the bars.
             full_refresh_duration (Optional[float], optional): If not None, then a float representing how many seconds between
                 each full refresh of all progress bars when update() is called. A full refresh redraws all visible bars. Defaults to 0.5.
             full_refresh_iters (Optional[int], optional): If not None, then an int representing how many increments of the total
@@ -117,7 +119,7 @@ class ProgressCounter(BaseCounter):
                 bar_format=bar_format,
                 total=total,
                 position=i if multiple_bars else 0,
-                show_bar=multiple_bars,
+                show_bar=multiple_bars and not hide_all,
             )
             for i, (barid, total) in enumerate(totals.items())
         }
@@ -133,8 +135,12 @@ class ProgressCounter(BaseCounter):
             bar_format=bar_format,
             total=total,
             position=total_position,
-            show_bar=multiple_bars,
+            show_bar=multiple_bars and not hide_all,
         )
+
+        # If multiple_bars is False then only show the first bar.
+        if not multiple_bars and not hide_all:
+            self.show_bar(list(self.progress_bars.keys())[0])
 
     def calc_bar_format(self, titles: List[str]) -> str:
         """Calculate the bar_format (as passed to the tqdm() constructor) used for a set of bars with the specified titles.
@@ -352,7 +358,7 @@ if __name__ == "__main__":
     import time
 
     bar_totals = {
-        "measures": 5000,
+        "measures": 500,
         "instruments": 200,
         "organizations": 500,
         "polygons": 100,
@@ -375,7 +381,7 @@ if __name__ == "__main__":
     is_ipython = "get_ipython" in globals()
     loggerA = logging.getLogger(__name__)
     progress = ProgressCounter(
-        bar_totals, multiple_bars=not is_ipython, install_output_hooks=not is_ipython
+        bar_totals, multiple_bars=not is_ipython, hide_all=is_ipython
     )
     loggerB = logging.getLogger(__name__)
     with progress:
@@ -407,5 +413,5 @@ if __name__ == "__main__":
                     # print("Progress", "with", "test")
                     print("Progress", progress.get_count(TOTAL_BARID))
                 progress.update(current_bar, 1)
-                time.sleep(0.0001)
+                time.sleep(0.00005)
     print(f"Final Progress: {progress.get_progress_report()}")
