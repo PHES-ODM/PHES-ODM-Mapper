@@ -9,7 +9,7 @@ logger.info("This is a logging message")
 ```
 """
 
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 import sys
 import logging
 
@@ -84,3 +84,26 @@ def get_logger(name: str, level: Optional[str] = logging.INFO) -> logging.Logger
     if level:
         logger.setLevel(level)
     return logger
+
+
+def make_logger_bullet_list(items: List, bullet: str = "- ", indent: int = 4) -> str:
+    """Make a bullet list string consisting of the specified items.
+
+    Args:
+        items (List): The items to make a list of. Each item will be indented on a new
+            line and have an optional bullet string.
+        bullet (str, optional): The string to use as a bullet, which immediately precedes
+            each item in the output string. Can be set to "" if no bullet is desired.
+            Defaults to "- ".
+        indent (int, optional): Number of blank characters to indent each item. The indent
+            string will appear at the start of a line, immediately before the bullet.
+            Can be set to 0 if no indent is desired. Defaults to 4.
+
+    Returns:
+        str: _description_
+    """
+    items = [
+        f"{' '*indent}{bullet.format(idx=idx+1)}{item}"
+        for idx, item in enumerate(items)
+    ]
+    return "\n".join(items)
