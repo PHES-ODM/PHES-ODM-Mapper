@@ -406,5 +406,5 @@ if __name__ == "__main__":
                     # print("Progress", "with", "test")
                     print("Progress", progress.get_count(TOTAL_BARID))
                 progress.update(current_bar, 1)
-                time.sleep(0.00005)
+                time.sleep(0.00001)
     print(f"Final Progress: {progress.get_progress_report()}")
