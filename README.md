@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository provides all tools required for mapping between various wastewater reporting database formats. Currently supported are conversion from NWSS Reporting to ODM v2 and ODM v1 to ODM v2. More database formats will be provided as needed, and custom conversions can be created. To add support for other databases, see [Custom Modules](#custom-modules) below. If you require help in creating custom modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
+This repository provides all tools required for mapping between various wastewater reporting database formats and the [Public Health Environmental Surveillance Open Data Model (PHES-ODM)](https://phes-odm.org). Currently supported are conversion from NWSS Reporting to ODM v2 and ODM v1 to ODM v2. More database formats will be provided as needed, and custom conversions can be created. To add support for other databases, see [Custom Modules](#custom-modules) below. If you require help in creating custom modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
 
 ## Installation
 
@@ -34,7 +34,7 @@ pip3 install -r requirements.txt
 
 ## Command-Line Interface
 
-Conversion can be performed using the command-line interface (CLI) provided by the script [src/map_cli.py](src/map_cli.py).
+Conversion can be performed using the command-line interface (CLI) provided by the script [src/map_cli.py](src/map_cli.py). Be sure to always activate the virtual environment as described above before running the script.
 
 Below is an example to map ODM v1 data (found in "path/to/inputdata") to ODM v2 data (and save the mapped data to "path/to/outputdata"):
 
