@@ -73,7 +73,7 @@ logger = get_logger(__name__)
 # If True then save intermediate data to disk. This is typically used for debugging and should usually be
 # False. Intermediate data are saved to the temporary directory and include the cleaned data and
 # the mapped data before ID generation is performed.
-SAVE_INTERMEDIATE_TO_DISK = True
+SAVE_INTERMEDIATE_TO_DISK = False
 
 # Progress bar IDs/titles
 MAP_BARID = "Initial Mapping"
