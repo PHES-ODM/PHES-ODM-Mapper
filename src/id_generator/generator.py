@@ -153,7 +153,6 @@ class IDGenerator(object):
         progress = ProgressCounter(
             {PREPARING_BARID: len(all_data)}, multiple_bars=False
         )
-        progress.show_bar(PREPARING_BARID)
         with progress:
             for class_name, cur_data in all_data.items():
                 class_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get(class_name, [])
