@@ -125,7 +125,6 @@ class ProgressCounter(BaseCounter):
         }
 
         self.multiple_bars = multiple_bars
-        self.refresh_next = False
 
         # Create the main total bar (at bottom)
         total = sum(totals.values())
@@ -208,10 +207,6 @@ class ProgressCounter(BaseCounter):
         exception_type, exception_value, exception_traceback
         self.close()
 
-    def refresh_next_update(self):
-        """Call this to force a redraw of all visible bars in the next call to update()."""
-        self.refresh_next = True
-
     def update(self, barid: str, inc: int, force_refresh: bool = False):
         """Update the bar with the specified barid by increasing its count by inc.
 
@@ -235,7 +230,6 @@ class ProgressCounter(BaseCounter):
         # Refresh all bars every self.full_refresh_iters iterations or self.full_refresh_duration seconds
         if (
             force_refresh
-            or self.refresh_next
             or (
                 self.full_refresh_iters is not None
                 and total_bar.count - self.last_refresh_iter >= self.full_refresh_iters
@@ -248,7 +242,6 @@ class ProgressCounter(BaseCounter):
             self.refresh()
 
     def refresh(self):
-        self.refresh_next = False
         self.last_refresh_time = time.time()
         self.last_refresh_iter = self.progress_bars[TOTAL_BARID].count
         for bar in self.progress_bars.values():

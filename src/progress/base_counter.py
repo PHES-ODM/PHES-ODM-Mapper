@@ -18,9 +18,6 @@ class BaseCounter(ABC):
     def update(self, barid: str, inc: int): ...
 
     @abstractmethod
-    def refresh_next_update(self): ...
-
-    @abstractmethod
     def close(self): ...
 
     @abstractmethod

@@ -27,9 +27,6 @@ class EmptyCounter(BaseCounter):
         barid, inc
         pass
 
-    def refresh_next_update(self):
-        pass
-
     def close(self):
         pass
 
