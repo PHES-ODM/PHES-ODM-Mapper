@@ -100,7 +100,7 @@ def strip_whitespace(df: pd.DataFrame) -> pd.DataFrame:
 
 def clear_dirs(
     dirs: Union[Union[str, Path], List[Union[str, Path]]],
-    extensions: Union[str, List[str]] = [".tsv", ".csv", ".yaml"],
+    extensions: Union[str, List[str]] = [".tsv", ".csv", ".yaml", ".yml"],
 ):
     """Remove all TSV, CSV, and YAML files in all the specified directories.
 
@@ -109,7 +109,7 @@ def clear_dirs(
         extensions (Union[str, List[str]]): One or more extensions. All files with these
             extensions found in the directories are deleted. These are case-insensitive and
             should be prefixed by a dot.
-            (Defaults to [".tsv", ".csv", ".yaml"])
+            (Defaults to [".tsv", ".csv", ".yaml", ".yml"])
     """
     if isinstance(extensions, str):
         extensions = [extensions]
