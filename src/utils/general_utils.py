@@ -13,11 +13,9 @@ import re
 from linkml_runtime import SchemaView
 
 from utils.logger import get_logger
+from utils.schema_utils import all_classes_without_tree_root
 
 EMPTY_PERMISSIBLE_VALUE = "<empty>"
-
-# Name of the tree root Container class that contains all the tables in a LinkML schema
-TREE_ROOT_CLASS_NAME = "Container"
 
 RECOGNIZED_EXTENSIONS = [".tsv", ".txt", ".csv", ".yaml", ".yml"]
 
@@ -186,7 +184,7 @@ def get_class_name_from_file_name(
     class_name = base_name.split("[")[0].split("(")[0]
     if schema is not None:
         class_name = choose_ignore_case_value(
-            class_name, list(schema.all_classes().keys())
+            class_name, all_classes_without_tree_root(schema)
         )
     return class_name
 
