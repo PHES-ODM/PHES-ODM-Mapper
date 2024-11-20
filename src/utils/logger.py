@@ -13,11 +13,21 @@ from typing import Optional, Dict, List
 import sys
 import logging
 
-# Default logging format
-# DEFAULT_LOGGER_FORMAT = "%(levelname)s %(asctime)s %(filename)s:%(lineno)d: %(message)s"
-DEFAULT_LOGGER_FORMAT = "**%(levelname)s** %(message)s"
-# Alternate logging formats to use for specific logging levels. See MultiFormatter
-ALTERNATE_LOGGER_FORMATS = {logging.INFO: "%(message)s"}
+# Set to True for detailed logging output. Typically used for debugging.
+DETAILED_LOGGER = False
+
+if DETAILED_LOGGER:
+    # Default logging format
+    DEFAULT_LOGGER_FORMAT = (
+        "%(levelname)s %(asctime)s %(filename)s:%(lineno)d: %(message)s"
+    )
+    # Alternate logging formats. See MultiFormatter
+    ALTERNATE_LOGGER_FORMATS = None
+else:
+    # Default logging format
+    DEFAULT_LOGGER_FORMAT = "**%(levelname)s** %(message)s"
+    # Alternate logging formats. See MultiFormatter
+    ALTERNATE_LOGGER_FORMATS = {logging.INFO: "%(message)s"}
 
 LOGGER_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -101,7 +111,7 @@ def make_logger_bullet_list(items: List, bullet: str = "- ", indent: int = 4) ->
             Can be set to 0 if no indent is desired. Defaults to 4.
 
     Returns:
-        str: _description_
+        str: A string of the bullet list.
     """
     items = [
         f"{' '*indent}{bullet.format(idx=idx+1)}{item}"
