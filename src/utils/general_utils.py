@@ -14,6 +14,7 @@ from linkml_runtime import SchemaView
 
 from utils.logger import get_logger
 from utils.schema_utils import all_classes_without_tree_root
+from utils.clean_exit_error import CleanExitError
 
 EMPTY_PERMISSIBLE_VALUE = "<empty>"
 
@@ -89,7 +90,7 @@ def read_data_frame(file: str, **kwargs) -> pd.DataFrame:
             data = yaml.safe_load(f)
         df = pd.DataFrame(data)
     else:
-        raise ValueError(f"Unrecognized extension for file {file}")
+        raise CleanExitError(f"Unrecognized extension for file {file}")
     return df
 
 
