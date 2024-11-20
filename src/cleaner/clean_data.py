@@ -100,6 +100,10 @@ class DataCleaner(object):
         # are the change string (in the form "origEnumValue -> fixedEnumValue") and the values are the
         # counts of how many times that change was made.
         changes_history = {}
+        # unrecognized_history stores unrecognized enumeration values. The keys are the slot names, the values are
+        # sub-dictionaries where the keys are the actual unrecognized enum values and the keys are the counts of how
+        # many times that unrecognzied enum value occurs
+        unrecognized_history = {}
 
         # Fix enumerations (Use correct capitalization), and only keep recognized slots
         keep_columns = []
@@ -123,14 +127,37 @@ class DataCleaner(object):
                             v.lower() for v in permissible_values
                         ]
                         df_orig = df[slot_name].copy()
-                        df[slot_name] = df[slot_name].apply(
+                        replacements_df = df[slot_name].apply(
                             lambda x: choose_ignore_case_value(
                                 x,
                                 permissible_values,
                                 lowercase_permissible_values,
-                                return_same_if_missing=True,
+                                return_same_if_missing=False,
                             )
                         )
+
+                        # Keep a history of which enum values are invalid. These are values where replacements_df
+                        # is None but the corresponding value in df[slot_name] was not empty.
+                        unrecognized_enums_filt = pd.isna(replacements_df) & (
+                            ~pd.isna(df[slot_name]) | df[slot_name] != ""
+                        )
+                        if unrecognized_enums_filt.any():
+                            if slot_name not in unrecognized_history:
+                                unrecognized_history[slot_name] = {}
+                            unrecognized_str = df[slot_name][unrecognized_enums_filt]
+                            # Go through each unrecognized enum value and update the count of how many times it is found
+                            for enum_value in unrecognized_str.unique():
+                                if enum_value not in unrecognized_history[slot_name]:
+                                    unrecognized_history[slot_name][enum_value] = 0
+                                unrecognized_history[slot_name][enum_value] += (
+                                    unrecognized_str == enum_value
+                                ).sum()
+                            # Set the blank unrecognized values in replacements_df to the original enum value.
+                            replacements_df[unrecognized_enums_filt] = df[slot_name][
+                                unrecognized_enums_filt
+                            ]
+
+                        df[slot_name] = replacements_df
 
                         # Keep a history of which enum values were changed
                         changes_filt = (df_orig != df[slot_name]) & (
@@ -153,19 +180,32 @@ class DataCleaner(object):
                                 slot_changes_history[change_key] += 1
 
         # Report the capitalization changes to the user
-        for slot_name, slot_history in changes_history.items():
-            for change_str, count in slot_history.items():
-                slot_history[change_str] = f"{count} time{'s' if count != 1 else ''}"
-            slot_history = sorted(
-                [f"{k} ({c})" for k, c in slot_history.items()],
-                key=lambda x: str(x).lower(),
-            )
-            changes_str = make_logger_bullet_list(slot_history)
-            if changes_str:
-                self.add_to_log(
-                    "warning",
-                    f"The following enumeration values were automatically corrected for capitalization in column '{slot_name}' of table '{class_name}':\n{changes_str}",
+        def _show_history(history: Dict[str, Dict[str, int]], msg: str):
+            for slot_name, slot_history in history.items():
+                for change_str, count in slot_history.items():
+                    slot_history[change_str] = (
+                        f"{count} time{'s' if count != 1 else ''}"
+                    )
+                slot_history = sorted(
+                    [f"{k} ({c})" for k, c in slot_history.items()],
+                    key=lambda x: str(x).lower(),
                 )
+                changes_str = make_logger_bullet_list(slot_history)
+                cur_msg = msg.format(slot_name=slot_name, class_name=class_name)
+                if changes_str:
+                    self.add_to_log(
+                        "warning",
+                        f"{cur_msg}\n{changes_str}",
+                    )
+
+        _show_history(
+            unrecognized_history,
+            msg="The following invalid enumeration values were found in column '{slot_name}' of table '{class_name}':",
+        )
+        _show_history(
+            changes_history,
+            msg="The following enumeration values were automatically corrected for capitalization in column '{slot_name}' of table '{class_name}':",
+        )
 
         return df[keep_columns]
 
@@ -371,17 +411,17 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         class opts:
-            # input_data_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
-            # input_data_files = None
-            # output_dir = "../../gen/odm_v1_to_v2-test/cleaned_data"
-            # max_rows = 100
-            # schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v1.yaml"
-
-            input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            input_data_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated copy"
             input_data_files = None
-            output_dir = "../../gen/nwss_reporting_to_v2-test/cleaned_data"
+            output_dir = "../../gen/odm_v1_to_v2-test/cleaned_data"
             max_rows = 100
-            schema = "../../data/modules/nwss_reporting_to_v2/schemas/nwss_reporting.yaml"
+            schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v1.yaml"
+
+            # input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            # input_data_files = None
+            # output_dir = "../../gen/nwss_reporting_to_v2-test/cleaned_data"
+            # max_rows = 100
+            # schema = "../../data/modules/nwss_reporting_to_v2/schemas/nwss_reporting.yaml"
         # fmt: on
     else:
         args = argparse.ArgumentParser(
