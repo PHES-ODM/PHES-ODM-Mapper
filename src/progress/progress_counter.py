@@ -53,9 +53,8 @@ BAR_FORMAT = (
 # Key used to access the total bar (eg. when calling ProgressCounter.show_bar() and ProgressCounter.has_bar())
 TOTAL_BARID = None
 
-# Hide cursor when progress bar is visible. Unfortunately if the user presses Ctrl+C the cursor is not
-# reshown (since __exit__ is not called). So we may want to keep this at False
-HIDE_CURSOR = False
+# Hide cursor when progress bar is visible
+HIDE_CURSOR = True
 
 HOOK_STDOUT = True
 HOOK_STDERR = True
