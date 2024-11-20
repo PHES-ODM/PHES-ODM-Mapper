@@ -200,7 +200,7 @@ class DataCleaner(object):
 
         _show_history(
             unrecognized_history,
-            msg="The following invalid enumeration values were found in column '{slot_name}' of table '{class_name}':",
+            msg="The following invalid enumeration values were found in column '{slot_name}' of table '{class_name}', please consider correcting them:",
         )
         _show_history(
             changes_history,
