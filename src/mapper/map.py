@@ -743,7 +743,7 @@ class Mapper(object):
         output_dir: Union[str, Path],
         progress_barid: Optional[str] = None,
         name_format: str = "{class_name}.csv",
-        exception_if_exists: bool = True,
+        exception_if_exists: bool = False,
     ) -> Dict[str, List[str]]:
         """Save the specified DataFrames to disk.
 
@@ -755,7 +755,7 @@ class Mapper(object):
             name_format (str, optional): The string interpolation format of the file names, accepts the variable class_name.
                 Defaults to "{class_name}.csv"
             exception_if_exists (bool, optional): If True then raise an exception if a file already exists with the same
-                name as a file we are trying to save. If False then overwrite the file. Defaults to True.
+                name as a file we are trying to save. If False then overwrite the file. Defaults to False.
 
         Raises:
             ValueError: Only raised if exception_if_exists is True. The data could not be saved because one of the output
@@ -899,6 +899,8 @@ class Mapper(object):
                         )
                         progress.update(LOADING_BARID, 1)
                         continue
+                    except FileNotFoundError:
+                        raise CleanExitError(f"Specified file does not exist: {file}")
 
                     class_defn = schema.induced_class(class_name)
 
@@ -1032,12 +1034,12 @@ class Mapper(object):
         )
 
         # Clean the data
-        cleaned_data_dir = self.temp_dir / "cleaned_data"
-        clear_dirs([cleaned_data_dir])
+        temp_cleaned_data_dir = self.temp_dir / "cleaned_data"
+        clear_dirs([temp_cleaned_data_dir])
         data_files, data_frames = self.clean_data(
             data_files=None,
             data_frames=data_frames,
-            output_dir=cleaned_data_dir if SAVE_INTERMEDIATE_TO_DISK else None,
+            output_dir=temp_cleaned_data_dir if SAVE_INTERMEDIATE_TO_DISK else None,
         )
 
         # Map the cleaned data
@@ -1059,12 +1061,12 @@ class Mapper(object):
             )
 
         # Save intermediate mapped and filtered (without ID generation) data to disk
-        mapped_data_dir = self.temp_dir / "mapped_data"
-        if SAVE_INTERMEDIATE_TO_DISK and mapped_data_dir:
-            clear_dirs([mapped_data_dir])
+        temp_mapped_data_dir = self.temp_dir / "mapped_data"
+        if SAVE_INTERMEDIATE_TO_DISK and temp_mapped_data_dir:
+            clear_dirs([temp_mapped_data_dir])
             data_files = self.save_data(
                 data_frames=data_frames,
-                output_dir=mapped_data_dir,
+                output_dir=temp_mapped_data_dir,
                 progress_barid=SAVE_PREID_BARID,
                 name_format="{class_name}[preid].csv",
             )
@@ -1073,7 +1075,7 @@ class Mapper(object):
         data_frames = self.generate_ids(data_files=None, data_frames=data_frames)
 
         # Save data to disk
-        clear_dirs([output_dir])
+        # clear_dirs([output_dir])
         data_files = self.save_data(
             data_frames, output_dir=output_dir, progress_barid=SAVE_BARID
         )
