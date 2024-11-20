@@ -32,9 +32,19 @@ Install Python library requirements:
 pip3 install -r requirements.txt
 ```
 
+## Sample Data
+
+Sample ODM v1 data is available if you require a sample dataset to run the mapper before you have your own data ready. The data is provided by the [Ottawa Wastewater Surveillance Consortium on Github](https://github.com/OntarioWastewaterSurveillanceConsortium/sars-cov-2-data). Data can be downloaded manually on Github, or from the command-line using the following:
+
+```console
+git clone git@github.com:OntarioWastewaterSurveillanceConsortium/sars-cov-2-data.git
+```
+
+Sample data from various locations can be found in the `CSV` directory. Record the location of one of these directories and use it as the `--input_data_dir` parameter below (eg. "sars-cov-2-data/CSV/Ottawa").
+
 ## Command-Line Interface
 
-Conversion can be performed using the command-line interface (CLI) provided by the script [src/map_cli.py](src/map_cli.py). Be sure to always activate the virtual environment as described above before running the script.
+Conversion can be performed using the command-line interface (CLI) provided by the script [src/map_cli.py](src/map_cli.py). Be sure to always activate the virtual environment as described in the [Installation](#installation) section above before running the script.
 
 Below is an example to map ODM v1 data (found in "path/to/inputdata") to ODM v2 data (and save the mapped data to "path/to/outputdata"):
 
