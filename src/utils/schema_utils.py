@@ -10,6 +10,20 @@ import yaml
 from linkml_runtime import SchemaView
 
 
+def all_classes_without_tree_root(schema: SchemaView) -> List[str]:
+    """Get a list of all classes in the schema, excluding the tree root class that contains
+    all the classes.
+
+    Args:
+        schema (SchemaView): The Schema to get the classes of.
+
+    Returns:
+        List[str]: List of all classes belonging to the schema, excluding the tree root class.
+    """
+    classes = [str(c) for c, defn in schema.all_classes().items() if not defn.tree_root]
+    return classes
+
+
 def get_slot_definition(cls: str, slot: str, schema: SchemaView) -> Dict:
     """Get the full definition for the slot. This includes fields that are attributes of the class.
     If a slot is modified with a slot_usage, then we also update the returned dictionary with the
