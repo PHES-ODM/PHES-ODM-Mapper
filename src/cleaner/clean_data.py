@@ -308,9 +308,6 @@ class DataCleaner(object):
                 cleaned_data_frames: Dictionary of all cleaned DataFrames. The keys are the class names and the
                     values are lists of cleaned DataFrames.
         """
-        # if output_dir:
-        #     clear_dirs([output_dir])
-
         output_data_files = {}
         output_data_frames = {}
 

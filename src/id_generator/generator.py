@@ -1082,7 +1082,6 @@ if __name__ == "__main__":
 
     data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
 
-    # clear_dirs([opts.output_dir])
     gen = IDGenerator(
         data_files=data_files,
         data_frames=None,

@@ -1075,7 +1075,6 @@ class Mapper(object):
         data_frames = self.generate_ids(data_files=None, data_frames=data_frames)
 
         # Save data to disk
-        # clear_dirs([output_dir])
         data_files = self.save_data(
             data_frames, output_dir=output_dir, progress_barid=SAVE_BARID
         )
