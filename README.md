@@ -89,7 +89,7 @@ python3 src/map_cli.py \
 
 ### Performance
 
-Depending on the size of your dataset and the performance of your computer, mapping can be very time consuming. For example, mapping a NWSS dataset with 650,000 rows to ODM v2 can result in output of over 30,000,000 rows, and can take 15 hours or more to complete. Smaller datasets can be mapped in a matter of minutes. The most time consuming steps are the "Initial Mapping" and "Generating IDs" steps.
+Depending on the size of your dataset and the performance of your computer, mapping can be very time consuming. For example, mapping a NWSS dataset with 650,000 rows to ODM v2 can result in output of over 30,000,000 rows, and can take 15 hours or more to complete on a high-end computer. Smaller datasets can be mapped in a matter of minutes. The most time consuming steps are the "Initial Mapping" and "Generating IDs" steps.
 
 ### CLI Arguments
 
