@@ -29,7 +29,7 @@ from utils.general_utils import (
 from utils.logger import get_logger, make_logger_bullet_list
 from utils.tracking_slots import get_all_tracking_slots
 from utils.cli_utils import get_input_data_files
-from utils.schema_utils import get_ranges_of_slot
+from utils.schema_utils import get_ranges_of_slot, all_classes_without_tree_root
 from progress import ProgressCounter
 
 CLEAN_BARID = "Cleaning Data"
@@ -79,7 +79,7 @@ class DataCleaner(object):
         Returns:
             pd.DataFrame: A copy of the DataFrame, with the basic cleanup performed.
         """
-        if class_name not in self.schema.all_classes():
+        if class_name not in all_classes_without_tree_root(self.schema):
             logger.debug(
                 f"Not cleaning data for class {class_name} since class is not recognized"
             )
@@ -157,7 +157,10 @@ class DataCleaner(object):
         for slot_name, slot_history in changes_history.items():
             for change_str, count in slot_history.items():
                 slot_history[change_str] = f"{count} time{'s' if count != 1 else ''}"
-            slot_history = sorted([f"{k} ({c})" for k, c in slot_history.items()])
+            slot_history = sorted(
+                [f"{k} ({c})" for k, c in slot_history.items()],
+                key=lambda x: str(x).lower(),
+            )
             changes_str = make_logger_bullet_list(slot_history)
             if changes_str:
                 self.add_to_log(
