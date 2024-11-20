@@ -61,6 +61,7 @@ from utils.tracking_slots import (
     load_schema_with_tracking_slots,
     add_tracking_slots_derivations,
 )
+from utils.schema_utils import all_classes_without_tree_root
 from utils.clean_exit_error import CleanExitError
 from filter import DataFilter
 from cleaner import DataCleaner
@@ -233,10 +234,11 @@ class Mapper(object):
         cast_functions = self.get_cast_functions(schema)
         source_data = merge_dicts_of_lists([data_files, data_frames])
         # Only process data that belong to a recognized class
+        all_classes = all_classes_without_tree_root(schema)
         source_data = {
             class_name: class_data
             for class_name, class_data in source_data.items()
-            if class_name in schema.all_classes()
+            if class_name in all_classes
         }
 
         total = len([d for sdata in source_data.values() for d in sdata])
@@ -353,7 +355,7 @@ class Mapper(object):
         """
         cast_functions = {}
         # Loop through all classes in the schema
-        for class_name in schema.all_classes():
+        for class_name in all_classes_without_tree_root(schema):
             class_defn = schema.induced_class(class_name)
 
             # Add the sub-dictionary for the current class name
@@ -604,7 +606,7 @@ class Mapper(object):
             logger.warning(
                 "No data loaded from disk. Be sure the file names match the source schema table names, that there are files in the directory, and that the files are not empty."
             )
-            return {}, {}
+            return {}
 
         logger.debug(f"Data loaded for source tables: {list(data.keys())}")
 
@@ -847,7 +849,7 @@ class Mapper(object):
                 same as the order of the files in data_files for the same class.
         """
         schema = SchemaView(source_schema_file)
-        recognized_classes = list(schema.all_classes())
+        recognized_classes = all_classes_without_tree_root(schema)
 
         # Check for invalid class names
         has_unrecognized_class = False
@@ -857,7 +859,7 @@ class Mapper(object):
                 for file in files:
                     logger.error(f"Unrecognized input table '{class_name}': {file}")
         if has_unrecognized_class:
-            tables = ", ".join(sorted(recognized_classes))
+            tables = ", ".join(sorted(recognized_classes, key=lambda x: str(x).lower()))
             msg = f"Terminating due to unrecognized table(s). Allowable tables are: {tables}"
             raise CleanExitError(msg)
 
@@ -879,14 +881,21 @@ class Mapper(object):
                 if class_name not in data_frames:
                     data_frames[class_name] = []
                 for file in files:
-                    df = read_data_frame(
-                        file,
-                        nrows=None
-                        if RANDOM_SAMPLE_DATA
-                        else (max_rows if max_rows else None),
-                        keep_default_na=False,
-                        na_values=None,
-                    )
+                    try:
+                        df = read_data_frame(
+                            file,
+                            nrows=None
+                            if RANDOM_SAMPLE_DATA
+                            else (max_rows if max_rows else None),
+                            keep_default_na=False,
+                            na_values=None,
+                        )
+                    except pd.errors.EmptyDataError:
+                        logger.warning(
+                            f"Empty file found for table '{class_name}', ignoring: {file}"
+                        )
+                        progress.update(LOADING_BARID, 1)
+                        continue
 
                     class_defn = schema.induced_class(class_name)
 
@@ -896,7 +905,8 @@ class Mapper(object):
                             attr
                             for attr, defn in class_defn.attributes.items()
                             if attr not in df.columns and defn.required
-                        ]
+                        ],
+                        key=lambda x: str(x).lower(),
                     )
                     # Check for missing (but not required) columns
                     not_required_missing_attributes = sorted(
@@ -904,7 +914,8 @@ class Mapper(object):
                             attr
                             for attr, defn in class_defn.attributes.items()
                             if attr not in df.columns and not defn.required
-                        ]
+                        ],
+                        key=lambda x: str(x).lower(),
                     )
                     if required_missing_attributes or not_required_missing_attributes:
                         # There are some missing attributes, tell the user
@@ -938,7 +949,10 @@ class Mapper(object):
                             for c, r in zip(unrecognized_attributes, recommended)
                         ]
                         unrecognized_with_recommended_str = make_logger_bullet_list(
-                            sorted(unrecognized_with_recommended)
+                            sorted(
+                                unrecognized_with_recommended,
+                                key=lambda x: str(x).lower(),
+                            )
                         )
                         warning_log.append(
                             f"The following unrecognized columns were found and will be ignored in table '{class_name}' from file {file}:\n{unrecognized_with_recommended_str}"
