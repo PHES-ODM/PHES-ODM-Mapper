@@ -38,7 +38,7 @@ def add_tracking_slots_derivations(spec: Dict, target_schema: SchemaView):
         target_schema (SchemaView): The LinkML schema for the target database that the spec maps onto.
     """
     tree_root = [
-        c for c in target_schema.all_classes() if target_schema.get_class(c).tree_root
+        c for c, defn in target_schema.all_classes().items() if defn.tree_root
     ][0]
 
     all_tracking_slots = get_all_tracking_slots()
@@ -122,7 +122,11 @@ def add_tracking_columns(df: pd.DataFrame, class_name: str, file: Union[str, Pat
     # eg. Sorting the strings "2" and "10" will result in the incorrect order ["10", "2"], but sorting the strings
     # "02" and "10" will result in the correct order ["02", "10"].
     max_row_digits = len(str(df[TrackingSlots.SOURCE_ROW].max()))
-    df[TrackingSlots.SOURCE_FILE_AND_ROW] = df.apply(
-        lambda x: f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]:0{max_row_digits}d}",
-        axis=1,
-    )
+    if len(df):
+        df[TrackingSlots.SOURCE_FILE_AND_ROW] = df.apply(
+            lambda x: f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]:0{max_row_digits}d}",
+            axis=1,
+        )
+    else:
+        # The above fails if df is empty, so properly handle it here.
+        df[TrackingSlots.SOURCE_FILE_AND_ROW] = None
