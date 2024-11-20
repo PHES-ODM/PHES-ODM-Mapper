@@ -848,6 +848,9 @@ class Mapper(object):
                 are lists of DataFrames belonging to that class. The order of the DataFrames within each class are the
                 same as the order of the files in data_files for the same class.
         """
+        if not data_files:
+            raise CleanExitError("No input data found.")
+
         schema = SchemaView(source_schema_file)
         recognized_classes = all_classes_without_tree_root(schema)
 
