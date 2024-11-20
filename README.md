@@ -57,12 +57,12 @@ python3 src/map_cli.py \
 
 In the above example, all data files (csv, txt, tsv, yaml/yml files) in "path/to/inputdata" will be mapped. It will be assumed that the file name (excluding anything after the first opening square or round bracket) is the table name that the data is for (eg. "WWMeasure[2024-09-25].csv" will be assumed to be for the "WWMeasure" table).
 
-Alternatively, instead of specifying an input directory, one can use the `--input_data_files` command-line argument to specify input data files while explicitly specifying the table name for the files:
+Alternatively, instead of specifying an input directory, one can use the `--input_data_files` command-line argument to specify input data files while explicitly specifying the table name for the files. The argument consists of alternating table names and file names, separated by spaces. In the example below, the files "path/to/mymeasures1.csv" and "path/to/mymeasures2.csv" are input files for the "WWMeasure" table, and the file "path/to/mysamples.csv" is the input file for the "Sample" table:
 
 ```console
 python3 src/map_cli.py \
     --module odm_v1_to_v2 \
-    --input_data_files WWMeasure "path/to/WWMeasure1.csv" WWMeasure "path/to/WWMeasure2.csv" Sample "path/to/Sample.csv" \
+    --input_data_files WWMeasure "path/to/mymeasures1.csv" WWMeasure "path/to/mymeasures2.csv" Sample "path/to/mysamples.csv" \
     --output_dir "path/to/outputdata"
 ```
 
