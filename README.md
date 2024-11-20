@@ -34,7 +34,7 @@ pip3 install -r requirements.txt
 
 ## Sample Data
 
-Sample ODM v1 data is available if you require a sample dataset to run the mapper before you have your own data ready. The data is provided by the [Ottawa Wastewater Surveillance Consortium on Github](https://github.com/OntarioWastewaterSurveillanceConsortium/sars-cov-2-data). Data can be downloaded manually on Github, or from the command-line using the following:
+Sample ODM v1 data is available if you require a sample dataset to run the mapper on before you have your own data ready, or for testing purposes. The data is provided by the [Ottawa Wastewater Surveillance Consortium on Github](https://github.com/OntarioWastewaterSurveillanceConsortium/sars-cov-2-data). Data can be downloaded manually on Github, or from the command-line using the following:
 
 ```console
 git clone git@github.com:OntarioWastewaterSurveillanceConsortium/sars-cov-2-data.git
@@ -44,7 +44,7 @@ Sample data from various locations can be found in the `CSV` directory. Record t
 
 ## Command-Line Interface
 
-Conversion can be performed using the command-line interface (CLI) provided by the script [src/map_cli.py](src/map_cli.py). Be sure to always activate the virtual environment as described in the [Installation](#installation) section above before running the script.
+A full mapping can be performed by using the command-line interface (CLI) provided by the script [src/map_cli.py](src/map_cli.py). Be sure to always activate the virtual environment as described in the [Installation](#installation) section above before running the script.
 
 Below is an example to map ODM v1 data (found in "path/to/inputdata") to ODM v2 data (and save the mapped data to "path/to/outputdata"):
 
@@ -86,6 +86,10 @@ python3 src/map_cli.py \
     --input_data_files class1 class1.csv class2 class2.csv \
     --output_dir "path/to/outputdata"
 ```
+
+### Performance
+
+Depending on the size of your dataset and the performance of your computer, mapping can be very time consuming. For example, mapping a NWSS dataset with 650,000 rows to ODM v2 can result in output of over 30,000,000 rows, and can take 15 hours or more to complete. Smaller datasets can be mapped in a matter of minutes. The most time consuming steps are the "Initial Mapping" and "Generating IDs" steps.
 
 ### CLI Arguments
 
