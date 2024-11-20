@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from typing import Dict, List, Union, Optional
 from pathlib import Path
 from utils.general_utils import get_class_name_from_file_name, merge_dicts_of_lists
+from utils.clean_exit_error import CleanExitError
 
 
 def parse_input_data_files_cli_args(cli_args: List[str]) -> Dict[str, List[Path]]:
@@ -61,6 +62,8 @@ def get_input_data_files_from_dir(dir: Union[str, Path]) -> Dict[str, List[Path]
     """
     dir = Path(dir)
     d = {}
+    if not dir.is_dir():
+        raise CleanExitError(f"Specified path is not a directory: {dir}")
     for f in os.listdir(dir):
         if os.path.splitext(f)[1].lower() in [".tsv", ".txt", ".csv"]:
             class_name = get_class_name_from_file_name(f)
