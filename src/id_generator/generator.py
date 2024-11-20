@@ -26,7 +26,6 @@ import traceback
 from utils.logger import get_logger
 from utils.general_utils import (
     read_data_frame,
-    clear_dirs,
     merge_dicts_of_lists,
 )
 from utils.tracking_slots import TrackingSlots
@@ -1083,7 +1082,7 @@ if __name__ == "__main__":
 
     data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
 
-    clear_dirs([opts.output_dir])
+    # clear_dirs([opts.output_dir])
     gen = IDGenerator(
         data_files=data_files,
         data_frames=None,
