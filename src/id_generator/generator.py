@@ -400,7 +400,7 @@ class IDGenerator(object):
                 getattr(logger, level)(s)
             pass
 
-        _log("info", "Making all IDs, this may take some time...")
+        _log("info", "Generating IDs, this may take some time...")
 
         # Get the current class and current row index that we are generating for. We will restore these
         # values once we're done with this function call. This will allow make_all_ids to be called
