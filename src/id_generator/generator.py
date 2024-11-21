@@ -1009,24 +1009,24 @@ if __name__ == "__main__":
         # fmt: off
         class opts:
             # Test
-            # input_data_dir = "../../gen/test/source_data"
-            # input_data_files = None
+            # input_dir = "../../gen/test/source_data"
+            # input_files = None
             # output_dir = "../../gen/test/mapped_data_ids"
             # id_code_file = "../../data/modules/test/ids.xlsx"
             # id_code_sheet = "id_code"
             # config_file = "../../data/modules/test/ids.yaml"
             
             # NWSS to ODM v2
-            input_data_dir = "../../gen/nwss_reporting_to_v2/temp-1000/mapped_data"
-            input_data_files = None
+            input_dir = "../../gen/nwss_reporting_to_v2/temp-1000/mapped_data"
+            input_files = None
             output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids-test"
             id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
             id_code_sheet = "id_code"
             config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
 
             # ODM v1 to ODM v2
-            # input_data_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
-            # input_data_files = None
+            # input_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
+            # input_files = None
             # output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
             # id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
             # id_code_sheet = "id_code"
@@ -1039,37 +1039,37 @@ if __name__ == "__main__":
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
         args.add_argument(
-            "--input_data_dir",
+            "--input-dir",
             type=str,
             help="Location of all data files to add the IDs to. The file name (without extension) should be the class name. All CSV, TSV, TXT, YAML, and YML files are loaded.",
             required=False,
         )
         args.add_argument(
-            "--input_data_files",
+            "--input-files",
             nargs="+",
             type=str,
             help="List of all input data files to add the IDS to, and the source class for each file. Format is 'class_name file.csv [class_name2 file2.csv ...]'",
             required=False,
         )
         args.add_argument(
-            "--output_dir",
+            "--output-dir",
             type=str,
             help="Directory to save the final data to, in which all IDs have been generated.",
             required=True,
         )
         args.add_argument(
-            "--config_file", type=str, help="The YAML config file.", required=True
+            "--config-file", type=str, help="The YAML config file.", required=True
         )
         args.add_argument(
-            "--id_code_file",
+            "--id-code-file",
             type=str,
             help="The XLSX, CSV, TSV, TXT, YAML, or YML configuration file that contains the ID generation code. If an XLSX file then the sheet named id_code_sheet is loaded.",
             required=True,
         )
         args.add_argument(
-            "--id_code_sheet",
+            "--id-code-sheet",
             type=str,
-            help="If id_code_file is an Excel file, then load the code from the sheet with this name.",
+            help="If id-code-file is an Excel file, then load the code from the sheet with this name.",
             default=None,
             required=False,
         )
@@ -1080,7 +1080,7 @@ if __name__ == "__main__":
         )
         opts = args.parse_args()
 
-    data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
+    data_files = get_input_data_files(opts.input_files, opts.input_dir)
 
     gen = IDGenerator(
         data_files=data_files,

@@ -218,8 +218,8 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         class opts:
-            input_data_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
-            input_data_files = None
+            input_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
+            input_files = None
             filter_config_file = "../../data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv"
             output_data_dir = "../../gen/nwss_reporting_to_v2/filtered_mapped_data"
         # fmt: on
@@ -228,33 +228,33 @@ if __name__ == "__main__":
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
         args.add_argument(
-            "--input_data_dir",
+            "--input-dir",
             type=str,
             help="Directory containing all of the input data to filter. The file names (without extension) correspond to the table name, with anything after the first square or round bracket ignored.",
             required=False,
         )
         args.add_argument(
-            "--input_data_files",
+            "--input-files",
             nargs="+",
             type=str,
             help="List of all input files to filter, and the source class for each file. Format is 'class_name file.csv [class_name2 file2.csv ...]'",
             required=False,
         )
         args.add_argument(
-            "--filter_config_file",
+            "--filter-config-file",
             type=str,
             help="Location of the CSV or TSV filtering configuration file.",
             required=True,
         )
         args.add_argument(
-            "--output_data_dir",
+            "--output-data-dir",
             type=str,
             help="Location to save the filtered data to.",
             required=True,
         )
         opts = args.parse_args()
 
-    data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
+    data_files = get_input_data_files(opts.input_files, opts.input_dir)
 
     filterer = DataFilter(opts.filter_config_file)
     filterer.run_filter(

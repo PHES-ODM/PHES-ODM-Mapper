@@ -411,14 +411,14 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         class opts:
-            input_data_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated copy"
-            input_data_files = None
+            input_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated copy"
+            input_files = None
             output_dir = "../../gen/odm_v1_to_v2-test/cleaned_data"
             max_rows = 100
             schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v1.yaml"
 
-            # input_data_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
-            # input_data_files = None
+            # input_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            # input_files = None
             # output_dir = "../../gen/nwss_reporting_to_v2-test/cleaned_data"
             # max_rows = 100
             # schema = "../../data/modules/nwss_reporting_to_v2/schemas/nwss_reporting.yaml"
@@ -428,26 +428,26 @@ if __name__ == "__main__":
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
         args.add_argument(
-            "--input_data_dir",
+            "--input-dir",
             type=str,
             help="Clean all csv, txt, and tsv files in this directory. txt files are treated as tab-separated",
             required=False,
         )
         args.add_argument(
-            "--input_data_files",
+            "--input-files",
             nargs="+",
             type=str,
             help="List of all input files and the source class for each file. Format is 'class_name file.csv [class_name2 file2.csv ...]'",
             required=False,
         )
         args.add_argument(
-            "--output_dir",
+            "--output-dir",
             type=str,
             help="Save results to this directory",
             required=True,
         )
         args.add_argument(
-            "--max_rows",
+            "--max-rows",
             type=int,
             help="Maximum number of rows to load and clean. If 0 then clean all rows. Default is 0.",
             default=0,
@@ -461,7 +461,7 @@ if __name__ == "__main__":
         )
         opts = args.parse_args()
 
-    data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
+    data_files = get_input_data_files(opts.input_files, opts.input_dir)
     cleaner = DataCleaner(schema=opts.schema)
     data_files, data_frames = cleaner.clean_data(
         data_files=data_files,

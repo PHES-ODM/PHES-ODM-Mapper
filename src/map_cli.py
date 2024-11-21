@@ -9,8 +9,8 @@ where appropriate):
 cd src
 python3 map_cli.py \
     --module odm_v1_to_v2 \
-    --input_data_dir "path/to/input/data" \
-    --output_dir "../gen/odm_v1_to_v2"
+    --input-dir "path/to/input/data" \
+    --output-dir "../gen/odm_v1_to_v2"
 ```
 """
 
@@ -32,22 +32,23 @@ if __name__ == "__main__":
             # ODM v1 to v2
             # module = "odm_v1_to_v2"
             # module_dir = None
-            # input_data_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
-            # input_data_files = None  # ["WWMeasure", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
+            # # input_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
+            # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"
+            # input_files = None #["Sample", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/Sample.csv"]
             # output_dir = "../gen/odm_v1_to_v2-test"
             # temp_dir = "../gen/odm_v1_to_v2-test/temp"
 
             # NWSS to v2
             module = "nwss_reporting_to_v2"
             module_dir = None
-            # input_data_dir = "../../../PHES-ODM-Data/nwss/private_renamed_test/"
-            input_data_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
-            input_data_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
+            # input_dir = "../../../PHES-ODM-Data/nwss/private_renamed_test/"
+            input_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            input_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
             output_dir = "../gen/nwss_reporting_to_v2-test"
             temp_dir = "../gen/nwss_reporting_to_v2-test/temp"
 
             max_processes = 1
-            input_max_rows = 1000
+            input_max_rows = None
             id_debug = True
         # fmt: on
     else:
@@ -57,56 +58,56 @@ if __name__ == "__main__":
         args.add_argument(
             "--module",
             type=str,
-            help="The module name for the conversion. Either the 'module' or 'module_dir' command-line arguments must be provided (but not both). A module specifies the source dataset type, the target dataset type, and all required configuration for the conversion.",
+            help="The module name for the conversion. Either the 'module' or 'module-dir' command-line arguments must be provided (but not both). A module specifies the source dataset type, the target dataset type, and all required configuration for the conversion.",
             required=False,
         )
         args.add_argument(
-            "--module_dir",
+            "--module-dir",
             type=str,
-            help="The module directory for the conversion. Either the 'module' or 'module_dir' command-line arguments must be provided (but not both). A module specifies the source dataset type, the target dataset type, and all required configuration for the conversion.",
+            help="The module directory for the conversion. Either the 'module' or 'module-dir' command-line arguments must be provided (but not both). A module specifies the source dataset type, the target dataset type, and all required configuration for the conversion.",
             required=False,
         )
         args.add_argument(
-            "--input_data_dir",
+            "--input-dir",
             type=str,
             help="Directory containing all of the input data to map. The file names (without extension) correspond to the table name, with anything in square brackets ignored.",
             required=False,
         )
         args.add_argument(
-            "--input_data_files",
+            "--input-files",
             nargs="+",
             type=str,
             help="List of all input files and the source class for each file. Format is 'class_name file.csv [class_name2 file2.csv ...]'",
             required=False,
         )
         args.add_argument(
-            "--output_dir",
+            "--output-dir",
             type=str,
             help="Directory to save all the mapped data to.",
             required=True,
         )
         args.add_argument(
-            "--temp_dir",
+            "--temp-dir",
             type=str,
             help="Directory to save all temporary files to. If specified then the temporary directory is not deleted after processing. If not specified then a system-specified temporary directory is used and deleted after processing. Primarily used for debugging.",
             required=False,
         )
         args.add_argument(
-            "--input_max_rows",
+            "--input-max-rows",
             type=int,
             help="The maximum number of rows to map from each input data file. If 0 then map all rows.",
             default=0,
             required=False,
         )
         args.add_argument(
-            "--max_processes",
+            "--max-processes",
             type=int,
             help="Maximum number of processes to run at a time for mapping the data. If non-positive then the max available processes are used.",
             default=1,
             required=False,
         )
         args.add_argument(
-            "--id_debug",
+            "--id-debug",
             action="store_true",
             help="If set then run ID generation in debug mode, which only affects what is included in the output data files. Debug data includes some additional columns (eg. original ID values, row number column for linking, primary key index and values, etc.). Debug output will also include any duplicated primary keys, with an additional 'drop' column specifying if it is a duplicate, in which case the row would be dropped when not in debug mode.",
         )
@@ -114,7 +115,7 @@ if __name__ == "__main__":
 
     try:
         logger.info(f"Starting run at {datetime.now()}")
-        data_files = get_input_data_files(opts.input_data_files, opts.input_data_dir)
+        data_files = get_input_data_files(opts.input_files, opts.input_dir)
 
         mapper = Mapper(
             module=opts.module,
