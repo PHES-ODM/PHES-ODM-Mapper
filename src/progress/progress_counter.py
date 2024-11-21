@@ -42,7 +42,7 @@ from base_counter import BaseCounter
 # Maximum allowable width (in characters) of the description of a tqdm bar
 MAX_DESC_WIDTH = 20
 # Width (in characters) of the slider portion of the progress bar.
-BAR_WIDTH = 70
+BAR_WIDTH = 50
 # Format of a tqdm bar passed tqdm() constructor as bar_format parameter.
 # %(maxdesc) and %(barwidth) receive the width of the description and the
 # width of the slider part of the bar.
