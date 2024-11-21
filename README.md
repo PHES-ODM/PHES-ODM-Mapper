@@ -87,10 +87,6 @@ python3 src/map_cli.py \
     --output_dir "path/to/outputdata"
 ```
 
-### Performance
-
-Depending on the size of your dataset and the performance of your computer, mapping can be very time consuming. For example, mapping a NWSS dataset with 650,000 rows to ODM v2 can result in output of over 30,000,000 rows, and can take 15 hours or more to complete on a high-end computer. Smaller datasets can be mapped in a matter of minutes. The most time consuming steps are the "Initial Mapping" and "Generating IDs" steps.
-
 ### CLI Arguments
 
 The following command-line parameters can be specified with map_cli.py:
@@ -106,6 +102,10 @@ The following command-line parameters can be specified with map_cli.py:
 | `--input_max_rows`   | *(For debugging purposes)* Maximum number of rows to map from each source table. If not specified, or 0, then all rows are mapped. |
 | `--temp_dir`         | *(For debugging purposes)* Optional directory to save temporary data to, which are intermediary files created during the mapping. If left unspecified then a directory in the system temporary directory location is created, and deleted once mapping is complete. This is typically left blank and is mainly used for debugging purposes. |
 | `--id_debug`         | *(For debugging purposes)* Set this flag to include debug columns in the final mapped output files. The debug columns include the contents of the ID columns before ID generation was performed, and columns used for tracking such as the source file name and row that the output row was generated from. Rows with duplicate primary keys are also retained rather than the default behavior of being have been dropped if `id_debug` was not set. |
+
+## Performance
+
+Depending on the size of your dataset and the performance of your computer, mapping can be very time consuming. For example, mapping a NWSS dataset with 650,000 rows to ODM v2 can result in output of over 30,000,000 rows, and can take 15 hours or more to complete on a high-end computer. Smaller datasets can be mapped in a matter of minutes. For large datasets, a considerable amount of RAM or scratch disk is required. The most time consuming steps are the "Initial Mapping" and "Generating IDs" steps.
 
 ## Custom Modules
 
