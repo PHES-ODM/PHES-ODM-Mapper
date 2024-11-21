@@ -8,8 +8,8 @@ Surveillance Open Data Model (PHES-ODM)](https://phes-odm.org). Currently
 supported are conversion from NWSS Reporting to ODM v2 and ODM v1 to ODM v2.
 More database formats will be provided as needed, and custom conversions can be
 created. To add support for other databases, see [Custom
-Modules](#custom-modules) below. If you require help in creating custom modules,
-contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
+Modules](#custom-modules) below. If you require help in creating custom
+modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
 
 ## Installation
 
@@ -43,8 +43,8 @@ pip3 install -r requirements.txt
 ## Sample Data
 
 Sample ODM v1 data is available if you require a sample dataset to run the
-mapper on before you have your own data ready, or for testing purposes. The data
-is provided by the [Ottawa Wastewater Surveillance Consortium on
+mapper on before you have your own data ready, or for testing purposes. The
+data is provided by the [Ottawa Wastewater Surveillance Consortium on
 Github](https://github.com/OntarioWastewaterSurveillanceConsortium/sars-cov-2-data).
 Data can be downloaded manually on Github, or from the command-line using the
 following:
@@ -77,8 +77,8 @@ python3 src/map_cli.py \
 In the above example, all data files (csv, txt, tsv, yaml/yml files) in
 "path/to/inputdata" will be mapped. It will be assumed that the file name
 (excluding anything after the first opening square or round bracket) is the
-table name that the data is for (eg. "WWMeasure[2024-09-25].csv" will be assumed
-to be for the "WWMeasure" table).
+table name that the data is for (eg. "WWMeasure[2024-09-25].csv" will be
+assumed to be for the "WWMeasure" table).
 
 Alternatively, instead of specifying an input directory, one can use the
 `--input-files` command-line argument to specify input data files while

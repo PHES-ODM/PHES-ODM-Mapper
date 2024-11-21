@@ -15,14 +15,15 @@ An example filter configuration file can be found at
 [/data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv](/data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv).
 
 The location of the filter configuration file within a conversion module are
-specified in the module configuration file ([Custom Modules](custom_modules.md))
+specified in the module configuration file ([Custom
+Modules](custom_modules.md))
 
 ## Filters Example
 
 The following is an example filters configuration. It will drop all rows in the
 `measures` table where the value in the `measure` or `unit` column is
-`<ignore>`, or any row that has a `value` of blank or `-1`. It will also perform
-similar filtering to the `protocolSteps` table.
+`<ignore>`, or any row that has a `value` of blank or `-1`. It will also
+perform similar filtering to the `protocolSteps` table.
 
 | inputFilter | outputFilter | class         | slot       | operation      | value         |
 | :---------- | :----------- | :------------ | :--------- | :------------- | :------------ |
@@ -39,46 +40,46 @@ similar filtering to the `protocolSteps` table.
 
 Filtering is performed using boolean filters that are given names and that are
 applied to various classes (ie. DataFrames). The filters contain one boolean
-value for each row of a DataFrame, with a value of `True` meaning to include the
-corresponding row, and a value of `False` to exclude the corresponding row. The
-names given to the filters in the example configuration table above are
-referenced in the `inputFilter` and `outputFilter` columns. The names can be any
-user-defined string.
+value for each row of a DataFrame, with a value of `True` meaning to include
+the corresponding row, and a value of `False` to exclude the corresponding row.
+The names given to the filters in the example configuration table above are
+referenced in the `inputFilter` and `outputFilter` columns. The names can be
+any user-defined string.
 
 A filter must first be created. This can be done with the
 [create_filter](#create_filter) operation, or from another operation where the
-filter's name is specified as an `outputFilter`. In the example table above, the
-first row creates the filter named `0`, setting all values to `TRUE`. A value of
-`TRUE` means that all rows in the table (in this case the measures table) are
-initially included. A value of `FALSE` would mean that all rows in the table are
-initially not included.
+filter's name is specified as an `outputFilter`. In the example table above,
+the first row creates the filter named `0`, setting all values to `TRUE`. A
+value of `TRUE` means that all rows in the table (in this case the measures
+table) are initially included. A value of `FALSE` would mean that all rows in
+the table are initially not included.
 
 Each row in the configuration table uses the filter in `inputFilter` as the
 filter to use. Once the operation is performed on that filter, it is saved as
 the named filter in `outputFilter` (overwriting any existing filter with the
 same name). The operation also uses the specified `class` and `slot` to
 calculate the new filter, along with which `operation` to perform along with a
-`value` specific to that operation. For example, the second row will exclude any
-rows in the `measures` class where the slot `measure` is equal to `<ignore>`.
-This exclusion will result in a new filter which is combined with filter `0` and
-then saved as filter `0` (specified by `outputFilter`).
+`value` specific to that operation. For example, the second row will exclude
+any rows in the `measures` class where the slot `measure` is equal to
+`<ignore>`. This exclusion will result in a new filter which is combined with
+filter `0` and then saved as filter `0` (specified by `outputFilter`).
 
-Note that most operations will not alter the actual DataFrame for the class, but
-will instead modify the filter used for that class. Once we've performed all the
-operations we want for creating the filter, we can apply it to the DataFrame
-using the `apply_filter` operation. For example, in the fifth row in the example
-configuration table, we use filter `0` (which has been calculated using three
-`exclude_equals` operations), apply that filter to the measures class (specified
-in the `class` column), and then save the new filtered class back to the
-measures class (specified in the `value` column). If we wanted to keep the
-`measures` DataFrame unchanged, we could save the filtered DataFrame by changing
-the name in `value` to something like `measures2`.
+Note that most operations will not alter the actual DataFrame for the class,
+but will instead modify the filter used for that class. Once we've performed
+all the operations we want for creating the filter, we can apply it to the
+DataFrame using the `apply_filter` operation. For example, in the fifth row in
+the example configuration table, we use filter `0` (which has been calculated
+using three `exclude_equals` operations), apply that filter to the measures
+class (specified in the `class` column), and then save the new filtered class
+back to the measures class (specified in the `value` column). If we wanted to
+keep the `measures` DataFrame unchanged, we could save the filtered DataFrame
+by changing the name in `value` to something like `measures2`.
 
 The value found in the `value` column of the configuration is parsed as YAML
 (note that JSON strings are supported by YAML). This allows multiple values to
 be specified using an array such as `["", -1]` as found in the third row of the
-example, or more complex values such as dictionaries. Some operations expect the
-`value` to be in a certain format.
+example, or more complex values such as dictionaries. Some operations expect
+the `value` to be in a certain format.
 
 ## Filter Operations
 
@@ -166,13 +167,13 @@ Delete the class (DataFrame) specified by `class`.
 | :---------- | :----------- | :------------- | :----------- | :--------------- | :------------- |
 | 0           | 0            | measures       | measureRepID | drop_duplicates  | keep_first     |
 
-Modify the filter specified by `inputFilter` to drop rows in class `class` where
-the value in column `slot` is a duplicate. If `value` is `keep_first` then keep
-the first duplicate when dropping a set of duplicates. If `value` is `keep_last`
-then keep the last duplicate when dropping a set of duplicates. Duplicates are
-only calculated and dropped based on the rows that the `inputFilter` includes
-(not on the full DataFrame under `class`). The resulting filter is saved in
-`outputFilter`.
+Modify the filter specified by `inputFilter` to drop rows in class `class`
+where the value in column `slot` is a duplicate. If `value` is `keep_first`
+then keep the first duplicate when dropping a set of duplicates. If `value` is
+`keep_last` then keep the last duplicate when dropping a set of duplicates.
+Duplicates are only calculated and dropped based on the rows that the
+`inputFilter` includes (not on the full DataFrame under `class`). The resulting
+filter is saved in `outputFilter`.
 
 ### delete_filter
 
@@ -188,11 +189,12 @@ Delete the filter specified by `inputFilter`.
 | :---------- | :----------- | :------------- | :---------- | :------------- | :------------- |
 | 0           | 0            | measures       | measure     | exclude_equals | \<ignore\>     |
 
-Modify the filter specified by `inputFilter` to exclude any row in the DataFrame
-specified by `class` in column `slot` that has a value found in the `value`
-column of the configuration. Multiple values to match can be specified using
-arrays, such as `["", -1]` (which will exclude rows where the slot is blank or
--1). The resulting filter will be saved with the name in `outputFilter`.
+Modify the filter specified by `inputFilter` to exclude any row in the
+DataFrame specified by `class` in column `slot` that has a value found in the
+`value` column of the configuration. Multiple values to match can be specified
+using arrays, such as `["", -1]` (which will exclude rows where the slot is
+blank or -1). The resulting filter will be saved with the name in
+`outputFilter`.
 
 ### include_equals
 
@@ -200,11 +202,12 @@ arrays, such as `["", -1]` (which will exclude rows where the slot is blank or
 | :---------- | :----------- | :------------- | :---------- | :------------- | :------------- |
 | 0           | 0            | measures       | measure     | include_equals | -1             |
 
-Modify the filter specified by `inputFilter` to include any row in the DataFrame
-specified by `class` in column `slot` that has a value found in the `value`
-column of the configuration. Multiple values to match can be specified using
-arrays, such as `["", -1]` (which will include rows where the slot is blank or
--1). The resulting filter will be saved with the name in `outputFilter`.
+Modify the filter specified by `inputFilter` to include any row in the
+DataFrame specified by `class` in column `slot` that has a value found in the
+`value` column of the configuration. Multiple values to match can be specified
+using arrays, such as `["", -1]` (which will include rows where the slot is
+blank or -1). The resulting filter will be saved with the name in
+`outputFilter`.
 
 ### invert_filter
 
@@ -213,9 +216,9 @@ arrays, such as `["", -1]` (which will include rows where the slot is blank or
 | 0           | 0            | measures       |             | invert_filter  |                |
 
 Invert/negate the specified filter. This will replace all True values in the
-filter to False, and all False values in the filter to True. The inverted filter
-will be saved with the name in `outputFilter`. While the class is not used it
-should still be specified for clarity.
+filter to False, and all False values in the filter to True. The inverted
+filter will be saved with the name in `outputFilter`. While the class is not
+used it should still be specified for clarity.
 
 ### or_filters
 

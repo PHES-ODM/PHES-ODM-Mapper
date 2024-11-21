@@ -15,21 +15,21 @@ directory location specified when running the mapper from the command-line.
 The following is a list of components of a module, which are described in this
 and related documents:
 
-1. *[Module Configuration](#module-configuration)*: The general configuration of
-   the module, primarily specifying where within the module directory that the
-   various required files are located. This is a simple YAML file.
-2. *[Source and Target Schemas](#source-and-target-schemas)*: The LinkML schemas
-   representing the source and target databases.
+1. *[Module Configuration](#module-configuration)*: The general configuration
+   of the module, primarily specifying where within the module directory that
+   the various required files are located. This is a simple YAML file.
+2. *[Source and Target Schemas](#source-and-target-schemas)*: The LinkML
+   schemas representing the source and target databases.
 3. *[LinkML-Map Mappers](#linkml-map-mappers)*: The LinkML-Map schemas that
    define how to map from the source to target databases.
-4. *[Pre-ID Filters](#pre-id-filters)*: Optional rules to filter the mapped data
-   after the LinkML Mappers are run but before ID generation, for example to
-   remove unwanted rows or rows with missing information.
-5. *[ID Generator](#id-generator)*: Optional rules for generating IDs within the
-   mapped and filtered data. ID generation is fairly flexible and can also allow
-   linking between output database tables (eg. creating primary and foreign
-   keys). It can also generate non-ID fields, such as properly formatting dates
-   and times.
+4. *[Pre-ID Filters](#pre-id-filters)*: Optional rules to filter the mapped
+   data after the LinkML Mappers are run but before ID generation, for example
+   to remove unwanted rows or rows with missing information.
+5. *[ID Generator](#id-generator)*: Optional rules for generating IDs within
+   the mapped and filtered data. ID generation is fairly flexible and can also
+   allow linking between output database tables (eg. creating primary and
+   foreign keys). It can also generate non-ID fields, such as properly
+   formatting dates and times.
 
 This document, including its sub-documents, describes how to create your own
 module.
@@ -80,14 +80,14 @@ the database tables.
 The mappers directory contains all mapping schemas that define the mappings.
 These should all be valid [LinkML-Map](https://github.com/linkml/linkml-map)
 YAML files. All YAML files in this directory are used, with the mapping outputs
-resulting from each YAML file concatenated together for all the different target
-tables/classes.
+resulting from each YAML file concatenated together for all the different
+target tables/classes.
 
 A few rules should be followed:
 
-1. In the `class_derivations` section of each mapper file, the output table (ie.
-   the top-level keys within `class_derivations`) should be the name of a class
-   found within the target database. Following the class name, additional
+1. In the `class_derivations` section of each mapper file, the output table
+   (ie. the top-level keys within `class_derivations`) should be the name of a
+   class found within the target database. Following the class name, additional
    optional text can be included in square brackets (this text is ignored, eg.
    `measures[001]` will be for the target class `measures`).
 2. There should be a class derivation for the tree root class. The slot
@@ -127,9 +127,9 @@ on how to configure the filters, see [Filtering Data](filters.md).
 
 After mapping is performed by LinkML-Map and the output is optionally filtered,
 various IDs in the output can be generated based on the ID code generation
-config file, which is an Excel or CSV file. For example, we may want to generate
-a `measureRepID` value if one was not available in the mapped data. An example
-formula might be to concatenate the `sampleID` and the value found in the
-`measure` column (eg. `sample001CovN1`). When configured properly, these IDs can
-be linked between various output tables. For details on how to create the ID
-code, see [ID Generator](id_generator.md).
+config file, which is an Excel or CSV file. For example, we may want to
+generate a `measureRepID` value if one was not available in the mapped data. An
+example formula might be to concatenate the `sampleID` and the value found in
+the `measure` column (eg. `sample001CovN1`). When configured properly, these
+IDs can be linked between various output tables. For details on how to create
+the ID code, see [ID Generator](id_generator.md).

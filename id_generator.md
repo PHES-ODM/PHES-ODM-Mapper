@@ -48,20 +48,20 @@ included:
 
 1. *class*: The class that the current configuration row is for.
 2. *slot*: The slot that the current configuration row is for.
-3. *code*: The Python code that is executed to generate the ID for the slot. Any
-   column that starts with the word *code* will be considered a code column.
-   (eg. "code1", "codeb", etc.). After executing the code, the resulting value
-   from code execution will be used. Or if the variable "target" is set by the
-   code, then that value is used instead.
+3. *code*: The Python code that is executed to generate the ID for the slot.
+   Any column that starts with the word *code* will be considered a code
+   column. (eg. "code1", "codeb", etc.). After executing the code, the
+   resulting value from code execution will be used. Or if the variable
+   "target" is set by the code, then that value is used instead.
 
 For all the mapped data, we generate values according to the configuration, and
 populate the specified `slot` within each specified `class`. The code from each
 *code* column will be executed starting with the left-most *code* column,
-working rightward. If the code for a column generates a non-empty value (or sets
-the variable "target" to a non-empty value), that value is used as the ID for
-the slot. If an empty value is generated, then the next *code* column is
-executed. This is repeated until a non-empty value is generated or the last code
-column is executed.
+working rightward. If the code for a column generates a non-empty value (or
+sets the variable "target" to a non-empty value), that value is used as the ID
+for the slot. If an empty value is generated, then the next *code* column is
+executed. This is repeated until a non-empty value is generated or the last
+code column is executed.
 
 An example configuration table is shown below:
 
@@ -83,21 +83,21 @@ according to the code in `code0` and `code1`.
 
 There are many cases where linking between rows in different output tables is
 required. For example, a row in the `measures` table, where a value is recorded
-(eg. quantity of covN1), would need a `sampleID` to associate it with a specific
-sample. These `sampleID`s may have been generated in the `samples` table, and we
-need to know which `sampleID` in particular to use in our row in the `measures`
-table. This pairing of rows is called linking. Once rows are linked between
-tables, we can extract other associated data from the linked rows, such as the
-sample's collection date and time.
+(eg. quantity of covN1), would need a `sampleID` to associate it with a
+specific sample. These `sampleID`s may have been generated in the `samples`
+table, and we need to know which `sampleID` in particular to use in our row in
+the `measures` table. This pairing of rows is called linking. Once rows are
+linked between tables, we can extract other associated data from the linked
+rows, such as the sample's collection date and time.
 
-In the simplest case, we might have mapped a single source table such as NWSS to
-multiple target tables corresponding to the multiple tables found in ODM v2. In
-order to determine which `sampleID` to use, we simply need to identify which row
-in NWSS was used to populate the current row in `measures` and identify which
-row in `samples` was populated from the same NWSS row. This will give us our
-linked row which we can extract the `sampleID` from. We can also extract other
-values from the linked row, such as `collDT` for the collection date and time of
-the sample. The source row from NWSS that populated the target row is
+In the simplest case, we might have mapped a single source table such as NWSS
+to multiple target tables corresponding to the multiple tables found in ODM v2.
+In order to determine which `sampleID` to use, we simply need to identify which
+row in NWSS was used to populate the current row in `measures` and identify
+which row in `samples` was populated from the same NWSS row. This will give us
+our linked row which we can extract the `sampleID` from. We can also extract
+other values from the linked row, such as `collDT` for the collection date and
+time of the sample. The source row from NWSS that populated the target row is
 temporarily stored in the mapped tables for linking purposes (eg. see
 [fn.sourceclass](#fnsourceclass) and [fn.sourcerow](#fnsourcerow) below).
 
@@ -109,8 +109,8 @@ table, but the matching does not have to involve key values). We can also link
 via multiple tables, for example, from the source `measures` table, we can link
 to the `samples` table by matching the `sampleID` column, then from the
 `samples` table we can link to the `organizations` table by matching the
-`organizationID`. To specify this custom linking, one can use a function such as
-`fn.get_first_linked_value()` (see below).
+`organizationID`. To specify this custom linking, one can use a function such
+as `fn.get_first_linked_value()` (see below).
 
 ## Code Namespaces
 
@@ -131,9 +131,9 @@ slots or tables is required, use `get_first_linked_value` (see below for
 details).
 
 If a slot is accessed using either `dat` or `datEmpty` (including accessing
-intermediary slots used for linking between rows), and the slot is configured to
-have a generated ID according to the ID config file, then the value of that slot
-will be calculated before returning the value.
+intermediary slots used for linking between rows), and the slot is configured
+to have a generated ID according to the ID config file, then the value of that
+slot will be calculated before returning the value.
 
 If `dat` is used to access a value, then the value will be returned. If
 `datEmpty` is used, then the value will also be returned, but if the value is
@@ -150,9 +150,9 @@ populated with).
 
 #### dat.targetClass.get_first_linked_value(target_slot, linkage_path=None)
 
-Extract the value in `target_slot` for the first linked row in the target table.
-The following two operations are equivalent and will extract the `sampleID` for
-the linked row in the target table `samples`:
+Extract the value in `target_slot` for the first linked row in the target
+table. The following two operations are equivalent and will extract the
+`sampleID` for the linked row in the target table `samples`:
 
 ```python
 dat.samples.get_first_linked_value("sampleID")
@@ -171,12 +171,13 @@ linkage_path = {
 }
 ```
 
-The above linkage path would extract the linked row in the target table (ie. the
-table named `tableName` when calling `dat.tableName.get_first_linked_value()`)
-where the value in `targetSlotName` is equal to the value in `sourceSlotName` of
-the current row.
+The above linkage path would extract the linked row in the target table (ie.
+the table named `tableName` when calling
+`dat.tableName.get_first_linked_value()`) where the value in `targetSlotName`
+is equal to the value in `sourceSlotName` of the current row.
 
-It is also possible to link via multiple tables using an array of linkage paths:
+It is also possible to link via multiple tables using an array of linkage
+paths:
 
 ```python
 linkage_path = [
@@ -218,15 +219,15 @@ omitted from the final dictionary as it is implied in the call to
 
 ### fn Namespace
 
-The *fn* namespace provides various functions and attributes commonly used in ID
-generation code.
+The *fn* namespace provides various functions and attributes commonly used in
+ID generation code.
 
 #### fn.makeid(*args)
 
 Concatenate all arguments into a single string with spaces removed. The first
 character of args[0] is lowercased, while the first character of all other args
-are uppercased. Typically, each argument is usually a result of accessing values
-through `datEmpty`. For example:
+are uppercased. Typically, each argument is usually a result of accessing
+values through `datEmpty`. For example:
 
 ```python
 fn.makeid(datEmpty.addresses.country, datEmpty.addresses.pCode, datEmpty.addresses.city[:3])
@@ -268,15 +269,15 @@ and source class (`fn.sourceclass`) that was used to populate the current row.
 #### fn.datetimetz(d)
 
 Convert array of values to a date-time-timezone string in the format
-YYYY-mm-ddTHH:MM:SS.f+0000 (YYYY=year, mm=month number, dd=day, HH=24-hour time,
-MM=minutes, SS=seconds, f=ms). For example:
+YYYY-mm-ddTHH:MM:SS.f+0000 (YYYY=year, mm=month number, dd=day, HH=24-hour
+time, MM=minutes, SS=seconds, f=ms). For example:
 
 ```python3
 fn.datetimetz(dat.samples.__collDT.split('/'))
 ```
 
-An example value of `dat.samples.__collDT` is `2022-11-16/7:00/utc-04:00`, which
-would result in the output string `2022-11-16T07:00:00-0400`. If the time is
-empty, then just the date is returned (eg. `2022-11-16`). If the date is empty,
-then just the time is returned (eg. `07:00:00-0400`). If both are empty, then an
-empty string is returned. The timezone can also be omitted.
+An example value of `dat.samples.__collDT` is `2022-11-16/7:00/utc-04:00`,
+which would result in the output string `2022-11-16T07:00:00-0400`. If the time
+is empty, then just the date is returned (eg. `2022-11-16`). If the date is
+empty, then just the time is returned (eg. `07:00:00-0400`). If both are empty,
+then an empty string is returned. The timezone can also be omitted.
