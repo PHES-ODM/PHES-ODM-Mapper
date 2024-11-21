@@ -65,6 +65,7 @@ class ProgressCounter(BaseCounter):
         self,
         totals: Dict,
         multiple_bars: bool = False,
+        titles: Dict = None,
         total_title: str = "TOTAL",
         hide_all: bool = False,
         full_refresh_duration: Optional[float] = 0.5,
@@ -86,6 +87,9 @@ class ProgressCounter(BaseCounter):
                 False then only show one bar at a time. show_bar() can be called to switch between bars to display. When in a
                 Jupyter notebook or something similar it is usually best to set this to False to prevent unusual output.
                 Defaults to False.
+            titles (Dict, optional): If set then a dictionary mapping bar IDs (as found in the totals parameter) to titles.
+                If a title is not specified here then the bar ID in the totals parameter is used as the title. To set
+                the title of the total bar, use total_title. Defaults to None.
             total_title (str, optional): The description to use for the total progress bar, which shows the overall total of
                 all counts combined. Defaults to "TOTAL".
             hide_all (bool, optional): If True then initially hide all the bars.
@@ -98,7 +102,8 @@ class ProgressCounter(BaseCounter):
                 line and clearing lines to ensure no artifacts of tqdm bars are shown when scrolling the progress bars). When in a Jupyter
                 notebook or something similar, it may be best to set this to False. Defaults to True.
         """
-        self.current_visible_bar = None
+        if titles is None:
+            titles = {}
 
         self.full_refresh_duration = full_refresh_duration
         self.full_refresh_iters = full_refresh_iters
@@ -108,13 +113,13 @@ class ProgressCounter(BaseCounter):
         self.install_output_hooks = install_output_hooks
 
         # Create the bar format
-        barids = list(totals.keys()) + [self.total_title]
-        bar_format = self.calc_bar_format(barids)
+        bar_titles = [titles.get(barid, barid) for barid in totals.keys()]
+        bar_format = self.calc_bar_format(bar_titles)
 
         # Create all progress bars (except for total bar)
         self.progress_bars = {
             barid: SingleBar(
-                title=barid,
+                title=titles.get(barid, barid),
                 bar_format=bar_format,
                 total=total,
                 position=i if multiple_bars else 0,
