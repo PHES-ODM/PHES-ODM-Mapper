@@ -51,7 +51,7 @@ BAR_FORMAT = (
 )
 
 # Key used to access the total bar (eg. when calling ProgressCounter.show_bar() and ProgressCounter.has_bar())
-TOTAL_BARID = None
+TOTAL_BARID = "<<total_bar>>"
 
 # Hide cursor when progress bar is visible
 HIDE_CURSOR = True
