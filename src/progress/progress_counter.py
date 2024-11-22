@@ -157,7 +157,10 @@ class ProgressCounter(BaseCounter):
         Returns:
             str: The bar format, which should be passed to the tqdm() constructor.
         """
-        max_desc = max([len(t) for t in titles]) + 1
+        if titles:
+            max_desc = max([len(t) for t in titles]) + 1
+        else:
+            max_desc = 5
         max_desc = min(max_desc, MAX_DESC_WIDTH)
         bar_width = BAR_WIDTH - max_desc
         bar_format = BAR_FORMAT % {"maxdesc": max_desc, "barwidth": bar_width}
