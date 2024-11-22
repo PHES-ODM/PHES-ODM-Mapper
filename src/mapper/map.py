@@ -59,7 +59,7 @@ logger = get_logger(__name__)
 RANDOM_SAMPLE_DATA = False
 
 # For loading data progress bar
-LOADING_BARID = "Loading data"
+LOADING_BARID = "Loading Data"
 
 # Change the logging level of the Transformer. For very large datasets we will get way too many WARNINGs in
 # the output.
@@ -211,13 +211,13 @@ class Mapper(object):
             elif action == "map":
                 source_schema = self.get_module_path(params.get("source_schema"))
                 target_schema = self.get_module_path(params.get("target_schema"))
-                mapper_dir = self.get_module_path(params.get("mapper_dir"))
+                mappers_dir = self.get_module_path(params.get("mappers_dir"))
                 prepare_barid = params.get("prepare_barid", "Preparing IDs")
                 map_barid = params.get("map_barid", "Initial Mapping")
                 data_frames = action_map_data(
                     source_schema_file=source_schema,
                     target_schema_file=target_schema,
-                    mapper_dir=mapper_dir,
+                    mappers_dir=mappers_dir,
                     data_frames=data_frames,
                     max_processes=max_processes,
                     prepare_barid=prepare_barid,
