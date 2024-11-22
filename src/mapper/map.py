@@ -58,6 +58,9 @@ logger = get_logger(__name__)
 # True for debugging purposes.
 RANDOM_SAMPLE_DATA = False
 
+# For loading data progress bar
+LOADING_BARID = "Loading data"
+
 # Change the logging level of the Transformer. For very large datasets we will get way too many WARNINGs in
 # the output.
 for logger_name in [
@@ -158,6 +161,7 @@ class Mapper(object):
             max_rows=input_max_rows,
             schema=source_schema,
             random_sample_data=RANDOM_SAMPLE_DATA,
+            progress_id=LOADING_BARID,
             add_all_tracking_columns=True,
             validate_class_names=True,
             validate_columns=True,
