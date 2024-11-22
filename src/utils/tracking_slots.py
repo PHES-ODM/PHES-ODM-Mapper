@@ -221,7 +221,7 @@ def load_data_with_tracking_columns(
             for file in files:
                 try:
                     if isinstance(file, Dict):
-                        track_file = f"{file[EXCEL_FILE_KEY]}:{file[EXCEL_SHEET_KEY]}"
+                        track_file = f"{file[EXCEL_FILE_KEY]}?sheet={file[EXCEL_SHEET_KEY]}"
                     else:
                         track_file = file
                     read_kwargs = {
