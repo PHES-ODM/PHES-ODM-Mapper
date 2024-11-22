@@ -11,11 +11,8 @@ from linkml_runtime import SchemaView
 
 from typing import Dict, List, Union, Optional
 from pathlib import Path
-from utils.general_utils import (
-    get_class_name_from_file_name,
-    merge_dicts_of_lists,
-    get_excel_file_classes,
-)
+from utils.general_utils import merge_dicts_of_lists
+from utils.schema_utils import get_class_name_from_file_name, get_excel_file_classes
 from utils.clean_exit_error import CleanExitError
 
 
