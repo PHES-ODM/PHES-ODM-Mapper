@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from typing import Any, List
 from datetime import datetime
-from dateutil.parser import parse
+import dateutil.parser
 import pytz
 
 from utils.logger import get_logger
@@ -192,7 +192,7 @@ class FunctionBindings:
                     elif fmt == "customtz":
                         date_obj = self._customtz(val)
                     elif fmt == "dateutil":
-                        date_obj = parse(val)
+                        date_obj = dateutil.parser.parse(val)
                     else:
                         date_obj = datetime.strptime(val, fmt)
                     objects[idx] = date_obj
@@ -273,3 +273,21 @@ class FunctionBindings:
         """
         rows = self.generator.data[class_name].get_rows_equal(slot, equals)
         return len(rows) if rows is not None else 0
+
+    def datetimeparse(self, d, ignoretz=True) -> Any:
+        if not d or not isinstance(d, str):
+            return d
+        try:
+            return dateutil.parser.parse(d, ignoretz=ignoretz).isoformat()
+        except Exception:
+            # @TODO: What to do if fail to parse date?
+            return d
+
+    def dateparse(self, d) -> Any:
+        if not d or not isinstance(d, str):
+            return d
+        try:
+            return dateutil.parser.parse(d).date().isoformat()
+        except Exception:
+            # @TODO: What to do if fail to parse date?
+            return d
