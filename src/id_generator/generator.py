@@ -103,6 +103,8 @@ class IDGenerator(object):
                 generating IDs for. If False then only one progress bar is shown at a time (for the class name we are currently
                 generating IDs for).
         """
+        self.tic = datetime.now()
+
         # Sort data_files by key (class name), and sort all the values (file names)
         # data_files = { k: sorted(v) for k, v in sorted(data_files.items())}
 
@@ -363,6 +365,9 @@ class IDGenerator(object):
             f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}"
         )
         self.data_frames = data_frames
+
+        logger.info(f"Finished making all IDs in {datetime.now() - self.tic}")
+
         return self.data_frames
 
     def make_all_ids(
@@ -387,7 +392,6 @@ class IDGenerator(object):
             ValueError: A slot was specified in the ID code config file that does not exist in the loaded data for
                 the class.
         """
-        tic = datetime.now()
         orig_row_indices = row_indices
 
         # We only output progress information if all classes and all row indices are being generated.
@@ -491,7 +495,7 @@ class IDGenerator(object):
         self.current_class = orig_current_class
         self.current_row_index = orig_current_row_index
 
-        _log("info", f"Finished making all IDs in {datetime.now() - tic}")
+        # _log("info", f"Finished making all IDs in {datetime.now() - self.tic}")
 
     def make_code_column_name(self, idx: int) -> str:
         """Get the name of the code column at the specified index in the ID code generation config table.
@@ -1017,20 +1021,20 @@ if __name__ == "__main__":
             # config_file = "../../data/modules/test/ids.yaml"
             
             # NWSS to ODM v2
-            input_dir = "../../gen/nwss_reporting_to_v2/temp-1000/mapped_data"
-            input_files = None
-            output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids-test"
-            id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
-            id_code_sheet = "id_code"
-            config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
+            # input_dir = "../../gen/nwss_reporting_to_v2/temp-1000/mapped_data"
+            # input_files = None
+            # output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids-test"
+            # id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
+            # id_code_sheet = "id_code"
+            # config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
 
             # ODM v1 to ODM v2
-            # input_dir = "../../gen/odm_v1_to_v2/temp/mapped_data"
-            # input_files = None
-            # output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
-            # id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
-            # id_code_sheet = "id_code"
-            # config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
+            input_dir = "../../gen/odm_v1_to_v2/temp-1000/mapped_data"
+            input_files = None
+            output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
+            id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
+            id_code_sheet = "id_code"
+            config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
 
             debug = True
         # fmt: on
