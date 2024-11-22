@@ -15,13 +15,12 @@ from functools import partial
 from linkml_map.session import Session
 from linkml_runtime import SchemaView
 
-from utils.general_utils import (
-    get_logger,
-    merge_dicts_of_lists,
+from utils.general_utils import merge_dicts_of_lists, order_columns
+from utils.logger import get_logger
+from utils.schema_utils import (
+    all_classes_without_tree_root,
     get_class_name_from_file_name,
-    order_columns,
 )
-from utils.schema_utils import all_classes_without_tree_root
 from progress import ProgressCounter
 from utils.tracking_slots import (
     load_schema_with_tracking_slots,
