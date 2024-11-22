@@ -139,7 +139,7 @@ class DataFilter(object):
         self,
         *,
         data: Dict[str, pd.DataFrame] = None,
-        data_files: Dict[str, List[Union[str, Path]]] = None,
+        data_files: Dict[str, List[Union[str, Path, Dict]]] = None,
         output_dir: Union[Path, str] = None,
     ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List[Path]]]:
         """Run the filters specified in the configuration file on all the data, and optionally save the data to disk.
@@ -148,8 +148,10 @@ class DataFilter(object):
             data (Dict[str, pd.DataFrame], optional): The data to filter. The keys are the class names and the values are the
                 DataFrames to filter. This dictionary is left unchanged, the returned dictionary is the filtered data.
                 If None then data_dir must be specified. Defaults to None.
-            data_files (Dict[str, List[Union[str, Path]]], optional): If data is None, then load all data specified by data_files. The keys
-                are the data file class names and the values are a list of files to filter belonging to the class. Defaults to None.
+            data_files (Dict[str, List[Union[str, Path, Dict]]], optional): If data is None, then load all data specified by
+                data_files. The keys are the data file class names and the values are a list of files to filter belonging to the class,
+                or dictionaries for Excel files in the format {EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name"}.
+                Defaults to None.
             output_dir (Union[Path, str], optional): If specified then the directory to save all data after filtering has been
                 performed. Defaults to None.
 
@@ -218,10 +220,12 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         class opts:
-            input_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
+            # input_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
+            input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"
             input_files = None
-            filter_config_file = "../../data/modules/nwss_reporting_to_v2/pre_id_filters/nwss_reporting_to_v2_filters.csv"
-            output_dir = "../../gen/nwss_reporting_to_v2/filtered_mapped_data"
+            filter_config_file = "../../data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv"
+            output_dir = "../../gen/nwss_reporting_to_v2-test/filtered_mapped_data"
+            schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v2.yaml"
         # fmt: on
     else:
         args = argparse.ArgumentParser(
@@ -247,6 +251,12 @@ if __name__ == "__main__":
             required=True,
         )
         args.add_argument(
+            "--schema",
+            type=str,
+            help="Optional LinkML schema file to identify which input classes are allowed. Only data files from recognized input classes will be loaded, and the filenames or sheetnames will be parsed to identify which class they belong to.",
+            required=False,
+        )
+        args.add_argument(
             "--output-dir",
             type=str,
             help="Location to save the filtered data to.",
@@ -254,7 +264,9 @@ if __name__ == "__main__":
         )
         opts = args.parse_args()
 
-    data_files = get_input_data_files(opts.input_files, opts.input_dir)
+    data_files = get_input_data_files(
+        opts.input_files, opts.input_dir, schema=opts.schema
+    )
 
     filterer = DataFilter(opts.filter_config_file)
     filterer.run_filter(

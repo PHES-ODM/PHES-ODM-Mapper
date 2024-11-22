@@ -19,7 +19,7 @@ from datetime import datetime
 import sys
 
 from mapper import Mapper
-from mapper.modules import get_module_config, get_module_dir, MODULE_SOURCE_SCHEMA_KEY
+from mapper.modules import get_source_schema
 from utils.logger import get_logger
 from utils.cli_utils import get_input_data_files
 from utils.clean_exit_error import CleanExitError
@@ -121,11 +121,9 @@ if __name__ == "__main__":
     try:
         logger.info(f"Starting run at {datetime.now()}")
 
-        _, module_config = get_module_config(opts.module, opts.module_dir)
-        module_dir = get_module_dir(opts.module, opts.module_dir)
-        source_schema = module_config.get(MODULE_SOURCE_SCHEMA_KEY)
+        source_schema = get_source_schema(opts.module, opts.module_dir)
         data_files = get_input_data_files(
-            opts.input_files, opts.input_dir, schema=module_dir / source_schema
+            opts.input_files, opts.input_dir, schema=source_schema
         )
 
         mapper = Mapper(

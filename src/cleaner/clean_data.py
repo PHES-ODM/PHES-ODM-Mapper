@@ -24,6 +24,7 @@ from utils.general_utils import (
     save_data_frame,
     choose_ignore_case_value,
     get_unique_output_file,
+    EXCEL_FILE_KEY,
 )
 from utils.logger import get_logger, make_logger_bullet_list
 from utils.tracking_slots import get_all_tracking_slots
@@ -248,7 +249,7 @@ class DataCleaner(object):
 
     def clean_single_data(
         self,
-        data_file: Optional[Union[str, Path]],
+        data_file: Optional[Union[str, Path, Dict]],
         data_frame: Optional[pd.DataFrame],
         output_file: Optional[Union[str, Path]],
         class_name: str,
@@ -257,7 +258,9 @@ class DataCleaner(object):
         """Clean either a single data file or a single DataFrame.
 
         Args:
-            data_file (Optional[Union[str, Path]]): The file to clean. If specified then data_frame must be None.
+            data_file (Optional[Union[str, Path, Dict]]): The file to clean. If a dictionary, then it is for an
+                Excel file in the format {EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name"}. If specified then
+                data_frame must be None.
             data_frame (Optional[pd.DataFrame]): The DataFrame to clean. If specified then data_file must be None.
             output_file (Optional[Union[str, Path]]): The file to save the cleaned data to. This should
                 be different than the input_file to avoid overwriting the original. If None then the cleaned
@@ -314,7 +317,7 @@ class DataCleaner(object):
 
     def clean_data(
         self,
-        data_files: Dict[str, List[Union[str, Path]]],
+        data_files: Dict[str, List[Union[str, Path, Dict]]],
         data_frames: Dict[str, List[pd.DataFrame]],
         output_dir: Union[str, Path],
         max_rows: int = 0,
@@ -326,9 +329,10 @@ class DataCleaner(object):
         correctly, and possibly other operations.
 
         Args:
-            data_files (List[Union[str, Path]]]): Dictionary of all data files to clean. The keys are
-                the class names and the values are lists of file paths belonging to that class. Both data_files
-                and data_frames are cleaned.
+            data_files (List[Union[str, Path, Dict]]]): Dictionary of all data files to clean. The keys are
+                the class names and the values are lists of file paths belonging to that class or dictionaries
+                specifying the Excel file and sheet name to load (In the format
+                {EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name"}). Both data_files and data_frames are cleaned.
             data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of all DataFrames to clean. The keys are
                 the class names and the values are lists of DataFrames belonging to that class. Both data_files
                 and data_frames are cleaned.
@@ -368,16 +372,24 @@ class DataCleaner(object):
                         output_data_frames[class_name] = []
                     # sub_data is either a list of files or a list of DataFrames
                     for data in sub_data:
-                        data_file = data if isinstance(data, (str, Path)) else None
+                        data_file = data if not isinstance(data, pd.DataFrame) else None
                         data_frame = data if isinstance(data, pd.DataFrame) else None
                         assert (data_file is None) != (data_frame is None)
 
                         # Determine the output_file
                         if output_dir is not None:
                             if data_file:
-                                output_file = os.path.join(
-                                    output_dir, os.path.basename(data_file)
-                                )
+                                if isinstance(data_file, Dict):
+                                    basename = os.path.basename(
+                                        data_file[EXCEL_FILE_KEY]
+                                    )
+                                    basename = "{class_name}({basename}).csv".format(
+                                        class_name=class_name,
+                                        basename=os.path.splitext(basename)[0],
+                                    )
+                                else:
+                                    basename = os.path.basename(data_file)
+                                output_file = os.path.join(output_dir, basename)
                             else:
                                 output_file = os.path.join(
                                     output_dir, f"{class_name}.csv"
@@ -412,6 +424,7 @@ if __name__ == "__main__":
         # fmt: off
         class opts:
             input_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated copy"
+            # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v1_data/joakim/excel/"
             input_files = None
             output_dir = "../../gen/odm_v1_to_v2-test/cleaned_data"
             max_rows = 100
@@ -461,7 +474,9 @@ if __name__ == "__main__":
         )
         opts = args.parse_args()
 
-    data_files = get_input_data_files(opts.input_files, opts.input_dir)
+    data_files = get_input_data_files(
+        opts.input_files, opts.input_dir, schema=opts.schema
+    )
     cleaner = DataCleaner(schema=opts.schema)
     data_files, data_frames = cleaner.clean_data(
         data_files=data_files,

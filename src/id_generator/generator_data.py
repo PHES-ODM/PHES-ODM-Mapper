@@ -68,7 +68,7 @@ class GeneratorData:
     def __init__(
         self,
         class_name: str,
-        input_data: List[Union[str, Path, pd.DataFrame]],
+        input_data: List[Union[str, Path, Dict, pd.DataFrame]],
         primary_key: str,
         lookup_slots: Optional[List[str]] = None,
         generated_slots: Optional[List[str]] = None,
@@ -82,7 +82,7 @@ class GeneratorData:
         # Load all data in input_data, store in all_dfs so we can concatenate them
         for cur_data in input_data:
             file = None
-            if isinstance(cur_data, (str, Path)):
+            if isinstance(cur_data, (str, Path, Dict)):
                 # Load DataFrame from file
                 file = cur_data
                 logger.debug(f"Loading data from {str(file)}")

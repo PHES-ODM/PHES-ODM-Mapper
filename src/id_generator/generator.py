@@ -1021,12 +1021,15 @@ if __name__ == "__main__":
             # config_file = "../../data/modules/test/ids.yaml"
             
             # NWSS to ODM v2
-            # input_dir = "../../gen/nwss_reporting_to_v2/temp-1000/mapped_data"
+            # # input_dir = "../../gen/nwss_reporting_to_v2/temp-1000/mapped_data"
+            # # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"
+            # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel"
             # input_files = None
-            # output_dir = "../../gen/nwss_reporting_to_v2/mapped_data_ids-test"
+            # output_dir = "../../gen/nwss_reporting_to_v2-test/mapped_data_ids"
             # id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
             # id_code_sheet = "id_code"
             # config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
+            # schema = "../../data/modules/nwss_reporting_to_v2/schemas/odm_v2.yaml"
 
             # ODM v1 to ODM v2
             input_dir = "../../gen/odm_v1_to_v2/temp-1000/mapped_data"
@@ -1035,6 +1038,7 @@ if __name__ == "__main__":
             id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
             id_code_sheet = "id_code"
             config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
+            schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v2.yaml"
 
             debug = True
         # fmt: on
@@ -1078,13 +1082,21 @@ if __name__ == "__main__":
             required=False,
         )
         args.add_argument(
+            "--schema",
+            type=str,
+            help="Optional LinkML schema file to identify which input classes are allowed. Only data files from recognized input classes will be loaded, and the filenames or sheetnames will be parsed to identify which class they belong to.",
+            required=False,
+        )
+        args.add_argument(
             "--debug",
             action="store_true",
             help="If set then run in debug mode, which only affects what is included in the output data files. Debug data includes some additional columns (eg. original ID values, row number column for linking, primary key index and values, etc.). Debug output will also include any duplicated primary keys, with an additional 'drop' column specifying if it is a duplicate, in which case the row would be dropped when not in debug mode.",
         )
         opts = args.parse_args()
 
-    data_files = get_input_data_files(opts.input_files, opts.input_dir)
+    data_files = get_input_data_files(
+        opts.input_files, opts.input_dir, schema=opts.schema
+    )
 
     gen = IDGenerator(
         data_files=data_files,

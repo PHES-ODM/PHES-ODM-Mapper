@@ -40,7 +40,12 @@ from mapper.action_map_data import action_map_data
 from mapper.action_generate_ids import action_generate_ids
 from mapper.action_filter_data import action_filter_data
 
-from mapper.modules import get_module_config, get_module_dir, MODULE_SOURCE_SCHEMA_KEY
+from mapper.modules import (
+    get_module_config,
+    get_module_dir,
+    get_source_schema,
+    MODULE_SOURCE_SCHEMA_KEY,
+)
 from utils.logger import get_logger
 from utils.general_utils import (
     load_data_with_tracking_columns,
@@ -337,12 +342,14 @@ if __name__ == "__main__":
 
     tic = datetime.now()
 
-    data_files = get_input_data_files(opts.input_files, opts.input_dir)
+    source_schema = get_source_schema(opts.module, opts.module_dir)
+    data_files = get_input_data_files(
+        opts.input_files, opts.input_dir, schema=source_schema
+    )
 
     mapper = Mapper(
         module=opts.module,
         module_dir=opts.module_dir,
-        debug_mode=opts.debug_mode,
     )
     mapper.full_map(
         data_files=data_files,
@@ -351,4 +358,5 @@ if __name__ == "__main__":
         input_max_rows=opts.input_max_rows,
         max_processes=opts.max_processes,
         multi_bar_progress="get_ipython" not in globals(),
+        debug_mode=opts.debug_mode,
     )
