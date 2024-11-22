@@ -3,7 +3,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from typing import List, Union, Dict, Tuple
+from typing import List, Union, Dict, Tuple, Optional
 from pathlib import Path
 import yaml
 
@@ -54,22 +54,53 @@ def get_all_modules(include_titles: bool = False) -> List[str]:
     return modules
 
 
-def get_module_dir(module: str, module_dir: Union[str, Path]) -> Path:
+def get_module_dir(
+    module: Optional[str], module_dir: Optional[Union[str, Path]]
+) -> Path:
+    """Get the directory belonging to the module, specified by either the module name
+    or the module directory.
+
+    Args:
+        module (Optional[str]): The module name to get the directory for. This can be
+            any name in the root module directory. If set then module_dir is ignored.
+        module_dir (Optional[Union[str, Path]]): The module directory to get the
+            directory for. If module is empty then module_dir is used.
+
+    Returns:
+        Path: The directory of the module.
+    """
     module_dir = MODULE_DIR / module if module else Path(module_dir)
     module_dir = Path(module_dir).resolve()
     return module_dir
 
 
-def get_module_config(module: str, module_dir: Union[str, Path]) -> Tuple[Path, Dict]:
+def get_module_config(
+    module: Optional[str], module_dir: Optional[Union[str, Path]]
+) -> Tuple[Path, Dict]:
+    """Get the module configuration path for the specified module, along with the loaded configuration
+    file as a dictionary.
+
+    Args:
+        module (Optional[str]): The module name. This can be any name in the root
+            module directory. If set then module_dir is ignored.
+        module_dir (Optional[Union[str, Path]]): The module directory to get the configuration
+            for. If module is empty then module_dir is ignored.
+
+    Returns:
+        Tuple[Path, Dict]: A tuple of the form (module_config_path, module_config_dict).
+    """
     module_dir = get_module_dir(module, module_dir)
 
     if not module_dir.is_dir():
         if module:
+            # Named module does not exist, exit with an error telling the user which installed
+            # modules are available.
             all_modules = make_logger_bullet_list(get_all_modules(include_titles=True))
             raise CleanExitError(
                 f"Module '{module}' does not exist. Available modules are:\n{all_modules}"
             )
         else:
+            # Specified module directory does not exist.
             raise CleanExitError(
                 f"Module directory does not exist: {str(module_dir.resolve())}"
             )
@@ -82,7 +113,20 @@ def get_module_config(module: str, module_dir: Union[str, Path]) -> Tuple[Path, 
     return config_file, config
 
 
-def get_source_schema(module: str, module_dir: Union[str, Path]) -> Path:
+def get_source_schema(
+    module: Optional[str], module_dir: Optional[Union[str, Path]]
+) -> Path:
+    """Get the source schema specified in the configuration file for the specified module.
+
+    Args:
+        module (Optional[str]): The module name. This can be any name in the root
+            module directory. If set then module_dir is ignored.
+        module_dir (Optional[Union[str, Path]]): The module directory to get the source
+            schema for. If module is empty then module_dir is ignored.
+
+    Returns:
+        Path: The path to the source schema of the module.
+    """
     module_dir = get_module_dir(module=module, module_dir=module_dir)
     _, config = get_module_config(module=module, module_dir=module_dir)
     source_schema = config.get(MODULE_SOURCE_SCHEMA_KEY)
