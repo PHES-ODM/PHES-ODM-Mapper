@@ -30,6 +30,12 @@ EMPTY_PERMISSIBLE_VALUE = "<empty>"
 
 RECOGNIZED_EXTENSIONS = [".tsv", ".txt", ".csv", ".yaml", ".yml"]
 
+# For Excel files, instead of specifying a path to the file, we create a dictionary where EXCEL_FILE_KEY corresponds
+# to the actual Excel file and EXCEL_SHEET_KEY corresponds to the sheet to load from the Excel file. For non-Excel
+# files (eg. csv, tsv, txt, yaml, yml) we just use the file name as a regular string (rather than a dictionary)
+EXCEL_FILE_KEY = "excel_file"
+EXCEL_SHEET_KEY = "excel_sheet"
+
 logger = get_logger(__name__)
 
 
@@ -87,8 +93,8 @@ def read_data_frame(file: str, **kwargs) -> pd.DataFrame:
         pd.DataFrame: The DataFrame loaded from the file.
     """
     if isinstance(file, Dict):
-        sheet_name = file["sheet"]
-        file = file["excel_file"]
+        sheet_name = file[EXCEL_SHEET_KEY]
+        file = file[EXCEL_FILE_KEY]
 
     ext = os.path.splitext(file)[1].lower()
     if ext in [".tsv", ".txt", ".csv"]:
@@ -255,7 +261,7 @@ def load_data_with_tracking_columns(
             for file in files:
                 try:
                     if isinstance(file, Dict):
-                        track_file = f"{file['excel_file']}:{file['sheet']}"
+                        track_file = f"{file[EXCEL_FILE_KEY]}:{file[EXCEL_SHEET_KEY]}"
                     else:
                         track_file = file
                     read_kwargs = {
@@ -314,7 +320,7 @@ def get_excel_file_classes(
     def _select_class(name: str, classes: List[str]) -> Optional[str]:
         # Determine which class the sheet named "name" should be assigned to
         name = name.strip()
-        matches = [c for c in classes if name.endswith(c)]
+        matches = [c for c in classes if c in name]
         if len(matches) == 0:
             return None
         return matches[np.argmax(matches)]
@@ -339,7 +345,7 @@ def get_excel_file_classes(
     for sheet_name, class_name in sheet_to_class.items():
         if class_name not in results:
             results[class_name] = []
-        results[class_name].append({"excel_file": file, "sheet": sheet_name})
+        results[class_name].append({EXCEL_FILE_KEY: file, EXCEL_SHEET_KEY: sheet_name})
 
     return results
 
