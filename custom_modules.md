@@ -1,5 +1,10 @@
 # Custom Modules
 
+## Important Note
+
+Modules have changed considerably since this document was written. The
+information in this file is outdated and will be updated soon.
+
 ## Introduction
 
 A module is a collection of rules and configuration options that define how to
