@@ -463,10 +463,10 @@ class GeneratorData:
         """Make a hash of the row.
 
         Args:
-            row (np.ndarray): _description_
+            row (np.ndarray): The row data to hash.
 
         Returns:
-            int: _description_
+            int: The hash value.
         """
         if row.ndim == 2:
             row = row[0]
