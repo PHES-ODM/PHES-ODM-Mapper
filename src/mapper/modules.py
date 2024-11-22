@@ -80,3 +80,10 @@ def get_module_config(module: str, module_dir: Union[str, Path]) -> Tuple[Path, 
     with open(config_file) as f:
         config = yaml.safe_load(f)
     return config_file, config
+
+
+def get_source_schema(module: str, module_dir: Union[str, Path]) -> Path:
+    module_dir = get_module_dir(module=module, module_dir=module_dir)
+    _, config = get_module_config(module=module, module_dir=module_dir)
+    source_schema = config.get(MODULE_SOURCE_SCHEMA_KEY)
+    return module_dir / source_schema if source_schema else None
