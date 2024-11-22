@@ -19,6 +19,7 @@ from datetime import datetime
 import sys
 
 from mapper import Mapper
+from mapper.modules import get_module_config, get_module_dir, MODULE_SOURCE_SCHEMA_KEY
 from utils.logger import get_logger
 from utils.cli_utils import get_input_data_files
 from utils.clean_exit_error import CleanExitError
@@ -32,24 +33,28 @@ if __name__ == "__main__":
             # ODM v1 to v2
             # module = "odm_v1_to_v2"
             # module_dir = None
-            # # input_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
+            # input_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
             # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"
+            # # input_dir = "/Users/martinwellman/Downloads/files/in/csv"
+            # # input_dir = "/Users/martinwellman/Downloads/files/in/excel"
             # input_files = None #["Sample", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/Sample.csv"]
-            # output_dir = "../gen/odm_v1_to_v2-test"
-            # temp_dir = "../gen/odm_v1_to_v2-test/temp"
+            # output_dir = "../gen/odm_v1_to_v2-test-new"
+            # temp_dir = None #"../gen/odm_v1_to_v2-test-excel/temp"
 
             # NWSS to v2
             module = "nwss_reporting_to_v2"
             module_dir = None
             # input_dir = "../../../PHES-ODM-Data/nwss/private_renamed_test/"
-            input_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            # input_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            input_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"
+            # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"
             input_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            output_dir = "../gen/nwss_reporting_to_v2-test"
-            temp_dir = "../gen/nwss_reporting_to_v2-test/temp"
+            output_dir = "../gen/nwss_reporting_to_v2-test-new"
+            temp_dir = "../gen/nwss_reporting_to_v2-test-new/temp"
 
             max_processes = 1
-            input_max_rows = None
-            id_debug = True
+            input_max_rows = 1000
+            debug_mode = True
         # fmt: on
     else:
         args = argparse.ArgumentParser(
@@ -107,7 +112,7 @@ if __name__ == "__main__":
             required=False,
         )
         args.add_argument(
-            "--id-debug",
+            "--debug-mode",
             action="store_true",
             help="If set then run ID generation in debug mode, which only affects what is included in the output data files. Debug data includes some additional columns (eg. original ID values, row number column for linking, primary key index and values, etc.). Debug output will also include any duplicated primary keys, with an additional 'drop' column specifying if it is a duplicate, in which case the row would be dropped when not in debug mode.",
         )
@@ -115,13 +120,17 @@ if __name__ == "__main__":
 
     try:
         logger.info(f"Starting run at {datetime.now()}")
-        data_files = get_input_data_files(opts.input_files, opts.input_dir)
+
+        _, module_config = get_module_config(opts.module, opts.module_dir)
+        module_dir = get_module_dir(opts.module, opts.module_dir)
+        source_schema = module_config.get(MODULE_SOURCE_SCHEMA_KEY)
+        data_files = get_input_data_files(
+            opts.input_files, opts.input_dir, schema=module_dir / source_schema
+        )
 
         mapper = Mapper(
             module=opts.module,
             module_dir=opts.module_dir,
-            id_debug=opts.id_debug,
-            multi_bar_progress="get_ipython" not in globals(),
         )
         mapper.full_map(
             data_files=data_files,
@@ -129,6 +138,8 @@ if __name__ == "__main__":
             temp_dir=opts.temp_dir,
             input_max_rows=opts.input_max_rows,
             max_processes=opts.max_processes,
+            multi_bar_progress="get_ipython" not in globals(),
+            debug_mode=opts.debug_mode,
         )
     except CleanExitError as e:
         logger.error(str(e))
