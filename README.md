@@ -132,7 +132,7 @@ The following command-line parameters can be specified with map_cli.py:
 | `--max-processes`    | Number of processors to use while mapping. For large datasets this can help improve performance. By default only one process is used. |
 | `--input-max-rows`   | *(For debugging purposes)* Maximum number of rows to map from each source table. If not specified, or 0, then all rows are mapped. |
 | `--temp-dir`         | *(For debugging purposes)* Optional directory to save temporary data to, which are intermediary files created during the mapping. If left unspecified then a directory in the system temporary directory location is created, and deleted once mapping is complete. This is typically left blank and is mainly used for debugging purposes. |
-| `--id-debug`         | *(For debugging purposes)* Set this flag to include debug columns in the final mapped output files. The debug columns include the contents of the ID columns before ID generation was performed, and columns used for tracking such as the source file name and row that the output row was generated from. Rows with duplicate primary keys are also retained rather than the default behavior of being have been dropped if `id_debug` was not set. |
+| `--debug-mode`       | *(For debugging purposes)* Set this flag to include debug columns in the final mapped output files. The debug columns include the contents of the ID columns before ID generation was performed, and columns used for tracking such as the source file name and row that the output row was generated from. Rows with duplicate primary keys are also retained rather than the default behavior of being dropped. |
 
 ## Performance
 
