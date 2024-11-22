@@ -47,11 +47,9 @@ from mapper.modules import (
     MODULE_SOURCE_SCHEMA_KEY,
 )
 from utils.logger import get_logger
-from utils.general_utils import (
-    load_data_with_tracking_columns,
-)
 from utils.clean_exit_error import CleanExitError
 from utils.cli_utils import get_input_data_files
+from utils.tracking_slots import load_data_with_tracking_columns
 
 logger = get_logger(__name__)
 
