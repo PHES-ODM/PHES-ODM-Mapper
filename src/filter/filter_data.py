@@ -13,7 +13,7 @@ data_files = {
 }
 filter = DataFilter("filter_config_file.csv")
 filtered_data, filtered_files = filter.run_filter(data_files=data_files,
-                                                  output_data_dir="data/output")
+                                                  output_dir="data/output")
 
 # Filter DataFrames (don't save to disk).
 data = {
@@ -108,25 +108,25 @@ class DataFilter(object):
         return data
 
     def save_data(
-        self, data: Dict[str, pd.DataFrame], output_data_dir: Union[Path, str]
+        self, data: Dict[str, pd.DataFrame], output_dir: Union[Path, str]
     ) -> Dict[str, List[Path]]:
         """Save all the data as CSV files to the output directory.
 
         Args:
             data (Dict[str, pd.DataFrame]): Data to save. The keys are the class names (which become the
                 file names) and the values are the DataFrames to save.
-            output_data_dir (Union[Path, str]): The directory to save all data to, as CSV files.
+            output_dir (Union[Path, str]): The directory to save all data to, as CSV files.
 
         Returns:
             Dict[str, List[Path]]: Dictionary of all files saved to disk. The keys are the class names
                 that the files belong to, and the values are list of files belonging to the class.
         """
         output_files = {}
-        output_data_dir = Path(output_data_dir)
-        if not output_data_dir.exists():
-            output_data_dir.mkdir()
+        output_dir = Path(output_dir)
+        if not output_dir.exists():
+            output_dir.mkdir()
         for cur_class, cur_data in data.items():
-            output_file = output_data_dir / f"{cur_class}.csv"
+            output_file = output_dir / f"{cur_class}.csv"
             logger.debug(f"Saving data to {output_file}")
             save_data_frame(cur_data, output_file, index=False)
 
@@ -140,7 +140,7 @@ class DataFilter(object):
         *,
         data: Dict[str, pd.DataFrame] = None,
         data_files: Dict[str, List[Union[str, Path]]] = None,
-        output_data_dir: Union[Path, str] = None,
+        output_dir: Union[Path, str] = None,
     ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List[Path]]]:
         """Run the filters specified in the configuration file on all the data, and optionally save the data to disk.
 
@@ -150,16 +150,16 @@ class DataFilter(object):
                 If None then data_dir must be specified. Defaults to None.
             data_files (Dict[str, List[Union[str, Path]]], optional): If data is None, then load all data specified by data_files. The keys
                 are the data file class names and the values are a list of files to filter belonging to the class. Defaults to None.
-            output_data_dir (Union[Path, str], optional): If specified then the directory to save all data after filtering has been
+            output_dir (Union[Path, str], optional): If specified then the directory to save all data after filtering has been
                 performed. Defaults to None.
 
         Returns:
             Tuple[Dict[str, pd.DataFrame], Dict[str, Path]]: Tuple in the form (data, output_files).
                 data (Dict[str, pd.DataFrame]): The filtered data, where they keys are the classes and the values are the
                     filtered DataFrames.
-                output_files (Dict[str, List[Path]]): If output_data_dir was specified, then a dictionary where
+                output_files (Dict[str, List[Path]]): If output_dir was specified, then a dictionary where
                     the keys are the class names saved and the values are lists of output fitered files saved for the class.
-                    If output_data_dir was not specified then an empty dictionary is returned.
+                    If output_dir was not specified then an empty dictionary is returned.
         """
         tic = datetime.now()
 
@@ -207,8 +207,8 @@ class DataFilter(object):
                 progress.update(FILTER_BARID, 1)
 
         output_files = {}
-        if output_data_dir:
-            output_files = self.save_data(data, output_data_dir)
+        if output_dir:
+            output_files = self.save_data(data, output_dir)
 
         logger.debug(f"Filtered in {datetime.now() - tic}")
         return data, output_files
@@ -220,8 +220,8 @@ if __name__ == "__main__":
         class opts:
             input_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
             input_files = None
-            filter_config_file = "../../data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv"
-            output_data_dir = "../../gen/nwss_reporting_to_v2/filtered_mapped_data"
+            filter_config_file = "../../data/modules/nwss_reporting_to_v2/pre_id_filters/nwss_reporting_to_v2_filters.csv"
+            output_dir = "../../gen/nwss_reporting_to_v2/filtered_mapped_data"
         # fmt: on
     else:
         args = argparse.ArgumentParser(
@@ -247,7 +247,7 @@ if __name__ == "__main__":
             required=True,
         )
         args.add_argument(
-            "--output-data-dir",
+            "--output-dir",
             type=str,
             help="Location to save the filtered data to.",
             required=True,
@@ -259,5 +259,5 @@ if __name__ == "__main__":
     filterer = DataFilter(opts.filter_config_file)
     filterer.run_filter(
         data_files=data_files,
-        output_data_dir=opts.output_data_dir,
+        output_dir=opts.output_dir,
     )
