@@ -161,13 +161,19 @@ class Mapper(object):
         )
         output_data_files = {}
 
+        # Values used for string interpolation (eg. for output paths). Some actions will
+        # add additional values to this.
         top_level_kwargs = {
             "temp_dir": str(self.temp_dir),
             "output_dir": str(Path(output_dir)),
             "debug_mode": debug_mode,
         }
+        # Go through each step of the module and perform each action
         for step in self.config["steps"]:
             action = step["action"]
+
+            # If there is an "if" section in the current step then only run the step if the "if" value
+            # equates to either a non-zero integer, boolean True, or string "True" (case-insensitive).
             stepif = step.get("if", True)
             if isinstance(stepif, str):
                 stepif = stepif.format(**top_level_kwargs)
@@ -178,6 +184,7 @@ class Mapper(object):
                 pass
             if str(stepif).lower() != "true":
                 continue
+
             params = step.get("params", {})
 
             if action == "clean":
