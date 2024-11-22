@@ -1,12 +1,12 @@
 title: ODM v1 to ODM v2
 
 # @TODO: Remove these, for old Mapper
-source_schema: schemas/odm_v1.yaml
-target_schema: schemas/odm_v2.yaml
-mappers: mappers
-pre_id_filters: NULL
-id_code: ids/odm_v1_to_v2_id_code.xlsx
-id_config: ids/odm_v1_to_v2_id_config.yaml
+# source_schema: schemas/odm_v1.yaml
+# target_schema: schemas/odm_v2.yaml
+# mappers: mappers
+# pre_id_filters: NULL
+# id_code: ids/odm_v1_to_v2_id_code.xlsx
+# id_config: ids/odm_v1_to_v2_id_config.yaml
 #####
 
 
@@ -26,7 +26,7 @@ steps:
     params:
       source_schema: schemas/odm_v1.yaml
       target_schema: schemas/odm_v2.yaml
-      mapper_dir: mappers
+      mappers_dir: mappers
   - action: save
     if: "{debug_mode}"
     params:

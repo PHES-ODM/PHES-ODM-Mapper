@@ -1,12 +1,12 @@
 title: NWSS Reporting to ODM v2
 
 # @TODO: Remove these, for old Mapper
-source_schema: schemas/nwss_reporting.yaml
-target_schema: schemas/odm_v2.yaml
-mappers: mappers
-pre_id_filters: filters/nwss_reporting_to_v2_filters.csv
-id_code: ids/nwss_reporting_to_v2_id_code.xlsx
-id_config: ids/nwss_reporting_to_v2_id_config.yaml
+# source_schema: schemas/nwss_reporting.yaml
+# target_schema: schemas/odm_v2.yaml
+# mappers: mappers
+# pre_id_filters: filters/nwss_reporting_to_v2_filters.csv
+# id_code: ids/nwss_reporting_to_v2_id_code.xlsx
+# id_config: ids/nwss_reporting_to_v2_id_config.yaml
 #####
 
 source_schema: schemas/nwss_reporting.yaml
@@ -25,7 +25,7 @@ steps:
     params:
       source_schema: schemas/nwss_reporting.yaml
       target_schema: schemas/odm_v2.yaml
-      mapper_dir: mappers
+      mappers_dir: mappers
   - action: filter
     params:
       filters: filters/nwss_reporting_to_v2_filters.csv

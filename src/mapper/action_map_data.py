@@ -381,7 +381,7 @@ def convert_mapped_data_to_dataframes(
 def action_map_data(
     source_schema_file: Union[str, Path],
     target_schema_file: Union[str, Path],
-    mapper_dir: Union[str, Path],
+    mappers_dir: Union[str, Path],
     data_frames: Dict[str, List[pd.DataFrame]],
     max_processes: Optional[int] = 1,
     map_barid: str = "Mapping",
@@ -392,7 +392,7 @@ def action_map_data(
     Args:
         source_schema_file (Union[str, Path]): The LinkML schema for the source database.
         target_schema_file (Union[str, Path]): The LinkML schema for the target database.
-        mapper_dir (Union[str, Path]): The directory containing all LinkML Mapper configuration (YAML)
+        mappers_dir (Union[str, Path]): The directory containing all LinkML Mapper configuration (YAML)
             files. All config files will be used for mapping all the loaded data.
         data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of source DataFrames to map. The keys are the
             source class names and the values are lists of DataFrames belonging to the class, which should each be mapped.
@@ -447,10 +447,10 @@ def action_map_data(
     # Collect all mapper config (yaml) files
     mapper_files = [
         f
-        for f in sorted(os.listdir(mapper_dir))
+        for f in sorted(os.listdir(mappers_dir))
         if os.path.splitext(f)[1].lower() in [".yaml"]
     ]
-    mapper_files = [os.path.join(mapper_dir, f) for f in mapper_files]
+    mapper_files = [os.path.join(mappers_dir, f) for f in mapper_files]
 
     # Sort by decreasing data size, to maximize overlap of multiprocessing
     # mappers = { f: yaml.safe_load(open(f, "r"))["class_derivations"] for f in mapper_files }
