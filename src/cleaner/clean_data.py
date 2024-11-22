@@ -151,7 +151,8 @@ class DataCleaner(object):
                                 if enum_value not in unrecognized_history[slot_name]:
                                     unrecognized_history[slot_name][enum_value] = 0
                                 unrecognized_history[slot_name][enum_value] += (
-                                    unrecognized_str == enum_value
+                                    (unrecognized_str == enum_value)
+                                    | (pd.isna(enum_value) & pd.isna(unrecognized_str))
                                 ).sum()
                             # Set the blank unrecognized values in replacements_df to the original enum value.
                             replacements_df[unrecognized_enums_filt] = df[slot_name][
@@ -188,7 +189,10 @@ class DataCleaner(object):
                         f"{count} time{'s' if count != 1 else ''}"
                     )
                 slot_history = sorted(
-                    [f"{k} ({c})" for k, c in slot_history.items()],
+                    [
+                        f"{k if not pd.isna(k) and k != '' else '<empty>'} ({c})"
+                        for k, c in slot_history.items()
+                    ],
                     key=lambda x: str(x).lower(),
                 )
                 changes_str = make_logger_bullet_list(slot_history)
@@ -423,18 +427,20 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         class opts:
-            input_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated copy"
-            # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v1_data/joakim/excel/"
-            input_files = None
-            output_dir = "../../gen/odm_v1_to_v2-test/cleaned_data"
-            max_rows = 100
-            schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v1.yaml"
+            # input_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated copy"
+            # # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v1_data/joakim/excel/"
+            # input_files = None
+            # output_dir = "../../gen/odm_v1_to_v2-test/cleaned_data"
+            # max_rows = 100
+            # schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v1.yaml"
 
             # input_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
-            # input_files = None
-            # output_dir = "../../gen/nwss_reporting_to_v2-test/cleaned_data"
-            # max_rows = 100
+            input_dir = "../../gen/nwss_reporting_to_v2-xl"
+            input_files = None
+            output_dir = "../../gen/nwss_reporting_to_v2-xl/cleaned_data-final"
+            max_rows = None #100
             # schema = "../../data/modules/nwss_reporting_to_v2/schemas/nwss_reporting.yaml"
+            schema = "../../data/modules/nwss_reporting_to_v2/schemas/odm_v2.yaml"
         # fmt: on
     else:
         args = argparse.ArgumentParser(
