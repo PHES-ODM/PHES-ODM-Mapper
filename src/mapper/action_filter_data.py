@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import datetime
 
 from filter.filter_data import DataFilter
-from utils.general_utils import get_logger
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
