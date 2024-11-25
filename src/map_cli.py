@@ -118,7 +118,7 @@ if __name__ == "__main__":
             help="If set then run ID generation in debug mode, which only affects what is included in the output data files. Debug data includes some additional columns (eg. original ID values, row number column for linking, primary key index and values, etc.). Debug output will also include any duplicated primary keys, with an additional 'drop' column specifying if it is a duplicate, in which case the row would be dropped when not in debug mode.",
         )
         opts = args.parse_args()
-        
+
     try:
         logger.info(f"Starting run at {datetime.now()}")
 
