@@ -430,17 +430,17 @@ if __name__ == "__main__":
             # input_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated copy"
             # # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v1_data/joakim/excel/"
             # input_files = None
-            # output_dir = "../../gen/odm_v1_to_v2-test/cleaned_data"
+            # output_dir = "../../gen/odm-v1-to-v2-test/cleaned_data"
             # max_rows = 100
-            # schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v1.yaml"
+            # schema = "../../data/modules/odm-v1-to-v2/schemas/odm_v1.yaml"
 
             # input_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
-            input_dir = "../../gen/nwss_reporting_to_v2-xl"
+            input_dir = "../../gen/nwss-reporting-to-v2-xl"
             input_files = None
-            output_dir = "../../gen/nwss_reporting_to_v2-xl/cleaned_data-final"
+            output_dir = "../../gen/nwss-reporting-to-v2-xl/cleaned_data-final"
             max_rows = None #100
-            # schema = "../../data/modules/nwss_reporting_to_v2/schemas/nwss_reporting.yaml"
-            schema = "../../data/modules/nwss_reporting_to_v2/schemas/odm_v2.yaml"
+            # schema = "../../data/modules/nwss-reporting-to-v2/schemas/nwss_reporting.yaml"
+            schema = "../../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml"
         # fmt: on
     else:
         args = argparse.ArgumentParser(

@@ -12,7 +12,7 @@ of `<ignore>` in the `measure` slot should be removed, as is rows with a blank
 `value`.
 
 An example filter configuration file can be found at
-[/data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv](/data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv).
+[/data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.csv](/data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.csv).
 
 The location of the filter configuration file within a conversion module are
 specified in the module configuration file ([Custom

@@ -6,7 +6,7 @@ Map data using a transformation module.
 from mapper import Mapper
 
 mapper = Mapper(
-    module="odm_v1_to_v2",
+    module="odm-v1-to-v2",
     module_dir=None,
     debug_mode=False,
 )
@@ -17,7 +17,7 @@ mapper.full_map(
         "samples": ["path/to/samples.csv"],
         # ...
     },
-    output_dir="../gen/odm_v1_to_v2",
+    output_dir="../gen/odm-v1-to-v2",
 )
 """
 
@@ -81,7 +81,7 @@ class Mapper(object):
         """Class to perform a full mapping, including filtering and ID generation.
 
         Args:
-            module (Optional[str]): The built-in module for the mapping, eg. "odm_v1_to_v2" or "nwss_reporting_to_v2".
+            module (Optional[str]): The built-in module for the mapping, eg. "odm-v1-to-v2" or "nwss-reporting-to-v2".
                 If None then module_dir must be specified.
             module_dir (Optional[Union[str, Path]]): The directory for the mapping module. If None then module must be specified.
         """
@@ -260,21 +260,21 @@ if __name__ == "__main__":
         # fmt: off
         class opts:
             # ODM v1 to v2
-            # module = "odm_v1_to_v2"
+            # module = "odm-v1-to-v2"
             # module_dir = None
             # input_dir = "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
             # input_files = None  # ["WWMeasure", "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/WWMeasure.csv"]
-            # output_dir = "../../gen/odm_v1_to_v2-test"
-            # temp_dir = "../../gen/odm_v1_to_v2-test/temp"
+            # output_dir = "../../gen/odm-v1-to-v2-test"
+            # temp_dir = "../../gen/odm-v1-to-v2-test/temp"
 
             # NWSS to v2
-            module = "nwss_reporting_to_v2"
+            module = "nwss-reporting-to-v2"
             module_dir = None
             # input_dir = "../../../../PHES-ODM-Data/nwss/private_renamed_test/"
             input_dir = "../../../../PHES-ODM-Data/nwss/nwss_renamed/"
             input_files = None # [ "nwss", "../../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            output_dir = "../../gen/nwss_reporting_to_v2-test"
-            temp_dir = "../../gen/nwss_reporting_to_v2-test/temp"
+            output_dir = "../../gen/nwss-reporting-to-v2-test"
+            temp_dir = "../../gen/nwss-reporting-to-v2-test/temp"
 
             max_processes = 1
             input_max_rows = 50

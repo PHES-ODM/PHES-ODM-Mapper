@@ -220,12 +220,12 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         class opts:
-            # input_dir = "../../gen/nwss_reporting_to_v2/temp/mapped_data"
+            # input_dir = "../../gen/nwss-reporting-to-v2/temp/mapped_data"
             input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"
             input_files = None
-            filter_config_file = "../../data/modules/nwss_reporting_to_v2/filters/nwss_reporting_to_v2_filters.csv"
-            output_dir = "../../gen/nwss_reporting_to_v2-test/filtered_mapped_data"
-            schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v2.yaml"
+            filter_config_file = "../../data/modules/nwss-reporting-to-v2/filters/nwss-reporting-to-v2_filters.csv"
+            output_dir = "../../gen/nwss-reporting-to-v2-test/filtered_mapped_data"
+            schema = "../../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml"
         # fmt: on
     else:
         args = argparse.ArgumentParser(

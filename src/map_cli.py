@@ -8,9 +8,9 @@ where appropriate):
 ```console
 cd src
 python3 map_cli.py \
-    --module odm_v1_to_v2 \
+    --module odm-v1-to-v2 \
     --input-dir "path/to/input/data" \
-    --output-dir "../gen/odm_v1_to_v2"
+    --output-dir "../gen/odm-v1-to-v2"
 ```
 """
 
@@ -19,7 +19,7 @@ from datetime import datetime
 import sys
 
 from mapper import Mapper
-from mapper.modules import get_source_schema
+from mapper.modules import get_source_schema, get_all_modules
 from utils.logger import get_logger
 from utils.cli_utils import get_input_data_files
 from utils.clean_exit_error import CleanExitError
@@ -31,42 +31,43 @@ if __name__ == "__main__":
         # fmt: off
         class opts:
             # ODM v1 to v2
-            # module = "odm_v1_to_v2"
+            # module = "odm-v1-to-v2"
             # module_dir = None
-            # input_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
-            # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"
-            # # input_dir = "/Users/martinwellman/Downloads/files/in/csv"
-            # # input_dir = "/Users/martinwellman/Downloads/files/in/excel"
+            # # input_dir = "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"
+            # input_dir = "../../../PHES-ODM-Data/odm_v1_data/excel/excel"
+            # # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"
             # input_files = None #["Sample", "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/Sample.csv"]
-            # output_dir = "../gen/odm_v1_to_v2-test-new"
-            # temp_dir = None #"../gen/odm_v1_to_v2-test-excel/temp"
+            # output_dir = "../gen/odm-v1-to-v2-test-new"
+            # temp_dir = None #"../gen/odm-v1-to-v2-test-excel/temp"
 
             # NWSS to v2
-            module = "nwss_reporting_to_v2"
+            module = "nwss-reporting-to-v2"
             module_dir = None
             # input_dir = "../../../PHES-ODM-Data/nwss/private_renamed_test/"
-            # input_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
-            input_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"
+            input_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed/"
+            # input_dir = "../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"
             # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"
             input_files = None # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ]
-            output_dir = "../gen/nwss_reporting_to_v2-test-new"
-            temp_dir = "../gen/nwss_reporting_to_v2-test-new/temp"
+            output_dir = "../gen/nwss-reporting-to-v2-test"
+            temp_dir = None #"../gen/nwss-reporting-to-v2-xl3/temp"
 
-            max_processes = 1
-            input_max_rows = 1000
-            debug_mode = True
+            max_processes = 2
+            input_max_rows = None
+            debug_mode = False
         # fmt: on
     else:
         args = argparse.ArgumentParser(
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
-        args.add_argument(
+        module_group = args.add_mutually_exclusive_group(required=True)
+        module_group.add_argument(
             "--module",
             type=str,
-            help="The module name for the conversion. Either the 'module' or 'module-dir' command-line arguments must be provided (but not both). A module specifies the source dataset type, the target dataset type, and all required configuration for the conversion.",
+            help="The module name for the conversion. Either the 'module' or 'module-dir' command-line arguments must be provided (but not both). A module specifies the source dataset type and the target dataset type to map to.",
+            choices=get_all_modules(),
             required=False,
         )
-        args.add_argument(
+        module_group.add_argument(
             "--module-dir",
             type=str,
             help="The module directory for the conversion. Either the 'module' or 'module-dir' command-line arguments must be provided (but not both). A module specifies the source dataset type, the target dataset type, and all required configuration for the conversion.",
@@ -117,7 +118,7 @@ if __name__ == "__main__":
             help="If set then run ID generation in debug mode, which only affects what is included in the output data files. Debug data includes some additional columns (eg. original ID values, row number column for linking, primary key index and values, etc.). Debug output will also include any duplicated primary keys, with an additional 'drop' column specifying if it is a duplicate, in which case the row would be dropped when not in debug mode.",
         )
         opts = args.parse_args()
-
+        
     try:
         logger.info(f"Starting run at {datetime.now()}")
 

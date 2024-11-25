@@ -69,7 +69,7 @@ data (and save the mapped data to "path/to/outputdata"):
 
 ```console
 python3 src/map_cli.py \
-    --module odm_v1_to_v2 \
+    --module odm-v1-to-v2 \
     --input-dir "path/to/inputdata" \
     --output-dir "path/to/outputdata"
 ```
@@ -90,7 +90,7 @@ the input file for the "Sample" table:
 
 ```console
 python3 src/map_cli.py \
-    --module odm_v1_to_v2 \
+    --module odm-v1-to-v2 \
     --input-files WWMeasure "path/to/mymeasures1.csv" WWMeasure "path/to/mymeasures2.csv" Sample "path/to/mysamples.csv" \
     --output-dir "path/to/outputdata"
 ```
@@ -99,7 +99,7 @@ For mapping NWSS Reporting format to ODM v2, simply change the `module`:
 
 ```console
 python3 src/map_cli.py \
-    --module nwss_reporting_to_v2 \
+    --module nwss-reporting-to-v2 \
     --input-dir "path/to/inputdata" \
     --output-dir "path/to/outputdata"
 ```
@@ -124,7 +124,7 @@ The following command-line parameters can be specified with map_cli.py:
 
 | Parameter            | Description |
 |:---------------------|:----------- |
-| `--module`           | The conversion module to use. The module specifies the source (eg. NWSS) and target (eg. ODM v2) database formats. Only one of `module` or `module_dir` must be specified. Current supported values are 'odm_v1_to_v2' and 'nwss_reporting_to_v2'. |
+| `--module`           | The conversion module to use. The module specifies the source (eg. NWSS) and target (eg. ODM v2) database formats. Only one of `module` or `module_dir` must be specified. Current supported values are 'odm-v1-to-v2' and 'nwss-reporting-to-v2'. |
 | `--module-dir`       | The directory to the module to use. This is often used for custom modules. Only one of 'module' or 'module_dir' must be specified. |
 | `--input-dir`        | The directory where the data in the source database format is located. These should be .csv, .tsv, or .txt files (.tsv and .txt are tab-separated files). The file names (without extension) should be the name of the table that the file is for. Additional text can be provided at the end of the file name in square or round brackets, anything after the first opening bracket is ignored (eg. The file "Instrument[2024-09-11].csv" contains data for the "Instrument" table). This command-line parameter is optional and can be combined with `--input-files` (at least one of `input-dir` and `input-files` must be specified). |
 | `--input-files` | List of space-separated strings specifying the source database table names and the input data files for the tables, which are the data files to map. The list of strings are in pairs, with the first item in each pair is the table name and the second is the filename for the table. If the table name or file name have spaces then they must be enclosed in quotes. For example, `--input-files WWMeasure "path/to/WWMeasure data.csv" WWMeasure "path/to/WWMeasure2.csv" Sample "path/to/sample.csv"` will map two files corresponding to the `WWMeasure` table and one file corresponding to the `Sample` table. This command-line parameter is optional and can be combined with `--input-dir` (at least one of `input-dir` and `input-files` must be specified). |
