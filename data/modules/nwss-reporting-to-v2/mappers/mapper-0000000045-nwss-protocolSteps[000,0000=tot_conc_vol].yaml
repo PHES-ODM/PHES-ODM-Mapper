@@ -1,0 +1,42 @@
+class_derivations:
+  protocolSteps[000,0000=tot_conc_vol]:
+    name: protocolSteps[000,0000=tot_conc_vol]
+    populated_from: nwss
+    slot_derivations:
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      stepID:
+        name: stepID
+        expr: ''''''
+      measure:
+        name: measure
+        expr: ''''''
+      method:
+        name: method
+        expr: '''concVol'''
+      value:
+        name: value
+        populated_from: tot_conc_vol
+      unit:
+        name: unit
+        expr: '''mL'''
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+      refLink:
+        name: refLink
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=tot_conc_vol]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction

@@ -1,0 +1,124 @@
+class_derivations:
+  protocolSteps[000,0000=concentration_method]:
+    name: protocolSteps[000,0000=concentration_method]
+    populated_from: nwss
+    slot_derivations:
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      stepID:
+        name: stepID
+        expr: ''''''
+      measure:
+        name: measure
+        expr: ''''''
+      method:
+        name: method
+        expr: '''methodConc'''
+      value:
+        name: value
+        populated_from: concentration_method
+      unit:
+        name: unit
+        expr: ''''''
+      aggregation:
+        name: aggregation
+        expr: ''''''
+      refLink:
+        name: refLink
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=concentration_method]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
+  ODMv2_enum_from_vs_concentration_method:
+    name: ODMv2_enum_from_vs_concentration_method
+    mirror_source: false
+    populated_from: vs_concentration_method
+    permissible_value_derivations:
+      mfMgcl2:
+        name: mfMgcl2
+        populated_from: membrane filtration with addition of mgcl2
+      mfSampleAcid:
+        name: mfSampleAcid
+        populated_from: membrane filtration with sample acidification
+      mfAcidmgcl2:
+        name: mfAcidmgcl2
+        populated_from: membrane filtration with acidification and mgcl2
+      mfNoAmend:
+        name: mfNoAmend
+        populated_from: membrane filtration with no amendment
+      mfAcidmgcl2SS:
+        name: mfAcidmgcl2SS
+        sources:
+        - membrane filtration with addition of mgcl2, membrane recombined with separated
+          solids
+        - membrane filtration with acidification and mgcl2, membrane recombined with
+          separated solids
+      mfSampleAcidSS:
+        name: mfSampleAcidSS
+        populated_from: membrane filtration with sample acidification, membrane recombined
+          with separated solids
+      mfNoAmendSS:
+        name: mfNoAmendSS
+        populated_from: membrane filtration with no amendment, membrane recombined
+          with separated solids
+      peg:
+        name: peg
+        populated_from: peg precipitation
+      aloh3:
+        name: aloh3
+        populated_from: aloh3 precipitation
+      untracent:
+        name: untracent
+        populated_from: ultracentrifugation
+      skimMilkFloc:
+        name: skimMilkFloc
+        populated_from: skimmed milk flocculation
+      beeExtractFloc:
+        name: beeExtractFloc
+        populated_from: beef extract flocculation
+      promegaLVTNA:
+        name: promegaLVTNA
+        populated_from: promega wastewater large volume tna capture kit
+      centriconUf:
+        name: centriconUf
+        populated_from: centricon ultrafiltration
+      amiconUf:
+        name: amiconUf
+        populated_from: amicon ultrafiltration
+      hollowFiberUF:
+        name: hollowFiberUF
+        populated_from: hollow fiber dead end ultrafiltration
+      innovaprepUF:
+        name: innovaprepUF
+        populated_from: innovaprep ultrafiltration
+      noliquid:
+        name: noliquid
+        populated_from: no liquid concentration, liquid recombined with separated
+          solids
+      ceres:
+        name: ceres
+        populated_from: ceres nanotrap
+      zymoWatRNA:
+        name: zymoWatRNA
+        populated_from: zymo environ water rna kit/ zymo environ water rna kit (cat.
+          r2042)
+      memMgCl3:
+        name: memMgCl3
+        populated_from: membrane filtration with addition of mgcl3
+      watConcBuff:
+        name: watConcBuff
+        populated_from: water concentrating buffer (R2042-1)
+      noSep:
+        name: noSep
+        populated_from: none

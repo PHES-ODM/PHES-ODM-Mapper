@@ -1,0 +1,186 @@
+# The slots for each class that are the primary keys
+primary_keys:
+  addresses: addressID
+  contacts: contactID
+  datasets: datasetID
+  instruments: instrumentID
+  measures: measureRepID
+  measureSets: measureSetRepID
+  organizations: organizationID
+  polygons: polygonID
+  protocolRelationships: protocolRelationshipsID
+  protocols: protocolID
+  protocolSteps: stepID
+  qualityReports: qualityReportID
+  samples: sampleID
+  sites: siteID
+
+# Class linkages determines how to link a row in one table to a row in another table. We match the value
+# in the source slot of the source row to the target slot in the target row.
+# These are the default slots to use, when no linkage slots are explicitly specified.
+# To use the source row numbers for linking, remove the class_linkages key.
+# class_linkages:
+#   addresses:
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#   datasets:
+#     # Not sure if this is correct
+#     organizations:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#   contacts:
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#   instruments:
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#     contacts:
+#       source_slot: contactID
+#       target_slot: contactID
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#   measures:
+#     addresses:
+#       - source_slot: siteID
+#         target_class: sites
+#         target_slot: siteID
+#       - source_slot: addressID
+#         target_slot: addressID
+#     contacts:
+#       source_slot: contactID
+#       target_slot: contactID
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#     measureSets:
+#       source_slot: measureSetRepID
+#       target_slot: measureSetRepID
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#     polygons:
+#       source_slot: polygonID
+#       target_slot: polygonID
+#     protocols:
+#       source_slot: protocolID
+#       target_slot: protocolID
+#     # Results in multiple matches:
+#     # qualityReports:
+#     #   source_slot: measureRepID
+#     #   target_slot: measureRepID
+#     samples:
+#       source_slot: sampleID
+#       target_slot: sampleID
+#     sites:
+#       source_slot: siteID
+#       target_slot: siteID
+#   measureSets:
+#     measures:
+#       source_slot: measureSetRepID
+#       target_slot: measureSetRepID
+#     protocols:
+#       source_slot: protocolID
+#       target_slot: protocolID
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#     contacts:
+#       source_slot: contactID
+#       target_slot: contactID
+#   organizations:
+#     addresses:
+#       source_slot: addressID
+#       target_slot: addressID
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#   polygons:
+#     sites:
+#       source_slot: polygonID
+#       target_slot: polygonID
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#     contacts:
+#       source_slot: contactID
+#       target_slot: contactID
+#   protocols:
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#     contacts:
+#       source_slot: contactID
+#       target_slot: contactID
+#   protocolSteps:
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#     contacts:
+#       source_slot: contactID
+#       target_slot: contactID
+#     instruments:
+#       source_slot: instrumentID
+#       target_slot: instrumentID
+#   qualityReports:
+#     measures:
+#       source_slot: measureRepID
+#       target_slot: measureRepID
+#     samples:
+#       source_slot: sampleID
+#       target_slot: sampleID
+#     measureSets:
+#       source_slot: measureSetRepID
+#       target_slot: measureSetRepID
+#   samples:
+#     # Results in multiple matches:
+#     qualityReports:
+#       source_slot: sampleID
+#       target_slot: sampleID
+#     # Results in multiple matches:
+#     measures:
+#       source_slot: sampleID
+#       target_slot: sampleID
+#     protocols:
+#       source_slot: protocolID
+#       target_slot: protocolID
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#     contacts:
+#       source_slot: contactID
+#       target_slot: contactID
+#     sites:
+#       source_slot: siteID
+#       target_slot: siteID
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#   sites:
+#     datasets:
+#       source_slot: datasetID
+#       target_slot: datasetID
+#     polygons:
+#       source_slot: polygonID
+#       target_slot: polygonID
+#     addresses:
+#       source_slot: addressID
+#       target_slot: addressID
+#     organizations:
+#       source_slot: organizationID
+#       target_slot: organizationID
+#     contacts:
+#       source_slot: contactID
+#       target_slot: contactID

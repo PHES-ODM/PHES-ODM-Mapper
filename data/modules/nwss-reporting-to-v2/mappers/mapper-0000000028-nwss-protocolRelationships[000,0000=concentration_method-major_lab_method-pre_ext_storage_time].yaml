@@ -1,0 +1,39 @@
+class_derivations:
+  protocolRelationships[000,0000=concentration_method-major_lab_method-pre_ext_storage_time]:
+    name: protocolRelationships[000,0000=concentration_method-major_lab_method-pre_ext_storage_time]
+    populated_from: nwss
+    slot_derivations:
+      protocolRelationshipsID:
+        name: protocolRelationshipsID
+        expr: ''''''
+      protocolIDContainer:
+        name: protocolIDContainer
+        populated_from: major_lab_method
+      protocolIDObj:
+        name: protocolIDObj
+        expr: ''''''
+      stepIDObj:
+        name: stepIDObj
+        populated_from: concentration_method
+      relationshipID:
+        name: relationshipID
+        expr: '''before'''
+      protocolIDSub:
+        name: protocolIDSub
+        expr: ''''''
+      stepIDSub:
+        name: stepIDSub
+        populated_from: pre_ext_storage_time
+      notes:
+        name: notes
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolRelationships[000,0000=concentration_method-major_lab_method-pre_ext_storage_time]:
+        populated_from: nwss
+enum_derivations:
+  vs_concentration_method[=mirrored=]:
+    name: vs_concentration_method[=mirrored=]
+    mirror_source: true
+    populated_from: vs_concentration_method

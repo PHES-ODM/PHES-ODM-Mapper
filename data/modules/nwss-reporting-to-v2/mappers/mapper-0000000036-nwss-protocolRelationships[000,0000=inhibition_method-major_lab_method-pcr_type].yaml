@@ -1,0 +1,39 @@
+class_derivations:
+  protocolRelationships[000,0000=inhibition_method-major_lab_method-pcr_type]:
+    name: protocolRelationships[000,0000=inhibition_method-major_lab_method-pcr_type]
+    populated_from: nwss
+    slot_derivations:
+      protocolRelationshipsID:
+        name: protocolRelationshipsID
+        expr: ''''''
+      protocolIDContainer:
+        name: protocolIDContainer
+        populated_from: major_lab_method
+      protocolIDObj:
+        name: protocolIDObj
+        expr: ''''''
+      stepIDObj:
+        name: stepIDObj
+        populated_from: inhibition_method
+      relationshipID:
+        name: relationshipID
+        expr: '''specifies'''
+      protocolIDSub:
+        name: protocolIDSub
+        expr: ''''''
+      stepIDSub:
+        name: stepIDSub
+        populated_from: pcr_type
+      notes:
+        name: notes
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolRelationships[000,0000=inhibition_method-major_lab_method-pcr_type]:
+        populated_from: nwss
+enum_derivations:
+  vs_pcr_type[=mirrored=]:
+    name: vs_pcr_type[=mirrored=]
+    mirror_source: true
+    populated_from: vs_pcr_type

@@ -1,0 +1,451 @@
+class_derivations:
+  measures[000,0000=pcr_gene_target-pcr_gene_target_ref-pcr_target_units]:
+    name: measures[000,0000=pcr_gene_target-pcr_gene_target_ref-pcr_target_units]
+    populated_from: nwss
+    slot_derivations:
+      datasetID:
+        name: datasetID
+        populated_from: lab_id
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      protocolID:
+        name: protocolID
+        populated_from: major_lab_method
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      sampleID:
+        name: sampleID
+        populated_from: sample_id
+      aDateEnd:
+        name: aDateEnd
+        populated_from: test_result_date
+      compartment:
+        name: compartment
+        expr: '"wat"'
+      measureRepID:
+        name: measureRepID
+        expr: ''''''
+      purpose:
+        name: purpose
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        populated_from: pcr_gene_target
+      value:
+        name: value
+        expr: case((pcr_target_std_error == -1, "na"), (True, pcr_target_std_error))
+      unit:
+        name: unit
+        populated_from: pcr_target_units
+      aggregation:
+        name: aggregation
+        expr: '''se'''
+      refLink:
+        name: refLink
+        populated_from: pcr_gene_target_ref
+      group:
+        name: group
+        expr: ''''''
+      notes:
+        name: notes
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=pcr_gene_target-pcr_gene_target_ref-pcr_target_units]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
+  ODMv2_enum_from_vs_pcr_gene_target:
+    name: ODMv2_enum_from_vs_pcr_gene_target
+    mirror_source: false
+    populated_from: vs_pcr_gene_target
+    permissible_value_derivations:
+      covN1:
+        name: covN1
+        sources:
+        - n1
+        - CDC N1 (GT-Digital)
+      covN2:
+        name: covN2
+        sources:
+        - n2
+        - CDC N2 (GT-Digital)
+        - N2 (PREvalence)
+      covN3:
+        name: covN3
+        populated_from: n3
+      eSarbec:
+        name: eSarbec
+        populated_from: e_sarbeco
+      nSarbec:
+        name: nSarbec
+        populated_from: n_sarbeco
+      covRdrp:
+        name: covRdrp
+        populated_from: rdrp_sarsr
+      niid19:
+        name: niid19
+        populated_from: niid_2019-ncov_n
+      rdrpIP2:
+        name: rdrpIP2
+        populated_from: rdrp gene / ncov_ip2
+      rdrpIP4:
+        name: rdrpIP4
+        populated_from: rdrp gene / ncov_ip4
+      taqpatN:
+        name: taqpatN
+        populated_from: taqpath n
+      taqpatS:
+        name: taqpatS
+        populated_from: taqpath s
+      orf1b:
+        name: orf1b
+        populated_from: orf1b
+      orf1ab:
+        name: orf1ab
+        populated_from: orf1ab
+      n1n2:
+        name: n1n2
+        populated_from: n1 and n2 combined
+      n:
+        name: n
+        populated_from: n
+      sGene:
+        name: sGene
+        populated_from: s
+      orf1a:
+        name: orf1a
+        populated_from: orf1a
+      ddcovN:
+        name: ddcovN
+        populated_from: ddcov_n
+      ddcovE:
+        name: ddcovE
+        sources:
+        - ddcov_e
+        - E (PREvalence)
+      ip2ip4:
+        name: ip2ip4
+        populated_from: ip2 and ip4 combined
+      a1306s:
+        name: a1306s
+        populated_from: a1306s
+      a1918v:
+        name: a1918v
+        populated_from: a1918v
+      a2710t:
+        name: a2710t
+        populated_from: a2710t
+      a63t:
+        name: a63t
+        populated_from: a63t
+      a67v:
+        name: a67v
+        populated_from: a67v
+      a67vDel69Del70:
+        name: a67vDel69Del70
+        populated_from: a67v/del69/del70
+      d377y:
+        name: d377y
+        populated_from: d377y
+      d3g:
+        name: d3g
+        populated_from: d3g
+      d63g:
+        name: d63g
+        populated_from: d63g
+      d796y:
+        name: d796y
+        populated_from: d796y
+      d950n:
+        name: d950n
+        populated_from: d950n
+      del157:
+        name: del157
+        populated_from: del 157/158
+      del142144:
+        name: del142144
+        populated_from: del142-144
+      del143:
+        name: del143
+        populated_from: del143/145
+      del156157:
+        name: del156157
+        populated_from: del156-157
+      del2084:
+        name: del2084
+        populated_from: del2084/2084
+      del212:
+        name: del212
+        populated_from: del212/212
+      del3133:
+        name: del3133
+        populated_from: del31-33
+      del3674:
+        name: del3674
+        populated_from: del3674/3676
+      del6970:
+        name: del6970
+        populated_from: del69/70
+      e156g:
+        name: e156g
+        populated_from: e156g
+      e484a:
+        name: e484a
+        populated_from: e484a
+      g215c:
+        name: g215c
+        populated_from: g215c
+      g339d:
+        name: g339d
+        populated_from: g339d
+      g496s:
+        name: g496s
+        populated_from: g496s
+      g662s:
+        name: g662s
+        populated_from: g662s
+      i1566v:
+        name: i1566v
+        populated_from: i1566v
+      i3758v:
+        name: i3758v
+        populated_from: i3758v
+      i82t:
+        name: i82t
+        populated_from: i82t
+      ins214epe:
+        name: ins214epe
+        populated_from: ins214epe
+      k856r:
+        name: k856r
+        populated_from: k856r
+      l24s:
+        name: l24s
+        populated_from: l24s
+      l452r:
+        name: l452r
+        populated_from: l452r
+      l981f:
+        name: l981f
+        populated_from: l981f
+      lppa24s:
+        name: lppa24s
+        populated_from: lppa24s
+      n211i:
+        name: n211i
+        populated_from: n211i
+      n679k:
+        name: n679k
+        populated_from: n679k
+      n856k:
+        name: n856k
+        populated_from: n856k
+      n969k:
+        name: n969k
+        populated_from: n969k
+      p100l:
+        name: p100l
+        populated_from: p100l
+      p13L:
+        name: p13L
+        populated_from: p13L
+      p2046l:
+        name: p2046l
+        populated_from: p2046l
+      p2287s:
+        name: p2287s
+        populated_from: p2287s
+      p3395h:
+        name: p3395h
+        populated_from: p3395h
+      p681r:
+        name: p681r
+        populated_from: p681r
+      q19e:
+        name: q19e
+        populated_from: q19e
+      q493r:
+        name: q493r
+        populated_from: q493r
+      q498r:
+        name: q498r
+        populated_from: q498r
+      q954h:
+        name: q954h
+        populated_from: q954h
+      r203m:
+        name: r203m
+        populated_from: r203m
+      s2083i:
+        name: s2083i
+        populated_from: s2083i
+      s371l:
+        name: s371l
+        populated_from: s371l
+      s373p:
+        name: s373p
+        populated_from: s373p
+      s375f:
+        name: s375f
+        populated_from: s375f
+      s477n:
+        name: s477n
+        populated_from: s477n
+      t19r:
+        name: t19r
+        populated_from: t19r
+      t3646a:
+        name: t3646a
+        populated_from: t3646a
+      t547k:
+        name: t547k
+        populated_from: t547k
+      t9i:
+        name: t9i
+        populated_from: t9i
+      v2930l:
+        name: v2930l
+        populated_from: v2930l
+      wt214:
+        name: wt214
+        populated_from: wt214
+      y505h:
+        name: y505h
+        populated_from: y505h
+      e9lNVAR:
+        name: e9lNVAR
+        populated_from: "E9L\u200B-NVAR"
+      g2rG:
+        name: g2rG
+        populated_from: "G2R_G\u200B"
+      g2rWA:
+        name: g2rWA
+        populated_from: "G2R_WA\u200B"
+      c3l:
+        name: c3l
+        populated_from: "C3L\u200B"
+      e9lOPX3:
+        name: e9lOPX3
+        populated_from: "E9L-OPX\u200B3"
+      b6r:
+        name: b6r
+        populated_from: B6R
+      gtmolMPox:
+        name: gtmolMPox
+        populated_from: gtmol_hMPXV
+      mcr11:
+        name: mcr11
+        populated_from: MCR-1.1
+      vanAA:
+        name: vanAA
+        populated_from: VanA-A
+      blaNDM:
+        name: blaNDM
+        populated_from: blaNDM
+      blaKPC:
+        name: blaKPC
+        populated_from: blaKPC
+      blaOXA48:
+        name: blaOXA48
+        populated_from: blaOXA-48
+      blaVIM:
+        name: blaVIM
+        populated_from: blaVIM
+      blaCTXM1:
+        name: blaCTXM1
+        populated_from: blaCTX-M-1
+      blaCMY:
+        name: blaCMY
+        populated_from: blaCMY
+      blaTEM:
+        name: blaTEM
+        populated_from: blaTEM
+      integraseCl1:
+        name: integraseCl1
+        populated_from: Class I Integrase
+      blaSHV:
+        name: blaSHV
+        populated_from: blaSHV
+      tetW:
+        name: tetW
+        populated_from: TetW
+      blaIMP:
+        name: blaIMP
+        populated_from: blaIMP
+      cAuris:
+        name: cAuris
+        populated_from: caur
+      noroG1:
+        name: noroG1
+        populated_from: NoV GI
+      noroG2:
+        name: noroG2
+        populated_from: NoV GII
+      fluA1:
+        name: fluA1
+        populated_from: InfA1
+      fluA2:
+        name: fluA2
+        populated_from: InfA2
+      fluA1A2c:
+        name: fluA1A2c
+        populated_from: InfA1 and InfA2 combined
+      fluB:
+        name: fluB
+        populated_from: InfB
+      cJejuni:
+        name: cJejuni
+        populated_from: Cjejuni
+      advF41Fibre:
+        name: advF41Fibre
+        populated_from: HAdV-F
+      rsvAB:
+        name: rsvAB
+        populated_from: RSV-A and RSV-B combined
+  ODMv2_enum_from_vs_mic_chem_units:
+    name: ODMv2_enum_from_vs_mic_chem_units
+    mirror_source: false
+    populated_from: vs_mic_chem_units
+    permissible_value_derivations:
+      gcL:
+        name: gcL
+        populated_from: copies/L wastewater
+      log10cpL:
+        name: log10cpL
+        populated_from: log10 copies/L wastewater
+      gCGS:
+        name: gCGS
+        sources:
+        - copies/g wet sludge
+        - copies/g dry sludge
+      log10cpG:
+        name: log10cpG
+        sources:
+        - log10 copies/g wet sludge
+        - log10 copies/g dry sludge
+      ugL:
+        name: ugL
+        populated_from: micrograms/L wastewater
+      log10ugL:
+        name: log10ugL
+        populated_from: log10 micrograms/L wastewater
+      ugG:
+        name: ugG
+        sources:
+        - micrograms/g wet sludge
+        - micrograms/g dry sludge
+      log10ugG:
+        name: log10ugG
+        sources:
+        - log10 micrograms/g wet sludge
+        - log10 micrograms/g dry sludge

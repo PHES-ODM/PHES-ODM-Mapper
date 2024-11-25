@@ -1,0 +1,20 @@
+class_derivations:
+  qualityReports:
+    name: qualityReports
+    populated_from: WWMeasure
+    slot_derivations:
+      measureRepID:
+        name: measureRepID
+        populated_from: uWwMeasureID
+      notes:
+        name: notes
+        populated_from: notes
+      qualityFlag:
+        name: qualityFlag
+        expr: case((str(qualityFlag)=='True', 'qf1'), (True, 'noConcern'))
+  Container:
+    name: Container
+    slot_derivations:
+      qualityReports:
+        populated_from: WWMeasure
+enum_derivations: {}
