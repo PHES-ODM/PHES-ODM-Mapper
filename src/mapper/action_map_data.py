@@ -384,8 +384,9 @@ def action_map_data(
     mappers_dir: Union[str, Path],
     data_frames: Dict[str, List[pd.DataFrame]],
     max_processes: Optional[int] = 1,
+    prepare_barid: str = "Preparing Data",
     map_barid: str = "Mapping",
-    prepare_barid: str = "Preparing IDs",
+    convert_barid: str = "Processing Data",
 ) -> Dict[str, List[pd.DataFrame]]:
     """Map all the data specified in data_frames using all mapper files found in the specified mapper directory.
 
@@ -400,10 +401,12 @@ def action_map_data(
             If 1 then no multi-processing will be performed. If None or 0 then the maximum number
             (as obtained by cpu_count()) will be used. Note that for mapping small tables multi-processing
             might be slower. Defaults to 1.
+        prepare_barid (str, optional) The ID/title to give to the progress bar for preparing the data,
+            before the initial mapping. Defaults to "Preparing Data",
         map_barid (str, optional) The ID/title to give the the progress bar for the mapping step.
             Defaults to "Mapping"
-        prepare_barid (str, optional) The ID/title to give to the progress bar for preparing the IDs.
-            Defaults to "Preparing IDs",
+        convert_barid (str, optional) The ID/title to give to the progress bar for converting the mapped data
+            to DataFrames. Defaults to "Processing Data".
 
     Returns:
         Dict[str, List[pd.DataFrame]]: Keys are the target class names and the values are the mapped data for
@@ -512,13 +515,16 @@ def action_map_data(
     # Convert mapped data to DataFrames
     all_mapped_data = {}
     results = sorted(results, key=lambda x: x[0])
+    convert_progress = ProgressCounter({convert_barid: len(results)})
     for _, cur_mapped_data in results:
         cur_mapped_dfs = convert_mapped_data_to_dataframes(
             cur_mapped_data, target_schema
         )
         all_mapped_data = merge_dicts_of_lists([all_mapped_data, cur_mapped_dfs])
+        convert_progress.update(convert_barid, 1)
 
     # Combine the DataFrames in all_mapped_data
+    logger.info("Combining all mapped data...")
     for class_name, all_df in all_mapped_data.items():
         df = pd.concat(all_df, ignore_index=True, axis=0)
         # Retain the original order by sorting by the TrackingSlots.

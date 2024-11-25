@@ -38,6 +38,7 @@ from id_generator.id_na import isna, EMPTY_OBJ
 
 PREPARING_BARID = "Preparing IDS"
 TOTAL_IDS_TITLE = "TOTAL IDs"
+FINALIZE_BARID = "Processing Data"
 
 logger = get_logger(__name__)
 
@@ -348,7 +349,9 @@ class IDGenerator(object):
         total_rows = 0
         total_rows_minus_dropped_rows = 0
         total_dropped_rows = 0
+        progress = ProgressCounter({FINALIZE_BARID: len(self.data)})
         for _, data in self.data.items():
+            # finalize_data converts to DataFrames and drops duplicates
             (
                 cur_data_frames,
                 cur_total_rows,
@@ -361,6 +364,7 @@ class IDGenerator(object):
             total_rows_minus_dropped_rows += cur_total_rows_minus_dropped_rows
             total_dropped_rows += cur_total_dropped_rows
             data_frames = merge_dicts_of_lists([data_frames, cur_data_frames])
+            progress.update(FINALIZE_BARID, 1)
         logger.debug(
             f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}"
         )
@@ -1021,24 +1025,24 @@ if __name__ == "__main__":
             # config_file = "../../data/modules/test/ids.yaml"
             
             # NWSS to ODM v2
-            # # input_dir = "../../gen/nwss_reporting_to_v2/temp-1000/mapped_data"
-            # # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"
-            # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel"
-            # input_files = None
-            # output_dir = "../../gen/nwss_reporting_to_v2-test/mapped_data_ids"
-            # id_code_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_code.xlsx"
-            # id_code_sheet = "id_code"
-            # config_file = "../../data/modules/nwss_reporting_to_v2/ids/nwss_reporting_to_v2_id_config.yaml"
-            # schema = "../../data/modules/nwss_reporting_to_v2/schemas/odm_v2.yaml"
+            # input_dir = "../../gen/nwss-reporting-to-v2/temp-1000/mapped_data"
+            # input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"
+            input_dir = "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel"
+            input_files = None
+            output_dir = "../../gen/nwss-reporting-to-v2-test/mapped_data_ids"
+            id_code_file = "../../data/modules/nwss-reporting-to-v2/ids/nwss-reporting-to-v2_id_code.xlsx"
+            id_code_sheet = "id_code"
+            config_file = "../../data/modules/nwss-reporting-to-v2/ids/nwss-reporting-to-v2_id_config.yaml"
+            schema = "../../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml"
 
             # ODM v1 to ODM v2
-            input_dir = "../../gen/odm_v1_to_v2/temp-1000/mapped_data"
-            input_files = None
-            output_dir = "../../gen/odm_v1_to_v2/mapped_data_ids"
-            id_code_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_code.xlsx"
-            id_code_sheet = "id_code"
-            config_file = "../../data/modules/odm_v1_to_v2/ids/odm_v1_to_v2_id_config.yaml"
-            schema = "../../data/modules/odm_v1_to_v2/schemas/odm_v2.yaml"
+            # input_dir = "../../gen/odm-v1-to-v2/temp-1000/mapped_data"
+            # input_files = None
+            # output_dir = "../../gen/odm-v1-to-v2/mapped_data_ids"
+            # id_code_file = "../../data/modules/odm-v1-to-v2/ids/odm-v1-to-v2_id_code.xlsx"
+            # id_code_sheet = "id_code"
+            # config_file = "../../data/modules/odm-v1-to-v2/ids/odm-v1-to-v2_id_config.yaml"
+            # schema = "../../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml"
 
             debug = True
         # fmt: on
