@@ -2,83 +2,192 @@
 
 ## Important Note
 
-Modules have changed considerably since this document was written. The
-information in this file is outdated and will be updated soon.
+This document is a work in progress.
 
 ## Introduction
 
-A module is a collection of rules and configuration options that define how to
-map from one database format (eg. NWSS) to a target database format (eg. ODM
-v2). The ODM Mapper contains some built-in modules located at
-[data/modules](data/modules), but custom modules can be created to support your
-own source and target database formats. The LinkML-Map YAML files found in the
-built-in modules were generated with
-[PHES-ODM-MapGenerator](https://github.com/Big-Life-Lab/PHES-ODM-MapGenerator).
-A module and all its associated files are stored in a directory, with the
-directory location specified when running the mapper from the command-line.
+A module is a collection of rules and configuration options, split up into
+multiple steps, that define how to map from one database format (eg. NWSS) to a
+target database format (eg. ODM v2). The ODM Mapper contains some built-in
+modules located at [data/modules](data/modules), but custom modules can be
+created to support your own source and target database formats. A module and
+all its associated files are stored in a directory. When running the mapper
+from the command-line, either a module name (for built-in modules) or a module
+directory (for custom modules) can be specified.
 
-The following is a list of components of a module, which are described in this
-and related documents:
-
-1. *[Module Configuration](#module-configuration)*: The general configuration
-   of the module, primarily specifying where within the module directory that
-   the various required files are located. This is a simple YAML file.
-2. *[Source and Target Schemas](#source-and-target-schemas)*: The LinkML
-   schemas representing the source and target databases.
-3. *[LinkML-Map Mappers](#linkml-map-mappers)*: The LinkML-Map schemas that
-   define how to map from the source to target databases.
-4. *[Pre-ID Filters](#pre-id-filters)*: Optional rules to filter the mapped
-   data after the LinkML Mappers are run but before ID generation, for example
-   to remove unwanted rows or rows with missing information.
-5. *[ID Generator](#id-generator)*: Optional rules for generating IDs within
-   the mapped and filtered data. ID generation is fairly flexible and can also
-   allow linking between output database tables (eg. creating primary and
-   foreign keys). It can also generate non-ID fields, such as properly
-   formatting dates and times.
-
-This document, including its sub-documents, describes how to create your own
+This document, including its sub-documents, describe how to create your own
 module.
+
+## LinkML Schemas
+
+At a minimum a LinkML schema for the source and target databases are required.
+For example, mapping NWSS to ODM v2 requires a LinkML schema for NWSS and for
+ODM v2. The schemas should define all the tables for each database, as well as
+enumerations. In each schema, there should be a tree root class, where all the
+tree root's slots are the names of the database tables.
 
 ## Module Configuration
 
 The module configuration file should be located in the root directory of the
-module and named `config.yaml`. It defines the locations of all necessary files
-needed for mapping, filtering, and ID generation. An example configuration is
-shown below:
+module and named `config.yaml`. It defines the steps and the locations of all
+necessary files needed for mapping, filtering, and ID generation. An example
+configuration is shown below:
 
 ```yaml
 title: NWSS Reporting to ODM v2
 
 source_schema: schemas/nwss_reporting.yaml
-target_schema: schemas/odm_v2.yaml
-mappers: mappers
-pre_id_filters: pre_id_filters/nwss_reporting_to_v2_filters.csv
-id_code: ids/nwss_reporting_to_v2_id_code.xlsx
-id_code_sheet: id_code
-id_config: ids/nwss_reporting_to_v2_id_config.yaml
+
+steps:
+  - action: clean
+    params:
+      schema: schemas/nwss_reporting.yaml
+  - action: save
+    if: "{debug_mode}"
+    params:
+      output_dir: "{temp_dir}/cleaned_data/"
+      output_name: "{class_name}[cleaned].csv"
+      progress_id: Saving Cleaned Data
+  - action: map
+    params:
+      source_schema: schemas/nwss_reporting.yaml
+      target_schema: schemas/odm_v2.yaml
+      mapper_dir: mappers
+  - action: filter
+    params:
+      filters: filters/nwss_reporting_to_v2_filters.csv
+  - action: save
+    if: "{debug_mode}"
+    params:
+      output_dir: "{temp_dir}/mapped_data/"
+      output_name: "{class_name}[preid].csv"
+  - action: generate_ids
+    params:
+      id_code: ids/nwss_reporting_to_v2_id_code.xlsx
+      id_config: ids/nwss_reporting_to_v2_id_config.yaml
+  - action: save
+    params:
+      output_dir: "{output_dir}"
+      output_name: "{class_name}.csv"
+      progress_id: Saving Data
 ```
 
-Some of these fields can be left blank. See below for a description of all
-fields:
+The `title` is a required field that consists of a very short description of
+the mapping performed by the module. `source_schema` is the LinkML schema of
+the source dataset. In the above example, this is the NWSS Reporting format.
+The `steps` field specifies the steps of actions performed to do a full
+mapping. There are various kinds of actions that can be performed, such as
+cleaning the data (by correcting capitalization of enumeration values, checking
+for missing columns, etc), mapping using LinkML map schemas, filtering data to
+removed unwanted rows, generating IDs and linking the tables with
+primary/foreign keys, and saving the data to disk. Each action takes a
+dictionary of parameters in the action's `params` field. A full list of
+available actions are provided below.
 
-| Field          | Required | Description |
-| :------------- | :------- | :---------- |
-| title          | Yes      | A descriptive title to give to the module. |
-| source_schema  | Yes      | Location of the LinkML schema for the source database (eg. NWSS) (see [Source and Target Schemas](#source-and-target-schemas) below). |
-| target_schema  | Yes      | Location of the LinkML schema for the target database (eg. ODM v2). (see [Source and Target Schemas](#source-and-target-schemas) below). |
-| mappers        | Yes      | Directory containing all the LinkML-Map schemas to perform the mapping (see [LinkML-Map Mappers](#linkml-map-mappers) below). |
-| pre_id_filters | No       | Filter configuration file specifying how to filter the data after mapping is performed, but before the ID generation step (See [Pre-ID Filters](#pre-id-filters) below). |
-| id_code        | No       | Configuration/code for generating IDs after the initial mapping and filtering is performed (See [ID Generator](#id-generator) below). |
-| id_code_sheet  | No       | If `id_code` is an Excel file, then this is the name of the sheet to use. If missing or `None` then the first sheet is used. (See [ID Generator](#id-generator) below). |
-| id_config      | No       | Additional configuration file for ID generation (See [ID Generator](#id-generator) below). |
+## Actions
 
-## Source and Target Schemas
+Below is an example step that performs the `save` action:
 
-These are LinkML schemas for both the source and target databases. They should
-define all the tables for each database, as well as enumerations.
+```yaml
+- action: save
+  if: "{debug_mode}"
+  params:
+    output_dir: "{temp_dir}/mapped_data/"
+    output_name: "{class_name}[preid].csv"
+```
 
-There should be a tree root class, where all the class's slots are the names of
-the database tables.
+In some of the values above, string interpolation variables can be specified,
+such as `{debug_mode}`, `{temp_dir}`, and `{class_name}`. Which variables are
+available in the `params` field depends on the action. The `debug_mode`
+variable is always available and is `True` if debug mode is enabled (which can
+be specified from the command-line) and is `False` during a normal run where
+debug mode is not enabled. The actions, required `params` values, and the
+available variables from string interpolation are listed in the following
+sections.
+
+### Action: clean
+
+Example:
+
+```yaml
+- action: clean
+  params:
+    schema: schemas/nwss_reporting.yaml
+```
+
+| Parameter      | Required/Optional | Description |
+| :--------------| :---------------- | :---------- |
+| schema         | Required          |             |
+
+### Action: generate_ids
+
+Example:
+
+```yaml
+- action: generate_ids
+  params:
+    id_code: ids/nwss_reporting_to_v2_id_code.xlsx
+    id_config: ids/nwss_reporting_to_v2_id_config.yaml
+```
+
+| Parameter      | Required/Optional | Description |
+| :--------------| :---------------- | :---------- |
+| id_code        | Required          |             |
+| id_code_sheet  | Optional          |             |
+| id_config      | Required          |             |
+
+### Action: map
+
+Example:
+
+```yaml
+- action: map
+  params:
+    source_schema: schemas/nwss_reporting.yaml
+    target_schema: schemas/odm_v2.yaml
+    mapper_dir: mappers
+```
+
+| Parameter      | Required/Optional | Description |
+| :--------------| :---------------- | :---------- |
+| source_schema  | Required          |             |
+| target_schema  | Required          |             |
+| mappers_dir    | Required          |             |
+| prepare_barid  | Optional          |             |
+| map_barid      | Optional          |             |
+
+### Action: filter
+
+Example:
+
+```yaml
+- action: filter
+  params:
+    filters: filters/nwss_reporting_to_v2_filters.csv
+```
+
+| Parameter      | Required/Optional | Description |
+| :--------------| :---------------- | :---------- |
+| filters        | Required          |             |
+
+### Action: save
+
+Example:
+
+```yaml
+- action: save
+  if: "{debug_mode}"
+  params:
+    output_dir: "{temp_dir}/cleaned_data/"
+    output_name: "{class_name}[cleaned].csv"
+    progress_id: Saving Cleaned Data
+```
+
+| Parameter      | Required/Optional | Description |
+| :--------------| :---------------- | :---------- |
+| output_dir     | Required          |             |
+| output_name    | Required          |             |
+| progress_id    | Optional          | Can be empty |
 
 ## LinkML-Map Mappers
 
