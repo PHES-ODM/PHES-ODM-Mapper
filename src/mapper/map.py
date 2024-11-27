@@ -33,6 +33,7 @@ import logging
 from datetime import datetime
 import tempfile
 import argparse
+import pandas as pd
 
 from mapper.action_clean_data import action_clean_data
 from mapper.action_save_data import action_save_data
@@ -111,7 +112,7 @@ class Mapper(object):
         max_processes: int = 1,
         multi_bar_progress: bool = True,
         debug_mode: bool = False,
-    ) -> Dict[str, List[Path]]:
+    ) -> Dict[str, List[pd.DataFrame]]:
         """Perform a full mapping, including filtering and ID generation.
 
         Args:
@@ -137,8 +138,8 @@ class Mapper(object):
                 and set to TRUE if the row would be dropped when not in debug mode. Defaults to False.
 
         Returns:
-            Dict[str, List[Path]]: Lists all final mapped files saved to disk. The keys are the output class
-                names and the values are lists of file paths representing mapped data for the output class.
+            Dict[str, List[pd.DataFrame]]: Lists all final DataFrames that resulted from the mapping. The keys
+                are the output class names and the values are lists of mapped DataFrames for the class.
         """
         tic = datetime.now()
 
@@ -166,7 +167,6 @@ class Mapper(object):
             validate_class_names=True,
             validate_columns=True,
         )
-        output_data_files = {}
 
         # Values used for string interpolation (eg. for output paths). Some actions will
         # add additional values to this.
@@ -201,7 +201,7 @@ class Mapper(object):
                 progress_id = params.get("progress_id", None)
                 output_dir = params.get("output_dir").format(**top_level_kwargs)
                 output_name = params.get("output_name")
-                output_data_files = action_save_data(
+                _ = action_save_data(
                     data_frames=data_frames,
                     output_dir=output_dir,
                     progress_barid=progress_id,
@@ -252,7 +252,7 @@ class Mapper(object):
 
         logger.info(f"Total runtime: {datetime.now() - tic}")
 
-        return output_data_files
+        return data_frames
 
 
 if __name__ == "__main__":
