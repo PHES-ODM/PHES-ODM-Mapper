@@ -176,13 +176,13 @@ class Pipeline(object):
                 schema = self.get_module_path(params.get("schema"))
                 data_frames = action_clean_data(data_frames=data_frames, schema=schema)
             elif action == "save":
-                progress_barid = params.get("progress_barid", None)
+                progress_bar_title = params.get("progress_bar_title", None)
                 output_dir = params.get("output_dir").format(**top_level_kwargs)
                 output_name = params.get("output_name")
                 _ = action_save_data(
                     data_frames=data_frames,
                     output_dir=output_dir,
-                    progress_barid=progress_barid,
+                    progress_barid=progress_bar_title,
                     name_format=output_name,
                     name_format_kwargs=top_level_kwargs,
                     keep_tracking_slots=debug_mode,
@@ -191,16 +191,16 @@ class Pipeline(object):
                 source_schema = self.get_module_path(params.get("source_schema"))
                 target_schema = self.get_module_path(params.get("target_schema"))
                 mappers_dir = self.get_module_path(params.get("mappers_dir"))
-                prepare_barid = params.get("prepare_barid", "Preparing IDs")
-                map_barid = params.get("map_barid", "Initial Mapping")
+                prepare_bar_title = params.get("prepare_bar_title", "Preparing IDs")
+                map_bar_title = params.get("map_bar_title", "Initial Mapping")
                 data_frames = action_map_data(
                     source_schema_file=source_schema,
                     target_schema_file=target_schema,
                     mappers_dir=mappers_dir,
                     data_frames=data_frames,
                     max_processes=max_processes,
-                    prepare_barid=prepare_barid,
-                    map_barid=map_barid,
+                    prepare_barid=prepare_bar_title,
+                    map_barid=map_bar_title,
                 )
             elif action == "generate_ids":
                 id_code_file = self.get_module_path(params.get("id_code"))

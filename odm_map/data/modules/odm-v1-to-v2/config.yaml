@@ -21,7 +21,7 @@ steps:
     params:
       output_dir: "{temp_dir}/cleaned_data/"
       output_name: "{class_name}[cleaned].csv"
-      progress_barid: Saving Cleaned Data
+      progress_bar_title: Saving Cleaned Data
   - action: map
     params:
       source_schema: schemas/odm_v1.yaml
@@ -40,4 +40,4 @@ steps:
     params:
       output_dir: "{output_dir}"
       output_name: "{class_name}.csv"
-      progress_barid: Saving Data
+      progress_bar_title: Saving Data

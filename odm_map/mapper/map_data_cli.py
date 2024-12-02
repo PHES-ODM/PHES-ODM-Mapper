@@ -119,9 +119,6 @@ def main(
         max_rows=max_rows,
         max_processes=max_processes,
         keep_tracking_columns=keep_tracking_columns,
-        # prepare_barid=prepare_barid,
-        # map_barid=map_barid,
-        # convert_barid=convert_barid,
     )
 
 
