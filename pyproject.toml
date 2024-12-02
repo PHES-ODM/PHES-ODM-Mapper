@@ -1,4 +1,4 @@
-[tool.poetry]
+[project]
 name = "odm-map"
 version = "0.1.0"
 description = "Map between wastewater surveillance database formats"
