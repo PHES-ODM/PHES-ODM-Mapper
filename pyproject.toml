@@ -4,12 +4,13 @@ version = "0.1.0"
 description = "Map between wastewater surveillance database formats"
 authors = ["Martin Wellman <mwellman@ohri.ca>"]
 readme = "README.md"
+requires-python = ">=3.9"
 
 [tool.poetry.scripts]
 odm-map = "odm_map.pipeline_cli:app"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.9"
 typer = "^0.14.0"
 
 [build-system]
