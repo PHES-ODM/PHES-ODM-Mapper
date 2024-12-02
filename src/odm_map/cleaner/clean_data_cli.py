@@ -94,7 +94,7 @@ if __name__ == "__main__":
             # "input_file": None,
             # "output_dir": "../../../gen/odm-v1-to-v2-test/cleaned_data",
             # "max_rows": 100,
-            # "schema": "../../../data/modules/odm-v1-to-v2/schemas/odm_v1.yaml",
+            # "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v1.yaml",
 
             # "input_dir": "../../../../../PHES-ODM-Data/nwss/nwss_renamed/",
             "input_dir": "../../../gen/nwss-reporting-to-v2-test/mapped_data_ids",
@@ -102,8 +102,8 @@ if __name__ == "__main__":
             "input_file": None,
             "output_dir": "../../../gen/nwss-reporting-to-v2-test/cleaned_data-final",
             "max_rows": None, #100,
-            # "schema": "../../../data/modules/nwss-reporting-to-v2/schemas/nwss_reporting.yaml",
-            "schema": "../../../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
+            # "schema": "../data/modules/nwss-reporting-to-v2/schemas/nwss_reporting.yaml",
+            "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
         }
         # fmt: on
         main(**opts)

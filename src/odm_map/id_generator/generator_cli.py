@@ -125,9 +125,9 @@ if __name__ == "__main__":
             # "input_dir": "../../../gen/test/source_data",
             # "input_file": None,
             # "output_dir": "../../../gen/test/mapped_data_ids",
-            # "id_code_file": "../../../data/modules/test/ids.xlsx",
+            # "id_code_file": "../data/modules/test/ids.xlsx",
             # "id_code_sheet": "id_code",
-            # "config_file": "../../../data/modules/test/ids.yaml",
+            # "config_file": "../data/modules/test/ids.yaml",
             
             # NWSS to ODM v2
             # "input_dir": "../../../gen/nwss-reporting-to-v2/temp-1000/mapped_data",
@@ -135,19 +135,19 @@ if __name__ == "__main__":
             "input_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel",
             "input_file": None,
             "output_dir": "../../../gen/nwss-reporting-to-v2-test/mapped_data_ids",
-            "id_code_file": "../../../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_code.xlsx",
+            "id_code_file": "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_code.xlsx",
             "id_code_sheet": "id_code",
-            "config_file": "../../../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_config.yaml",
-            "schema": "../../../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
+            "config_file": "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_config.yaml",
+            "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
 
             # ODM v1 to ODM v2,
-            # "input_dir": "../../../gen/odm-v1-to-v2/temp-1000/mapped_data",
+            # "input_dir": "../../../gen/odm-v1-to-v2/temp/mapped_data",
             # "input_file": None,
             # "output_dir": "../../../gen/odm-v1-to-v2/mapped_data_ids",
-            # "id_code_file": "../../../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_code.xlsx",
+            # "id_code_file": "../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_code.xlsx",
             # "id_code_sheet": "id_code",
-            # "config_file": "../../../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_config.yaml",
-            # "schema": "../../../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",
+            # "config_file": "../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_config.yaml",
+            # "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",
 
             "debug": True,
         }

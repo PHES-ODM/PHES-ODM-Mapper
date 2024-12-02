@@ -8,7 +8,7 @@ import re
 from odm_map.utils.logger import get_logger, make_logger_bullet_list
 from odm_map.utils.clean_exit_error import CleanExitError
 
-MODULE_DIR = Path(os.path.dirname(__file__)) / ".." / ".." / ".." / "data" / "modules"
+MODULE_DIR = Path(os.path.dirname(__file__)) / ".." / "data" / "modules"
 CONFIG_FILE = "config.yaml"
 
 logger = get_logger(__name__)
