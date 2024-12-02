@@ -553,12 +553,15 @@ class DataMapper(object):
         all_mapped_data = {}
         results = sorted(results, key=lambda x: x[0])
         convert_progress = ProgressCounter({convert_barid: len(results)})
-        for _, cur_mapped_data in results:
-            cur_mapped_dfs = self.convert_mapped_data_to_dataframes(
-                cur_mapped_data, target_schema
-            )
-            all_mapped_data = merge_dicts_of_lists([all_mapped_data, cur_mapped_dfs])
-            convert_progress.update(convert_barid, 1)
+        with convert_progress:
+            for _, cur_mapped_data in results:
+                cur_mapped_dfs = self.convert_mapped_data_to_dataframes(
+                    cur_mapped_data, target_schema
+                )
+                all_mapped_data = merge_dicts_of_lists(
+                    [all_mapped_data, cur_mapped_dfs]
+                )
+                convert_progress.update(convert_barid, 1)
 
         # Combine the DataFrames in all_mapped_data and drop tracking columns if required
         logger.info("Combining all mapped data...")

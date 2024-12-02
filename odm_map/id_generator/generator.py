@@ -348,26 +348,27 @@ class IDGenerator(object):
         total_rows_minus_dropped_rows = 0
         total_dropped_rows = 0
         progress = ProgressCounter({FINALIZE_BARID: len(self.data)})
-        for _, data in self.data.items():
-            # finalize_data converts to DataFrames and drops duplicates
-            (
-                cur_data_frames,
-                cur_total_rows,
-                cur_total_rows_minus_dropped_rows,
-                cur_total_dropped_rows,
-            ) = data.finalize_data(
-                keep_tracking_columns=keep_tracking_columns,
-                keep_debug_columns=keep_debug_columns,
-                remove_duplicates=remove_duplicates,
+        with progress:
+            for _, data in self.data.items():
+                # finalize_data converts to DataFrames and drops duplicates
+                (
+                    cur_data_frames,
+                    cur_total_rows,
+                    cur_total_rows_minus_dropped_rows,
+                    cur_total_dropped_rows,
+                ) = data.finalize_data(
+                    keep_tracking_columns=keep_tracking_columns,
+                    keep_debug_columns=keep_debug_columns,
+                    remove_duplicates=remove_duplicates,
+                )
+                total_rows += cur_total_rows
+                total_rows_minus_dropped_rows += cur_total_rows_minus_dropped_rows
+                total_dropped_rows += cur_total_dropped_rows
+                data_frames = merge_dicts_of_lists([data_frames, cur_data_frames])
+                progress.update(FINALIZE_BARID, 1)
+            logger.debug(
+                f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}"
             )
-            total_rows += cur_total_rows
-            total_rows_minus_dropped_rows += cur_total_rows_minus_dropped_rows
-            total_dropped_rows += cur_total_dropped_rows
-            data_frames = merge_dicts_of_lists([data_frames, cur_data_frames])
-            progress.update(FINALIZE_BARID, 1)
-        logger.debug(
-            f"Total rows: {total_rows}, total rows minus dropped rows: {total_rows_minus_dropped_rows}, total dropped rows: {total_dropped_rows}"
-        )
         self.data_frames = data_frames
 
         logger.info(f"Finished making all IDs in {datetime.now() - self.tic}")
