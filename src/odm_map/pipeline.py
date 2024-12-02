@@ -1,0 +1,234 @@
+"""
+Map data using a transformation module.
+
+```python
+from pipeline import Pipeline
+
+pipeline = Pipeline(
+    module="odm-v1-to-v2",
+    module_dir=None,
+)
+
+pipeline.run(
+    data_files={
+        "measures": ["path/to/measures.csv"],
+        "samples": ["path/to/samples.csv"],
+        # ...
+    },
+    output_dir="../gen/odm-v1-to-v2",
+)
+"""
+
+from pathlib import Path
+from typing import Union, Optional, List, Dict
+from datetime import datetime
+import tempfile
+import pandas as pd
+
+from odm_map.actions.action_clean_data import action_clean_data
+from odm_map.actions.action_save_data import action_save_data
+from odm_map.actions.action_map_data import action_map_data
+from odm_map.actions.action_generate_ids import action_generate_ids
+from odm_map.actions.action_filter_data import action_filter_data
+from odm_map.utils.modules import (
+    get_module_config,
+    get_module_dir,
+    MODULE_SOURCE_SCHEMA_KEY,
+)
+from odm_map.utils.logger import get_logger
+from odm_map.utils.clean_exit_error import CleanExitError
+from odm_map.utils.tracking_slots import load_data_with_tracking_columns
+
+logger = get_logger(__name__)
+
+# If True then if max_rows is specified then we load a random sample of max_rows
+# rows. If False then we load the first max_rows rows. Should usually be False. Use
+# True for debugging purposes.
+RANDOM_SAMPLE_DATA = False
+
+# For loading data progress bar
+LOADING_BARID = "Loading Data"
+
+
+class Pipeline(object):
+    def __init__(
+        self,
+        module: Optional[str],
+        module_dir: Optional[Union[str, Path]],
+    ):
+        """Class to perform a full mapping, including filtering and ID generation.
+
+        Args:
+            module (Optional[str]): The built-in module for the mapping, eg. "odm-v1-to-v2" or "nwss-reporting-to-v2".
+                If None then module_dir must be specified.
+            module_dir (Optional[Union[str, Path]]): The directory for the mapping module. If None then module must be specified.
+        """
+        # Tell the user which module we're using
+        if module:
+            logger.info(f"Running with module '{module}'")
+        else:
+            logger.info(f"Running with module directory {module_dir}")
+
+        # Load the data mapping module
+        self.config_file, self.config = get_module_config(
+            module=module, module_dir=module_dir
+        )
+        self.module_dir = get_module_dir(module=module, module_dir=module_dir)
+
+    def get_module_path(self, path: str) -> Optional[Path]:
+        if not path:
+            return None
+        return self.module_dir / path
+
+    def run(
+        self,
+        data_files: Dict[str, List[Union[str, Path, Dict[str, str]]]],
+        output_dir: str,
+        temp_dir: Union[str, Path] = None,
+        max_rows: int = None,
+        max_processes: int = 1,
+        multi_bar_progress: bool = True,
+        debug_mode: bool = False,
+    ) -> Dict[str, List[pd.DataFrame]]:
+        """Perform a full mapping, including filtering and ID generation.
+
+        Args:
+            data_files (Dict[str, List[Union[str, Path]]]): Dictionary specifying all source database data
+                files to map. The keys are the data file class names and the values are a list of files to
+                filter belonging to the class, or dictionaries for Excel files in the format
+                {EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name"}.
+            output_dir (str): Directory to save all the final mapped data to.
+            temp_dir (Union[str, Path], optional): Location to store all temporary files used by mapping.
+                If None then a temporary directory will be created and deleted when complete. If set then
+                the resulting temporary files will not be deleted. This is useful for debugging purposes.
+                Defaults to None.
+            max_rows (int, optional): Maximum number of input rows to load for mapping for each
+                data file specified in data_files. Defaults to None.
+            max_processes (int, optional): Maximum number of processes to run to do the mapping. For large
+                datasets increasing this can increase performance. Defaults to 1.
+            multi_bar_progress (bool, optional): If True then output multiple progress bars at the same time
+                when appropriate. If False then only show one progress bar at a time. Defaults to True.
+            debug_mode (bool, optional): If True then run the ID generator in debug mode. Debug mode will result
+                in the output mapped data to include various columns that were used during ID generation
+                (such as the source database class name and row number used for populating a row, the original
+                unmodified IDs before generation occurred, etc.), and will also not drop rows where duplicate
+                primary keys are found, instead an additional column named "__drop" will be added to the output
+                and set to TRUE if the row would be dropped when not in debug mode. Defaults to False.
+
+        Returns:
+            Dict[str, List[pd.DataFrame]]: Lists all final DataFrames that resulted from the mapping. The keys
+                are the output class names and the values are lists of mapped DataFrames for the class.
+        """
+        tic = datetime.now()
+
+        output_dir = Path(output_dir)
+
+        # Prepare temporary directory
+        if not temp_dir:
+            self.temp_dir_obj = tempfile.TemporaryDirectory()
+            self.temp_dir = Path(self.temp_dir_obj.name)
+        else:
+            self.temp_dir_obj = None
+            self.temp_dir = Path(temp_dir)
+        logger.debug(f"Using temporary directory {self.temp_dir}")
+
+        source_schema = self.get_module_path(self.config[MODULE_SOURCE_SCHEMA_KEY])
+
+        # Load all data
+        data_frames = load_data_with_tracking_columns(
+            data_files=data_files,
+            max_rows=max_rows,
+            schema=source_schema,
+            random_sample_data=RANDOM_SAMPLE_DATA,
+            progress_barid=LOADING_BARID,
+            add_all_tracking_columns=True,
+            validate_class_names=True,
+            validate_columns=True,
+        )
+
+        # Values used for string interpolation (eg. for output paths). Some actions will
+        # add additional values to this.
+        top_level_kwargs = {
+            "temp_dir": str(self.temp_dir),
+            "output_dir": str(Path(output_dir)),
+            "debug_mode": debug_mode,
+        }
+        # Go through each step of the module and perform each action
+        for step in self.config["steps"]:
+            action = step["action"]
+
+            # If there is an "if" section in the current step then only run the step if the "if" value
+            # equates to either a non-zero integer, boolean True, or string "True" (case-insensitive).
+            stepif = step.get("if", True)
+            if isinstance(stepif, str):
+                stepif = stepif.format(**top_level_kwargs)
+            try:
+                if not bool(int(stepif)):
+                    continue
+            except Exception:
+                pass
+            if str(stepif).lower() != "true":
+                continue
+
+            params = step.get("params", {})
+
+            if action == "clean":
+                schema = self.get_module_path(params.get("schema"))
+                data_frames = action_clean_data(data_frames=data_frames, schema=schema)
+            elif action == "save":
+                progress_barid = params.get("progress_barid", None)
+                output_dir = params.get("output_dir").format(**top_level_kwargs)
+                output_name = params.get("output_name")
+                _ = action_save_data(
+                    data_frames=data_frames,
+                    output_dir=output_dir,
+                    progress_barid=progress_barid,
+                    name_format=output_name,
+                    name_format_kwargs=top_level_kwargs,
+                    keep_tracking_slots=debug_mode,
+                )
+            elif action == "map":
+                source_schema = self.get_module_path(params.get("source_schema"))
+                target_schema = self.get_module_path(params.get("target_schema"))
+                mappers_dir = self.get_module_path(params.get("mappers_dir"))
+                prepare_barid = params.get("prepare_barid", "Preparing IDs")
+                map_barid = params.get("map_barid", "Initial Mapping")
+                data_frames = action_map_data(
+                    source_schema_file=source_schema,
+                    target_schema_file=target_schema,
+                    mappers_dir=mappers_dir,
+                    data_frames=data_frames,
+                    max_processes=max_processes,
+                    prepare_barid=prepare_barid,
+                    map_barid=map_barid,
+                )
+            elif action == "generate_ids":
+                id_code_file = self.get_module_path(params.get("id_code"))
+                id_code_sheet = params.get("id_code_sheet")
+                id_config_file = self.get_module_path(params.get("id_config"))
+                data_frames = action_generate_ids(
+                    data_frames=data_frames,
+                    id_config_file=id_config_file,
+                    id_code_file=id_code_file,
+                    id_code_sheet=id_code_sheet,
+                    multi_bar_progress=multi_bar_progress,
+                    debug_mode=debug_mode,
+                )
+            elif action == "filter":
+                filter_config_file = self.get_module_path(params.get("filters"))
+                data_frames = action_filter_data(
+                    data_frames=data_frames, filter_config_file=filter_config_file
+                )
+            else:
+                raise CleanExitError(
+                    f"Unrecognized action '{action}' in module configuration file {self.config_file}"
+                )
+
+        # Delete temporary directory
+        if self.temp_dir_obj is not None:
+            self.temp_dir_obj.cleanup()
+            self.temp_dir_obj = None
+
+        logger.info(f"Total runtime: {datetime.now() - tic}")
+
+        return data_frames
