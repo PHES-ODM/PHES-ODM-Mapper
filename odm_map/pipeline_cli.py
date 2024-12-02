@@ -10,7 +10,7 @@ cd src
 python3 pipeline_cli.py \
     --module odm-v1-to-v2 \
     --input-dir "path/to/input/data" \
-    --output-dir "../../gen/odm-v1-to-v2"
+    --output-dir "../gen/odm-v1-to-v2"
 ```
 """
 
@@ -196,25 +196,25 @@ if __name__ == "__main__":
             # ODM v1 to v2,
             "module": "odm-v1-to-v2",
             "module_dir": None,
-            # "input_dir": "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated",
-            "input_dir": "../../../../PHES-ODM-Data/odm_v1_data/excel/excel",
+            # "input_dir": "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated",
+            "input_dir": "../../../PHES-ODM-Data/odm_v1_data/excel/excel",
             # "input_dir": "/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa",
             # "input_dir": None,
-            # "input_file": ["wwmeasure/samplewwmeasure.csv", "Sample:../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/Sample.csv"],
+            # "input_file": ["wwmeasure/samplewwmeasure.csv", "Sample:../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/Sample.csv"],
             "input_file": None,
-            "output_dir": "../../gen/odm-v1-to-v2-test-new",
-            "temp_dir": None, #"../../gen/odm-v1-to-v2-test-excel/temp",
+            "output_dir": "../gen/odm-v1-to-v2-test-new",
+            "temp_dir": None, #"../gen/odm-v1-to-v2-test-excel/temp",
 
             # NWSS to v2,
             # "module": "nwss-reporting-to-v2",
             # "module_dir": None,
-            # # "input_dir": "../../../../PHES-ODM-Data/nwss/private_renamed_test/",
-            # "input_dir": "../../../../PHES-ODM-Data/nwss/nwss_renamed/",
-            # # "input_dir": "../../../../PHES-ODM-Data/nwss/nwss_renamed_excel/",
+            # # "input_dir": "../../../PHES-ODM-Data/nwss/private_renamed_test/",
+            # "input_dir": "../../../PHES-ODM-Data/nwss/nwss_renamed/",
+            # # "input_dir": "../../../PHES-ODM-Data/nwss/nwss_renamed_excel/",
             # # "input_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel",
-            # "input_files": None, # [ "nwss", "../../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ],
-            # "output_dir": "../../gen/nwss-reporting-to-v2-xl2",
-            # "temp_dir": "../../gen/nwss-reporting-to-v2-xl2/temp",
+            # "input_files": None, # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ],
+            # "output_dir": "../gen/nwss-reporting-to-v2-xl2",
+            # "temp_dir": "../gen/nwss-reporting-to-v2-xl2/temp",
 
             "max_processes": 1,
             "max_rows": 100,

@@ -87,9 +87,8 @@ parameter below (eg. "sars-cov-2-data/CSV/Ottawa").
 ## Command-Line Interface
 
 A full mapping can be performed by using the command-line interface (CLI)
-provided by the script
-[src/odm_map/pipeline_cli.py](src/odm_map/pipeline_cli.py). Be sure to always
-activate the virtual environment as described in the
+provided by the script [/odm_map/pipeline_cli.py](/odm_map/pipeline_cli.py). Be
+sure to always activate the virtual environment as described in the
 [Installation](#installation) section above before running the script.
 
 Below is an example to map ODM v1 data (found in "path/to/inputdata") to ODM v2
@@ -145,8 +144,8 @@ odm-map \
 ```
 
 All built-in modules can be found at
-[/src/odm_map/data/modules](/src/odm_map/data/modules), simply use the
-directory name of the module for the `--module` parameter.
+[/odm_map/data/modules](/odm_map/data/modules), simply use the directory name
+of the module for the `--module` parameter.
 
 If you have created a custom module, use the `module_dir` argument instead of
 `module`:

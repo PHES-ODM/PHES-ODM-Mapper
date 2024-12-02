@@ -129,9 +129,9 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         opts = {
-            "input_dir": "../../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv",
+            "input_dir": "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv",
             "input_file": [],
-            "output_dir": "../../../gen/odm-v1-to-v2-test",
+            "output_dir": "../../gen/odm-v1-to-v2-test",
             "source_schema": "../data/modules/odm-v1-to-v2/schemas/odm_v1.yaml",
             "target_schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",
             "mappers_dir": "../data/modules/odm-v1-to-v2/mappers",
