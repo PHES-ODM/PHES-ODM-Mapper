@@ -13,9 +13,15 @@ modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
 
 ## Installation
 
+A full installation can be completed with the following command:
+
 ```console
-pip install git+https://github.com/Big-Life-Lab/PHES-ODM-Mapper.git
+pip install git+ssh://git@github.com/Big-Life-Lab/PHES-ODM-Mapper.git@typer
 ```
+
+If this does not work (likely due to access issues to the private repository),
+you can install the mapper using the installation instructions for development
+below.
 
 ## Installation (For Development)
 
@@ -26,7 +32,7 @@ Skip this section if you will not be developing for the PHES-ODM-Mapper library
 To clone the repository, run the following on the command-line:
 
 ```console
-git clone git@github.com:Big-Life-Lab/PHES-ODM-Mapper.git
+git clone -b typer git@github.com:Big-Life-Lab/PHES-ODM-Mapper.git
 cd PHES-ODM-Mapper
 ```
 
@@ -48,16 +54,10 @@ Or if you're running Windows:
 .env\Scripts\activate
 ```
 
-Install Python library requirements:
-
-```console
-pip install -r requirements.txt
-```
-
 If you previously installed the package, then uninstall it:
 
 ```console
-pip uninstall odm_map
+pip uninstall odm-map
 ```
 
 Install the odm-map package:
