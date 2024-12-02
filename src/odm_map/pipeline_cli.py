@@ -10,7 +10,7 @@ cd src
 python3 pipeline_cli.py \
     --module odm-v1-to-v2 \
     --input-dir "path/to/input/data" \
-    --output-dir "../gen/odm-v1-to-v2"
+    --output-dir "../../gen/odm-v1-to-v2"
 ```
 """
 
@@ -157,7 +157,7 @@ def main(
         logger.info(f"Starting run at {datetime.now()}")
 
         # These imports are placed here entirely for performance reasons. The imports can
-        # take some time, so we make sure all error checking is done first. It will also
+        # take some time, so we make sure all cli error checking is done first. It will also
         # avoid these imports when the user runs with the --help cli flag.
         from odm_map.pipeline import Pipeline
         from odm_map.utils.modules import get_source_schema
