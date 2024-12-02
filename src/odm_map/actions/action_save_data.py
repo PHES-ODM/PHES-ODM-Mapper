@@ -87,6 +87,6 @@ def action_save_data(
 
             progress.update(progress_barid, 1)
     logger.debug(f"Total time for saving: {datetime.now() - save_tic}")
-    logger.info(f"All data saved to {output_dir}")
+    logger.info(f"All data saved to directory: {output_dir}")
 
     return all_mapped_files
