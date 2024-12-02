@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "odm-map"
+version = "0.1.0"
+description = "Map between wastewater surveillance database formats"
+authors = ["Martin Wellman <mwellman@ohri.ca>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+odm-map = "odm_map.pipeline_cli:app"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+typer = "^0.14.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
