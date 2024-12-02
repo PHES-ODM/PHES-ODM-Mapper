@@ -9,11 +9,11 @@ This document is a work in progress.
 A module is a collection of rules and configuration options, split up into
 multiple steps, that define how to map from one database format (eg. NWSS) to a
 target database format (eg. ODM v2). The ODM Mapper contains some built-in
-modules located at [data/modules](data/modules), but custom modules can be
-created to support your own source and target database formats. A module and
-all its associated files are stored in a directory. When running the mapper
-from the command-line, either a module name (for built-in modules) or a module
-directory (for custom modules) can be specified.
+modules located at [/src/odm_map/data/modules](/src/odm_map/data/modules), but
+custom modules can be created to support your own source and target database
+formats. A module and all its associated files are stored in a directory. When
+running the mapper from the command-line, either a module name (for built-in
+modules) or a module directory (for custom modules) can be specified.
 
 This document, including its sub-documents, describe how to create your own
 module.

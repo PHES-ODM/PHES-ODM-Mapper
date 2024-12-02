@@ -143,8 +143,9 @@ odm-map \
     --output-dir "path/to/outputdata"
 ```
 
-All built-in modules can be found at [/data/modules](/data/modules), simply use
-the directory name of the module for the `--module` parameter.
+All built-in modules can be found at
+[/src/odm_map/data/modules](/src/odm_map/data/modules), simply use the
+directory name of the module for the `--module` parameter.
 
 If you have created a custom module, use the `module_dir` argument instead of
 `module`:
