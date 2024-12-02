@@ -13,13 +13,27 @@ modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
 
 ## Installation
 
-To clone the repository and create a new virtual environment, run the following
-on the command-line:
+```console
+pip install git+https://github.com/Big-Life-Lab/PHES-ODM-Mapper.git
+```
+
+## Installation (For Development)
+
+Skip this section if you will not be developing for the PHES-ODM-Mapper library
+(but be sure to follow the instructions in the above
+[Installation](#installation) section.
+
+To clone the repository, run the following on the command-line:
 
 ```console
 git clone git@github.com:Big-Life-Lab/PHES-ODM-Mapper.git
 cd PHES-ODM-Mapper
-python3 -m venv .env
+```
+
+Create a virtual environment to use while running the Mapper:
+
+```console
+python -m venv .env
 ```
 
 Activate the virtual environment on Linux/macOS:
@@ -37,7 +51,19 @@ Or if you're running Windows:
 Install Python library requirements:
 
 ```console
-pip3 install -r requirements.txt
+pip install -r requirements.txt
+```
+
+If you previously installed the package, then uninstall it:
+
+```console
+pip uninstall odm_map
+```
+
+Install the odm-map package:
+
+```console
+pip install -e .
 ```
 
 ## Sample Data
@@ -45,7 +71,7 @@ pip3 install -r requirements.txt
 Sample ODM v1 data is available if you require a sample dataset to run the
 mapper on before you have your own data ready, or for testing purposes. The
 data is provided by the [Ottawa Wastewater Surveillance Consortium on
-Github](https://github.com/OntarioWastewaterSurveillanceConsortium/sars-cov-2-data).
+[Github](https://github.com/OntarioWastewaterSurveillanceConsortium/sars-cov-2-data).
 Data can be downloaded manually on Github, or from the command-line using the
 following:
 
@@ -60,7 +86,8 @@ parameter below (eg. "sars-cov-2-data/CSV/Ottawa").
 ## Command-Line Interface
 
 A full mapping can be performed by using the command-line interface (CLI)
-provided by the script [src/map_cli.py](src/map_cli.py). Be sure to always
+provided by the script
+[src/odm_map/pipeline_cli.py](src/odm_map/pipeline_cli.py). Be sure to always
 activate the virtual environment as described in the
 [Installation](#installation) section above before running the script.
 
@@ -68,37 +95,49 @@ Below is an example to map ODM v1 data (found in "path/to/inputdata") to ODM v2
 data (and save the mapped data to "path/to/outputdata"):
 
 ```console
-python3 src/map_cli.py \
+odm-map \
     --module odm-v1-to-v2 \
     --input-dir "path/to/inputdata" \
     --output-dir "path/to/outputdata"
 ```
 
-In the above example, all data files (csv, txt, tsv, yaml/yml files) in
-"path/to/inputdata" will be mapped. It will be assumed that the file name
-(excluding anything after the first opening square or round bracket) is the
-table name that the data is for (eg. "WWMeasure[2024-09-25].csv" will be
-assumed to be for the "WWMeasure" table).
+In the above example, all valid data files (csv, txt, tsv, yaml/yml, xlsx) in
+"path/to/inputdata" will be mapped. For Excel files, the sheet tab names will
+be used to determine which table in the source dataset the sheet belongs to.
+For all other files, the file name will be used to determine which table the
+file belongs to.
 
-Alternatively, instead of specifying an input directory, one can use the
-`--input-files` command-line argument to specify input data files while
-explicitly specifying the table name for the files. The argument consists of
-alternating table names and file names, separated by spaces. In the example
-below, the files "path/to/mymeasures1.csv" and "path/to/mymeasures2.csv" are
-input files for the "WWMeasure" table, and the file "path/to/mysamples.csv" is
-the input file for the "Sample" table:
+In order to determine the table name based on the sheet or file name, both the
+extension and any text after the first opening square or round bracket are
+ignored. After this, the longest matching table name (in the source schema)
+that is found in the file name or sheet name is used. For example, a file named
+"1. WWMeasure[2024-12-20].csv" will be a valid file name for the table
+"WWMeasure". If no match is found then the file or sheet is ignored.
+
+Alternatively, instead of (or in addition to) specifying an input directory,
+one can use the `--input-file` command-line argument to specify individual
+input data files. The same mechanism for determining the table name is used as
+described above for `--input-dir`. Additionally, using `--input-file` allows
+you to override this table name behavior by preceding the file path with the
+table name and a colon. For example, "WWMeasure:data/table.csv" will load the
+file at "data/table.csv" and assign it to the table "WWMeasure".
+
+A full example is shown below (notice that the flag `--input-file` is specified
+once for each file):
 
 ```console
-python3 src/map_cli.py \
+odm-map \
     --module odm-v1-to-v2 \
-    --input-files WWMeasure "path/to/mymeasures1.csv" WWMeasure "path/to/mymeasures2.csv" Sample "path/to/mysamples.csv" \
+    --input-file "WWMeasure:path/to/mymeasures1.csv" \
+    --input-file "WWMeasure:path/to/mymeasures2.csv"
+    --input-file "path/to/Sample.csv" \
     --output-dir "path/to/outputdata"
 ```
 
 For mapping NWSS Reporting format to ODM v2, simply change the `module`:
 
 ```console
-python3 src/map_cli.py \
+odm-map \
     --module nwss-reporting-to-v2 \
     --input-dir "path/to/inputdata" \
     --output-dir "path/to/outputdata"
@@ -111,28 +150,28 @@ If you have created a custom module, use the `module_dir` argument instead of
 `module`:
 
 ```console
-python3 src/map_cli.py \
+odm-map \
     --module-dir "path/to/module" \
     --input-dir "path/to/inputdata" \
-    --input-files table1 table1.csv table2 table2.csv \
+    --input-file table1:table1.csv table2:table2.csv \
     --output-dir "path/to/outputdata"
 ```
 
 ### CLI Arguments
 
-The following command-line parameters can be specified with map_cli.py:
+The following command-line parameters can be specified with odm-map:
 
 | Parameter            | Description |
 |:---------------------|:----------- |
-| `--module`           | The conversion module to use. The module specifies the source (eg. NWSS) and target (eg. ODM v2) database formats. Only one of `module` or `module_dir` must be specified. Current supported values are 'odm-v1-to-v2' and 'nwss-reporting-to-v2'. |
+| `--module`           | The conversion module to use. The module specifies the source (eg. NWSS) and target (eg. ODM v2) database formats. Only one of `module` or `module_dir` must be specified. A list of available modules can be seen by running the script with the `--help` flag. |
 | `--module-dir`       | The directory to the module to use. This is often used for custom modules. Only one of 'module' or 'module_dir' must be specified. |
-| `--input-dir`        | The directory where the data in the source database format is located. These should be .csv, .tsv, or .txt files (.tsv and .txt are tab-separated files). The file names (without extension) should be the name of the table that the file is for. Additional text can be provided at the end of the file name in square or round brackets, anything after the first opening bracket is ignored (eg. The file "Instrument[2024-09-11].csv" contains data for the "Instrument" table). This command-line parameter is optional and can be combined with `--input-files` (at least one of `input-dir` and `input-files` must be specified). |
-| `--input-files` | List of space-separated strings specifying the source database table names and the input data files for the tables, which are the data files to map. The list of strings are in pairs, with the first item in each pair is the table name and the second is the filename for the table. If the table name or file name have spaces then they must be enclosed in quotes. For example, `--input-files WWMeasure "path/to/WWMeasure data.csv" WWMeasure "path/to/WWMeasure2.csv" Sample "path/to/sample.csv"` will map two files corresponding to the `WWMeasure` table and one file corresponding to the `Sample` table. This command-line parameter is optional and can be combined with `--input-dir` (at least one of `input-dir` and `input-files` must be specified). |
+| `--input-dir`        | The directory where the data in the source database format is located. These should be .xlsx, .csv, .tsv, or .txt files (.tsv and .txt are tab-separated files). This command-line parameter is optional and can be combined with `--input-file` (at least one of `input-dir` and `input-file` must be specified). |
+| `--input-file`       | An individual data file to map. This command-line parameter is optional and can be combined with `--input-dir` (at least one of `input-dir` and `input-file` must be specified). |
 | `--output-dir`       | The directory to save the mapped data to. The file names will be the output table names, and are in CSV format. This command-line parameter is required. |
 | `--max-processes`    | Number of processors to use while mapping. For large datasets this can help improve performance. By default only one process is used. |
-| `--input-max-rows`   | *(For debugging purposes)* Maximum number of rows to map from each source table. If not specified, or 0, then all rows are mapped. |
+| `--max-rows`         | *(For debugging purposes)* Maximum number of rows to map from each source table. If not specified, or 0, then all rows are mapped. |
 | `--temp-dir`         | *(For debugging purposes)* Optional directory to save temporary data to, which are intermediary files created during the mapping. If left unspecified then a directory in the system temporary directory location is created, and deleted once mapping is complete. This is typically left blank and is mainly used for debugging purposes. |
-| `--debug-mode`       | *(For debugging purposes)* Set this flag to include debug columns in the final mapped output files. The debug columns include the contents of the ID columns before ID generation was performed, and columns used for tracking such as the source file name and row that the output row was generated from. Rows with duplicate primary keys are also retained rather than the default behavior of being dropped. |
+| `--debug`            | *(For debugging purposes)* Set this flag to include debug columns in the final mapped output files. The debug columns include the contents of the ID columns before ID generation was performed, and columns used for tracking such as the source file name and row that the output row was generated from. Rows with duplicate primary keys are also retained rather than the default behavior of being dropped. |
 
 ## Performance
 
