@@ -13,6 +13,12 @@ modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
 
 ## Installation
 
+If you have previously installed the PHES-ODM-Mapper, uninstall it first with:
+
+```console
+pip uninstall odm-map
+```
+
 A full installation can be completed with the following command:
 
 ```console
