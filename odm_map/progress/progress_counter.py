@@ -37,7 +37,7 @@ from odm_map.progress.single_bar import SingleBar
 from odm_map.progress.base_counter import BaseCounter
 
 # Maximum allowable width (in characters) of the description of a tqdm bar
-MAX_DESC_WIDTH = 20
+MAX_DESC_WIDTH = 22
 # Width (in characters) of the slider portion of the progress bar.
 BAR_WIDTH = 50
 # Format of a tqdm bar passed tqdm() constructor as bar_format parameter.
@@ -101,7 +101,8 @@ class ProgressCounter(BaseCounter):
         """
         if titles is None:
             titles = {}
-
+            
+        self.entered = False
         self.full_refresh_duration = full_refresh_duration
         self.full_refresh_iters = full_refresh_iters
         self.last_refresh_time = time.time()
@@ -205,11 +206,13 @@ class ProgressCounter(BaseCounter):
         self.progress_bars[barid].show_bar()
 
     def __enter__(self):
+        self.entered = True
         self._install_hooks()
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
         exception_type, exception_value, exception_traceback
         self.close()
+        self.entered = False
 
     def update(self, barid: str, inc: int, force_refresh: bool = False):
         """Update the bar with the specified barid by increasing its count by inc.
@@ -224,6 +227,7 @@ class ProgressCounter(BaseCounter):
             inc (int): Amount to increase the bar's count by.
         """
         assert barid != TOTAL_BARID
+        assert self.entered, "ProgressCounter has not been entered with __enter__() (be sure code is wrapped in 'with progress_counter:')"
 
         bar = self.progress_bars[barid]
         bar.update(inc)
