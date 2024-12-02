@@ -5,3 +5,4 @@ numpy>=2.1
 linkml-map
 openpyxl
 sortedcontainers
+typer
