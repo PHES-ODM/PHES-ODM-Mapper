@@ -33,13 +33,15 @@ app = typer.Typer(
 
 logger = get_logger(__name__)
 
+_module_names = [f"'{m.value}'" for m in get_all_modules()]
+_module_names = ", ".join(_module_names)
+
 
 MODULE_HELP = f"""The installed module name for the conversion. Allowable
-               values: {', '.join([f'\'{m.value}\'' for m in ModulesEnum])}.
-               Either the --module or --module-dir command-line arguments must
-               be provided (but not both). A module specifies the source
-               dataset type, the target dataset type, and all required
-               configuration for the conversion."""
+               values: {_module_names}. Either the --module or --module-dir
+               command-line arguments must be provided (but not both). A module
+               specifies the source dataset type, the target dataset type, and
+               all required configuration for the conversion."""
 
 MODULE_DIR_HELP = """The module directory for the conversion. Either the
                   --module or --module-dir command-line arguments must be
@@ -148,7 +150,7 @@ def main(
             )
         if module and module not in get_all_modules(include_titles=False):
             raise UsageError(
-                f"Invalid value for '--module': '{module}' is not one of {', '.join([f'\'{m.value}\'' for m in ModulesEnum])}"
+                f"Invalid value for '--module': '{module}' is not one of {_module_names}"
             )
 
         logger.info(f"Starting run at {datetime.now()}")
