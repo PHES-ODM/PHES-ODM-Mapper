@@ -21,7 +21,7 @@ import typer
 from click.exceptions import UsageError
 
 from odm_map.pipeline import Pipeline
-from odm_map.utils.modules import get_source_schema, get_all_modules, ModulesEnum
+from odm_map.utils.modules import get_source_schema, get_all_modules
 from odm_map.utils.logger import get_logger
 from odm_map.utils.cli_utils import get_input_data_files
 from odm_map.utils.clean_exit_error import CleanExitError
@@ -33,8 +33,10 @@ app = typer.Typer(
 
 logger = get_logger(__name__)
 
-_module_names = [f"'{m.value}'" for m in get_all_modules()]
+_module_names = [f"'{m}'" for m in get_all_modules()]
 _module_names = ", ".join(_module_names)
+if not _module_names:
+    _module_names = "<No modules available>"
 
 
 MODULE_HELP = f"""The installed module name for the conversion. Allowable
