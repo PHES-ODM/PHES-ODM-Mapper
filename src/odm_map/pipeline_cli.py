@@ -20,10 +20,8 @@ import sys
 import typer
 from click.exceptions import UsageError
 
-from odm_map.pipeline import Pipeline
-from odm_map.utils.modules import get_source_schema, get_all_modules
+from odm_map.utils.modules import get_all_modules
 from odm_map.utils.logger import get_logger
-from odm_map.utils.cli_utils import get_input_data_files
 from odm_map.utils.clean_exit_error import CleanExitError
 
 app = typer.Typer(
@@ -157,6 +155,13 @@ def main(
             )
 
         logger.info(f"Starting run at {datetime.now()}")
+
+        # These imports are placed here entirely for performance reasons. The imports can
+        # take some time, so we make sure all error checking is done first. It will also
+        # avoid these imports when the user runs with the --help cli flag.
+        from odm_map.pipeline import Pipeline
+        from odm_map.utils.modules import get_source_schema
+        from odm_map.utils.cli_utils import get_input_data_files
 
         source_schema = get_source_schema(module, module_dir)
         data_files = get_input_data_files(input_file, input_dir, schema=source_schema)
