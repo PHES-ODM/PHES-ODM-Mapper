@@ -101,7 +101,7 @@ class ProgressCounter(BaseCounter):
         """
         if titles is None:
             titles = {}
-            
+
         self.entered = False
         self.full_refresh_duration = full_refresh_duration
         self.full_refresh_iters = full_refresh_iters
