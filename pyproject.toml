@@ -2,7 +2,9 @@
 name = "odm-map"
 version = "0.1.0"
 description = "Map between wastewater surveillance database formats"
-authors = ["Martin Wellman <mwellman@ohri.ca>"]
+authors = [
+    { name="Martin Wellman", email="mwellman@ohri.ca" }
+]
 readme = "README.md"
 requires-python = ">=3.9"
 dynamic = ["dependencies"]
