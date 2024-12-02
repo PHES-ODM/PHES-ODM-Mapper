@@ -33,6 +33,7 @@ app = typer.Typer(
 
 logger = get_logger(__name__)
 
+# Make a string showing all available module names
 _module_names = [f"'{m}'" for m in get_all_modules()]
 _module_names = ", ".join(_module_names)
 if not _module_names:
