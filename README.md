@@ -20,7 +20,8 @@ pip install git+ssh://git@github.com/Big-Life-Lab/PHES-ODM-Mapper.git@typer
 ```
 
 If this does not work (likely due to access issues to the private repository),
-you can install the mapper using the installation instructions for development
+and you have properly installed git with access to the private repository, you
+can install the mapper using the installation instructions for development
 below.
 
 ## Installation (For Development)
