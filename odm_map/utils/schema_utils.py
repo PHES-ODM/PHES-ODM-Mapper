@@ -16,8 +16,6 @@ from linkml_runtime import SchemaView
 from odm_map.utils.logger import make_logger_bullet_list
 from odm_map.utils.general_utils import (
     choose_ignore_case_value,
-    EXCEL_FILE_KEY,
-    EXCEL_SHEET_KEY,
 )
 
 
@@ -82,42 +80,29 @@ def get_ranges_of_slot(cls: str, slot: str, schema: SchemaView) -> List[str]:
     return defn
 
 
-def get_excel_file_classes(
-    file: Union[str, Path], schema: Union[SchemaView, str, Path] = None
-) -> Dict[str, List[Dict[str, str]]]:
-    file = Path(file)
-
-    if isinstance(schema, (str, Path)):
-        schema = SchemaView(schema)
-
-    # Load all sheet names from Excel file
-    with pd.ExcelFile(file) as xl:
-        sheet_names = list(xl.sheet_names)
-
-    # Map the sheet names to class names
-    sheet_to_class = {
-        sheet_name: get_class_name_from_file_name(sheet_name, schema)
-        for sheet_name in sheet_names
-    }
-    # Remove any sheet that maps to no class
-    sheet_to_class = {s: c for s, c in sheet_to_class.items() if c is not None}
-
-    # Create the results dictionary
-    results = {}
-    for sheet_name, class_name in sheet_to_class.items():
-        if class_name not in results:
-            results[class_name] = []
-        results[class_name].append({EXCEL_FILE_KEY: file, EXCEL_SHEET_KEY: sheet_name})
-
-    return results
-
-
 def validate_columns_with_schema(
     df: pd.DataFrame,
     schema: Union[SchemaView, str, Path],
     class_name: str,
     file: Union[str, Path],
 ) -> List[str]:
+    """Check for missing or unrecognized columns in the DataFrame. If missing or unrecognized
+    columns are found then they are returned to the caller, so that the results can be
+    reported to the user. No exception or other error occurs. It is for informational purposes.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to validate the columns of.
+        schema (Union[SchemaView, str, Path]): The SchemaView that defines the class
+            that the DataFrame belongs to. It will provide all known columns for the class.
+        class_name (str): The class (in the schema) that df belongs to.
+        file (Union[str, Path]): The file that the DataFrame was loaded from. This is so
+            we can tell the user which file has missing or unrecognized columns.
+
+    Returns:
+        List[str]: A list of messages that say which columns in the DataFrame are missing
+            or unrecognized. If there are no missing or unrecognized columns then
+            this is empty ([]).
+    """
     warning_log = []
 
     if isinstance(schema, (str, Path)):
@@ -205,15 +190,85 @@ def get_class_name_from_file_name(
     base_name = os.path.splitext(os.path.basename(file_name))[0]
     class_name = base_name.split("[")[0].split("(")[0]
     if schema is not None:
-        # class_name = choose_ignore_case_value(
-        #     class_name, all_classes_without_tree_root(schema)
-        # )
-        all_classes = all_classes_without_tree_root(schema)
-        all_classes_lower = [c.lower() for c in all_classes]
-        match_lower = class_name.lower()
-        matches = [c for c in all_classes_lower if c in match_lower]
-        if len(matches) == 0:
-            return None
-        matched = matches[np.argmax([len(c) for c in matches])]
-        return choose_ignore_case_value(matched, all_classes)
+        return find_class(class_name, schema, ignore_case=True)
     return class_name
+
+
+def find_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Optional[str]:
+    """Figure out which class the class_name string should belong to, making the search
+    fairly flexible. We will typically search for a recognized class name in the string,
+    so for example "1 - WWMeasure (2024-11-30)" would map to the class "WWMeasure".
+    For a stricter search, where the whole string must match a recognized class,
+    see get_class().
+
+    Any text after the first opening square or round bracket in class_name is
+    ignored.
+
+    The matching class is the longest class name in the schema that can be found
+    in the string class_name (eg. If "WWMeasure" and "Measure" are both classes in
+    the schema, then the string "1 - WWMeasure" will match to "WWMeasure", even
+    though "Measure" is found in the string, because "WWMeasure" is longer).
+
+    Args:
+        class_name (str): The string to search for the class name. Any text after the
+            first opening square or round bracket in class_name is ignored.
+        schema (SchemaView): The schema containing all the recognized classes.
+        ignore_case (bool): If True then make the search case-insensitive, otherwise
+            make it case-sensitive.
+
+    Returns:
+        Optional[str]: The class that the string should represent, or None if no
+            class was found.
+    """
+    class_name = class_name.split("[")[0].split("(")[0]
+
+    all_classes = all_classes_without_tree_root(schema)
+
+    all_classes_lower = [c.lower() for c in all_classes] if ignore_case else all_classes
+    match_lower = class_name.lower() if ignore_case else class_name
+
+    # Find all matches
+    matches = [c for c in all_classes_lower if c in match_lower]
+    if len(matches) == 0:
+        return None
+    # Match found, so get the longeset matching class name
+    matched = matches[np.argmax([len(c) for c in matches])]
+
+    # Correct capitalization of class
+    return choose_ignore_case_value(matched, all_classes)
+
+
+def get_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Optional[str]:
+    """Get the recognized class name based on the string class_name (optionally case-
+    sensitive or case-insensitive), or None if the class name does not exist.
+
+    Any text after the first opening square or round bracket in class_name is
+    ignored.
+
+    Args:
+        class_name (str): The string to get the class name for. Any text after the
+            first opening square or round bracket in class_name is ignored.
+        schema (SchemaView): The schema that contains all the recognized classes.
+        ignore_case (bool): If True then make class_name case-insensitive, but return
+            the class name with the correct capitaliztion. If False then only
+            return the recognized class if class_name already has the correct
+            capitalization.
+
+    Returns:
+        Optional[str]: The recognized class name, or None if class_name is not
+            a recognized class name in the schema.
+    """
+    class_name = class_name.split("[")[0].split("(")[0]
+
+    all_classes = all_classes_without_tree_root(schema)
+
+    if ignore_case:
+        # Case-insensitive
+        return choose_ignore_case_value(
+            class_name, all_classes, return_same_if_missing=False
+        )
+    else:
+        # Case-sensitive, so only return exact match
+        if class_name in all_classes:
+            return class_name
+        return None
