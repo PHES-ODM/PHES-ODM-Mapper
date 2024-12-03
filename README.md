@@ -154,7 +154,7 @@ table the file belongs to.
 
 In order to determine the table name based on the sheet or file name, both the
 extension and any text after the first opening square or round bracket are
-ignored. After this, the longest matching table name (in the source schema)
+ignored. After this, the longest matching table name (in the source dataset)
 that is found in the file name or sheet name is used. For example, a file named
 "1. WWMeasure[2024-12-20].csv" will be a valid file name for the table
 "WWMeasure". If no match is found then the file or sheet is ignored.
