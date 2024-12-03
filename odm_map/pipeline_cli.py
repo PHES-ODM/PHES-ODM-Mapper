@@ -21,12 +21,13 @@ import typer
 from click.exceptions import UsageError
 
 from odm_map.utils.modules import get_all_modules
-from odm_map.utils.logger import get_logger
+from odm_map.utils.logger import get_logger, make_logger_bullet_list
 from odm_map.utils.clean_exit_error import CleanExitError
 
 app = typer.Typer(
     pretty_exceptions_show_locals=False,
     # pretty_exceptions_enable=False,
+    rich_markup_mode="rich",
 )
 
 logger = get_logger(__name__)
@@ -37,6 +38,16 @@ _module_names = ", ".join(_module_names)
 if not _module_names:
     _module_names = "<No modules available>"
 
+# Make a Markdown string to show a list of all modules
+_module_list = get_all_modules(include_titles=True) #[f"{m}\n" for m in get_all_modules(include_titles=True)]
+_module_list = make_logger_bullet_list(_module_list, bullet="- ", indent=4)
+
+MAIN_HELP = f"""Map between various wastewater surveillance database formats.
+
+The following modules are installed:
+[bold][/bold]
+{_module_list}
+"""
 
 INPUTS_HELP = """List of files and directories to map. The files should be
 tables of the source dataset. If an input is an Excel file, then all sheets in
@@ -85,7 +96,7 @@ DEBUG_HELP = """If set then run ID generation in debug mode, which only affects
              debug mode."""
 
 
-@app.command()
+@app.command(help=MAIN_HELP)
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     module: str = typer.Option(
@@ -171,7 +182,7 @@ if __name__ == "__main__":
         opts = {
             # ODM v1 to v2,
             # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
-            "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv/"],
+            "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/"],
             # "inputs": ["a.xlsx"],
             "module": "odm-v1-to-v2",
             "module_dir": None,
@@ -192,7 +203,7 @@ if __name__ == "__main__":
             # "temp_dir": "../gen/nwss-reporting-to-v2-xl2/temp",
 
             "max_processes": 1,
-            "max_rows": 100,
+            "max_rows": 1000,
             "debug": True,
         }
         # fmt: on
