@@ -12,7 +12,7 @@ from odm_map.utils.schema_utils import (
     validate_columns_with_schema,
 )
 from odm_map.progress import ProgressCounter, EmptyCounter
-from odm_map.utils.general_utils import read_data_frame, EXCEL_FILE_KEY, EXCEL_SHEET_KEY
+from odm_map.utils.general_utils import read_data_frame, EXCEL_FILE_KEY
 from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -232,9 +232,10 @@ def load_data_with_tracking_columns(
             for file in files:
                 try:
                     if isinstance(file, Dict):
-                        track_file = (
-                            f"{file[EXCEL_FILE_KEY]}?sheet={file[EXCEL_SHEET_KEY]}"
+                        params = "&".join(
+                            [f"{k}={v}" for k, v in file.items() if k != EXCEL_FILE_KEY]
                         )
+                        track_file = f"{file[EXCEL_FILE_KEY]}?{params}"
                     else:
                         track_file = file
                     read_kwargs = {
