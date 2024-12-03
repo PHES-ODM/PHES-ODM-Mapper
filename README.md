@@ -145,7 +145,8 @@ odm-map \
     "path/to/inputdata"
 ```
 
-In the above example, all valid data files (csv, txt, tsv, yaml/yml, xlsx) in
+In the above example, the conversion module `odm-v1-to-v2` is used to convert
+ODM v1 to ODM v2 data. All valid data files (csv, txt, tsv, yaml/yml, xlsx) in
 the directory "path/to/inputdata" will be mapped. For Excel files, the sheet
 tab names will be used to determine which table in the source dataset the sheet
 belongs to. For all other files, the file name will be used to determine which
@@ -192,9 +193,8 @@ odm-map \
 ```
 
 All built-in modules can be found at
-[/odm_map/data/modules](/odm_map/data/modules), simply use the directory name
-of the module for the `--module` parameter. A list of available modules can be
-seen by running:
+[/odm_map/data/modules](/odm_map/data/modules). Alternatively, a list of
+installed conversion modules can be seen by running:
 
 ```console
 odm-map --help
