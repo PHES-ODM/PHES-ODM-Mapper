@@ -34,6 +34,10 @@ from odm_map.utils.modules import (
     get_module_config,
     get_module_dir,
     MODULE_SOURCE_SCHEMA_KEY,
+    MODULE_STEPS_KEY,
+    MODULE_IF_KEY,
+    MODULE_ACTION_KEY,
+    MODULE_PARAMS_KEY,
 )
 from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
@@ -154,12 +158,12 @@ class Pipeline(object):
             "debug_mode": debug_mode,
         }
         # Go through each step of the module and perform each action
-        for step in self.config["steps"]:
-            action = step["action"]
+        for step in self.config[MODULE_STEPS_KEY]:
+            action = step[MODULE_ACTION_KEY]
 
             # If there is an "if" section in the current step then only run the step if the "if" value
             # equates to either a non-zero integer, boolean True, or string "True" (case-insensitive).
-            stepif = step.get("if", True)
+            stepif = step.get(MODULE_IF_KEY, True)
             if isinstance(stepif, str):
                 stepif = stepif.format(**top_level_kwargs)
             try:
@@ -170,7 +174,7 @@ class Pipeline(object):
             if str(stepif).lower() != "true":
                 continue
 
-            params = step.get("params", {})
+            params = step.get(MODULE_PARAMS_KEY, {})
 
             if action == "clean":
                 schema = self.get_module_path(params.get("schema"))

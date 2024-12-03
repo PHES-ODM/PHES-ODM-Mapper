@@ -13,8 +13,14 @@ CONFIG_FILE = "config.yaml"
 
 logger = get_logger(__name__)
 
+# Keys in the config file
 MODULE_TITLE_KEY = "title"
 MODULE_SOURCE_SCHEMA_KEY = "source_schema"
+MODULE_IF_KEY = "if"
+MODULE_STEPS_KEY = "steps"
+# Keys within a step in the config file
+MODULE_ACTION_KEY = "action"
+MODULE_PARAMS_KEY = "params"
 
 # Also available below: ModulesEnum for all available installed modules (based on get_all_modules(include_titles=False))
 
