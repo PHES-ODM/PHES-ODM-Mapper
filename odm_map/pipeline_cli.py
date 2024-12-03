@@ -39,7 +39,7 @@ if not _module_names:
     _module_names = "<No modules available>"
 
 # Make a Markdown string to show a list of all modules
-_module_list = get_all_modules(include_titles=True) #[f"{m}\n" for m in get_all_modules(include_titles=True)]
+_module_list = get_all_modules(include_titles=True)
 _module_list = make_logger_bullet_list(_module_list, bullet="- ", indent=4)
 
 MAIN_HELP = f"""Map between various wastewater surveillance database formats.
@@ -50,15 +50,16 @@ The following modules are installed:
 """
 
 INPUTS_HELP = """List of files and directories to map. The files should be
-tables of the source dataset. If an input is an Excel file, then all sheets in
-the file with a recognized table name in the sheet name are used. If an input
-is a CSV, TSV, or TXT file then the file name is used to determine the table
-name. When determining a table name, the longest recognized table name in the
-source schema that is found in the file name or sheet name is used. To
-explicitly specify a table name for a CSV, TSV, or TXT file, precede the file
-path with the table name and a colon (eg. 'WWMeasure:data/csv/measures.csv').
-When searching for table names (in the file or sheet names), any text after the
-first opening square or round bracket is ignored."""
+tables from the source dataset. For Excel files, the sheet tab names will be
+used to determine which table in the source dataset the sheet belongs to. For
+all other files, the file name will be used to determine which table the file
+belongs to. In order to determine the table name based on the sheet or file
+name, both the extension and any text after the first opening square or round
+bracket are ignored. After this, the longest matching table name (in the source
+dataset) that is found in the file name or sheet name is used. For example, a
+file named "1. WWMeasure[2024-12-20].csv" will be a valid file name for the
+table "WWMeasure". If no match is found then the file or sheet is ignored."""
+
 
 MODULE_HELP = f"""The installed module name for the conversion. Allowable
                values: {_module_names}. Either the --module or --module-dir
