@@ -1,5 +1,5 @@
 # %%
-from typing import List
+from typing import List, Annotated
 import typer
 
 from odm_map.filter.filter_data import DataFilter
@@ -10,21 +10,17 @@ app = typer.Typer(
     # pretty_exceptions_enable=False,
 )
 
-INPUT_DIR_HELP = """Filter all xlsx, csv, txt, and tsv files in this directory.
-                 txt files are treated as tab-separated."""
-
-INPUT_FILE_HELP = """Input data file to filter. Multiple --input-file options
-                  can be specified. The table the file belongs to is determined
-                  by the file name: the longest table name (in the source
-                  dataset) that is found in the file name will be used. (eg.
-                  '1-WWMeasure[2024-11-09].csv' is a valid file name for the
-                  table 'WWMeasure'). If an Excel file is found, then the sheet
-                  tab names will be used to match the table name. Sheets that
-                  do not match a table name will be ignored. To override this
-                  behavior for non-Excel files, precede the file path with the
-                  table name and a colon, eg. 'WWMeasure:data/measures.csv'.
-                  Place the full string in quotes if the path contains any
-                  spaces."""
+INPUTS_HELP = """List of files and directories to filter. The files
+should be tables of the dataset specified by '--schema'. If an input is an
+Excel file, then all sheets in the file with a recognized table name in the
+sheet name are used. If an input is a CSV, TSV, or TXT file then the file name
+is used to determine the table name. When determining a table name, the longest
+recognized table name in the schema that is found in the file name or sheet
+name is used. To explicitly specify a table name for a CSV, TSV, or TXT file,
+precede the file path with the table name and a colon (eg.
+'WWMeasure:data/csv/measures.csv'). When searching for table names (in the file
+or sheet names), any text after the first opening square or round bracket is
+ignored."""
 
 FILTER_CONFIG_FILE_HELP = """Location of the CSV or TSV filtering configuration
                           file."""
@@ -40,14 +36,7 @@ SCHEMA_HELP = """Schema file that the data conforms to. This will only be used
 
 @app.command()
 def main(
-    input_dir: str = typer.Option(
-        default=None,
-        help=INPUT_DIR_HELP,
-    ),
-    input_file: List[str] = typer.Option(
-        default=[],
-        help=INPUT_FILE_HELP,
-    ),
+    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     filter_config_file: str = typer.Option(
         default=...,
         help=FILTER_CONFIG_FILE_HELP,
@@ -61,7 +50,7 @@ def main(
         help=SCHEMA_HELP,
     ),
 ):
-    data_files = get_input_data_files(input_file, input_dir, schema=schema)
+    data_files = get_input_data_files(inputs, schema=schema)
     filterer = DataFilter(filter_config_file)
     filterer.run_filter(
         data_files=data_files,
@@ -73,9 +62,8 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         opts = {
-            # "input_dir": "../../gen/nwss-reporting-to-v2/temp/mapped_data",
-            "input_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss",
-            "input_file": None,
+            # "inputs": ["../../gen/nwss-reporting-to-v2/temp/mapped_data"],
+            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"],
             "filter_config_file": "../data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.xlsx",
             "output_dir": "../../gen/nwss-reporting-to-v2-test/filtered_mapped_data",
             "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",

@@ -1,5 +1,5 @@
 # %%
-from typing import List
+from typing import List, Annotated
 import typer
 
 from odm_map.id_generator.generator import IDGenerator
@@ -11,31 +11,17 @@ app = typer.Typer(
     # pretty_exceptions_enable=False,
 )
 
-INPUT_DIR_HELP = """Directory containing all of the input data files to
-                 generate IDs for. The table the file belongs to is determined
-                 by the file name: after ignoring the file extension and
-                 anything after the first opening square or round bracket, the
-                 longest table name (in the source dataset) that is found in
-                 the file name will be used. (eg. '1-WWMeasure[2024-11-09].csv'
-                 is a valid file name for the table 'WWMeasure'). If an Excel
-                 file is found, then the sheet tab names will be used to match
-                 the table name. Sheets that do not match a table name will be
-                 ignored."""
-
-INPUT_FILE_HELP = """Input data file to generate IDs for. Multiple --input-file
-                  options can be specified. The table the file belongs to is
-                  determined by the file name: after ignoring the file
-                  extension and anything after the first opening square or
-                  round bracket, the longest table name (in the source dataset)
-                  that is found in the file name will be used. (eg.
-                  '1-WWMeasure[2024-11-09].csv' is a valid file name for the
-                  table 'WWMeasure'). If an Excel file is found, then the sheet
-                  tab names will be used to match the table name. Sheets that
-                  do not match a table name will be ignored. To override this
-                  behavior for non-Excel files, precede the file path with the
-                  table name and a colon, eg. 'WWMeasure:data/measures.csv'.
-                  Place the full string in quotes if the path contains any
-                  spaces."""
+INPUTS_HELP = """List of files and directories to generate IDs for. The files
+should be tables of the dataset specified by '--schema'. If an input is an
+Excel file, then all sheets in the file with a recognized table name in the
+sheet name are used. If an input is a CSV, TSV, or TXT file then the file name
+is used to determine the table name. When determining a table name, the longest
+recognized table name in the schema that is found in the file name or sheet
+name is used. To explicitly specify a table name for a CSV, TSV, or TXT file,
+precede the file path with the table name and a colon (eg.
+'WWMeasure:data/csv/measures.csv'). When searching for table names (in the file
+or sheet names), any text after the first opening square or round bracket is
+ignored."""
 
 CONFIG_FILE_HELP = """The YAML config file."""
 
@@ -66,14 +52,7 @@ DEBUG_HELP = f"""If set then run in debug mode, which only affects what is
 
 @app.command()
 def main(
-    input_dir: str = typer.Option(
-        default=None,
-        help=INPUT_DIR_HELP,
-    ),
-    input_file: List[str] = typer.Option(
-        default=[],
-        help=INPUT_FILE_HELP,
-    ),
+    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: str = typer.Option(
         default=...,
         help=OUTPUT_DIR_HELP,
@@ -99,7 +78,7 @@ def main(
         help=DEBUG_HELP,
     ),
 ):
-    data_files = get_input_data_files(input_file, input_dir, schema=schema)
+    data_files = get_input_data_files(inputs, schema=schema)
 
     gen = IDGenerator(
         data_files=data_files,
@@ -122,18 +101,16 @@ if __name__ == "__main__":
         # fmt: off
         opts = {
             # Test
-            # "input_dir": "../../gen/test/source_data",
-            # "input_file": None,
+            # "inputs": ["../../gen/test/source_data"],
             # "output_dir": "../../gen/test/mapped_data_ids",
             # "id_code_file": "../data/modules/test/ids.xlsx",
             # "id_code_sheet": "id_code",
             # "config_file": "../data/modules/test/ids.yaml",
             
             # NWSS to ODM v2
-            # "input_dir": "../../gen/nwss-reporting-to-v2/temp-1000/mapped_data",
-            # "input_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss",
-            "input_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel",
-            "input_file": None,
+            # "inputs": ["../../gen/nwss-reporting-to-v2/temp-1000/mapped_data"],
+            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"],
+            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel"],
             "output_dir": "../../gen/nwss-reporting-to-v2-test/mapped_data_ids",
             "id_code_file": "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_code.xlsx",
             "id_code_sheet": "id_code",
@@ -141,8 +118,7 @@ if __name__ == "__main__":
             "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
 
             # ODM v1 to ODM v2,
-            # "input_dir": "../../gen/odm-v1-to-v2/temp/mapped_data",
-            # "input_file": None,
+            # "inputs": ["../../gen/odm-v1-to-v2/temp/mapped_data"],
             # "output_dir": "../../gen/odm-v1-to-v2/mapped_data_ids",
             # "id_code_file": "../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_code.xlsx",
             # "id_code_sheet": "id_code",

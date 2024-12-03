@@ -1,7 +1,6 @@
 # %%
-from typing import List
+from typing import List, Annotated
 import typer
-from click.exceptions import UsageError
 
 from odm_map.mapper.map_data import DataMapper
 from odm_map.utils.cli_utils import get_input_data_files
@@ -14,29 +13,16 @@ app = typer.Typer(
 
 logger = get_logger(__name__)
 
-INPUT_DIR_HELP = """Directory containing all of the input data files to map.
-                 The table the file belongs to is determined by the file name:
-                 after ignoring the file extension and anything after the first
-                 opening square or round bracket, the longest table name (in
-                 the source dataset) that is found in the file name will be
-                 used. (eg. '1-WWMeasure[2024-11-09].csv' is a valid file name
-                 for the table 'WWMeasure'). If an Excel file is found, then
-                 the sheet tab names will be used to match the table name.
-                 Sheets that do not match a table name will be ignored."""
-
-INPUT_FILE_HELP = """Input data file to map. Multiple --input-file options can
-                  be specified. The table the file belongs to is determined by
-                  the file name: after ignoring the file extension and anything
-                  after the first opening square or round bracket, the longest
-                  table name (in the source dataset) that is found in the file
-                  name will be used. (eg. '1-WWMeasure[2024-11-09].csv' is a
-                  valid file name for the table 'WWMeasure'). If an Excel file
-                  is found, then the sheet tab names will be used to match the
-                  table name. Sheets that do not match a table name will be
-                  ignored. To override this behavior for non-Excel files,
-                  precede the file path with the table name and a colon, eg.
-                  'WWMeasure:data/measures.csv'. Place the full string in
-                  quotes if the path contains any spaces."""
+INPUTS_HELP = """List of files and directories to map. The files should be
+tables of the source dataset. If an input is an Excel file, then all sheets in
+the file with a recognized table name in the sheet name are used. If an input
+is a CSV, TSV, or TXT file then the file name is used to determine the table
+name. When determining a table name, the longest recognized table name in the
+source schema that is found in the file name or sheet name is used. To
+explicitly specify a table name for a CSV, TSV, or TXT file, precede the file
+path with the table name and a colon (eg. 'WWMeasure:data/csv/measures.csv').
+When searching for table names (in the file or sheet names), any text after the
+first opening square or round bracket is ignored."""
 
 OUTPUT_DIR_HELP = """Directory to save all the mapped data to."""
 
@@ -64,14 +50,7 @@ KEEP_TRACKING_COLUMNS_HELP = """If set keep the tracking columns in the output.
 
 @app.command()
 def main(
-    input_dir: str = typer.Option(
-        default=None,
-        help=INPUT_DIR_HELP,
-    ),
-    input_file: List[str] = typer.Option(
-        default=[],
-        help=INPUT_FILE_HELP,
-    ),
+    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: str = typer.Option(
         default=...,
         help=OUTPUT_DIR_HELP,
@@ -101,12 +80,7 @@ def main(
         help=KEEP_TRACKING_COLUMNS_HELP,
     ),
 ):
-    if not input_dir and not input_file:
-        raise UsageError(
-            "At least one or more of '--input-dir' or '--input-file' must be specified."
-        )
-
-    data_files = get_input_data_files(input_file, input_dir, schema=source_schema)
+    data_files = get_input_data_files(inputs, schema=source_schema)
 
     mapper = DataMapper()
     mapper.run(
@@ -126,8 +100,7 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         opts = {
-            "input_dir": "../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv",
-            "input_file": [],
+            "inputs": ["../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv"],
             "output_dir": "../../gen/odm-v1-to-v2-test",
             "source_schema": "../data/modules/odm-v1-to-v2/schemas/odm_v1.yaml",
             "target_schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",

@@ -14,7 +14,7 @@ python3 pipeline_cli.py \
 ```
 """
 
-from typing import List
+from typing import List, Annotated
 from datetime import datetime
 import sys
 import typer
@@ -38,6 +38,17 @@ if not _module_names:
     _module_names = "<No modules available>"
 
 
+INPUTS_HELP = """List of files and directories to map. The files should be
+tables of the source dataset. If an input is an Excel file, then all sheets in
+the file with a recognized table name in the sheet name are used. If an input
+is a CSV, TSV, or TXT file then the file name is used to determine the table
+name. When determining a table name, the longest recognized table name in the
+source schema that is found in the file name or sheet name is used. To
+explicitly specify a table name for a CSV, TSV, or TXT file, precede the file
+path with the table name and a colon (eg. 'WWMeasure:data/csv/measures.csv').
+When searching for table names (in the file or sheet names), any text after the
+first opening square or round bracket is ignored."""
+
 MODULE_HELP = f"""The installed module name for the conversion. Allowable
                values: {_module_names}. Either the --module or --module-dir
                command-line arguments must be provided (but not both). A module
@@ -49,30 +60,6 @@ MODULE_DIR_HELP = """The module directory for the conversion. Either the
                   provided (but not both). A module specifies the source
                   dataset type, the target dataset type, and all required
                   configuration for the conversion."""
-
-INPUT_DIR_HELP = """Directory containing all of the input data files to map.
-                 The table the file belongs to is determined by the file name:
-                 after ignoring the file extension and anything after the first
-                 opening square or round bracket, the longest table name (in
-                 the source dataset) that is found in the file name will be
-                 used. (eg. '1-WWMeasure[2024-11-09].csv' is a valid file name
-                 for the table 'WWMeasure'). If an Excel file is found, then
-                 the sheet tab names will be used to match the table name.
-                 Sheets that do not match a table name will be ignored."""
-
-INPUT_FILE_HELP = """Input data file to map. Multiple --input-file options can
-                  be specified. The table the file belongs to is determined by
-                  the file name: after ignoring the file extension and anything
-                  after the first opening square or round bracket, the longest
-                  table name (in the source dataset) that is found in the file
-                  name will be used. (eg. '1-WWMeasure[2024-11-09].csv' is a
-                  valid file name for the table 'WWMeasure'). If an Excel file
-                  is found, then the sheet tab names will be used to match the
-                  table name. Sheets that do not match a table name will be
-                  ignored. To override this behavior for non-Excel files,
-                  precede the file path with the table name and a colon, eg.
-                  'WWMeasure:data/measures.csv'. Place the full string in
-                  quotes if the path contains any spaces."""
 
 OUTPUT_DIR_HELP = """Directory to save all the mapped data to."""
 
@@ -100,6 +87,7 @@ DEBUG_HELP = """If set then run ID generation in debug mode, which only affects
 
 @app.command()
 def main(
+    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     module: str = typer.Option(
         default=None,
         help=MODULE_HELP,
@@ -107,14 +95,6 @@ def main(
     module_dir: str = typer.Option(
         default=None,
         help=MODULE_DIR_HELP,
-    ),
-    input_dir: str = typer.Option(
-        default=None,
-        help=INPUT_DIR_HELP,
-    ),
-    input_file: List[str] = typer.Option(
-        default=[],
-        help=INPUT_FILE_HELP,
     ),
     output_dir: str = typer.Option(
         default=...,
@@ -145,10 +125,6 @@ def main(
             raise UsageError(
                 "Only one of '--module' or '--module-dir' can be specified."
             )
-        if not input_dir and not input_file:
-            raise UsageError(
-                "At least one or more of '--input-dir' or '--input-file' must be specified."
-            )
         if module and module not in get_all_modules(include_titles=False):
             raise UsageError(
                 f"Invalid value for '--module': '{module}' is not one of {_module_names}"
@@ -164,7 +140,7 @@ def main(
         from odm_map.utils.cli_utils import get_input_data_files
 
         source_schema = get_source_schema(module, module_dir)
-        data_files = get_input_data_files(input_file, input_dir, schema=source_schema)
+        data_files = get_input_data_files(inputs, schema=source_schema)
 
         pipeline = Pipeline(
             module=module,
@@ -194,25 +170,24 @@ if __name__ == "__main__":
         # fmt: off
         opts = {
             # ODM v1 to v2,
+            # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
+            "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv/"],
+            # "inputs": ["a.xlsx"],
             "module": "odm-v1-to-v2",
             "module_dir": None,
-            # "input_dir": "../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated",
-            "input_dir": "../../../PHES-ODM-Data/odm_v1_data/excel/excel",
-            # "input_dir": "/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa",
-            # "input_dir": None,
-            # "input_file": ["wwmeasure/samplewwmeasure.csv", "Sample:../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/Sample.csv"],
-            "input_file": None,
+            # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"],
+            # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
+            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"],
             "output_dir": "../gen/odm-v1-to-v2-test-new",
             "temp_dir": None, #"../gen/odm-v1-to-v2-test-excel/temp",
 
             # NWSS to v2,
             # "module": "nwss-reporting-to-v2",
             # "module_dir": None,
-            # # "input_dir": "../../../PHES-ODM-Data/nwss/private_renamed_test/",
-            # "input_dir": "../../../PHES-ODM-Data/nwss/nwss_renamed/",
-            # # "input_dir": "../../../PHES-ODM-Data/nwss/nwss_renamed_excel/",
-            # # "input_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel",
-            # "input_files": None, # [ "nwss", "../../../PHES-ODM-Data/nwss/private_renamed/nwss[cdc-nwss-restricted-data-set-wastewater-2024-03-19].csv" ],
+            # # "inputs": ["../../../PHES-ODM-Data/nwss/private_renamed_test/"],
+            # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/"],
+            # # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"],
+            # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"],
             # "output_dir": "../gen/nwss-reporting-to-v2-xl2",
             # "temp_dir": "../gen/nwss-reporting-to-v2-xl2/temp",
 
