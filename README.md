@@ -121,9 +121,10 @@ the location of one of these directories for use as input to the mapper (eg.
 
 A full mapping can be performed by using the command-line interface (CLI)
 provided by the script [/odm_map/pipeline_cli.py](/odm_map/pipeline_cli.py) or
-the installed odm-map command. If you installed the Mapper for development
+the installed `odm-map` command. If you installed the Mapper for development
 purposes, be sure to always activate the virtual environment as described in
-the [Installation](#installation) section above before running the script.
+the [Installation (For Development)](#installation-for-development) section
+above before running the script.
 
 The general syntax for running the program is:
 
@@ -132,8 +133,8 @@ odm-map [--options] input1 input2 input3 ...
 ```
 
 Below is an example to map ODM v1 data (found in the input directory
-"path/to/inputdata") to ODM v2 data (and save the mapped data to the directory
-"path/to/outputdata"):
+"path/to/inputdata") to ODM v2 data. The results will be saved to the directory
+"path/to/outputdata":
 
 ```console
 odm-map \
@@ -178,22 +179,22 @@ In the above example, the input files "path/to/mymeasures1.csv" and
 "path/to/mymeasures2.csv" belong to the "WWMeasure" table, and the input file
 "/path/to/Sample.csv" belongs to the "Sample" table.
 
-For mapping NWSS Reporting format to ODM v2, simply change the `--module` to
-specify the full path to the module directory:
+For mapping NWSS Reporting format to ODM v2, simply change the `--module` and
+update the input data to point to your NWSS data:
 
 ```console
 odm-map \
     --module nwss-reporting-to-v2 \
     --output-dir "path/to/outputdata" \
-    "path/to/inputdata"    
+    "path/to/nwss/inputdata"
 ```
 
 All built-in modules can be found at
 [/odm_map/data/modules](/odm_map/data/modules), simply use the directory name
 of the module for the `--module` parameter.
 
-If you have created a custom module, use the `--module-dir` argument instead of
-`--module`:
+If you have created a custom module, use the `--module-dir` argument to point
+to the full path of the module directory instead of `--module`:
 
 ```console
 odm-map \
