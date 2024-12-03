@@ -132,6 +132,8 @@ The general syntax for running the program is:
 odm-map [--options] input1 input2 input3 ...
 ```
 
+The `input` arguments are either directories or files to map.
+
 Below is an example to map ODM v1 data (found in the input directory
 "path/to/inputdata") to ODM v2 data. The results will be saved to the directory
 "path/to/outputdata":
@@ -210,6 +212,8 @@ As mentioned above, the general syntax for running the program is:
 ```console
 odm-map [--options] input1 input2 input3 ...
 ```
+
+The `input` arguments are either directories or files to map.
 
 The following command-line options can be specified with odm-map:
 
