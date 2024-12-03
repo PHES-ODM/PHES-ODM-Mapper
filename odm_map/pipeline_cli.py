@@ -41,6 +41,8 @@ if not _module_names:
 # Make a Markdown string to show a list of all modules
 _module_list = get_all_modules(include_titles=True)
 _module_list = make_logger_bullet_list(_module_list, bullet="- ", indent=4)
+if not _module_list:
+    _module_list = "<No modules available>"
 
 MAIN_HELP = f"""Map between various wastewater surveillance database formats.
 
