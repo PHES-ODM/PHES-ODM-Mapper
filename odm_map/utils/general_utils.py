@@ -22,7 +22,7 @@ RECOGNIZED_EXTENSIONS = [".tsv", ".txt", ".csv", ".yaml", ".yml"]
 # to the actual Excel file and EXCEL_SHEET_KEY corresponds to the sheet to load from the Excel file. For non-Excel
 # files (eg. csv, tsv, txt, yaml, yml) we just use the file name as a regular string (rather than a dictionary)
 EXCEL_FILE_KEY = "excel_file"
-EXCEL_SHEET_KEY = "excel_sheet"
+EXCEL_SHEET_KEY = "sheet"
 
 logger = get_logger(__name__)
 
