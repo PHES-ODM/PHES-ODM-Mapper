@@ -193,7 +193,12 @@ odm-map \
 
 All built-in modules can be found at
 [/odm_map/data/modules](/odm_map/data/modules), simply use the directory name
-of the module for the `--module` parameter.
+of the module for the `--module` parameter. A list of available modules can be
+seen by running:
+
+```console
+odm-map --help
+```
 
 If you have created a custom module, use the `--module-dir` argument to point
 to the full path of the module directory instead of `--module`:
