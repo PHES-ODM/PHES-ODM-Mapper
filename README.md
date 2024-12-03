@@ -40,6 +40,11 @@ you can continue with the installation.
 
 ## Installation
 
+If you will be running the Mapper but not working with the source code, follow
+the instructions in this section. If you require the source code for
+development, skip this section and follow the instructions in the next section
+([Installation (For Development)](#installation-for-development)).
+
 If you have previously installed the PHES-ODM-Mapper, uninstall it first with:
 
 ```console
@@ -56,7 +61,7 @@ pip install git+ssh://git@github.com/Big-Life-Lab/PHES-ODM-Mapper.git@typer
 
 Skip this section if you will not be developing for the PHES-ODM-Mapper library
 (but be sure to follow the instructions in the above
-[Installation](#installation) section.
+[Installation](#installation) section).
 
 To clone the repository, run the following on the command-line:
 
