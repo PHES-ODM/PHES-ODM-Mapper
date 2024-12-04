@@ -1,0 +1,23 @@
+[project]
+name = "odm-map"
+version = "0.1.0"
+description = "Map between wastewater surveillance database formats"
+authors = [
+    { name="Martin Wellman", email="mwellman@ohri.ca" }
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dynamic = ["dependencies"]
+
+[project.scripts]
+odm-map = "odm_map.pipeline_cli:app"
+
+[build-system]
+requires = ["hatchling", "hatch-requirements-txt"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["odm_map"]
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
