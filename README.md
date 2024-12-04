@@ -54,7 +54,7 @@ pip uninstall odm-map
 A full installation can be completed with the following command:
 
 ```console
-pip install git+ssh://git@github.com/Big-Life-Lab/PHES-ODM-Mapper.git@typer
+pip install git+ssh://git@github.com/Big-Life-Lab/PHES-ODM-Mapper.git
 ```
 
 ## Installation (For Development)
@@ -66,7 +66,7 @@ Skip this section if you will not be developing for the PHES-ODM-Mapper library
 To clone the repository, run the following on the command-line:
 
 ```console
-git clone -b typer git@github.com:Big-Life-Lab/PHES-ODM-Mapper.git
+git clone git@github.com:Big-Life-Lab/PHES-ODM-Mapper.git
 cd PHES-ODM-Mapper
 ```
 
