@@ -183,52 +183,30 @@ def remove_ignored_text_from_class_name(class_name: str) -> str:
     return class_name.split("[")[0].split("(")[0]
 
 
-def get_class_name_from_file_name(
-    file_name: Union[str, Path], schema: Optional[SchemaView] = None
-) -> str:
-    """Get the LinkML class name based on a data file name.
-
-    The extension is ignored, the directory is ignored, and any text after the first opening square or round
-    bracket is ignored.
-
-    Args:
-        file_name (Union[str, Path]): The file name to extract the class name from. The extension is removed,
-            as well as any text after the first opening square or round bracket.
-        schema (Optional[SchemaView], optional): If set, then we search the basename of file_name for
-            the class name. The longest class name that matches in file_name is used. We also correct
-            for capitalization. If this is not set, then we use the file name as the class, without
-            correcting for capitalization. In this case, it's possible that an unrecognized class name
-            is returned. Defaults to None.
-
-    Returns:
-        str: The class name for the data file.
-    """
-    base_name = os.path.splitext(os.path.basename(file_name))[0]
-    class_name = remove_ignored_text_from_class_name(base_name)
-    if schema is not None:
-        return find_class(class_name, schema, ignore_case=True)
-    return class_name
-
-
-def find_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Optional[str]:
+def find_class(class_name: str, schema: Optional[SchemaView], ignore_case: bool) -> Optional[str]:
     """Figure out which class the class_name string should belong to, making the search
     fairly flexible. We will typically search for a recognized class name in the string,
     so for example "1 - WWMeasure (2024-11-30)" would map to the class "WWMeasure".
-    For a stricter search, where the whole string must match a recognized class,
+    For a stricter search, where the whole string (after cleaning) must match a recognized class,
     see get_class().
 
-    Any text after the first opening square or round bracket in class_name is
+    For cleaning, any text after the first opening square or round bracket in class_name is
     ignored.
 
     The matching class is the longest class name in the schema that can be found
     in the string class_name (eg. If "WWMeasure" and "Measure" are both classes in
     the schema, then the string "1 - WWMeasure" will match to "WWMeasure", even
     though "Measure" is found in the string, because "WWMeasure" is longer).
+    
+    If schema is None, then the class_name is cleaned but we return the cleaned class_name
+    without searching for class name strings within the class_name (since we need schema
+    to know which classes are valid classes)
 
     Args:
         class_name (str): The string to search for the class name. Any text after the
             first opening square or round bracket in class_name is ignored.
-        schema (SchemaView): The schema containing all the recognized classes.
+        schema (Optional[SchemaView], optional): The schema containing all the recognized 
+            classes. Can be None.
         ignore_case (bool): If True then make the search case-insensitive, otherwise
             make it case-sensitive.
 
@@ -237,6 +215,9 @@ def find_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Option
             class was found.
     """
     class_name = remove_ignored_text_from_class_name(class_name)
+
+    if schema is None:
+        return class_name
 
     all_classes = all_classes_without_tree_root(schema)
 
@@ -254,17 +235,22 @@ def find_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Option
     return choose_ignore_case_value(matched, all_classes)
 
 
-def get_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Optional[str]:
+def get_class(class_name: str, schema: Optional[SchemaView], ignore_case: bool) -> Optional[str]:
     """Get the recognized class name based on the string class_name (optionally case-
     sensitive or case-insensitive), or None if the class name does not exist.
 
     Any text after the first opening square or round bracket in class_name is
     ignored.
+    
+    If schema is None, then we simply return the cleaned text as a class name,
+    since we need schema to know which class names are valid.
 
     Args:
         class_name (str): The string to get the class name for. Any text after the
             first opening square or round bracket in class_name is ignored.
-        schema (SchemaView): The schema that contains all the recognized classes.
+        schema (Optional[SchemaView], optional): The schema that contains all the 
+            recognized classes. If None then we simply return the cleaned class_name
+            (since we need schema to know which class names are valid)
         ignore_case (bool): If True then make class_name case-insensitive, but return
             the class name with the correct capitaliztion. If False then only
             return the recognized class if class_name already has the correct
@@ -272,9 +258,15 @@ def get_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Optiona
 
     Returns:
         Optional[str]: The recognized class name, or None if class_name is not
-            a recognized class name in the schema.
+            a recognized class name in the schema. If schema is None, then we
+            clean class_name (remove text after the first opening round or
+            square bracket) and return the value without checking if it is
+            a valid class name.
     """
     class_name = remove_ignored_text_from_class_name(class_name)
+
+    if schema is None:
+        return class_name
 
     all_classes = all_classes_without_tree_root(schema)
 

@@ -18,7 +18,6 @@ from odm_map.utils.general_utils import (
 from odm_map.utils.schema_utils import (
     find_class,
     get_class,
-    get_class_name_from_file_name,
 )
 from odm_map.utils.clean_exit_error import CleanExitError
 
@@ -109,7 +108,7 @@ def get_excel_file_info(
 
     # Map the sheet names to class names
     sheet_to_class = {
-        sheet_name: get_class_name_from_file_name(sheet_name, schema)
+        sheet_name: find_class(sheet_name, schema, ignore_case=True)
         for sheet_name in sheet_names
     }
     # Remove any sheet that maps to no class
@@ -127,7 +126,7 @@ def get_excel_file_info(
 
 def get_file_info(
     file: Path,
-    schema: SchemaView,
+    schema: Optional[SchemaView],
     parse_class_prefix: bool = False,
     exception_on_error: bool = True,
 ) -> Optional[Dict]:
@@ -138,7 +137,7 @@ def get_file_info(
 
     Args:
         file (Path): The file to get the information for.
-        schema (SchemaView): The SchemaView that the file belongs to. If set then
+        schema (Optional[SchemaView]): The SchemaView that the file belongs to. If set then
             the class name for the file (based on the file name or the Excel
             sheet names) will be verified. If it is not a recognized class then None
             is returned (or for Excel files the sheet is ignored).

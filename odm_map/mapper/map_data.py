@@ -14,7 +14,7 @@ from linkml_map.session import Session
 from odm_map.utils.logger import get_logger
 from odm_map.utils.schema_utils import (
     all_classes_without_tree_root,
-    get_class_name_from_file_name,
+    find_class,
 )
 from odm_map.progress import ProgressCounter
 from odm_map.utils.tracking_slots import (
@@ -374,7 +374,7 @@ class DataMapper(object):
 
             # Remove any extra info from the class_name
             # eg "protocolSteps[inhibition]" becomes "protocolSteps"
-            class_name = get_class_name_from_file_name(class_name, target_schema)
+            class_name = find_class(class_name, target_schema, ignore_case=True)
 
             df = pd.DataFrame(target_data)
 
@@ -405,7 +405,7 @@ class DataMapper(object):
         data_frames: Dict[str, List[pd.DataFrame]],
         output_dir: Union[str, Path],
         source_schema_file: Union[str, Path],
-        target_schema_file: Union[str, Path],
+        target_schema_file: Optional[Union[str, Path]],
         mappers_dir: Union[str, Path],
         max_rows: Optional[int] = 0,
         max_processes: Optional[int] = 1,
@@ -426,7 +426,8 @@ class DataMapper(object):
             output_dir (Union[str, Path]): Directory to save all final mapped data to. If empty then the data
                 is not saved to disk.
             source_schema_file (Union[str, Path]): The LinkML schema for the source database.
-            target_schema_file (Union[str, Path]): The LinkML schema for the target database.
+            target_schema_file (Optional[Union[str, Path]], optional): The LinkML schema for the target database.
+                Can be None.
             mappers_dir (Union[str, Path]): The directory containing all LinkML Mapper configuration (YAML)
                 files. All config files will be used for mapping all the loaded data.
             max_rows (Optional[int], optional): Maximum number of rows to load from the files in data_files.
