@@ -165,7 +165,6 @@ def main(
         if not data_files:
             all_classes = all_classes_without_tree_root(source_schema)
             all_classes = ", ".join(all_classes)
-            source_schema: SchemaView = source_schema
             raise CleanExitError(
                 f"No input files found for source dataset {source_schema.schema.name}. Recognized tables are: {all_classes}"
             )
