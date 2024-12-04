@@ -135,22 +135,22 @@ odm-map [--options] input1 input2 input3 ...
 The `input` arguments are either directories or files to map.
 
 Below is an example to map ODM v1 data (found in the input directory
-"path/to/inputdata") to ODM v2 data. The results will be saved to the directory
-"path/to/outputdata":
+"sars-cov-2-data/CSV/Ottawa") to ODM v2 data. The results will be saved to the
+directory "output/v2":
 
 ```console
 odm-map \
     --module odm-v1-to-v2 \
-    --output-dir "path/to/outputdata" \
-    "path/to/inputdata"
+    --output-dir "output/v2" \
+    "sars-cov-2-data/CSV/Ottawa"
 ```
 
 In the above example, the conversion module `odm-v1-to-v2` is used to convert
 ODM v1 to ODM v2 data. All valid data files (csv, txt, tsv, yaml/yml, xlsx) in
-the directory "path/to/inputdata" will be mapped. For Excel files, the sheet
-tab names will be used to determine which table in the source dataset the sheet
-belongs to. For all other files, the file name will be used to determine which
-table the file belongs to.
+the directory "sars-cov-2-data/CSV/Ottawa" will be mapped. For Excel files, the
+sheet tab names will be used to determine which table in the source dataset the
+sheet belongs to. For all other files, the file name will be used to determine
+which table the file belongs to.
 
 In order to determine the table name based on the sheet or file name, both the
 extension and any text after the first opening square or round bracket are
