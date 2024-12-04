@@ -3,7 +3,6 @@
 Utility functions for LinkML schemas.
 """
 
-import os
 from typing import Dict, List, Union, Optional
 from dataclasses import asdict
 import yaml
@@ -183,7 +182,9 @@ def remove_ignored_text_from_class_name(class_name: str) -> str:
     return class_name.split("[")[0].split("(")[0]
 
 
-def find_class(class_name: str, schema: Optional[SchemaView], ignore_case: bool) -> Optional[str]:
+def find_class(
+    class_name: str, schema: Optional[SchemaView], ignore_case: bool
+) -> Optional[str]:
     """Figure out which class the class_name string should belong to, making the search
     fairly flexible. We will typically search for a recognized class name in the string,
     so for example "1 - WWMeasure (2024-11-30)" would map to the class "WWMeasure".
@@ -197,7 +198,7 @@ def find_class(class_name: str, schema: Optional[SchemaView], ignore_case: bool)
     in the string class_name (eg. If "WWMeasure" and "Measure" are both classes in
     the schema, then the string "1 - WWMeasure" will match to "WWMeasure", even
     though "Measure" is found in the string, because "WWMeasure" is longer).
-    
+
     If schema is None, then the class_name is cleaned but we return the cleaned class_name
     without searching for class name strings within the class_name (since we need schema
     to know which classes are valid classes)
@@ -205,7 +206,7 @@ def find_class(class_name: str, schema: Optional[SchemaView], ignore_case: bool)
     Args:
         class_name (str): The string to search for the class name. Any text after the
             first opening square or round bracket in class_name is ignored.
-        schema (Optional[SchemaView], optional): The schema containing all the recognized 
+        schema (Optional[SchemaView], optional): The schema containing all the recognized
             classes. Can be None.
         ignore_case (bool): If True then make the search case-insensitive, otherwise
             make it case-sensitive.
@@ -235,20 +236,22 @@ def find_class(class_name: str, schema: Optional[SchemaView], ignore_case: bool)
     return choose_ignore_case_value(matched, all_classes)
 
 
-def get_class(class_name: str, schema: Optional[SchemaView], ignore_case: bool) -> Optional[str]:
+def get_class(
+    class_name: str, schema: Optional[SchemaView], ignore_case: bool
+) -> Optional[str]:
     """Get the recognized class name based on the string class_name (optionally case-
     sensitive or case-insensitive), or None if the class name does not exist.
 
     Any text after the first opening square or round bracket in class_name is
     ignored.
-    
+
     If schema is None, then we simply return the cleaned text as a class name,
     since we need schema to know which class names are valid.
 
     Args:
         class_name (str): The string to get the class name for. Any text after the
             first opening square or round bracket in class_name is ignored.
-        schema (Optional[SchemaView], optional): The schema that contains all the 
+        schema (Optional[SchemaView], optional): The schema that contains all the
             recognized classes. If None then we simply return the cleaned class_name
             (since we need schema to know which class names are valid)
         ignore_case (bool): If True then make class_name case-insensitive, but return
