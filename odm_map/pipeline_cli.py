@@ -149,13 +149,28 @@ def main(
         # These imports are placed here entirely for performance reasons. The imports can
         # take some time, so we make sure all cli error checking is done first. It will also
         # avoid these imports when the user runs with the --help cli flag.
+        from linkml_runtime import SchemaView
         from odm_map.pipeline import Pipeline
         from odm_map.utils.modules import get_source_schema
         from odm_map.utils.cli_utils import get_input_data_files
+        from odm_map.utils.schema_utils import all_classes_without_tree_root
 
         source_schema = get_source_schema(module, module_dir)
+        if source_schema and not isinstance(source_schema, SchemaView):
+            source_schema = SchemaView(source_schema)
+
         data_files = get_input_data_files(inputs, schema=source_schema)
 
+        # Report error if no data_files found
+        if not data_files:
+            all_classes = all_classes_without_tree_root(source_schema)
+            all_classes = ", ".join(all_classes)
+            source_schema: SchemaView = source_schema
+            raise CleanExitError(
+                f"No input files found for source dataset {source_schema.schema.name}. Recognized tables are: {all_classes}"
+            )
+
+        # Run the Pipeline (ie. do the full mapping)
         pipeline = Pipeline(
             module=module,
             module_dir=module_dir,
