@@ -167,6 +167,22 @@ def validate_columns_with_schema(
     return warning_log
 
 
+def remove_ignored_text_from_class_name(class_name: str) -> str:
+    """Remove any text to ignore when trying to identify a class name within a string.
+
+    This will remove all text after the first opening square or round bracket.
+
+    Args:
+        class_name (str): The class name string candidate to clean up.
+
+    Returns:
+        str: The string class_name with text we should ignore removed. After
+            cleaning up the string we can search for a class name in the cleaned
+            string.
+    """
+    return class_name.split("[")[0].split("(")[0]
+
+
 def get_class_name_from_file_name(
     file_name: Union[str, Path], schema: Optional[SchemaView] = None
 ) -> str:
@@ -188,7 +204,7 @@ def get_class_name_from_file_name(
         str: The class name for the data file.
     """
     base_name = os.path.splitext(os.path.basename(file_name))[0]
-    class_name = base_name.split("[")[0].split("(")[0]
+    class_name = remove_ignored_text_from_class_name(base_name)
     if schema is not None:
         return find_class(class_name, schema, ignore_case=True)
     return class_name
@@ -220,7 +236,7 @@ def find_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Option
         Optional[str]: The class that the string should represent, or None if no
             class was found.
     """
-    class_name = class_name.split("[")[0].split("(")[0]
+    class_name = remove_ignored_text_from_class_name(class_name)
 
     all_classes = all_classes_without_tree_root(schema)
 
@@ -258,7 +274,7 @@ def get_class(class_name: str, schema: SchemaView, ignore_case: bool) -> Optiona
         Optional[str]: The recognized class name, or None if class_name is not
             a recognized class name in the schema.
     """
-    class_name = class_name.split("[")[0].split("(")[0]
+    class_name = remove_ignored_text_from_class_name(class_name)
 
     all_classes = all_classes_without_tree_root(schema)
 
