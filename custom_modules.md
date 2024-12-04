@@ -9,11 +9,11 @@ This document is a work in progress.
 A module is a collection of rules and configuration options, split up into
 multiple steps, that define how to map from one database format (eg. NWSS) to a
 target database format (eg. ODM v2). The ODM Mapper contains some built-in
-modules located at [data/modules](data/modules), but custom modules can be
-created to support your own source and target database formats. A module and
-all its associated files are stored in a directory. When running the mapper
-from the command-line, either a module name (for built-in modules) or a module
-directory (for custom modules) can be specified.
+modules located at [/odm_map/data/modules](/odm_map/data/modules), but
+custom modules can be created to support your own source and target database
+formats. A module and all its associated files are stored in a directory. When
+running the mapper from the command-line, either a module name (for built-in
+modules) or a module directory (for custom modules) can be specified.
 
 This document, including its sub-documents, describe how to create your own
 module.
@@ -47,7 +47,7 @@ steps:
     params:
       output_dir: "{temp_dir}/cleaned_data/"
       output_name: "{class_name}[cleaned].csv"
-      progress_barid: Saving Cleaned Data
+      progress_bar_title: Saving Cleaned Data
   - action: map
     params:
       source_schema: schemas/nwss_reporting.yaml
@@ -69,7 +69,7 @@ steps:
     params:
       output_dir: "{output_dir}"
       output_name: "{class_name}.csv"
-      progress_barid: Saving Data
+      progress_bar_title: Saving Data
 ```
 
 The `title` is a required field that consists of a very short description of
@@ -168,13 +168,13 @@ Example:
     mapper_dir: mappers
 ```
 
-| Parameter      | Required/Optional | Description |
-| :--------------| :---------------- | :---------- |
-| source_schema  | Required          | The LinkML schema for the source dataset, that we are mapping from. This is a path relative to the root directory of the module. |
-| target_schema  | Required          | The LinkML schema for the target dataset, that we are mapping to. This is a path relative to the root directory of the module. |
-| mappers_dir    | Required          | The directory containing all the LinkML-Map schemas that specify how to perform the mapping. This is a path relative to the root directory of the module. See the [LinkML-Map Mappers](#linkml-map-mappers) section below for additional information on the map schemas found in the `mappers_dir` directory. |
-| prepare_barid  | Optional          | The ID/title to use for the progress bar displayed when preparing the data before the mapping occurs (eg. "Preparing Data"). If not specified a default string is used. |
-| map_barid      | Optional          | The ID/title to use for the progress bar displayed when doing the actual mapping (eg. "Mapping Data"). If not specified a default string is used. |
+| Parameter          | Required/Optional | Description |
+| :----------------- | :---------------- | :---------- |
+| source_schema      | Required          | The LinkML schema for the source dataset, that we are mapping from. This is a path relative to the root directory of the module. |
+| target_schema      | Required          | The LinkML schema for the target dataset, that we are mapping to. This is a path relative to the root directory of the module. |
+| mappers_dir        | Required          | The directory containing all the LinkML-Map schemas that specify how to perform the mapping. This is a path relative to the root directory of the module. See the [LinkML-Map Mappers](#linkml-map-mappers) section below for additional information on the map schemas found in the `mappers_dir` directory. |
+| prepare_bar_title  | Optional          | The title to use for the progress bar displayed when preparing the data before the mapping occurs (eg. "Preparing Data"). If not specified a default string is used. |
+| map_bar_title      | Optional          | The title to use for the progress bar displayed when doing the actual mapping (eg. "Mapping Data"). If not specified a default string is used. |
 
 The `map` action performs the actual mapping, transforming the data from a
 source dataset to a target dataset. A LinkML schema for both the source and
@@ -224,14 +224,14 @@ Example:
   params:
     output_dir: "{output_dir}/cleaned_data/"
     output_name: "{class_name}[cleaned].csv"
-    progress_barid: Saving Cleaned Data
+    progress_bar_title: Saving Cleaned Data
 ```
 
-| Parameter      | Required/Optional | Description |
-| :--------------| :---------------- | :---------- |
-| output_dir     | Required          | The directory to save the output to. Can include the `{output_dir}` (output directory, usually specified on the command-line), `{temp_dir}` (temporary directory, either specified on the command line or optionally within the system's temporary directory), and `{debug_mode}` string interpolation values. |
-| output_name    | Required          | The name to give each file that is saved within the output directory. These names can include all the string interpolation variables for `output_dir`, plus the additional value `{class_name}`, which is the class or table name that the data represents. |
-| progress_barid | Optional          | The ID/title to give the progress bar when saving the data to disk. If empty then no progress bar is shown. |
+| Parameter          | Required/Optional | Description |
+| :----------------- | :---------------- | :---------- |
+| output_dir         | Required          | The directory to save the output to. Can include the `{output_dir}` (output directory, usually specified on the command-line), `{temp_dir}` (temporary directory, either specified on the command line or optionally within the system's temporary directory), and `{debug_mode}` string interpolation values. |
+| output_name        | Required          | The name to give each file that is saved within the output directory. These names can include all the string interpolation variables for `output_dir`, plus the additional value `{class_name}`, which is the class or table name that the data represents. |
+| progress_bar_title | Optional          | The title to give the progress bar when saving the data to disk. If empty then no progress bar is shown. |
 
 Save all DataFrames to disk, in the directory specified by `output_dir` using
 the file names specified with `output_name`. `output_dir` can include the
