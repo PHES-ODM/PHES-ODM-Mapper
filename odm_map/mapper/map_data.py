@@ -347,8 +347,25 @@ class DataMapper(object):
         return data_splits
 
     def convert_mapped_data_to_dataframes(
-        self, mapped_data: Dict[str, List], target_schema: SchemaView
-    ):
+        self, mapped_data: Dict[str, List[Dict]], target_schema: Optional[SchemaView]
+    ) -> Dict[str, List[pd.DataFrame]]:
+        """Convert the specified data that has already been mapped to DataFrames.
+
+        Args:
+            mapped_data (Dict[str, List[Dict]]): The data to convert to DataFrames. The
+                keys are class names and the values are lists of rows for that class.
+                A row is a dictionary where the keys are the column names and the values
+                are the value of that column.
+            target_schema (Optional[SchemaView]): The schema that the data conforms to.
+                This is used to get the correct class names and to add any missing
+                columns in the data. If None then we cannot guarantee if a class name
+                is correct (but we do clean the class name by removing everything after the
+                first opening square or round bracket), and we cannot add missing columns.
+
+        Returns:
+            Dict[str, List[pd.DataFrame]]: Dictionary of all DataFrames. The keys are the
+                class names and the values are lists of DataFrames belonging to the class.
+        """
         # Convert the data to a DataFrame, store in all_mapped_data, and save to disk
         all_mapped_data = {}
         for class_name, target_data in mapped_data.items():
