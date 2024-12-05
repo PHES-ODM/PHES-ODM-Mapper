@@ -57,6 +57,16 @@ A full installation can be completed with the following command:
 pip install git+https://github.com/Big-Life-Lab/PHES-ODM-Mapper.git
 ```
 
+If the above does not work, you can try:
+
+```console
+pip install git+ssh://git@github.com/Big-Life-Lab/PHES-ODM-Mapper.git
+```
+
+If neither `pip install` commands work, then follow the instructions in [Access
+to Repository](#access-to-repository) to create an SSH key then retry the second
+`pip install git+ssh` command.
+
 ## Installation (For Development)
 
 Skip this section if you will not be developing for the PHES-ODM-Mapper library
