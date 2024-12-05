@@ -54,7 +54,7 @@ pip uninstall odm-map
 A full installation can be completed with the following command:
 
 ```console
-pip install git+ssh://git@github.com/Big-Life-Lab/PHES-ODM-Mapper.git
+pip install git+https://github.com/Big-Life-Lab/PHES-ODM-Mapper.git
 ```
 
 ## Installation (For Development)
