@@ -5,4 +5,4 @@ tqdm
 linkml-map
 openpyxl
 sortedcontainers
-typer
+typer>=0.14
