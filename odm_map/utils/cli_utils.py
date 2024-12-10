@@ -19,6 +19,7 @@ from odm_map.utils.schema_utils import (
     find_class,
     get_class,
 )
+from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
 
 # When explicitly specifying the class name that a file belongs to (when using the CLI),
@@ -26,6 +27,8 @@ from odm_map.utils.clean_exit_error import CleanExitError
 # if CLASS_PREFIX_SEPARATOR is ":", then we can use "WWMeasure:path/to/data.csv" to
 # explicitly specify that data.csv belongs to the class WWMeasure.
 CLASS_PREFIX_SEPARATOR = ":"
+
+logger = get_logger(__name__)
 
 
 def get_input_data_files_from_dir(
@@ -162,9 +165,15 @@ def get_file_info(
             belongs to a recognized class)
     """
 
-    def _return_error(msg: str) -> None:
+    def _return_error(msg: str, file: str) -> None:
         if exception_on_error:
+            msg = f"{msg}: {file}"
             raise CleanExitError(msg)
+        else:
+            if not msg.endswith("."):
+                msg = f"{msg}."
+            msg = f"{msg} Ignoring file: {file}"
+            logger.warning(msg)
         return None
 
     file = str(file)
@@ -174,7 +183,7 @@ def get_file_info(
             # Format is class_name:path/file.ext
             orig_class_name, orig_file = file.split(":", maxsplit=1)
             if not os.path.isfile(orig_file):
-                return _return_error(f"File does not exist: {orig_file}")
+                return _return_error("File does not exist", orig_file)
 
             if schema is not None:
                 # Make sure the explicit class exists
@@ -184,14 +193,12 @@ def get_file_info(
                 # Assume it's valid
                 class_name = orig_class_name
             if not class_name:
-                return _return_error(
-                    f"Unrecognized table '{orig_class_name}' for file: {file}"
-                )
+                return _return_error(f"Unrecognized table '{orig_class_name}'", file)
 
             return {class_name: [orig_file]}
         else:
             if not os.path.isfile(file):
-                return _return_error(f"File does not exist: {file}")
+                return _return_error("File does not exist", file)
 
             # No explicit class specified in the file, so try to determine the class based on
             # the file name.
@@ -199,15 +206,26 @@ def get_file_info(
                 os.path.splitext(os.path.basename(file))[0], schema, ignore_case=True
             )
             if class_name is None:
-                return _return_error(f"Could not determine table for file: {file}")
+                return _return_error(
+                    "File name must match a table name, but none were found", file
+                )
 
             return {class_name: [file]}
     elif ext in [".xlsx"]:
         if not os.path.isfile(file):
-            return _return_error(f"File does not exist: {file}")
-        return get_excel_file_info(file, schema=schema)
+            return _return_error("File does not exist", file)
+        try:
+            info = get_excel_file_info(file, schema=schema)
+        except Exception:
+            return _return_error("Could not load Excel file", file)
+        if not info:
+            return _return_error(
+                "Excel file sheet names must match table names, but none were found",
+                file,
+            )
+        return info
     else:
-        return _return_error(f"Unrecognized extension '{ext}' for file: {file}")
+        return _return_error(f"Unrecognized extension '{ext}'", file)
 
 
 def get_input_data_files(
@@ -249,9 +267,11 @@ def get_input_data_files(
             )
             if info is not None:
                 all_files = merge_dicts_of_lists([all_files, info])
-        else:
+        elif inp.is_file():
             # Input is a file, so get the file info dictionary {class_name: [file]}
             info = get_file_info(inp, schema=schema, parse_class_prefix=True)
             if info is not None:
                 all_files = merge_dicts_of_lists([all_files, info])
+        else:
+            raise CleanExitError(f"Input does not exist: {inp}")
     return all_files
