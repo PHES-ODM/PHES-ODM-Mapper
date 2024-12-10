@@ -490,9 +490,14 @@ class DataMapper(object):
         )
 
         if len(data) == 0:
-            logger.warning(
-                "No data loaded from disk. Be sure the file names match the source schema table names, that there are files in the directory, and that the files are not empty."
-            )
+            if data_files:
+                logger.warning(
+                    "No data loaded from disk for mapping. Be sure the file names match the source table names, Excel files have sheet names matching table names, that there are files in the directory, and that the files are not empty."
+                )
+            else:
+                logger.warning(
+                    "No data found for mapping. Be sure the input data belong to recognized tables"
+                )
             return {}, {}
 
         logger.debug(f"Data loaded for source tables: {list(data.keys())}")
