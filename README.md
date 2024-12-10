@@ -44,7 +44,7 @@ Linux:
    above) to [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
 
 Once you have sent the public key, you must wait for a reply to confirm that
-you can continue with the installation. In the `pip install` step before, run
+you can continue with the installation. In the `pip install` step below, run
 the one that starts with `pip install git+ssh`.
 
 ## Installation
