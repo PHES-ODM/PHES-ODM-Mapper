@@ -25,6 +25,8 @@ from datetime import datetime
 import tempfile
 import pandas as pd
 
+from linkml_runtime import SchemaView
+
 from odm_map.actions.action_clean_data import action_clean_data
 from odm_map.actions.action_save_data import action_save_data
 from odm_map.actions.action_map_data import action_map_data
@@ -42,6 +44,7 @@ from odm_map.utils.modules import (
 from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
 from odm_map.utils.tracking_slots import load_data_with_tracking_columns
+from odm_map.utils.schema_utils import all_classes_without_tree_root
 
 logger = get_logger(__name__)
 
@@ -78,6 +81,14 @@ class Pipeline(object):
             module=module, module_dir=module_dir
         )
         self.module_dir = get_module_dir(module=module, module_dir=module_dir)
+
+        # Load the source schema
+        self.source_schema = self.get_module_path(self.config[MODULE_SOURCE_SCHEMA_KEY])
+        self.source_schema = SchemaView(self.source_schema)
+
+        all_classes = all_classes_without_tree_root(self.source_schema)
+        all_classes = ", ".join(all_classes)
+        logger.info(f"Recognized input tables are: {all_classes}")
 
     def get_module_path(self, path: str) -> Optional[Path]:
         if not path:
@@ -136,13 +147,11 @@ class Pipeline(object):
             self.temp_dir = Path(temp_dir)
         logger.debug(f"Using temporary directory {self.temp_dir}")
 
-        source_schema = self.get_module_path(self.config[MODULE_SOURCE_SCHEMA_KEY])
-
         # Load all data
         data_frames = load_data_with_tracking_columns(
             data_files=data_files,
             max_rows=max_rows,
-            schema=source_schema,
+            schema=self.source_schema,
             random_sample_data=RANDOM_SAMPLE_DATA,
             progress_barid=LOADING_BARID,
             add_all_tracking_columns=True,
