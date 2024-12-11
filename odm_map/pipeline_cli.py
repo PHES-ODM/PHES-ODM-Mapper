@@ -165,7 +165,7 @@ def main(
             all_classes = all_classes_without_tree_root(source_schema)
             all_classes = ", ".join(all_classes)
             raise CleanExitError(
-                f"No input files found for source dataset {source_schema.schema.name}. Recognized tables are: {all_classes}"
+                f"No input files found for source dataset {source_schema.schema.name}. Ensure that there are CSV or TSV files named with a recognized table name, and/or there are Excel files with sheets named after a table. Recognized tables are: {all_classes}"
             )
 
         # Run the Pipeline (ie. do the full mapping)

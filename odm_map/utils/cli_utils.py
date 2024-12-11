@@ -18,6 +18,7 @@ from odm_map.utils.general_utils import (
 from odm_map.utils.schema_utils import (
     find_class,
     get_class,
+    all_classes_without_tree_root,
 )
 from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
@@ -219,8 +220,10 @@ def get_file_info(
         except Exception:
             return _return_error("Could not load Excel file", file)
         if not info:
+            all_classes = all_classes_without_tree_root(schema)
+            all_classes = ", ".join(all_classes)
             return _return_error(
-                "Excel file sheet names must match table names, but none were found",
+                f"Excel file sheet names must match table names, but none were found. Allowable classes are: {all_classes}",
                 file,
             )
         return info
