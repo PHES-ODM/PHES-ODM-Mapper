@@ -16,9 +16,8 @@ python3 pipeline_cli.py \
 
 from typing import List, Annotated
 from datetime import datetime
-import sys
 import typer
-from click.exceptions import UsageError
+from click.exceptions import UsageError, ClickException
 
 from odm_map.utils.modules import get_all_modules
 from odm_map.utils.logger import get_logger, make_logger_bullet_list
@@ -184,13 +183,11 @@ def main(
             debug_mode=debug,
         )
     except CleanExitError as e:
-        logger.error(str(e))
-        if "get_ipython" not in globals():
-            sys.exit(1)
+        print("", end="\r")
+        raise ClickException(str(e))
     except KeyboardInterrupt:
-        logger.error("Interrupted by user")
-        if "get_ipython" not in globals():
-            sys.exit(1)
+        print("", end="\r")
+        raise ClickException("Interrupted by user")
 
 
 if __name__ == "__main__":
@@ -198,26 +195,28 @@ if __name__ == "__main__":
         # fmt: off
         opts = {
             # ODM v1 to v2,
-            # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
-            "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/"],
-            # "inputs": ["a.xlsx"],
-            "module": "odm-v1-to-v2",
-            "module_dir": None,
-            # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"],
-            # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
-            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"],
-            "output_dir": "../gen/odm-v1-to-v2-test-new",
-            "temp_dir": None, #"../gen/odm-v1-to-v2-test-excel/temp",
+            # # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
+            # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/"],
+            # # "inputs": ["a.xlsx"],
+            # "module": "odm-v1-to-v2",
+            # "module_dir": None,
+            # # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"],
+            # # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
+            # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"],
+            # "output_dir": "../gen/odm-v1-to-v2-test-new",
+            # "temp_dir": None, #"../gen/odm-v1-to-v2-test-excel/temp",
 
             # NWSS to v2,
-            # "module": "nwss-reporting-to-v2",
-            # "module_dir": None,
-            # # "inputs": ["../../../PHES-ODM-Data/nwss/private_renamed_test/"],
+            "module": "nwss-reporting-to-v2",
+            "module_dir": None,
+            # "inputs": ["../../../PHES-ODM-Data/nwss/private_renamed_test/"],
             # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/"],
-            # # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"],
-            # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"],
-            # "output_dir": "../gen/nwss-reporting-to-v2-xl2",
-            # "temp_dir": "../gen/nwss-reporting-to-v2-xl2/temp",
+            # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/nwss[cdc-nwss-restricted-dataset-wastewater-20240730].csv"],
+            "inputs": ["../../../PHES-ODM-Data/nwss/test_mathew/"],
+            # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"],
+            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"],
+            "output_dir": "../gen/nwss-reporting-to-v2-xl2",
+            "temp_dir": "../gen/nwss-reporting-to-v2-xl2/temp",
 
             "max_processes": 1,
             "max_rows": 1000,
