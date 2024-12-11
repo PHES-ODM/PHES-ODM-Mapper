@@ -223,7 +223,7 @@ def get_file_info(
             all_classes = all_classes_without_tree_root(schema)
             all_classes = ", ".join(all_classes)
             return _return_error(
-                f"Excel file sheet names must match table names, but none were found. Allowable classes are: {all_classes}",
+                f"Excel file sheet names must match table names, but none were found. Allowable tables are: {all_classes}",
                 file,
             )
         return info
