@@ -130,7 +130,7 @@ def get_excel_file_info(
 
 def get_file_info(
     file: Path,
-    schema: Optional[SchemaView],
+    schema: Optional[Union[SchemaView, str, Path]],
     parse_class_prefix: bool = False,
     exception_on_error: bool = True,
 ) -> Optional[Dict]:
@@ -141,10 +141,12 @@ def get_file_info(
 
     Args:
         file (Path): The file to get the information for.
-        schema (Optional[SchemaView]): The SchemaView that the file belongs to. If set then
-            the class name for the file (based on the file name or the Excel
-            sheet names) will be verified. If it is not a recognized class then None
-            is returned (or for Excel files the sheet is ignored).
+        schema (Optional[Union[SchemaView, str, Path]]): Path to LinkML schema or the
+            SchemaView that the file belongs to. If set then the class name for the file
+            (based on the file name or the Excel sheet names) will be verified. If it
+            is not a recognized class and exception_on_error is False then None is
+            returned (or for Excel files the sheet is ignored). If it is not a recognized
+            class and exception_on_error is True then an exception is raied.
         parse_class_prefix (bool, optional): If True then if the file is a CSV, TSV, or
             TXT file then try to parse the explicit class name from the passed-in file
             name. The explicit class name is prefixed to the file path, followed by
@@ -176,6 +178,9 @@ def get_file_info(
             msg = f"{msg} Ignoring file: {file}"
             logger.warning(msg)
         return None
+
+    if schema is not None and not isinstance(schema, SchemaView):
+        schema = SchemaView(schema)
 
     file = str(file)
     ext = os.path.splitext(file)[1].lower()
