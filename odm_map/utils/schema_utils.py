@@ -6,7 +6,6 @@ Utility functions for LinkML schemas.
 from typing import Dict, List, Union, Optional
 from dataclasses import asdict
 import yaml
-import pandas as pd
 from pathlib import Path
 import numpy as np
 
@@ -16,6 +15,9 @@ from odm_map.utils.logger import make_logger_bullet_list
 from odm_map.utils.general_utils import (
     choose_ignore_case_value,
 )
+from odm_map.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def all_classes_without_tree_root(schema: SchemaView) -> List[str]:
@@ -80,28 +82,33 @@ def get_ranges_of_slot(cls: str, slot: str, schema: SchemaView) -> List[str]:
 
 
 def validate_columns_with_schema(
-    df: pd.DataFrame,
+    columns: List[str],
     schema: Union[SchemaView, str, Path],
     class_name: str,
     file: Union[str, Path],
+    show_log: bool = True,
 ) -> List[str]:
     """Check for missing or unrecognized columns in the DataFrame. If missing or unrecognized
     columns are found then they are returned to the caller, so that the results can be
     reported to the user. No exception or other error occurs. It is for informational purposes.
 
     Args:
-        df (pd.DataFrame): The DataFrame to validate the columns of.
+        columns (List[str]): The list of columns to validate (usually from a DataFrame).
         schema (Union[SchemaView, str, Path]): The SchemaView that defines the class
             that the DataFrame belongs to. It will provide all known columns for the class.
         class_name (str): The class (in the schema) that df belongs to.
         file (Union[str, Path]): The file that the DataFrame was loaded from. This is so
             we can tell the user which file has missing or unrecognized columns.
+        show_log (bool): If True then output logger information that shows which columns
+            were missing and which columns were unrecognized. If False then do not output
+            the log, but instead return a list of strings representing the log.
 
     Returns:
         List[str]: A list of messages that say which columns in the DataFrame are missing
             or unrecognized. If there are no missing or unrecognized columns then
             this is empty ([]).
     """
+    columns = list(columns)
     warning_log = []
 
     if isinstance(schema, (str, Path)):
@@ -114,7 +121,7 @@ def validate_columns_with_schema(
         [
             attr
             for attr, defn in class_defn.attributes.items()
-            if attr not in df.columns and defn.required
+            if attr not in columns and defn.required
         ],
         key=lambda x: str(x).lower(),
     )
@@ -123,7 +130,7 @@ def validate_columns_with_schema(
         [
             attr
             for attr, defn in class_defn.attributes.items()
-            if attr not in df.columns and not defn.required
+            if attr not in columns and not defn.required
         ],
         key=lambda x: str(x).lower(),
     )
@@ -139,9 +146,7 @@ def validate_columns_with_schema(
 
     # Check for extra unrecognized columns
     all_attributes = list(class_defn.attributes.keys())
-    unrecognized_attributes = [
-        attr for attr in df.columns if attr not in all_attributes
-    ]
+    unrecognized_attributes = [attr for attr in columns if attr not in all_attributes]
     if unrecognized_attributes:
         # Collect any recommended renaming of attributes (based purely on capitalization. eg. If
         # sampleID is a recognized attribute but the DataFrame has an attribute named SampleID, then
@@ -163,6 +168,11 @@ def validate_columns_with_schema(
         warning_log.append(
             f"The following unrecognized columns were found and will be ignored in table '{class_name}' from file {file}:\n{unrecognized_with_recommended_str}"
         )
+
+    if show_log:
+        for msg in warning_log:
+            logger.warning(msg)
+
     return warning_log
 
 
