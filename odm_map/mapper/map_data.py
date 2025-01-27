@@ -169,7 +169,7 @@ class DataMapper(object):
                 slot_defn = schema.induced_slot(
                     slot_name=slot_name, class_name=class_name
                 )
-                rng = yaml.safe_load(slot_defn.range)
+                rng = yaml.safe_load(str(slot_defn.range))
                 # Add the casting function according to the range
                 if isinstance(rng, list):
                     # Order of a multi-range should be float, int, string. This will ensure
@@ -374,7 +374,13 @@ class DataMapper(object):
 
             # Remove any extra info from the class_name
             # eg "protocolSteps[inhibition]" becomes "protocolSteps"
+            orig_class_name = class_name
             class_name = find_class(class_name, target_schema, ignore_case=True)
+            if class_name is None:
+                logger.error(
+                    f"Found mapped class name '{orig_class_name}' that does not exist in target schema, discarding data."
+                )
+                continue
 
             df = pd.DataFrame(target_data)
 
