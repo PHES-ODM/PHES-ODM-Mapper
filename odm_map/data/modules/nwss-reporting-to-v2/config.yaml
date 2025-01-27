@@ -6,6 +6,8 @@ steps:
   - action: clean
     params:
       schema: schemas/nwss_reporting.yaml
+      operations:
+        - correct_enums: True
   - action: save
     if: "{debug_mode}"
     params:

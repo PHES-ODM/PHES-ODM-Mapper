@@ -1,0 +1,40 @@
+title: PHA4GE to ODM v2
+
+source_schema: schemas/pha4ge.yaml
+
+steps:
+  - action: clean
+    params:
+      schema: schemas/pha4ge.yaml
+      operations:
+        - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_underscores ]
+        - add_ontology_ids_to_enums: True
+        - correct_enums: True
+  - action: save
+    if: "{debug_mode}"
+    params:
+      output_dir: "{temp_dir}/cleaned_data/"
+      output_name: "{class_name}[cleaned].csv"
+      progress_bar_title: Saving Cleaned Data
+  - action: map
+    params:
+      source_schema: schemas/pha4ge.yaml
+      target_schema: schemas/odm_v2.yaml
+      mappers_dir: mappers
+  # - action: filter
+  #   params:
+  #     filters: filters/nwss_reporting_to_v2_filters.csv
+  # - action: save
+  #   if: "{debug_mode}"
+  #   params:
+  #     output_dir: "{temp_dir}/mapped_data/"
+  #     output_name: "{class_name}[preid].csv"
+  # - action: generate_ids
+  #   params:
+  #     id_code: ids/nwss_reporting_to_v2_id_code.xlsx
+  #     id_config: ids/nwss_reporting_to_v2_id_config.yaml
+  - action: save
+    params:
+      output_dir: "{output_dir}"
+      output_name: "{class_name}.csv"
+      progress_bar_title: Saving Data
