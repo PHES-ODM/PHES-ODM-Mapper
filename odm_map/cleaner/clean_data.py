@@ -1,14 +1,17 @@
 """
 Class for cleaning data.
 
-fix_data_with_schema will make sure column names have the correct capitalization (ie. they match the slots in the schema).
-It will also go through all columns that are enumerations and correct the capitalization of all values in the column.
+The cleaning options are specified with the clean_operations parameters of the functions clean_data and clean_single_data. It is
+dictionary where the keys are the cleaning option names and the values are the parameters for the option. The type of the
+parameters depend on the option. See the clean_data function for a list of options and their parameters.
 """
 
 from pathlib import Path
 import pandas as pd
 import os
-from typing import Tuple, List, Union, Optional, Dict
+import re
+from typing import Tuple, List, Union, Optional, Dict, Any
+import yaml
 
 from linkml_runtime import SchemaView
 
@@ -21,7 +24,11 @@ from odm_map.utils.general_utils import (
 )
 from odm_map.utils.logger import get_logger, make_logger_bullet_list
 from odm_map.utils.tracking_slots import get_all_tracking_slots
-from odm_map.utils.schema_utils import get_ranges_of_slot, all_classes_without_tree_root
+from odm_map.utils.schema_utils import (
+    get_ranges_of_slot,
+    all_classes_without_tree_root,
+    validate_columns_with_schema,
+)
 from odm_map.progress import ProgressCounter
 
 CLEAN_BARID = "Cleaning Data"
@@ -61,25 +68,209 @@ class DataCleaner(object):
         if clear:
             self.log = {}
 
-    def fix_data_with_schema(self, df: pd.DataFrame, class_name: str) -> pd.DataFrame:
-        """Using the schema, do some basic cleanup of the DataFrame so that it better matches
-        the requirements of the schema. We will make sure the column names and enumeration values have the
-        correct capitalization, and drop any columns that are not recognized by the schema.
+    def remove_ontology_id(self, val: str) -> str:
+        """Remove an ontology ID from the end of a value. For example, "degree Celsius (C) [UO:0000027]" would
+            become "degree Celsius (C)"
 
         Args:
-            df (pd.DataFrame): The DataFrame to clean up. The original is left unchanged (a copy is returned).
-            class_name (str): The class name of the table.
+            val (str): The value to remove the ontology ID from.
 
         Returns:
-            pd.DataFrame: A copy of the DataFrame, with the basic cleanup performed.
+            str: The value with the ontology ID removed. If there was no ontology ID it is returned unchanged.
+        """
+        val = re.sub(r"\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\]$", "", val.strip()).strip()
+        return val
+
+    def clean_remove_unknown_columns(
+        self, df: pd.DataFrame, class_name: str
+    ) -> pd.DataFrame:
+        """Cleaning operation to remove unknown columns from the DataFrame.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to remove the unknown columns from. A copy of this
+                DataFrame is made with the original left unchanged.
+            class_name (str): The class name that the DataFrame belongs to. We use this class
+                to find the known columns.
+
+        Returns:
+            pd.DataFrame: The DataFrame with unknown columns removed.
         """
         if class_name not in all_classes_without_tree_root(self.schema):
             logger.debug(
-                f"Not cleaning data for class {class_name} since class is not recognized"
+                f"Not removing unknown columns for class {class_name} since class is not recognized"
             )
             return df
 
-        logger.debug(f"Cleaning data for class {class_name}")
+        logger.debug(f"Removing unknown columns for class {class_name}")
+
+        class_definition = self.schema.induced_class(class_name)
+        all_tracking_slots = get_all_tracking_slots()
+
+        keep_columns = [
+            c
+            for c in df.columns
+            if c in all_tracking_slots or c in class_definition.attributes
+        ]
+        unknown_columns = list(df.columns) - keep_columns
+        if len(unknown_columns) > 0:
+            for c in unknown_columns:
+                logger.warning(f"Removed unrecognized column: {c}")
+
+        return df[keep_columns].copy()
+
+    def clean_format_columns(
+        self,
+        df: pd.DataFrame,
+        class_name: str,
+        format_columns_options: Union[str, List[str]],
+    ) -> pd.DataFrame:
+        """Cleaning operation to format all column names. See DataCleaner.clean_data for all available cleaning options (specified
+        with the "format_columns" clean_option).
+
+        Args:
+            df (pd.DataFrame): The DataFrame to clean the column names of. A copy of this DataFrame is made and
+                the original is left unchanged.
+            class_name (str): The class name that the DataFrame belongs to. It must exist in the schema for the DataCleaner.
+            format_columns_options (Union[str, List[str]]): The formatting operations top apply to the column names.
+                See clean_data for a list of all available formatting options (specified with the "format_columns" clean_option).
+
+        Returns:
+            pd.DataFrame: The DataFrame with the column names formatted.
+        """
+        if class_name not in all_classes_without_tree_root(self.schema):
+            logger.debug(
+                f"Not removing unknown columns for class {class_name} since class is not recognized"
+            )
+            return df
+
+        logger.debug(f"Removing unknown columns for class {class_name}")
+
+        if isinstance(format_columns_options, str):
+            format_columns_options = [format_columns_options]
+        all_tracking_slots = get_all_tracking_slots()
+
+        columns = []
+        for val in df.columns:
+            if val in all_tracking_slots:
+                columns.append(val)
+                continue
+            for options in format_columns_options:
+                if isinstance(options, str):
+                    options = yaml.safe_load(options)
+                    if isinstance(options, str):
+                        options = {options: True}
+                for option, param in options.items():
+                    if option == "lowercase":
+                        val = val.lower()
+                    if option == "uppercase":
+                        val = val.upper()
+                    if option == "alpha_numeric_underscore":
+                        val = re.sub("[^A-Za-z0-9]", "_", val)
+                    if option == "single_underscores":
+                        val = re.sub("__+", "_", val)
+                    if option == "trim_underscores":
+                        val = val.strip("_")
+                    if option == "trim_whitespace":
+                        val = re.sub(r"^\s*", "", val)
+                        val = re.sub(r"\s*$", "", val)
+                    if option == "remove_chars":
+                        for ch in param:
+                            val = val.replace(ch, "")
+                    if option == "remove_special":
+                        val = re.sub(r"[^A-Za-z0-9\s]", "", val)
+            columns.append(val)
+
+        changes = [
+            f"{orig_column} -> {new_column}"
+            for orig_column, new_column in zip(df.columns, columns)
+            if orig_column != new_column
+        ]
+        if len(changes) > 0:
+            changes = sorted(changes, key=lambda x: str(x).lower())
+            changes_str = make_logger_bullet_list(changes)
+            logger.info(f"The following column name changes were made:\n{changes_str}")
+
+        df = df.copy()
+        df.columns = columns
+
+        columns_without_tracking_slots = [
+            c for c in df.columns if c not in all_tracking_slots
+        ]
+        validate_columns_with_schema(
+            columns_without_tracking_slots,
+            self.schema,
+            class_name,
+            file=None,
+            show_log=True,
+        )
+
+        return df
+
+    def clean_add_ontology_ids_to_enums(
+        self, df: pd.DataFrame, class_name: str
+    ) -> pd.DataFrame:
+        if class_name not in all_classes_without_tree_root(self.schema):
+            logger.debug(
+                f"Not adding ontology IDs to enums for class {class_name} since class is not recognized"
+            )
+            return df
+
+        logger.debug(f"Correcting capitalization for class {class_name}")
+        df = df.copy()
+
+        class_definition = self.schema.induced_class(class_name)
+
+        def _get_onto_value(
+            v, permissible_values: List[str], permissible_values_simplified: List[str]
+        ) -> str:
+            try:
+                idx = permissible_values_simplified.index(v.lower())
+                return permissible_values[idx]
+            except Exception:
+                return v
+
+        for slot_name in df.columns:
+            if slot_name not in class_definition.attributes:
+                continue
+
+            slot_ranges = get_ranges_of_slot(class_name, slot_name, self.schema)
+            if slot_ranges:
+                for slot_range in slot_ranges:
+                    # Get enumeration for the slot range, if there is one, and fix up the capitalization of all slot values.
+                    enum = self.schema.all_enums().get(str(slot_range), None)
+                    if enum is not None:
+                        permissible_values = list(enum.permissible_values.keys())
+                        permissible_values_simplified = [
+                            self.remove_ontology_id(v).lower()
+                            for v in permissible_values
+                        ]
+                        df[slot_name] = df[slot_name].map(
+                            lambda x: _get_onto_value(
+                                x, permissible_values, permissible_values_simplified
+                            )
+                        )
+
+        return df
+
+    def clean_correct_enums(self, df: pd.DataFrame, class_name: str) -> pd.DataFrame:
+        """Using the schema, correct the capitalization and whitespace of all enumeration values so that they
+        match the capitalization and whitespace in the schema. If it is not a recognized enumeration value it is
+        left unchanged.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to correct. The original is left unchanged (a copy is returned).
+            class_name (str): The class name of the table.
+
+        Returns:
+            pd.DataFrame: A copy of the DataFrame, with the enumeration value capitalization corrected.
+        """
+        if class_name not in all_classes_without_tree_root(self.schema):
+            logger.debug(
+                f"Not correcting enum capitalization for class {class_name} since class is not recognized"
+            )
+            return df
+
+        logger.debug(f"Correcting capitalization for class {class_name}")
         df = df.copy()
 
         class_definition = self.schema.induced_class(class_name)
@@ -101,79 +292,89 @@ class DataCleaner(object):
         unrecognized_history = {}
 
         # Fix enumerations (Use correct capitalization), and only keep recognized slots
-        keep_columns = []
         all_tracking_slots = get_all_tracking_slots()
         for slot_name in df.columns:
             if slot_name in all_tracking_slots:
-                keep_columns.append(slot_name)
                 continue
             if slot_name not in class_definition.attributes:
                 continue
-            keep_columns.append(slot_name)
             slot_ranges = get_ranges_of_slot(class_name, slot_name, self.schema)
 
             if slot_ranges:
+                permissible_values = []
+
+                can_be_anything = False
                 for slot_range in slot_ranges:
                     # Get enumeration for the slot range, if there is one, and fix up the capitalization of all slot values.
                     enum = self.schema.all_enums().get(str(slot_range), None)
                     if enum is not None:
-                        permissible_values = list(enum.permissible_values.keys())
-                        lowercase_permissible_values = [
-                            v.lower() for v in permissible_values
-                        ]
-                        df_orig = df[slot_name].copy()
-                        replacements_df = df[slot_name].apply(
-                            lambda x: choose_ignore_case_value(
-                                x,
-                                permissible_values,
-                                lowercase_permissible_values,
-                                return_same_if_missing=False,
-                            )
-                        )
+                        cur_permissible_values = list(enum.permissible_values.keys())
+                        if len(cur_permissible_values) == 0:
+                            can_be_anything = True
+                        permissible_values += cur_permissible_values
+                    else:
+                        can_be_anything = True
 
-                        # Keep a history of which enum values are invalid. These are values where replacements_df
-                        # is None but the corresponding value in df[slot_name] was not empty.
-                        unrecognized_enums_filt = pd.isna(replacements_df) & (
-                            ~pd.isna(df[slot_name]) | df[slot_name] != ""
-                        )
-                        if unrecognized_enums_filt.any():
-                            if slot_name not in unrecognized_history:
-                                unrecognized_history[slot_name] = {}
-                            unrecognized_str = df[slot_name][unrecognized_enums_filt]
-                            # Go through each unrecognized enum value and update the count of how many times it is found
-                            for enum_value in unrecognized_str.unique():
-                                if enum_value not in unrecognized_history[slot_name]:
-                                    unrecognized_history[slot_name][enum_value] = 0
-                                unrecognized_history[slot_name][enum_value] += (
-                                    (unrecognized_str == enum_value)
-                                    | (pd.isna(enum_value) & pd.isna(unrecognized_str))
-                                ).sum()
-                            # Set the blank unrecognized values in replacements_df to the original enum value.
-                            replacements_df[unrecognized_enums_filt] = df[slot_name][
-                                unrecognized_enums_filt
-                            ]
+                lowercase_permissible_values = [
+                    re.sub("  +", " ", v.lower()) for v in permissible_values
+                ]
+                df_orig = df[slot_name].copy()
+                replacements_df = df[slot_name].apply(
+                    lambda x: choose_ignore_case_value(
+                        re.sub("  +", " ", x),
+                        permissible_values,
+                        lowercase_permissible_values,
+                        return_same_if_missing=can_be_anything,
+                    )
+                )
 
-                        df[slot_name] = replacements_df
+                # Keep a history of which enum values are invalid. These are values where replacements_df
+                # is None but the corresponding value in df[slot_name] was not empty.
+                unrecognized_enums_filt = pd.isna(replacements_df) & (
+                    ~pd.isna(df[slot_name]) | df[slot_name] != ""
+                )
+                if unrecognized_enums_filt.any():
+                    if slot_name not in unrecognized_history:
+                        unrecognized_history[slot_name] = {}
+                    unrecognized_str = df[slot_name][unrecognized_enums_filt]
+                    # Go through each unrecognized enum value and update the count of how many times it is found
+                    for enum_value in unrecognized_str.unique():
+                        if enum_value not in unrecognized_history[slot_name]:
+                            unrecognized_history[slot_name][enum_value] = 0
+                        unrecognized_history[slot_name][enum_value] += (
+                            (unrecognized_str == enum_value)
+                            | (pd.isna(enum_value) & pd.isna(unrecognized_str))
+                        ).sum()
+                    # Set the blank unrecognized values in replacements_df to the original enum value.
+                    replacements_df[unrecognized_enums_filt] = df[slot_name][
+                        unrecognized_enums_filt
+                    ]
 
-                        # Keep a history of which enum values were changed
-                        changes_filt = (df_orig != df[slot_name]) & (
-                            ~pd.isna(df_orig) | ~pd.isna(df[slot_name])
-                        )
-                        if changes_filt.any():
-                            # changes_str is "origEnumValue -> fixedEnumValue"
-                            changes_str = (
-                                df_orig[changes_filt]
-                                + " -> "
-                                + df[slot_name][changes_filt]
-                            )
-                            if slot_name not in changes_history:
-                                changes_history[slot_name] = {}
-                            slot_changes_history = changes_history[slot_name]
-                            # Loop through all changes_str values, and increase the count for each
-                            for change_key in changes_str:
-                                if change_key not in slot_changes_history:
-                                    slot_changes_history[change_key] = 0
-                                slot_changes_history[change_key] += 1
+                df[slot_name] = replacements_df
+
+                # Keep a history of which enum values were changed
+                changes_filt = df_orig.map(lambda x: "" if pd.isna(x) else x) != df[
+                    slot_name
+                ].map(lambda x: "" if pd.isna(x) else x)
+                if changes_filt.any():
+                    # changes_str is "origEnumValue -> fixedEnumValue"
+                    changes_str = (
+                        df_orig[changes_filt].astype(
+                            str
+                        )  # .map(lambda x: str(type(x)))
+                        + " -> "
+                        + df[slot_name][changes_filt].astype(
+                            str
+                        )  # .map(lambda x: str(type(x)))
+                    )
+                    if slot_name not in changes_history:
+                        changes_history[slot_name] = {}
+                    slot_changes_history = changes_history[slot_name]
+                    # Loop through all changes_str values, and increase the count for each
+                    for change_key in changes_str:
+                        if change_key not in slot_changes_history:
+                            slot_changes_history[change_key] = 0
+                        slot_changes_history[change_key] += 1
 
         # Report the capitalization changes to the user
         def _show_history(history: Dict[str, Dict[str, int]], msg: str):
@@ -203,45 +404,8 @@ class DataCleaner(object):
         )
         _show_history(
             changes_history,
-            msg="The following enumeration values were automatically corrected for capitalization in column '{slot_name}' of table '{class_name}':",
+            msg="The following enumeration values were automatically corrected for capitalization and spacing in column '{slot_name}' of table '{class_name}':",
         )
-
-        return df[keep_columns]
-
-    def fix_data_no_schema(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Do some general fixes to the DataFrame. This includes converting dates and datetimes to proper format
-        (as recognized by LinkML), and converting booleans to "true"/"false" strings. These are all fixes
-        that are independent of any LinkML schema.
-
-        Args:
-            df (pd.DataFrame): The DataFrame to fix.
-
-        Returns:
-            pd.DataFrame: The fixed DataFrame. The original is left unchanged, this is a copy.
-        """
-        # df = df.copy()
-        # for col in df.columns:
-        #     if df[col].dtype != object:
-        #         continue
-        #     try:
-        #         # First try to parse a date without time, then convert back to a string
-        #         # recognizable by linkml as a date
-        #         df[col] = pd.to_datetime(df[col], format="%Y-%m-%d").dt.strftime("%Y-%m-%d")
-        #     except Exception:
-        #         try:
-        #             # Try to prase a date with time in ISO8601 format, then convert back to a string
-        #             # recognizable by linkml as a datetime
-        #             df[col] = pd.to_datetime(df[col], format="ISO8601", utc=True).dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        #         except Exception:
-        #             ...
-        #     # @TODO: We don't need this! Only ODM v2 uses lowercase "true"/"false" strings, but we should
-        #     # not have specialized code to fix this.
-        #     # Convert bools (True/False) to strings ('true'/'false')
-        #     for col in df.columns:
-        #         if df[col].dtype == bool:
-        #             df[col] = df[col].astype(str)
-        #             df.loc[df[col] == "True", col] = "true"
-        #             df.loc[df[col] == "False", col] = "false"
 
         return df
 
@@ -251,6 +415,7 @@ class DataCleaner(object):
         data_frame: Optional[pd.DataFrame],
         output_file: Optional[Union[str, Path]],
         class_name: str,
+        clean_operations: List[Dict[str, Any]],
         max_rows: Optional[int] = 0,
     ) -> Tuple[str, pd.DataFrame]:
         """Clean either a single data file or a single DataFrame.
@@ -265,6 +430,10 @@ class DataCleaner(object):
                 data is not saved to disk, but the cleaned DataFrame is still returned.
             class_name (str): The class name that the data_file or data_frame is for. This should be a class name found in
                 the schema.
+            clean_operations (List[Dict[str, Any]]): List of dictionaries specifying all the cleaning operations to perform.
+                The key of each dictionary specifies which operation to perform and the value is the parameters for that
+                operation. The operations are performed in the same order as they appear in the list. See clean_data for all
+                available operations
             max_rows (Optional[int]): Maximum number of rows to clean from the file or DataFrame. The returned DataFrame
                 and save data will have at most this many rows. If 0 or None then clean all rows. Defaults to 0.
 
@@ -301,10 +470,25 @@ class DataCleaner(object):
         if RANDOM_SAMPLE_DATA and max_rows and len(df) > max_rows:
             df = df.sample(max_rows, random_state=0).reset_index(drop=True)
 
-        # Fix the data
-        df = self.fix_data_no_schema(df)
-        if self.schema:
-            df = self.fix_data_with_schema(df, class_name)
+        # Clean the data
+        for cur_operation in clean_operations:
+            if len(cur_operation) == 0:
+                continue
+            elif len(cur_operation) > 1:
+                raise ValueError(
+                    f"A cleaning operation can only contain a single dictionary key, but more were found: {cur_operation}"
+                )
+            for clean_name, clean_params in cur_operation.items():
+                if clean_name == "correct_enums" and clean_params:
+                    df = self.clean_correct_enums(df, class_name)
+                elif clean_name == "add_ontology_ids_to_enums" and clean_params:
+                    df = self.clean_add_ontology_ids_to_enums(df, class_name)
+                elif clean_name == "format_columns":
+                    df = self.clean_format_columns(
+                        df, class_name, format_columns_options=clean_params
+                    )
+                elif clean_name == "remove_unknown_columns":
+                    df = self.clean_remove_unknown_columns(df, class_name)
 
         # Save to disk
         if output_file is not None:
@@ -318,6 +502,7 @@ class DataCleaner(object):
         data_files: Dict[str, List[Union[str, Path, Dict]]],
         data_frames: Dict[str, List[pd.DataFrame]],
         output_dir: Union[str, Path],
+        clean_operations: List[Dict[str, Any]],
         max_rows: int = 0,
     ) -> Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]:
         """Clean all data files and DataFrames and optionally save the cleaned data to the specified output
@@ -339,6 +524,29 @@ class DataCleaner(object):
                 The returned dictionary will contain the updated file name, if a file name is changed.
                 If output_dir is None then the cleaned data is not saved to disk, and the cleaned DataFrames
                 are returned.
+            clean_operations (List[Dict[str, Any]]): List of operations to perform. Each item in the list is a dictionary where the
+                key specifies which cleaning operation to  perform and teh values are the parameters for the operation.
+                The type of the parameters depends on which operation it is. The available operations are:
+                    correct_enums (bool):
+                        If True then correcting capitalization and whitespace of enumerations. Defaults to False.
+                    format_columns (Optional[Union[str, List[str]]]):
+                        A single (str) or multiple (List[str]) operations to perform on the column names of the DataFrames.
+                        Formating operations that can be performed are:
+                                "lowercase": Make lowercase.
+                                "uppercase": Make uppercase.
+                                "alpha_numeric_underscore": Replace non alpha-numeric values with underscores.
+                                "single_underscores": Replace double (or more) underscores (eg. __, ___) with single underscores
+                                "trim_whitespace": Remove leading and trailing whitespace.
+                                "trim_underscores": Remove leading and trailing underscores.
+                                "remove_chars": Remove all the specified characters. This should be specified as either a JSON/YAML
+                                    string or as a dictionary of the form { "remove_chars": "abc" } where "abc" contains all the
+                                    characters to remove (ie. "a", "b", and "c" will be removed).
+                                "remove_special": Remove all special characters (characters other than alpha-numeric and spaces).
+                        Multiple operations can be specified, and the operations are performed in the same order as specified
+                        in the list. Defaults to None.
+                    remove_unknown_columns (bool):
+                        If True then remove columns that are not part of the class that the DataFrame belongs to, and are not a tracking slot.
+                        Defaults to False.
             max_rows (int): Maximum number of rows to load and clean for each file. If 0 then clean all rows.
                 Defaults to 0.
 
@@ -404,6 +612,7 @@ class DataCleaner(object):
                             output_file=output_file,
                             class_name=class_name,
                             max_rows=max_rows,
+                            clean_operations=clean_operations,
                         )
 
                         # Keep the cleaned data for returning
