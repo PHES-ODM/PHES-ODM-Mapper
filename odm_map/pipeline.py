@@ -156,7 +156,6 @@ class Pipeline(object):
             progress_barid=LOADING_BARID,
             add_all_tracking_columns=True,
             validate_class_names=True,
-            validate_columns=True,
         )
 
         # Values used for string interpolation (eg. for output paths). Some actions will
@@ -187,7 +186,12 @@ class Pipeline(object):
 
             if action == "clean":
                 schema = self.get_module_path(params.get("schema"))
-                data_frames = action_clean_data(data_frames=data_frames, schema=schema)
+                clean_operations = params.get("operations", [])
+                data_frames = action_clean_data(
+                    data_frames=data_frames,
+                    schema=schema,
+                    clean_operations=clean_operations,
+                )
             elif action == "save":
                 progress_bar_title = params.get("progress_bar_title", None)
                 output_dir = params.get("output_dir").format(**top_level_kwargs)
