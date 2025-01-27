@@ -257,7 +257,11 @@ def load_data_with_tracking_columns(
                 if df is not None:
                     if validate_columns and schema is not None:
                         new_log = validate_columns_with_schema(
-                            df, schema=schema, class_name=class_name, file=track_file
+                            df.columns,
+                            schema=schema,
+                            class_name=class_name,
+                            file=track_file,
+                            show_log=False,
                         )
                         warning_log.extend(new_log)
 
