@@ -54,8 +54,8 @@ HASH_COLUMN = "__hash"
 # name as the original preceded by ORIG_ID_PREFIX (ie. f"{ORIG_ID_PREFIX}{column_name}")
 ORIG_ID_PREFIX = "__"
 
-UNINDEXED_PK_SLOT = f"{ORIG_ID_PREFIX*2}pk_unindexed"
-PK_INDEX_SLOT = f"{ORIG_ID_PREFIX*2}pk_index"
+UNINDEXED_PK_SLOT = f"{ORIG_ID_PREFIX * 2}pk_unindexed"
+PK_INDEX_SLOT = f"{ORIG_ID_PREFIX * 2}pk_index"
 
 USE_PRIMARY_KEY_LIST = True
 

@@ -227,7 +227,9 @@ class ProgressCounter(BaseCounter):
             inc (int): Amount to increase the bar's count by.
         """
         assert barid != TOTAL_BARID
-        assert self.entered, "ProgressCounter has not been entered with __enter__() (be sure code is wrapped in 'with progress_counter:')"
+        assert self.entered, (
+            "ProgressCounter has not been entered with __enter__() (be sure code is wrapped in 'with progress_counter:')"
+        )
 
         bar = self.progress_bars[barid]
         bar.update(inc)

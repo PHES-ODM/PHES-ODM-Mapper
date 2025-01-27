@@ -455,7 +455,7 @@ class IDGenerator(object):
                 class_tic = datetime.now()
                 _log(
                     "debug",
-                    f"Making IDs for class '{class_name}' ({idx+1}/{len(class_names)})",
+                    f"Making IDs for class '{class_name}' ({idx + 1}/{len(class_names)})",
                 )
 
                 # All the slots in the class that are IDs that need to be generated

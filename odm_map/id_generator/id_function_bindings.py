@@ -199,7 +199,7 @@ class FunctionBindings:
                     self.generator.get_current_source_file_and_row()
                 )
                 logger.warning(
-                    f"Could not parse {cur_format_name}: {val} (from row {source_row+1} of file {source_file})"
+                    f"Could not parse {cur_format_name}: {val} (from row {source_row + 1} of file {source_file})"
                 )
 
         date_obj, time_obj, time_zone_obj = objects

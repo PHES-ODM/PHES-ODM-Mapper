@@ -124,7 +124,7 @@ def make_logger_bullet_list(items: List, bullet: str = "- ", indent: int = 4) ->
         str: A string of the bullet list.
     """
     items = [
-        f"{' '*indent}{bullet.format(idx=idx+1)}{item}"
+        f"{' ' * indent}{bullet.format(idx=idx + 1)}{item}"
         for idx, item in enumerate(items)
     ]
     return "\n".join(items)
