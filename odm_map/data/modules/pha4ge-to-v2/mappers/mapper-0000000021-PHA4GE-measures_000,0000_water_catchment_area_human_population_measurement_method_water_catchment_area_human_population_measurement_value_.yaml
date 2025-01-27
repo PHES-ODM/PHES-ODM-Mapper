@@ -1,0 +1,42 @@
+class_derivations:
+  ? measures[000,0000=water_catchment_area_human_population_measurement_method-water_catchment_area_human_population_measurement_value]
+  : name: measures[000,0000=water_catchment_area_human_population_measurement_method-water_catchment_area_human_population_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: water_catchment_area_human_population_measurement_method
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''popServ'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: water_catchment_area_human_population_measurement_value
+      unit:
+        name: unit
+        expr: '''peeps'''
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=water_catchment_area_human_population_measurement_method-water_catchment_area_human_population_measurement_value]
+      : populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

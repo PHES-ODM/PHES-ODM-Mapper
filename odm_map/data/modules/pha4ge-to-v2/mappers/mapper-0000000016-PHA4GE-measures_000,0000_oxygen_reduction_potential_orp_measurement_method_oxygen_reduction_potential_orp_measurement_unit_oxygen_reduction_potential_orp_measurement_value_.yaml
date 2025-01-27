@@ -1,0 +1,50 @@
+class_derivations:
+  ? measures[000,0000=oxygen_reduction_potential_orp_measurement_method-oxygen_reduction_potential_orp_measurement_unit-oxygen_reduction_potential_orp_measurement_value]
+  : name: measures[000,0000=oxygen_reduction_potential_orp_measurement_method-oxygen_reduction_potential_orp_measurement_unit-oxygen_reduction_potential_orp_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: oxygen_reduction_potential_orp_measurement_method
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''orp'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: oxygen_reduction_potential_orp_measurement_value
+      unit:
+        name: unit
+        populated_from: oxygen_reduction_potential_orp_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=oxygen_reduction_potential_orp_measurement_method-oxygen_reduction_potential_orp_measurement_unit-oxygen_reduction_potential_orp_measurement_value]
+      : populated_from: PHA4GE
+enum_derivations:
+  unit_from_OxygenReductionPotentialOrpMeasurementUnitMenu:
+    name: unit_from_OxygenReductionPotentialOrpMeasurementUnitMenu
+    mirror_source: false
+    populated_from: OxygenReductionPotentialOrpMeasurementUnitMenu
+    permissible_value_derivations:
+      mvolt:
+        name: mvolt
+        populated_from: milliVolt (mV) [UO:0000247]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

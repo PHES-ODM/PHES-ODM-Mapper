@@ -1,0 +1,843 @@
+class_derivations:
+  addresses:
+    name: addresses
+    populated_from: PHA4GE
+    slot_derivations:
+      notes:
+        name: notes
+        populated_from: geo_loc_name_county_region
+      city:
+        name: city
+        populated_from: geo_loc_name_city
+      country:
+        name: country
+        populated_from: geo_loc_name_country
+      stateProvReg:
+        name: stateProvReg
+        populated_from: geo_loc_name_state_province_territory
+  Container:
+    name: Container
+    slot_derivations:
+      addresses:
+        populated_from: PHA4GE
+enum_derivations:
+  country_from_GeoLocNameCountryMenu:
+    name: country_from_GeoLocNameCountryMenu
+    mirror_source: false
+    populated_from: GeoLocNameCountryMenu
+    permissible_value_derivations:
+      AF:
+        name: AF
+        populated_from: Afghanistan [GAZ:00006882]
+      AL:
+        name: AL
+        populated_from: Albania [GAZ:00002953]
+      DZ:
+        name: DZ
+        populated_from: Algeria [GAZ:00000563]
+      AS:
+        name: AS
+        populated_from: American Samoa [GAZ:00003957]
+      AD:
+        name: AD
+        populated_from: Andorra [GAZ:00002948]
+      AO:
+        name: AO
+        populated_from: Angola [GAZ:00001095]
+      AI:
+        name: AI
+        populated_from: Anguilla [GAZ:00009159]
+      AQ:
+        name: AQ
+        populated_from: Antarctica [GAZ:00000462]
+      AG:
+        name: AG
+        populated_from: Antigua and Barbuda [GAZ:00006883]
+      AR:
+        name: AR
+        populated_from: Argentina [GAZ:00002928]
+      AM:
+        name: AM
+        populated_from: Armenia [GAZ:00004094]
+      AW:
+        name: AW
+        populated_from: Aruba [GAZ:00004025]
+      AU-AC:
+        name: AU-AC
+        populated_from: Ashmore and Cartier Islands [GAZ:00005901]
+      AU:
+        name: AU
+        populated_from: Australia [GAZ:00000463]
+      AT:
+        name: AT
+        populated_from: Austria [GAZ:00002942]
+      AZ:
+        name: AZ
+        populated_from: Azerbaijan [GAZ:00004941]
+      BS:
+        name: BS
+        populated_from: Bahamas [GAZ:00002733]
+      BH:
+        name: BH
+        populated_from: Bahrain [GAZ:00005281]
+      UM-81:
+        name: UM-81
+        populated_from: Baker Island [GAZ:00007117]
+      BD:
+        name: BD
+        populated_from: Bangladesh [GAZ:00003750]
+      BB:
+        name: BB
+        populated_from: Barbados [GAZ:00001251]
+      FR-BI:
+        name: FR-BI
+        populated_from: Bassas da India [GAZ:00005810]
+      BY:
+        name: BY
+        populated_from: Belarus [GAZ:00006886]
+      BE:
+        name: BE
+        populated_from: Belgium [GAZ:00002938]
+      BZ:
+        name: BZ
+        populated_from: Belize [GAZ:00002934]
+      BJ:
+        name: BJ
+        populated_from: Benin [GAZ:00000904]
+      BM:
+        name: BM
+        populated_from: Bermuda [GAZ:00001264]
+      BT:
+        name: BT
+        populated_from: Bhutan [GAZ:00003920]
+      BO:
+        name: BO
+        populated_from: Bolivia [GAZ:00002511]
+      BQ:
+        name: BQ
+        populated_from: Borneo [GAZ:00025355]
+      BA:
+        name: BA
+        populated_from: Bosnia and Herzegovina [GAZ:00006887]
+      BW:
+        name: BW
+        populated_from: Botswana [GAZ:00001097]
+      BV:
+        name: BV
+        populated_from: Bouvet Island [GAZ:00001453]
+      BR:
+        name: BR
+        populated_from: Brazil [GAZ:00002828]
+      IO:
+        name: IO
+        populated_from: British Virgin Islands [GAZ:00003961]
+      BN:
+        name: BN
+        populated_from: Brunei [GAZ:00003901]
+      BG:
+        name: BG
+        populated_from: Bulgaria [GAZ:00002950]
+      BF:
+        name: BF
+        populated_from: Burkina Faso [GAZ:00000905]
+      BI:
+        name: BI
+        populated_from: Burundi [GAZ:00001090]
+      KH:
+        name: KH
+        populated_from: Cambodia [GAZ:00006888]
+      CM:
+        name: CM
+        populated_from: Cameroon [GAZ:00001093]
+      CA:
+        name: CA
+        populated_from: Canada [GAZ:00002560]
+      CV:
+        name: CV
+        populated_from: Cape Verde [GAZ:00001227]
+      KY:
+        name: KY
+        populated_from: Cayman Islands [GAZ:00003986]
+      CF:
+        name: CF
+        populated_from: Central African Republic [GAZ:00001089]
+      TD:
+        name: TD
+        populated_from: Chad [GAZ:00000586]
+      CL:
+        name: CL
+        populated_from: Chile [GAZ:00002825]
+      CN:
+        name: CN
+        populated_from: China [GAZ:00002845]
+      CX:
+        name: CX
+        populated_from: Christmas Island [GAZ:00005915]
+      FR-CP:
+        name: FR-CP
+        populated_from: Clipperton Island [GAZ:00005838]
+      CC:
+        name: CC
+        populated_from: Cocos Islands [GAZ:00009721]
+      CO:
+        name: CO
+        populated_from: Colombia [GAZ:00002929]
+      KM:
+        name: KM
+        populated_from: Comoros [GAZ:00005820]
+      CK:
+        name: CK
+        populated_from: Cook Islands [GAZ:00053798]
+      AU-CS:
+        name: AU-CS
+        populated_from: Coral Sea Islands [GAZ:00005917]
+      CR:
+        name: CR
+        populated_from: Costa Rica [GAZ:00002901]
+      CI:
+        name: CI
+        populated_from: Cote d'Ivoire [GAZ:00000906]
+      HR:
+        name: HR
+        populated_from: Croatia [GAZ:00002719]
+      CU:
+        name: CU
+        populated_from: Cuba [GAZ:00003762]
+      CW:
+        name: CW
+        populated_from: Curacao [GAZ:00012582]
+      CY:
+        name: CY
+        populated_from: Cyprus [GAZ:00004006]
+      CZ:
+        name: CZ
+        populated_from: Czech Republic [GAZ:00002954]
+      CD:
+        name: CD
+        populated_from: Democratic Republic of the Congo [GAZ:00001086]
+      DK:
+        name: DK
+        populated_from: Denmark [GAZ:00005852]
+      DJ:
+        name: DJ
+        populated_from: Djibouti [GAZ:00000582]
+      DM:
+        name: DM
+        populated_from: Dominica [GAZ:00006890]
+      DO:
+        name: DO
+        populated_from: Dominican Republic [GAZ:00003952]
+      EC:
+        name: EC
+        populated_from: Ecuador [GAZ:00002912]
+      EG:
+        name: EG
+        populated_from: Egypt [GAZ:00003934]
+      SV:
+        name: SV
+        populated_from: El Salvador [GAZ:00002935]
+      GQ:
+        name: GQ
+        populated_from: Equatorial Guinea [GAZ:00001091]
+      ER:
+        name: ER
+        populated_from: Eritrea [GAZ:00000581]
+      EE:
+        name: EE
+        populated_from: Estonia [GAZ:00002959]
+      SZ:
+        name: SZ
+        sources:
+        - Eswatini [GAZ:00001099]
+        - Swaziland
+      ET:
+        name: ET
+        populated_from: Ethiopia [GAZ:00000567]
+      FR-EU:
+        name: FR-EU
+        populated_from: Europa Island [GAZ:00005811]
+      FK:
+        name: FK
+        populated_from: Falkland Islands (Islas Malvinas) [GAZ:00001412]
+      FO:
+        name: FO
+        populated_from: Faroe Islands [GAZ:00059206]
+      FJ:
+        name: FJ
+        populated_from: Fiji [GAZ:00006891]
+      FI:
+        name: FI
+        populated_from: Finland [GAZ:00002937]
+      FR:
+        name: FR
+        populated_from: France [GAZ:00003940]
+      GF:
+        name: GF
+        populated_from: French Guiana [GAZ:00002516]
+      PF:
+        name: PF
+        populated_from: French Polynesia [GAZ:00002918]
+      TF:
+        name: TF
+        populated_from: French Southern and Antarctic Lands [GAZ:00003753]
+      GA:
+        name: GA
+        populated_from: Gabon [GAZ:00001092]
+      GM:
+        name: GM
+        populated_from: Gambia [GAZ:00000907]
+      PS-GZA:
+        name: PS-GZA
+        populated_from: Gaza Strip [GAZ:00009571]
+      GE:
+        name: GE
+        populated_from: Georgia [GAZ:00004942]
+      DE:
+        name: DE
+        populated_from: Germany [GAZ:00002646]
+      GH:
+        name: GH
+        populated_from: Ghana [GAZ:00000908]
+      GI:
+        name: GI
+        populated_from: Gibraltar [GAZ:00003987]
+      FR-GL:
+        name: FR-GL
+        populated_from: Glorioso Islands [GAZ:00005808]
+      GR:
+        name: GR
+        populated_from: Greece [GAZ:00002945]
+      GL:
+        name: GL
+        populated_from: Greenland [GAZ:00001507]
+      GD:
+        name: GD
+        populated_from: Grenada [GAZ:02000573]
+      GP:
+        name: GP
+        populated_from: Guadeloupe [GAZ:00067142]
+      GU:
+        name: GU
+        populated_from: Guam [GAZ:00003706]
+      GT:
+        name: GT
+        populated_from: Guatemala [GAZ:00002936]
+      GG:
+        name: GG
+        populated_from: Guernsey [GAZ:00001550]
+      GN:
+        name: GN
+        populated_from: Guinea [GAZ:00000909]
+      GW:
+        name: GW
+        populated_from: Guinea-Bissau [GAZ:00000910]
+      GY:
+        name: GY
+        populated_from: Guyana [GAZ:00002522]
+      HT:
+        name: HT
+        populated_from: Haiti [GAZ:00003953]
+      HM:
+        name: HM
+        populated_from: Heard Island and McDonald Islands [GAZ:00009718]
+      HN:
+        name: HN
+        populated_from: Honduras [GAZ:00002894]
+      HK:
+        name: HK
+        populated_from: Hong Kong [GAZ:00003203]
+      UM-84:
+        name: UM-84
+        populated_from: Howland Island [GAZ:00007120]
+      HU:
+        name: HU
+        populated_from: Hungary [GAZ:00002952]
+      IS:
+        name: IS
+        populated_from: Iceland [GAZ:00000843]
+      IN:
+        name: IN
+        populated_from: India [GAZ:00002839]
+      ID:
+        name: ID
+        populated_from: Indonesia [GAZ:00003727]
+      IR:
+        name: IR
+        populated_from: Iran [GAZ:00004474]
+      IQ:
+        name: IQ
+        populated_from: Iraq [GAZ:00004483]
+      IE:
+        name: IE
+        populated_from: Ireland [GAZ:00002943]
+      IM:
+        name: IM
+        populated_from: Isle of Man [GAZ:00052477]
+      IL:
+        name: IL
+        populated_from: Israel [GAZ:00002476]
+      IT:
+        name: IT
+        populated_from: Italy [GAZ:00002650]
+      JM:
+        name: JM
+        populated_from: Jamaica [GAZ:00003781]
+      SJ:
+        name: SJ
+        sources:
+        - Jan Mayen [GAZ:00005853]
+        - Svalbard [GAZ:00005396]
+      JP:
+        name: JP
+        populated_from: Japan [GAZ:00002747]
+      UM-86:
+        name: UM-86
+        populated_from: Jarvis Island [GAZ:00007118]
+      JE:
+        name: JE
+        populated_from: Jersey [GAZ:00001551]
+      UM-67:
+        name: UM-67
+        populated_from: Johnston Atoll [GAZ:00007114]
+      JO:
+        name: JO
+        populated_from: Jordan [GAZ:00002473]
+      FR-JN:
+        name: FR-JN
+        populated_from: Juan de Nova Island [GAZ:00005809]
+      KZ:
+        name: KZ
+        populated_from: Kazakhstan [GAZ:00004999]
+      KE:
+        name: KE
+        populated_from: Kenya [GAZ:00001101]
+      FR-KA:
+        name: FR-KA
+        populated_from: Kerguelen Archipelago [GAZ:00005682]
+      UM-89:
+        name: UM-89
+        populated_from: Kingman Reef [GAZ:00007116]
+      KI:
+        name: KI
+        populated_from: Kiribati [GAZ:00006894]
+      XK:
+        name: XK
+        populated_from: Kosovo [GAZ:00011337]
+      KW:
+        name: KW
+        populated_from: Kuwait [GAZ:00005285]
+      KG:
+        name: KG
+        populated_from: Kyrgyzstan [GAZ:00006893]
+      LA:
+        name: LA
+        populated_from: Laos [GAZ:00006889]
+      LV:
+        name: LV
+        populated_from: Latvia [GAZ:00002958]
+      LB:
+        name: LB
+        populated_from: Lebanon [GAZ:00002478]
+      LS:
+        name: LS
+        populated_from: Lesotho [GAZ:00001098]
+      LR:
+        name: LR
+        populated_from: Liberia [GAZ:00000911]
+      LY:
+        name: LY
+        populated_from: Libya [GAZ:00000566]
+      LI:
+        name: LI
+        populated_from: Liechtenstein [GAZ:00003858]
+      KI-L:
+        name: KI-L
+        populated_from: Line Islands [GAZ:00007144]
+      LT:
+        name: LT
+        populated_from: Lithuania [GAZ:00002960]
+      LU:
+        name: LU
+        populated_from: Luxembourg [GAZ:00002947]
+      MO:
+        name: MO
+        populated_from: Macau [GAZ:00003202]
+      MG:
+        name: MG
+        populated_from: Madagascar [GAZ:00001108]
+      MW:
+        name: MW
+        populated_from: Malawi [GAZ:00001105]
+      MY:
+        name: MY
+        populated_from: Malaysia [GAZ:00003902]
+      MV:
+        name: MV
+        populated_from: Maldives [GAZ:00006924]
+      ML:
+        name: ML
+        populated_from: Mali [GAZ:00000584]
+      MT:
+        name: MT
+        populated_from: Malta [GAZ:00004017]
+      MH:
+        name: MH
+        populated_from: Marshall Islands [GAZ:00007161]
+      MQ:
+        name: MQ
+        populated_from: Martinique [GAZ:00067143]
+      MR:
+        name: MR
+        populated_from: Mauritania [GAZ:00000583]
+      MU:
+        name: MU
+        populated_from: Mauritius [GAZ:00003745]
+      YT:
+        name: YT
+        populated_from: Mayotte [GAZ:00003943]
+      MX:
+        name: MX
+        populated_from: Mexico [GAZ:00002852]
+      FM:
+        name: FM
+        populated_from: Micronesia [GAZ:00005862]
+      UM-71:
+        name: UM-71
+        populated_from: Midway Islands [GAZ:00007112]
+      MD:
+        name: MD
+        populated_from: Moldova [GAZ:00003897]
+      MC:
+        name: MC
+        populated_from: Monaco [GAZ:00003857]
+      MN:
+        name: MN
+        populated_from: Mongolia [GAZ:00008744]
+      ME:
+        name: ME
+        populated_from: Montenegro [GAZ:00006898]
+      MS:
+        name: MS
+        populated_from: Montserrat [GAZ:00003988]
+      MA:
+        name: MA
+        populated_from: Morocco [GAZ:00000565]
+      MZ:
+        name: MZ
+        populated_from: Mozambique [GAZ:00001100]
+      MM:
+        name: MM
+        populated_from: Myanmar [GAZ:00006899]
+      NA:
+        name: NA
+        populated_from: Namibia [GAZ:00001096]
+      NR:
+        name: NR
+        populated_from: Nauru [GAZ:00006900]
+      UM-76:
+        name: UM-76
+        populated_from: Navassa Island [GAZ:00007119]
+      NP:
+        name: NP
+        populated_from: Nepal [GAZ:00004399]
+      NL:
+        name: NL
+        populated_from: Netherlands [GAZ:00002946]
+      NC:
+        name: NC
+        populated_from: New Caledonia [GAZ:00005206]
+      NZ:
+        name: NZ
+        populated_from: New Zealand [GAZ:00000469]
+      NI:
+        name: NI
+        populated_from: Nicaragua [GAZ:00002978]
+      NE:
+        name: NE
+        populated_from: Niger [GAZ:00000585]
+      NG:
+        name: NG
+        populated_from: Nigeria [GAZ:00000912]
+      NU:
+        name: NU
+        populated_from: Niue [GAZ:00006902]
+      NF:
+        name: NF
+        populated_from: Norfolk Island [GAZ:00005908]
+      KP:
+        name: KP
+        populated_from: North Korea [GAZ:00002801]
+      MK:
+        name: MK
+        populated_from: North Macedonia [GAZ:00006895]
+      North Sea:
+        name: North Sea
+        populated_from: North Sea [GAZ:00002284]
+      MP:
+        name: MP
+        populated_from: Northern Mariana Islands [GAZ:00003958]
+      'NO':
+        name: 'NO'
+        populated_from: Norway [GAZ:00002699]
+      OM:
+        name: OM
+        populated_from: Oman [GAZ:00005283]
+      PK:
+        name: PK
+        populated_from: Pakistan [GAZ:00005246]
+      PW:
+        name: PW
+        populated_from: Palau [GAZ:00006905]
+      PA:
+        name: PA
+        populated_from: Panama [GAZ:00002892]
+      PG:
+        name: PG
+        populated_from: Papua New Guinea [GAZ:00003922]
+      CN-PA:
+        name: CN-PA
+        populated_from: Paracel Islands [GAZ:00010832]
+      PY:
+        name: PY
+        populated_from: Paraguay [GAZ:00002933]
+      PE:
+        name: PE
+        populated_from: Peru [GAZ:00002932]
+      PH:
+        name: PH
+        populated_from: Philippines [GAZ:00004525]
+      PN:
+        name: PN
+        populated_from: Pitcairn Islands [GAZ:00005867]
+      PL:
+        name: PL
+        populated_from: Poland [GAZ:00002939]
+      PT:
+        name: PT
+        populated_from: Portugal [GAZ:00004126]
+      PR:
+        name: PR
+        populated_from: Puerto Rico [GAZ:00006935]
+      QA:
+        name: QA
+        populated_from: Qatar [GAZ:00005286]
+      CG:
+        name: CG
+        populated_from: Republic of the Congo [GAZ:00001088]
+      RE:
+        name: RE
+        populated_from: Reunion [GAZ:00003945]
+      RO:
+        name: RO
+        populated_from: Romania [GAZ:00002951]
+      AQ-RS:
+        name: AQ-RS
+        populated_from: Ross Sea [GAZ:00023304]
+      RU:
+        name: RU
+        populated_from: Russia [GAZ:00002721]
+      RW:
+        name: RW
+        populated_from: Rwanda [GAZ:00001087]
+      SH:
+        name: SH
+        populated_from: Saint Helena [GAZ:00000849]
+      KN:
+        name: KN
+        populated_from: Saint Kitts and Nevis [GAZ:00006906]
+      LC:
+        name: LC
+        populated_from: Saint Lucia [GAZ:00006909]
+      PM:
+        name: PM
+        populated_from: Saint Pierre and Miquelon [GAZ:00003942]
+      MF:
+        name: MF
+        populated_from: Saint Martin [GAZ:00005841]
+      VC:
+        name: VC
+        populated_from: Saint Vincent and the Grenadines [GAZ:02000565]
+      WS:
+        name: WS
+        populated_from: Samoa [GAZ:00006910]
+      SM:
+        name: SM
+        populated_from: San Marino [GAZ:00003102]
+      ST:
+        name: ST
+        populated_from: Sao Tome and Principe [GAZ:00006927]
+      SA:
+        name: SA
+        populated_from: Saudi Arabia [GAZ:00005279]
+      SN:
+        name: SN
+        populated_from: Senegal [GAZ:00000913]
+      RS:
+        name: RS
+        populated_from: Serbia [GAZ:00002957]
+      SC:
+        name: SC
+        populated_from: Seychelles [GAZ:00006922]
+      SL:
+        name: SL
+        populated_from: Sierra Leone [GAZ:00000914]
+      SG:
+        name: SG
+        populated_from: Singapore [GAZ:00003923]
+      SX:
+        name: SX
+        populated_from: Sint Maarten [GAZ:00012579]
+      SK:
+        name: SK
+        populated_from: Slovakia [GAZ:00002956]
+      SI:
+        name: SI
+        populated_from: Slovenia [GAZ:00002955]
+      SB:
+        name: SB
+        populated_from: Solomon Islands [GAZ:00005275]
+      SO:
+        name: SO
+        populated_from: Somalia [GAZ:00001104]
+      ZA:
+        name: ZA
+        populated_from: South Africa [GAZ:00001094]
+      GS:
+        name: GS
+        populated_from: South Georgia and the South Sandwich Islands [GAZ:00003990]
+      KR:
+        name: KR
+        populated_from: South Korea [GAZ:00002802]
+      SS:
+        name: SS
+        populated_from: South Sudan [GAZ:00233439]
+      ES:
+        name: ES
+        populated_from: Spain [GAZ:00000591]
+      SP:
+        name: SP
+        populated_from: Spratly Islands [GAZ:00010831]
+      LK:
+        name: LK
+        populated_from: Sri Lanka [GAZ:00003924]
+      PS:
+        name: PS
+        populated_from: State of Palestine [GAZ:00002475]
+      SD:
+        name: SD
+        populated_from: Sudan [GAZ:00000560]
+      SR:
+        name: SR
+        populated_from: Suriname [GAZ:00002525]
+      SE:
+        name: SE
+        populated_from: Sweden [GAZ:00002729]
+      CH:
+        name: CH
+        populated_from: Switzerland [GAZ:00002941]
+      SY:
+        name: SY
+        populated_from: Syria [GAZ:00002474]
+      TW:
+        name: TW
+        populated_from: Taiwan [GAZ:00005341]
+      TJ:
+        name: TJ
+        populated_from: Tajikistan [GAZ:00006912]
+      TZ:
+        name: TZ
+        populated_from: Tanzania [GAZ:00001103]
+      TH:
+        name: TH
+        populated_from: Thailand [GAZ:00003744]
+      TL:
+        name: TL
+        populated_from: Timor-Leste [GAZ:00006913]
+      TG:
+        name: TG
+        populated_from: Togo [GAZ:00000915]
+      TK:
+        name: TK
+        populated_from: Tokelau [GAZ:00260188]
+      TO:
+        name: TO
+        populated_from: Tonga [GAZ:00006916]
+      TT:
+        name: TT
+        populated_from: Trinidad and Tobago [GAZ:00003767]
+      FR-TR:
+        name: FR-TR
+        populated_from: Tromelin Island [GAZ:00005812]
+      TN:
+        name: TN
+        populated_from: Tunisia [GAZ:00000562]
+      TR:
+        name: TR
+        populated_from: Turkey [GAZ:00000558]
+      TM:
+        name: TM
+        populated_from: Turkmenistan [GAZ:00005018]
+      TC:
+        name: TC
+        populated_from: Turks and Caicos Islands [GAZ:00003955]
+      TV:
+        name: TV
+        populated_from: Tuvalu [GAZ:00009715]
+      US:
+        name: US
+        populated_from: United States of America [GAZ:00002459]
+      UG:
+        name: UG
+        populated_from: Uganda [GAZ:00001102]
+      UA:
+        name: UA
+        populated_from: Ukraine [GAZ:00002724]
+      AE:
+        name: AE
+        populated_from: United Arab Emirates [GAZ:00005282]
+      GB:
+        name: GB
+        populated_from: United Kingdom [GAZ:00002637]
+      UY:
+        name: UY
+        populated_from: Uruguay [GAZ:00002930]
+      UZ:
+        name: UZ
+        populated_from: Uzbekistan [GAZ:00004979]
+      VU:
+        name: VU
+        populated_from: Vanuatu [GAZ:00006918]
+      VE:
+        name: VE
+        populated_from: Venezuela [GAZ:00002931]
+      VN:
+        name: VN
+        populated_from: Viet Nam [GAZ:00003756]
+      VG:
+        name: VG
+        populated_from: Virgin Islands [GAZ:00003959]
+      UM-79:
+        name: UM-79
+        populated_from: Wake Island [GAZ:00007111]
+      WF:
+        name: WF
+        populated_from: Wallis and Futuna [GAZ:00007191]
+      PS-WE:
+        name: PS-WE
+        populated_from: West Bank [GAZ:00009572]
+      EH:
+        name: EH
+        populated_from: Western Sahara [GAZ:00000564]
+      YE:
+        name: YE
+        populated_from: Yemen [GAZ:00005284]
+      ZM:
+        name: ZM
+        populated_from: Zambia [GAZ:00001107]
+      ZW:
+        name: ZW
+        populated_from: Zimbabwe [GAZ:00001106]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

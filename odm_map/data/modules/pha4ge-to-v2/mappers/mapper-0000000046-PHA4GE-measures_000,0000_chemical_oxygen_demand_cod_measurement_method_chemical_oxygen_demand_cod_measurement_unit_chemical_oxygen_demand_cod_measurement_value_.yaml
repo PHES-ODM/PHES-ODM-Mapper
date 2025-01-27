@@ -1,0 +1,50 @@
+class_derivations:
+  ? measures[000,0000=chemical_oxygen_demand_cod_measurement_method-chemical_oxygen_demand_cod_measurement_unit-chemical_oxygen_demand_cod_measurement_value]
+  : name: measures[000,0000=chemical_oxygen_demand_cod_measurement_method-chemical_oxygen_demand_cod_measurement_unit-chemical_oxygen_demand_cod_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: chemical_oxygen_demand_cod_measurement_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''cod'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: chemical_oxygen_demand_cod_measurement_value
+      unit:
+        name: unit
+        populated_from: chemical_oxygen_demand_cod_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=chemical_oxygen_demand_cod_measurement_method-chemical_oxygen_demand_cod_measurement_unit-chemical_oxygen_demand_cod_measurement_value]
+      : populated_from: PHA4GE
+enum_derivations:
+  unit_from_ChemicalOxygenDemandCodMeasurementUnitMenu:
+    name: unit_from_ChemicalOxygenDemandCodMeasurementUnitMenu
+    mirror_source: false
+    populated_from: ChemicalOxygenDemandCodMeasurementUnitMenu
+    permissible_value_derivations:
+      mgL:
+        name: mgL
+        populated_from: milligram per liter (mg/L) [UO:0000273]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

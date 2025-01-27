@@ -1,0 +1,40 @@
+class_derivations:
+  addresses:
+    name: addresses
+    populated_from: PHA4GE
+    slot_derivations:
+      notes:
+        name: notes
+        populated_from: geo_loc_name_county_region
+      city:
+        name: city
+        populated_from: geo_loc_name_city
+      stateProvReg:
+        name: stateProvReg
+        populated_from: geo_loc_name_state_province_territory
+  Container:
+    name: Container
+    slot_derivations:
+      addresses:
+        populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: !!python/object/new:linkml_runtime.linkml_model.meta.ElementName
+      args:
+      - NullValueMenu
+      state:
+        _s: !!python/object/apply:yaml._yaml.__pyx_unpickle_Mark
+          args:
+          - !!python/name:yaml._yaml.Mark ''
+          - 41581148
+          - null
+          state: !!python/tuple
+          - null
+          - 13
+          - 30750
+          - 905
+          - pha4ge.yaml
+          - null
+        _len: 13

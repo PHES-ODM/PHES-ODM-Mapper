@@ -1,0 +1,143 @@
+class_derivations:
+  sites:
+    name: sites
+    populated_from: PHA4GE
+    slot_derivations:
+      siteID:
+        name: siteID
+        populated_from: sampling_site_id
+      sampleShed:
+        name: sampleShed
+        populated_from: environmental_site
+      geoLat:
+        name: geoLat
+        populated_from: geo_loc_latitude
+      geoLong:
+        name: geoLong
+        populated_from: geo_loc_longitude
+      name:
+        name: name
+        populated_from: geo_loc_name_site
+  Container:
+    name: Container
+    slot_derivations:
+      sites:
+        populated_from: PHA4GE
+enum_derivations:
+  sampleShed_from_EnvironmentalSiteMenu:
+    name: sampleShed_from_EnvironmentalSiteMenu
+    mirror_source: false
+    populated_from: EnvironmentalSiteMenu
+    permissible_value_derivations:
+      sampleShed:corFcil:
+        name: sampleShed:corFcil
+        populated_from: Correctional facility [ENVO:01001481]
+      sampleShed:hcf:
+        name: sampleShed:hcf
+        populated_from: Healthcare facility [ENVO:03501134]
+      sampleShed:hosptl:
+        name: sampleShed:hosptl
+        populated_from: Hospital [ENVO:00002173]
+      sampleShed:clinic:
+        name: sampleShed:clinic
+        populated_from: Clinic [ENVO:03501182]
+      sampleShed:edFac:
+        name: sampleShed:edFac
+        populated_from: Educational facility [ENVO:03501129]
+      sampleShed:cdc:
+        name: sampleShed:cdc
+        populated_from: Daycare facility [ENVO:03501335]
+      sampleShed:school:
+        name: sampleShed:school
+        populated_from: School [ENVO:03501130]
+      sampleShed:uCampus:
+        name: sampleShed:uCampus
+        populated_from: College or university [ENVO:03501131]
+      sampleShed:orb:
+        name: sampleShed:orb
+        populated_from: Residential building [ENVO:01000933]
+      sampleShed:sss:
+        name: sampleShed:sss
+        populated_from: Homeless shelter [ENVO:03501133]
+      sampleShed:ltcfAl:
+        name: sampleShed:ltcfAl
+        populated_from: Long-term care facility [ENVO:01000932]
+      sampleShed:tHub:
+        name: sampleShed:tHub
+        populated_from: Transport hub [ENVO:03501117]
+      sampleShed:airport:
+        name: sampleShed:airport
+        populated_from: Airport [ENVO:03501122]
+      sampleShed:farm:
+        name: sampleShed:farm
+        populated_from: Farm [ENVO:00000078]
+      sampleShed:refCamp:
+        name: sampleShed:refCamp
+        populated_from: Refugee camp [NCIT:C85867]
+      sampleShed:indPl:
+        name: sampleShed:indPl
+        populated_from: Industrial plant [ENVO:00003861]
+      sampleShed:meatPl:
+        name: sampleShed:meatPl
+        populated_from: Meat processing plant [ENVO:03501297]
+      sampleShed:pharmPl:
+        name: sampleShed:pharmPl
+        populated_from: Pharmaceutical manufacturing plant [ENVO:03501450]
+      siteType:bow:
+        name: siteType:bow
+        populated_from: Body of water [ENVO:00000063]
+      siteType:opWa:
+        name: siteType:opWa
+        populated_from: Surface water  [ENVO:00002042]
+      siteType:lake:
+        name: siteType:lake
+        populated_from: Lake [ENVO:00000020]
+      siteType:str:
+        name: siteType:str
+        populated_from: Stream [ENVO:00000023]
+      siteType:river:
+        name: siteType:river
+        populated_from: River [ENVO:00000022]
+      siteType:ocean:
+        name: siteType:ocean
+        populated_from: Ocean [ENVO:00000015]
+      siteType:sea:
+        name: siteType:sea
+        populated_from: Sea [ENVO:00000016]
+      siteType:canal:
+        name: siteType:canal
+        populated_from: Canal [ENVO:00000014]
+      siteType:res:
+        name: siteType:res
+        populated_from: Reservoir [ENVO:00000025]
+      siteType:grWa:
+        name: siteType:grWa
+        populated_from: Ground water  [ENVO:01001004]
+      siteType:well:
+        name: siteType:well
+        populated_from: Well [ENVO:00000026]
+      siteType:spr:
+        name: siteType:spr
+        populated_from: Spring [ENVO:00000027]
+      siteType:stabPnd:
+        name: siteType:stabPnd
+        populated_from: Waste stabilization pond
+      siteType:pluDra:
+        name: siteType:pluDra
+        populated_from: Plumbing drain
+      sampleShed:transp:
+        name: sampleShed:transp
+        populated_from: Transportation vehicle [ENVO:01000604]
+      sampleShed:ship:
+        name: sampleShed:ship
+        populated_from: Boat [ENVO:01000608]
+      sampleShed:airpln:
+        name: sampleShed:airpln
+        populated_from: Airplane [ENVO:03501349]
+      siteType:wwtp:
+        name: siteType:wwtp
+        populated_from: Wastewater treatment plant [ENVO:00002272]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

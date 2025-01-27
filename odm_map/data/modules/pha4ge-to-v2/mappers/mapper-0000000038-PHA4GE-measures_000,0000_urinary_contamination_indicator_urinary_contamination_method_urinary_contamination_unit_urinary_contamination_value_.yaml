@@ -1,0 +1,58 @@
+class_derivations:
+  ? measures[000,0000=urinary_contamination_indicator-urinary_contamination_method-urinary_contamination_unit-urinary_contamination_value]
+  : name: measures[000,0000=urinary_contamination_indicator-urinary_contamination_method-urinary_contamination_unit-urinary_contamination_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: urinary_contamination_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        populated_from: urinary_contamination_indicator
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: urinary_contamination_value
+      unit:
+        name: unit
+        populated_from: urinary_contamination_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=urinary_contamination_indicator-urinary_contamination_method-urinary_contamination_unit-urinary_contamination_value]
+      : populated_from: PHA4GE
+enum_derivations:
+  measure_from_UrinaryContaminationIndicatorMenu:
+    name: measure_from_UrinaryContaminationIndicatorMenu
+    mirror_source: false
+    populated_from: UrinaryContaminationIndicatorMenu
+    permissible_value_derivations:
+      urobilin:
+        name: urobilin
+        populated_from: Urobilin [CHEBI:36378]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  unit_from_UrinaryContaminationUnitMenu:
+    name: unit_from_UrinaryContaminationUnitMenu
+    mirror_source: false
+    populated_from: UrinaryContaminationUnitMenu
+    permissible_value_derivations:
+      ngL:
+        name: ngL
+        populated_from: nanograms per liter (ng/L) [EFO:0004382]

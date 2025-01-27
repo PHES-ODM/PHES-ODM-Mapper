@@ -1,0 +1,33 @@
+class_derivations:
+  measures[000,0000=extraction recovery efficiency measurement method-extraction recovery efficiency measurement value]:
+    name: measures[000,0000=extraction recovery efficiency measurement method-extraction
+      recovery efficiency measurement value]
+    populated_from: PHA4GE
+    slot_derivations:
+      protocolID:
+        name: protocolID
+        populated_from: extraction_recovery_efficiency_measurement_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''extractRecov'''
+      measureSetID:
+        name: measureSetID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: extraction_recovery_efficiency_measurement_value
+      unit:
+        name: unit
+        expr: '''perc'''
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=extraction recovery efficiency measurement method-extraction recovery efficiency measurement value]:
+        populated_from: PHA4GE
+enum_derivations: {}

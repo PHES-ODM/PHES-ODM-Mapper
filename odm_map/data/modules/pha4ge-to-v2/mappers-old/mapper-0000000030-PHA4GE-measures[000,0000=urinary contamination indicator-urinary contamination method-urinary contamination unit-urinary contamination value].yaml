@@ -1,0 +1,35 @@
+class_derivations:
+  ? measures[000,0000=urinary contamination indicator-urinary contamination method-urinary
+    contamination unit-urinary contamination value]
+  : name: measures[000,0000=urinary contamination indicator-urinary contamination
+      method-urinary contamination unit-urinary contamination value]
+    populated_from: PHA4GE
+    slot_derivations:
+      protocolID:
+        name: protocolID
+        populated_from: urinary_contamination_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        populated_from: urinary_contamination_indicator
+      measureSetID:
+        name: measureSetID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: urinary_contamination_value
+      unit:
+        name: unit
+        populated_from: urinary_contamination_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=urinary contamination indicator-urinary contamination method-urinary
+        contamination unit-urinary contamination value]
+      : populated_from: PHA4GE
+enum_derivations: {}

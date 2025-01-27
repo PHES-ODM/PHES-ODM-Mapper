@@ -1,0 +1,59 @@
+class_derivations:
+  measures[000,0000=water_catchment_area_human_population_density_unit-water_catchment_area_human_population_density_value]:
+    name: measures[000,0000=water_catchment_area_human_population_density_unit-water_catchment_area_human_population_density_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''popDensity'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: water_catchment_area_human_population_density_value
+      unit:
+        name: unit
+        populated_from: water_catchment_area_human_population_density_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=water_catchment_area_human_population_density_unit-water_catchment_area_human_population_density_value]:
+        populated_from: PHA4GE
+enum_derivations:
+  unit_from_WaterCatchmentAreaHumanPopulationDensityUnitMenu:
+    name: unit_from_WaterCatchmentAreaHumanPopulationDensityUnitMenu
+    mirror_source: false
+    populated_from: WaterCatchmentAreaHumanPopulationDensityUnitMenu
+    permissible_value_derivations:
+      personPerMile:
+        name: personPerMile
+        populated_from: persons per square mile [GENEPIO:0100989]
+      personPerKm:
+        name: personPerKm
+        populated_from: persons per square kilometer [GENEPIO:0100990]
+      resPerMile:
+        name: resPerMile
+        populated_from: residents per square mile [GENEPIO:0100991]
+      resPerKm:
+        name: resPerKm
+        populated_from: residents per square kilometer [GENEPIO:0100992]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

@@ -1,0 +1,53 @@
+class_derivations:
+  ? measures[000,0000=total_dissolved_solids_tds_measurement_method-total_dissolved_solids_tds_measurement_unit-total_dissolved_solids_tds_measurement_value]
+  : name: measures[000,0000=total_dissolved_solids_tds_measurement_method-total_dissolved_solids_tds_measurement_unit-total_dissolved_solids_tds_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: total_dissolved_solids_tds_measurement_method
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''tds'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: total_dissolved_solids_tds_measurement_value
+      unit:
+        name: unit
+        populated_from: total_dissolved_solids_tds_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=total_dissolved_solids_tds_measurement_method-total_dissolved_solids_tds_measurement_unit-total_dissolved_solids_tds_measurement_value]
+      : populated_from: PHA4GE
+enum_derivations:
+  unit_from_TotalDissolvedSolidsTdsMeasurementUnitMenu:
+    name: unit_from_TotalDissolvedSolidsTdsMeasurementUnitMenu
+    mirror_source: false
+    populated_from: TotalDissolvedSolidsTdsMeasurementUnitMenu
+    permissible_value_derivations:
+      perc:
+        name: perc
+        populated_from: percent (%) [UO:0000187]
+      gL:
+        name: gL
+        populated_from: gram per liter (g/L) [UO:0000175]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

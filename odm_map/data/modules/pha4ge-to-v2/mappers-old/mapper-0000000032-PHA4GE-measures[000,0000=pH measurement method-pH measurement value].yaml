@@ -1,0 +1,32 @@
+class_derivations:
+  measures[000,0000=pH measurement method-pH measurement value]:
+    name: measures[000,0000=pH measurement method-pH measurement value]
+    populated_from: PHA4GE
+    slot_derivations:
+      protocolID:
+        name: protocolID
+        populated_from: pH_measurement_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''ph'''
+      measureSetID:
+        name: measureSetID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: pH_measurement_value
+      unit:
+        name: unit
+        expr: '''unitless'''
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=pH measurement method-pH measurement value]:
+        populated_from: PHA4GE
+enum_derivations: {}

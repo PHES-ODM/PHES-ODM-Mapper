@@ -1,0 +1,68 @@
+class_derivations:
+  measures[000,0000=sample_processing_date-sample_storage_duration_unit-sample_storage_duration_value]:
+    name: measures[000,0000=sample_processing_date-sample_storage_duration_unit-sample_storage_duration_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sample_processing_date
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''stoTim'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: sample_storage_duration_value
+      unit:
+        name: unit
+        populated_from: sample_storage_duration_unit
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=sample_processing_date-sample_storage_duration_unit-sample_storage_duration_value]:
+        populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  unit_from_SampleStorageDurationUnitMenu:
+    name: unit_from_SampleStorageDurationUnitMenu
+    mirror_source: false
+    populated_from: SampleStorageDurationUnitMenu
+    permissible_value_derivations:
+      seconds:
+        name: seconds
+        populated_from: Second [UO:0000010]
+      minutes:
+        name: minutes
+        populated_from: Minute [UO:0000031]
+      hours:
+        name: hours
+        populated_from: Hour [UO:0000032]
+      days:
+        name: days
+        populated_from: Day [UO:0000033]
+      weeks:
+        name: weeks
+        populated_from: Week [UO:0000034]
+      months:
+        name: months
+        populated_from: Month [UO:0000035]
+      years:
+        name: years
+        populated_from: Year [UO:0000036]

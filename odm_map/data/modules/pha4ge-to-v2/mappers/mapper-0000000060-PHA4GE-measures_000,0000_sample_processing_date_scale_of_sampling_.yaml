@@ -1,0 +1,56 @@
+class_derivations:
+  measures[000,0000=sample_processing_date-scale_of_sampling]:
+    name: measures[000,0000=sample_processing_date-scale_of_sampling]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sample_processing_date
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''survLevel'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: scale_of_sampling
+      unit:
+        name: unit
+        expr: ''''''
+      aggregation:
+        name: aggregation
+        expr: ''''''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=sample_processing_date-scale_of_sampling]:
+        populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  ODMv2_enum_from_ScaleOfSamplingMenu:
+    name: ODMv2_enum_from_ScaleOfSamplingMenu
+    mirror_source: false
+    populated_from: ScaleOfSamplingMenu
+    permissible_value_derivations:
+      communitLev:
+        name: communitLev
+        populated_from: Community-level surveillance [GENEPIO:0100874]
+      instituLev:
+        name: instituLev
+        populated_from: Institution-level surveillance [GENEPIO:0100875]
+      builLev:
+        name: builLev
+        populated_from: Building-level surveillance [GENEPIO:0100876]

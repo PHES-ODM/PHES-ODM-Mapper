@@ -1,0 +1,21 @@
+class_derivations:
+  accessions:
+    name: accessions
+    populated_from: PHA4GE
+    slot_derivations:
+      accessNum:
+        name: accessNum
+        populated_from: reference_genome_accession
+      organizationID:
+        name: organizationID
+        populated_from: sequence_submitted_by
+  Container:
+    name: Container
+    slot_derivations:
+      accessions:
+        populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

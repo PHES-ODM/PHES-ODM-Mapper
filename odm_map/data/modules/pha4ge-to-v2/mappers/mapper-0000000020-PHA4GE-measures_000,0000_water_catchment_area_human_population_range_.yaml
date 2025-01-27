@@ -1,0 +1,68 @@
+class_derivations:
+  measures[000,0000=water_catchment_area_human_population_range]:
+    name: measures[000,0000=water_catchment_area_human_population_range]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''popServRange'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: water_catchment_area_human_population_range
+      unit:
+        name: unit
+        expr: '''peeps'''
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=water_catchment_area_human_population_range]:
+        populated_from: PHA4GE
+enum_derivations:
+  ODMv2_enum_from_WaterCatchmentAreaHumanPopulationRangeMenu:
+    name: ODMv2_enum_from_WaterCatchmentAreaHumanPopulationRangeMenu
+    mirror_source: false
+    populated_from: WaterCatchmentAreaHumanPopulationRangeMenu
+    permissible_value_derivations:
+      less10:
+        name: less10
+        populated_from: <10 people
+      less100:
+        name: less100
+        populated_from: 10 - 100 people
+      less1k:
+        name: less1k
+        populated_from: 100 - 1,000 people
+      less10k:
+        name: less10k
+        populated_from: 1,000 - 10,000 people
+      less100k:
+        name: less100k
+        populated_from: 10,000 - 100,000 people
+      less1mil:
+        name: less1mil
+        populated_from: 100,000 -  1,000,000 people
+      more1mil:
+        name: more1mil
+        populated_from: 1,000,000+ people
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

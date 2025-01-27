@@ -1,0 +1,42 @@
+class_derivations:
+  ? measures[000,0000=extraction_recovery_efficiency_measurement_method-extraction_recovery_efficiency_measurement_value-sample_processing_date]
+  : name: measures[000,0000=extraction_recovery_efficiency_measurement_method-extraction_recovery_efficiency_measurement_value-sample_processing_date]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sample_processing_date
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: extraction_recovery_efficiency_measurement_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''extractRecov'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: extraction_recovery_efficiency_measurement_value
+      unit:
+        name: unit
+        expr: '''perc'''
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=extraction_recovery_efficiency_measurement_method-extraction_recovery_efficiency_measurement_value-sample_processing_date]
+      : populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

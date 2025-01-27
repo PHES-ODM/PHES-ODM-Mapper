@@ -1,0 +1,20 @@
+class_derivations:
+  samples[000,0000=specimen collector subsample ID]:
+    name: samples[000,0000=specimen collector subsample ID]
+    populated_from: PHA4GE
+    slot_derivations:
+      recDate:
+        name: recDate
+        expr: ''''''
+      sampleID:
+        name: sampleID
+        populated_from: specimen_collector_subsample_ID
+      repType:
+        name: repType
+        expr: '"subSamp"'
+  Container:
+    name: Container
+    slot_derivations:
+      samples[000,0000=specimen collector subsample ID]:
+        populated_from: PHA4GE
+enum_derivations: {}

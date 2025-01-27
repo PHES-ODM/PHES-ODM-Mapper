@@ -1,0 +1,168 @@
+class_derivations:
+  ? samples[000,0000=environmental material-experimental specimen role type-purpose
+    of sampling-sample collected by-sample received date-specimen collector sample
+    ID]
+  : name: samples[000,0000=environmental material-experimental specimen role type-purpose
+      of sampling-sample collected by-sample received date-specimen collector sample
+      ID]
+    populated_from: PHA4GE
+    slot_derivations:
+      recDate:
+        name: recDate
+        populated_from: sample_received_date
+      sampleID:
+        name: sampleID
+        populated_from: specimen_collector_sample_ID
+      saMaterial:
+        name: saMaterial
+        populated_from: environmental_material
+      repType:
+        name: repType
+        populated_from: experimental_specimen_role_type
+      purposeID:
+        name: purposeID
+        populated_from: purpose_of_sampling
+      organizationID:
+        name: organizationID
+        populated_from: sample_collected_by
+      collPer:
+        name: collPer
+        expr: "# Convert _value to hours\n_value = src.sample_collection_time_duration_value\n\
+          _unit = src.sample_collection_time_duration_unit\nif _unit == \"Second\"\
+          :\n    target = _value / 60 / 60\nelif _unit == \"Minute\":\n    target\
+          \ = _value / 60\nelif _unit == \"Hour\":\n    target = _value\nelif _unit\
+          \ == \"Day\":\n    target = _value * 24\nelif _unit == \"Week\":\n    target\
+          \ = _value * 24 * 7\nelif _unit == \"Month\":\n    target = _value * 24\
+          \ * 7 * 30\nelif _unit == \"Year\":\n    target = _value * 24 * 7 * 365\n\
+          else:\n    target = \"\"\n    raise ValueError(\"Unrecognized value for\
+          \ sample_collection_time_duration_unit: \" + _unit)"
+      collType:
+        name: collType
+        expr: case((collection_device != '', collection_device), (True, collection_method))
+      collDT:
+        name: collDT
+        expr: sample_collection_date + '/!/' + sample_collection_start_time
+      collDTStart:
+        name: collDTStart
+        expr: sample_collection_start_time
+      collDTEnd:
+        name: collDTEnd
+        expr: sample_collection_end_date + '/!/' + sample_collection_end_time
+  Container:
+    name: Container
+    slot_derivations:
+      ? samples[000,0000=environmental material-experimental specimen role type-purpose
+        of sampling-sample collected by-sample received date-specimen collector sample
+        ID]
+      : populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: !!python/object/new:linkml_runtime.linkml_model.meta.ElementName
+      args:
+      - NullValueMenu
+      state:
+        _s: !!python/object/apply:yaml._yaml.__pyx_unpickle_Mark
+          args:
+          - &id001 !!python/name:yaml._yaml.Mark ''
+          - 41581148
+          - null
+          state: !!python/tuple
+          - null
+          - 13
+          - 25529
+          - 776
+          - pha4ge.yaml
+          - null
+        _len: 13
+  saMaterial_from_EnvironmentalMaterialMenu:
+    name: saMaterial_from_EnvironmentalMaterialMenu
+    mirror_source: false
+    populated_from: !!python/object/new:linkml_runtime.linkml_model.meta.ElementName
+      args:
+      - EnvironmentalMaterialMenu
+      state:
+        _s: !!python/object/apply:yaml._yaml.__pyx_unpickle_Mark
+          args:
+          - *id001
+          - 41581148
+          - null
+          state: !!python/tuple
+          - null
+          - 13
+          - 39900
+          - 1128
+          - pha4ge.yaml
+          - null
+        _len: 25
+    permissible_value_derivations:
+      nww:
+        name: nww
+        populated_from: surface water
+      rawWW:
+        name: rawWW
+        populated_from: wastewater
+      swrSed:
+        name: swrSed
+        populated_from: Wastewater sediment
+      sludgeNS:
+        name: sludgeNS
+        populated_from: Sludge
+      pSludge:
+        name: pSludge
+        populated_from: Primary sludge
+      sSludge:
+        name: sSludge
+        populated_from: Secondary sludge
+      effluNS:
+        name: effluNS
+        populated_from: Wastewater effluent
+      pEfflu:
+        name: pEfflu
+        populated_from: Primary wastwater effluent
+      sEfflu:
+        name: sEfflu
+        populated_from: Secondary wastwater effluent
+  purposeID_from_PurposeOfSamplingMenu:
+    name: purposeID_from_PurposeOfSamplingMenu
+    mirror_source: false
+    populated_from: !!python/object/new:linkml_runtime.linkml_model.meta.ElementName
+      args:
+      - PurposeOfSamplingMenu
+      state:
+        _s: !!python/object/apply:yaml._yaml.__pyx_unpickle_Mark
+          args:
+          - *id001
+          - 41581148
+          - null
+          state: !!python/tuple
+          - null
+          - 13
+          - 35136
+          - 1015
+          - pha4ge.yaml
+          - null
+        _len: 21
+    permissible_value_derivations:
+      wwtpAssess:
+        name: wwtpAssess
+        populated_from: Wastewater treatment efficiency assessment
+      chemSurv:
+        name: chemSurv
+        populated_from: Wastewater chemical surveillance
+      drugSurv:
+        name: drugSurv
+        populated_from: Wastewater drug surveillance
+      regular:
+        name: regular
+        populated_from: Wastewater pathogen surveillance
+      researchPurp:
+        name: researchPurp
+        populated_from: Research
+      profil:
+        name: profil
+        populated_from: Environmental survey (profiling)
+      testing:
+        name: testing
+        populated_from: Protocol testing

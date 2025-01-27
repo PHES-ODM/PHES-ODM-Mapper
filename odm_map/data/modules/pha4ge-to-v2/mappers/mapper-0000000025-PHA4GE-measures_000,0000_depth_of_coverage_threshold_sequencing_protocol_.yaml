@@ -1,0 +1,38 @@
+class_derivations:
+  measures[000,0000=depth_of_coverage_threshold-sequencing_protocol]:
+    name: measures[000,0000=depth_of_coverage_threshold-sequencing_protocol]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: sequencing_protocol
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''depCovThresh'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: depth_of_coverage_threshold
+      unit:
+        name: unit
+        expr: '''unitless'''
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=depth_of_coverage_threshold-sequencing_protocol]:
+        populated_from: PHA4GE
+enum_derivations: {}

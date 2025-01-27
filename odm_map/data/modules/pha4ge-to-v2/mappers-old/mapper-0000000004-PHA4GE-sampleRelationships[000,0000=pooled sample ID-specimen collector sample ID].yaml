@@ -1,0 +1,24 @@
+class_derivations:
+  sampleRelationships[000,0000=pooled sample ID-specimen collector sample ID]:
+    name: sampleRelationships[000,0000=pooled sample ID-specimen collector sample
+      ID]
+    populated_from: PHA4GE
+    slot_derivations:
+      sampleRelationshipsID:
+        name: sampleRelationshipsID
+        expr: ''''''
+      sampleIDSubject:
+        name: sampleIDSubject
+        populated_from: pooled_sample_ID
+      relationshipID:
+        name: relationshipID
+        expr: '''child'''
+      sampleIDObject:
+        name: sampleIDObject
+        populated_from: specimen_collector_sample_ID
+  Container:
+    name: Container
+    slot_derivations:
+      sampleRelationships[000,0000=pooled sample ID-specimen collector sample ID]:
+        populated_from: PHA4GE
+enum_derivations: {}

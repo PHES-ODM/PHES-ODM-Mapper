@@ -1,0 +1,56 @@
+class_derivations:
+  ? measures[000,0000=total_nitrogen_tn_measurement_method-total_nitrogen_tn_measurement_unit-total_nitrogen_tn_measurement_value]
+  : name: measures[000,0000=total_nitrogen_tn_measurement_method-total_nitrogen_tn_measurement_unit-total_nitrogen_tn_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: total_nitrogen_tn_measurement_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''tn'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: total_nitrogen_tn_measurement_value
+      unit:
+        name: unit
+        populated_from: total_nitrogen_tn_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=total_nitrogen_tn_measurement_method-total_nitrogen_tn_measurement_unit-total_nitrogen_tn_measurement_value]
+      : populated_from: PHA4GE
+enum_derivations:
+  unit_from_TotalNitrogenTnMeasurementUnitMenu:
+    name: unit_from_TotalNitrogenTnMeasurementUnitMenu
+    mirror_source: false
+    populated_from: TotalNitrogenTnMeasurementUnitMenu
+    permissible_value_derivations:
+      mgL:
+        name: mgL
+        populated_from: milligram per liter (mg/L) [UO:0000273]
+      gL:
+        name: gL
+        populated_from: gram per liter (g/L) [UO:0000175]
+      gNgTS:
+        name: gNgTS
+        populated_from: nitrogen per total solids (gN/gTS)
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

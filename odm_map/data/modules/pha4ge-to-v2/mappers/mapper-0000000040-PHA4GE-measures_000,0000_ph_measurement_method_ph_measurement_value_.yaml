@@ -1,0 +1,38 @@
+class_derivations:
+  measures[000,0000=ph_measurement_method-ph_measurement_value]:
+    name: measures[000,0000=ph_measurement_method-ph_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: ph_measurement_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''ph'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: ph_measurement_value
+      unit:
+        name: unit
+        expr: '''unitless'''
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=ph_measurement_method-ph_measurement_value]:
+        populated_from: PHA4GE
+enum_derivations: {}

@@ -1,0 +1,53 @@
+class_derivations:
+  measures[000,0000=turbidity_measurement_method-turbidity_measurement_unit-turbidity_measurement_value]:
+    name: measures[000,0000=turbidity_measurement_method-turbidity_measurement_unit-turbidity_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: turbidity_measurement_method
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''turb'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: turbidity_measurement_value
+      unit:
+        name: unit
+        populated_from: turbidity_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=turbidity_measurement_method-turbidity_measurement_unit-turbidity_measurement_value]:
+        populated_from: PHA4GE
+enum_derivations:
+  unit_from_TurbidityMeasurementUnitMenu:
+    name: unit_from_TurbidityMeasurementUnitMenu
+    mirror_source: false
+    populated_from: TurbidityMeasurementUnitMenu
+    permissible_value_derivations:
+      ntu:
+        name: ntu
+        populated_from: nephelometric turbidity unit (NTU)
+      fnu:
+        name: fnu
+        populated_from: formazin nephelometric unit (FNU) [UO:0000318]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

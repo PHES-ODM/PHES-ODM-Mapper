@@ -1,0 +1,71 @@
+class_derivations:
+  ? measures[000,0000=total_daily_flow_rate_measurement_method-total_daily_flow_rate_measurement_unit-total_daily_flow_rate_measurement_value]
+  : name: measures[000,0000=total_daily_flow_rate_measurement_method-total_daily_flow_rate_measurement_unit-total_daily_flow_rate_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        populated_from: total_daily_flow_rate_measurement_method
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''floRate'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: total_daily_flow_rate_measurement_value
+      unit:
+        name: unit
+        populated_from: total_daily_flow_rate_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=total_daily_flow_rate_measurement_method-total_daily_flow_rate_measurement_unit-total_daily_flow_rate_measurement_value]
+      : populated_from: PHA4GE
+enum_derivations:
+  unit_from_TotalDailyFlowRateMeasurementUnitMenu:
+    name: unit_from_TotalDailyFlowRateMeasurementUnitMenu
+    mirror_source: false
+    populated_from: TotalDailyFlowRateMeasurementUnitMenu
+    permissible_value_derivations:
+      m3S:
+        name: m3S
+        populated_from: cubic meter per second (m^3/s)
+      m3min:
+        name: m3min
+        populated_from: cubic meter per minute (m^3/min)
+      m3H:
+        name: m3H
+        populated_from: cubic meter per hour (m^3/h)
+      lsec:
+        name: lsec
+        populated_from: liter per second (L/s)
+      lmin:
+        name: lmin
+        populated_from: liter per minute (L/min)
+      lhour:
+        name: lhour
+        populated_from: liter per hour (L/h)
+      lday:
+        name: lday
+        populated_from: liter per day (L/day)
+      mgd:
+        name: mgd
+        populated_from: million gallons per day (MGD)
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

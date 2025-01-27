@@ -1,0 +1,53 @@
+class_derivations:
+  measures[000,0000=total_suspended_solids_tss_measurement_unit-total_suspended_solids_tss_measurement_value]:
+    name: measures[000,0000=total_suspended_solids_tss_measurement_unit-total_suspended_solids_tss_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        expr: ''''''
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        expr: '''{{total suspended solids (TSS) measurement method}'''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''tss'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: total_suspended_solids_tss_measurement_value
+      unit:
+        name: unit
+        populated_from: total_suspended_solids_tss_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=total_suspended_solids_tss_measurement_unit-total_suspended_solids_tss_measurement_value]:
+        populated_from: PHA4GE
+enum_derivations:
+  unit_from_TotalSuspendedSolidsTssMeasurementUnitMenu:
+    name: unit_from_TotalSuspendedSolidsTssMeasurementUnitMenu
+    mirror_source: false
+    populated_from: TotalSuspendedSolidsTssMeasurementUnitMenu
+    permissible_value_derivations:
+      perc:
+        name: perc
+        populated_from: percent (%) [UO:0000187]
+      gL:
+        name: gL
+        populated_from: gram per liter (g/L) [UO:0000175]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

@@ -1,0 +1,33 @@
+class_derivations:
+  measures[000,0000=water catchment human population density unit-water catchment human population density value]:
+    name: measures[000,0000=water catchment human population density unit-water catchment
+      human population density value]
+    populated_from: PHA4GE
+    slot_derivations:
+      protocolID:
+        name: protocolID
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''popDensity'''
+      measureSetID:
+        name: measureSetID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: water_catchment_human_population_density_value
+      unit:
+        name: unit
+        populated_from: water_catchment_human_population_density_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=water catchment human population density unit-water catchment human population density value]:
+        populated_from: PHA4GE
+enum_derivations: {}

@@ -1,0 +1,56 @@
+class_derivations:
+  measures[000,0000=sample_processing_date-sample_volume_measurement_unit-sample_volume_measurement_value]:
+    name: measures[000,0000=sample_processing_date-sample_volume_measurement_unit-sample_volume_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sample_processing_date
+      organizationID:
+        name: organizationID
+        expr: ''''''
+      protocolID:
+        name: protocolID
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''samVol'''
+      measureSetRepID:
+        name: measureSetRepID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: sample_volume_measurement_value
+      unit:
+        name: unit
+        populated_from: sample_volume_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=sample_processing_date-sample_volume_measurement_unit-sample_volume_measurement_value]:
+        populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  unit_from_SampleVolumeMeasurementUnitMenu:
+    name: unit_from_SampleVolumeMeasurementUnitMenu
+    mirror_source: false
+    populated_from: SampleVolumeMeasurementUnitMenu
+    permissible_value_derivations:
+      ul:
+        name: ul
+        populated_from: microliter (uL) [UO:0000101]
+      ml:
+        name: ml
+        populated_from: milliliter (mL) [UO:0000098]
+      l:
+        name: l
+        populated_from: liter (L) [UO:0000099]

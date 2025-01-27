@@ -1,0 +1,32 @@
+class_derivations:
+  measures[000,0000=percent read contamination ]:
+    name: measures[000,0000=percent read contamination ]
+    populated_from: PHA4GE
+    slot_derivations:
+      protocolID:
+        name: protocolID
+        expr: ''''''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''percContam'''
+      measureSetID:
+        name: measureSetID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: percent_read_contamination
+      unit:
+        name: unit
+        expr: '''perc'''
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=percent read contamination ]:
+        populated_from: PHA4GE
+enum_derivations: {}

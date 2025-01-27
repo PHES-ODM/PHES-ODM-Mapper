@@ -1,0 +1,35 @@
+class_derivations:
+  ? measures[000,0000=total daily flow rate measurement method-total daily flow rate
+    measurement unit-total daily flow rate measurement value]
+  : name: measures[000,0000=total daily flow rate measurement method-total daily flow
+      rate measurement unit-total daily flow rate measurement value]
+    populated_from: PHA4GE
+    slot_derivations:
+      protocolID:
+        name: protocolID
+        populated_from: total_daily_flow_rate_measurement_method
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''floRate'''
+      measureSetID:
+        name: measureSetID
+        expr: ''''''
+      value:
+        name: value
+        populated_from: total_daily_flow_rate_measurement_value
+      unit:
+        name: unit
+        populated_from: total_daily_flow_rate_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=total daily flow rate measurement method-total daily flow
+        rate measurement unit-total daily flow rate measurement value]
+      : populated_from: PHA4GE
+enum_derivations: {}
