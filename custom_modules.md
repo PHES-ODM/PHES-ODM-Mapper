@@ -9,11 +9,11 @@ This document is a work in progress.
 A module is a collection of rules and configuration options, split up into
 multiple steps, that define how to map from one database format (eg. NWSS) to a
 target database format (eg. ODM v2). The ODM Mapper contains some built-in
-modules located at [/odm_map/data/modules](/odm_map/data/modules), but
-custom modules can be created to support your own source and target database
-formats. A module and all its associated files are stored in a directory. When
-running the mapper from the command-line, either a module name (for built-in
-modules) or a module directory (for custom modules) can be specified.
+modules located at [/odm_map/data/modules](/odm_map/data/modules), but custom
+modules can be created to support your own source and target database formats.
+A module and all its associated files are stored in a directory. When running
+the mapper from the command-line, either a module name (for built-in modules)
+or a module directory (for custom modules) can be specified.
 
 This document, including its sub-documents, describe how to create your own
 module.
@@ -42,6 +42,8 @@ steps:
   - action: clean
     params:
       schema: schemas/nwss_reporting.yaml
+      operations:
+        - correct_enums: True
   - action: save
     if: "{debug_mode}"
     params:
@@ -112,18 +114,89 @@ Example:
 - action: clean
   params:
     schema: schemas/nwss_reporting.yaml
+    operations:
+      - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_underscores ]
+      - add_ontology_ids_to_enums: True
+      - correct_enums: True
+      - remove_unknown_columns: True
 ```
 
 | Parameter      | Required/Optional | Description |
 | :--------------| :---------------- | :---------- |
 | schema         | Required          | The path to the LinkML schema that the cleaning is based on. This path is relative to the root directory of the module. |
+| operations     | Required          | Specify a list of cleaning operations to perform. Each list item is a dictionary with a single key, where the key is the operation name to perform and the value is the parameter(s) to pass to the operation |
 
 Clean the data using the specified LinkML schema. The schema should be for the
 current format that the data is in (eg. NWSS, PHA4GE, ODM v1, ODM v2, etc).
-Cleaning will correct capitalization of enumeration values, report unknown
-enumeration values (while leaving them unchanged), report missing columns, and
-report additional unrecognized columns. Missing columns will typically be
-treated as blank, while unrecognized columns will typically be ignored.
+Available operations are:
+
+#### Clean Operation: correct_enums
+
+Correct all enumeration values in the data by fixing the capitalization and
+spacing to match the capitalization and spacing in the schema.
+
+```yaml
+operations:
+  - correct_enums: True
+```
+
+For example, if the data has a value "degrees celsius" in a column that is an
+enumeration, and the enumeration in the schema has a permissible value of
+"Degrees Celsius", then the value in the data will be replaced with "Degrees
+Celsius".
+
+#### Clean Operations: remove_unknown_columns
+
+Remove any column in the data that is not found in the schema.
+
+```yaml
+operations:
+  - remove_unknown_columns: True
+```
+
+#### Clean Operation: format_columns
+
+Format the column names of the DataFrame.
+
+```yaml
+operations:
+  - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_underscores ]
+```
+
+The value is a list of formatting operations to perform:
+
+- **lowercase**: Make all column names lowercase.
+- **uppercase**: Make all column names uppercase.
+- **alpha_numeric_underscore**: Replace any non-alphanumeric characters with an
+  underscore.
+- **single_underscores**: Replace any sequence of multiple underscores to a
+  single underscore (eg. "column__name" becomes "column_name")
+- **trim_underscores**: Remove all leading and trailing underscores (eg.
+  "_column_name__" becomes "column_name")
+- **{ remove_chars: "chars" }**: Remove all characters found in the string
+  "chars" in the column names.
+
+#### Clean Operation: add_ontology_ids_to_enums
+
+Add ontology IDs (when they exist) to all enum values in the data.
+
+```yaml
+operations:
+  - add_ontology_ids_to_enums: True
+```
+
+The ontology IDs are determined by the schema. They are the IDs in square
+brackets concatenated to the end of the enumeration values. For example, the
+enum value "degree Celsius (C) [UO:0000027]" has the ontology ID "UO:0000027".
+If we find the value "degree Celsius (C)" in the data, and the corresponding
+enumeration in the schema has a permissible value of "degree Celsius (C)
+[UO:0000027]", then the value in the data will be replaced with "degree Celsius
+(C) [UO:0000027]".
+
+Note that when trying to match a data enum value with a schema enum value that
+capitalization is ignored, and sequences of multiple spaces are replaced with
+single spaces when trying to match (but the resulting enum value has the same
+capitalization and spacing as the schema enum value).
 
 ### Action: generate_ids
 
