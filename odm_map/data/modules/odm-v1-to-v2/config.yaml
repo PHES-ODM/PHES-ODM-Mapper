@@ -8,6 +8,7 @@ steps:
       schema: schemas/odm_v1.yaml
       operations:
         - correct_enums: True
+        - remove_unknown_columns: True
   - action: save
     if: "{debug_mode}"
     params:

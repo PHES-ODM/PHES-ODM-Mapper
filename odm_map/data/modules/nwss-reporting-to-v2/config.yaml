@@ -8,6 +8,7 @@ steps:
       schema: schemas/nwss_reporting.yaml
       operations:
         - correct_enums: True
+        - remove_unknown_columns: True
   - action: save
     if: "{debug_mode}"
     params:
