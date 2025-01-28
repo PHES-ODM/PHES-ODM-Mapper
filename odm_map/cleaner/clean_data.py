@@ -209,6 +209,27 @@ class DataCleaner(object):
     def clean_add_ontology_ids_to_enums(
         self, df: pd.DataFrame, class_name: str
     ) -> pd.DataFrame:
+        """Add ontology IDs, if they exist, to all the enumeration values in the DataFrame.
+
+        The ontology IDs are determined by the schema. They are the IDs in square brackets concatenated to
+        the end of the enumeration value. For example, the enum value "degree Celsius (C) [UO:0000027]" has
+        the ontology ID "UO:0000027". If we find the value "degree Celsius (C)" in the DataFrame, and the
+        corresponding enumeration in the schema has a permissible value of "degree Celsius (C) [UO:0000027]",
+        then the value in the DataFrame will be replaced with "degree Celsius (C) [UO:0000027]".
+
+        Note that when trying to match a DataFrame enum value with a schema enum value that capitalization is
+        ignored, and sequences of multiple spaces are replaced with single spaces when trying to match (but the
+        resulting enum value has the same capitalization and spacing as the schema enum value).
+
+        Args:
+            df (pd.DataFrame): The DataFrame to add ontology IDs to. A copy of this DataFrame is made and
+                the original left unchanged.
+            class_name (str): The class name that the DataFrame belongs to. We will iterate over all columns
+                in the schema that belong to this class.
+
+        Returns:
+            pd.DataFrame: The DataFrame with ontology IDs added.
+        """
         if class_name not in all_classes_without_tree_root(self.schema):
             logger.debug(
                 f"Not adding ontology IDs to enums for class {class_name} since class is not recognized"
@@ -224,11 +245,12 @@ class DataCleaner(object):
             v, permissible_values: List[str], permissible_values_simplified: List[str]
         ) -> str:
             try:
-                idx = permissible_values_simplified.index(v.lower())
+                idx = permissible_values_simplified.index(re.sub("  +", " ", v.lower()))
                 return permissible_values[idx]
             except Exception:
                 return v
 
+        # Go through all the columns in the DataFrame and add ontology IDs when appropriate
         for slot_name in df.columns:
             if slot_name not in class_definition.attributes:
                 continue
@@ -236,12 +258,17 @@ class DataCleaner(object):
             slot_ranges = get_ranges_of_slot(class_name, slot_name, self.schema)
             if slot_ranges:
                 for slot_range in slot_ranges:
-                    # Get enumeration for the slot range, if there is one, and fix up the capitalization of all slot values.
+                    # Get enumeration for the slot range, if there is one.
                     enum = self.schema.all_enums().get(str(slot_range), None)
                     if enum is not None:
                         permissible_values = list(enum.permissible_values.keys())
+                        # The "simplified" values are the permissible values with the ontology ID
+                        # removed, the values in lowercase, and sequences of multiple spaces replaced
+                        # with single spaces. This is used to match the enum values in the
+                        # DataFrame, that are in lowercase and have multiple spaces removed (but
+                        # the ontology ID, if there is one, is not removed)
                         permissible_values_simplified = [
-                            self.remove_ontology_id(v).lower()
+                            re.sub("  +", " ", self.remove_ontology_id(v).lower())
                             for v in permissible_values
                         ]
                         df[slot_name] = df[slot_name].map(
@@ -274,12 +301,6 @@ class DataCleaner(object):
         df = df.copy()
 
         class_definition = self.schema.induced_class(class_name)
-
-        # Fix up column names (Use correct capitalization)
-        # df.columns = [
-        #     choose_ignore_case_value(col, list(class_definition.attributes.keys()))
-        #     for col in df.columns
-        # ]
 
         # changes_history stores a count of the changes made to enumeration values to correct for capitalization.
         # The keys are the slot name, and the values are a sub dictionary. The keys of the sub dictionary
