@@ -3,15 +3,15 @@ class_derivations:
     name: organizations
     populated_from: Lab
     slot_derivations:
+      organizationID:
+        name: organizationID
+        populated_from: labID
       lastEdited:
         name: lastEdited
         populated_from: updateDate
       name:
         name: name
         populated_from: name
-      organizationID:
-        name: organizationID
-        populated_from: labID
   Container:
     name: Container
     slot_derivations:

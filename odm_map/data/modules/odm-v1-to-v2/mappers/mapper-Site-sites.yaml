@@ -1,0 +1,44 @@
+class_derivations:
+  sites:
+    name: sites
+    populated_from: Site
+    slot_derivations:
+      geoLat:
+        name: geoLat
+        populated_from: geoLat
+      geoLong:
+        name: geoLong
+        populated_from: geoLong
+      healthRegion:
+        name: healthRegion
+        populated_from: healthRegion
+      sampleShed:
+        name: sampleShed
+        populated_from: type
+      siteType:
+        name: siteType
+        populated_from: type
+      descr:
+        name: descr
+        populated_from: description
+      siteID:
+        name: siteID
+        populated_from: siteID
+      organizationID:
+        name: organizationID
+        populated_from: publicHealthDepartment
+      polygonID:
+        name: polygonID
+        populated_from: polygonID
+      notes:
+        name: notes
+        populated_from: notes
+      name:
+        name: name
+        populated_from: name
+  Container:
+    name: Container
+    slot_derivations:
+      sites:
+        populated_from: Site
+enum_derivations: {}

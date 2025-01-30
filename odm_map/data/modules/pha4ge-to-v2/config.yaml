@@ -22,18 +22,21 @@ steps:
       source_schema: schemas/pha4ge.yaml
       target_schema: schemas/odm_v2.yaml
       mappers_dir: mappers
-  # - action: filter
-  #   params:
-  #     filters: filters/nwss_reporting_to_v2_filters.csv
-  # - action: save
-  #   if: "{debug_mode}"
-  #   params:
-  #     output_dir: "{temp_dir}/mapped_data/"
-  #     output_name: "{class_name}[preid].csv"
-  # - action: generate_ids
-  #   params:
-  #     id_code: ids/nwss_reporting_to_v2_id_code.xlsx
-  #     id_config: ids/nwss_reporting_to_v2_id_config.yaml
+  - action: filter
+    params:
+      filters: filters/pha4ge_to_v2_filters.csv
+  - action: expand
+    params:
+      config: expander/expander_config.yaml
+  - action: save
+    if: "{debug_mode}"
+    params:
+      output_dir: "{temp_dir}/mapped_data/"
+      output_name: "{class_name}[preid].csv"
+  - action: generate_ids
+    params:
+      id_code: ids/pha4ge_to_v2_id_code.xlsx
+      id_config: ids/pha4ge_to_v2_id_config.yaml
   - action: save
     params:
       output_dir: "{output_dir}"

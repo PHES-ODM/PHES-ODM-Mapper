@@ -1,0 +1,41 @@
+class_derivations:
+  protocolSteps[000,0005=inhibition]:
+    name: protocolSteps[000,0005=inhibition]
+    populated_from: AssayMethod
+    slot_derivations:
+      stepVer:
+        name: stepVer
+        populated_from: version
+      summ:
+        name: summ
+        populated_from: summary
+      instrumentID:
+        name: instrumentID
+        populated_from: instrumentID
+      lastEdited:
+        name: lastEdited
+        populated_from: date
+      refLink:
+        name: refLink
+        populated_from: referenceLink
+      unit:
+        name: unit
+        expr: '''NA'''
+      measure:
+        name: measure
+        expr: ''''''
+      method:
+        name: method
+        expr: '''inhibMeth'''
+      value:
+        name: value
+        populated_from: inhibition
+      aggregation:
+        name: aggregation
+        expr: '''NA'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0005=inhibition]:
+        populated_from: AssayMethod
+enum_derivations: {}

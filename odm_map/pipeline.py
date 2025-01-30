@@ -32,6 +32,7 @@ from odm_map.actions.action_save_data import action_save_data
 from odm_map.actions.action_map_data import action_map_data
 from odm_map.actions.action_generate_ids import action_generate_ids
 from odm_map.actions.action_filter_data import action_filter_data
+from odm_map.actions.action_expand_data import action_expand_data
 from odm_map.utils.modules import (
     get_module_config,
     get_module_dir,
@@ -191,6 +192,12 @@ class Pipeline(object):
                     data_frames=data_frames,
                     schema=schema,
                     clean_operations=clean_operations,
+                )
+            elif action == "expand":
+                config = self.get_module_path(params.get("config"))
+                data_frames = action_expand_data(
+                    data_frames=data_frames,
+                    config=config,
                 )
             elif action == "save":
                 progress_bar_title = params.get("progress_bar_title", None)

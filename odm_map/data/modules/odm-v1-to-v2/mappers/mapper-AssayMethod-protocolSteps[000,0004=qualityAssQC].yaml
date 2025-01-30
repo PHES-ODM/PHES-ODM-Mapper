@@ -1,0 +1,41 @@
+class_derivations:
+  protocolSteps[000,0004=qualityAssQC]:
+    name: protocolSteps[000,0004=qualityAssQC]
+    populated_from: AssayMethod
+    slot_derivations:
+      stepVer:
+        name: stepVer
+        populated_from: version
+      summ:
+        name: summ
+        populated_from: summary
+      instrumentID:
+        name: instrumentID
+        populated_from: instrumentID
+      lastEdited:
+        name: lastEdited
+        populated_from: date
+      refLink:
+        name: refLink
+        populated_from: referenceLink
+      unit:
+        name: unit
+        expr: '''NA'''
+      measure:
+        name: measure
+        expr: ''''''
+      method:
+        name: method
+        expr: '''qaqc'''
+      value:
+        name: value
+        populated_from: qualityAssQC
+      aggregation:
+        name: aggregation
+        expr: '''NA'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0004=qualityAssQC]:
+        populated_from: AssayMethod
+enum_derivations: {}

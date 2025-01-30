@@ -1,0 +1,50 @@
+class_derivations:
+  measures:
+    name: measures
+    populated_from: WWMeasure
+    slot_derivations:
+      fraction:
+        name: fraction
+        populated_from: fractionAnalyzed
+      index:
+        name: index
+        populated_from: index
+      aggregation:
+        name: aggregation
+        populated_from: aggregation
+      protocolID:
+        name: protocolID
+        populated_from: assayID
+      reportDate:
+        name: reportDate
+        populated_from: reportDate
+      measure:
+        name: measure
+        populated_from: type
+      measureRepID:
+        name: measureRepID
+        populated_from: uWwMeasureID
+      sampleID:
+        name: sampleID
+        populated_from: sampleID
+      unit:
+        name: unit
+        populated_from: unit
+      value:
+        name: value
+        populated_from: value
+      organizationID:
+        name: organizationID
+        populated_from: labID
+      contactID:
+        name: contactID
+        populated_from: reporterID
+      notes:
+        name: notes
+        populated_from: notes
+  Container:
+    name: Container
+    slot_derivations:
+      measures:
+        populated_from: WWMeasure
+enum_derivations: {}

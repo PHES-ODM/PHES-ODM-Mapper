@@ -1,0 +1,11 @@
+expand_columns:
+    instruments:
+        - name
+        - manufacturer
+    measures:
+        - value
+    samples:
+        - repType
+        - saMaterial
+    sites:
+        - sampleShed

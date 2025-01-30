@@ -6,12 +6,12 @@ class_derivations:
       measureRepID:
         name: measureRepID
         populated_from: uWwMeasureID
-      notes:
-        name: notes
-        populated_from: notes
       qualityFlag:
         name: qualityFlag
         expr: case((str(qualityFlag)=='True', 'qf1'), (True, 'noConcern'))
+      notes:
+        name: notes
+        populated_from: notes
   Container:
     name: Container
     slot_derivations:
