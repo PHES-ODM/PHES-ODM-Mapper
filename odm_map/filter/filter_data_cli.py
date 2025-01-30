@@ -64,7 +64,7 @@ if __name__ == "__main__":
         opts = {
             # "inputs": ["../../gen/nwss-reporting-to-v2/temp/mapped_data"],
             "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"],
-            "filter_config_file": "../data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.xlsx",
+            "filter_config_file": "../data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.csv",
             "output_dir": "../../gen/nwss-reporting-to-v2-test/filtered_mapped_data",
             "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",
         }
