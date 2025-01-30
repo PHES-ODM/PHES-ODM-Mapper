@@ -147,44 +147,44 @@ class ArrayExpander(object):
         drop_rows = []
         for idx, row in df.iterrows():
             val = row[column]
-            if not isinstance(val, str) and not isinstance(val, list):
-                continue
-            if isinstance(val, list) or (val.startswith("[") and val.endswith("]")):
-                # Try to expand the row by converting the string val into an array
-                if isinstance(val, list):
-                    expanded_values = val
-                else:
-                    try:
-                        expanded_values = yaml.safe_load(val)
-                    except Exception:
+
+            if isinstance(val, list):
+                expanded_values = val
+            elif isinstance(val, str) and val.startswith("[") and val.endswith("]"):
+                # Try to convert the string into an array
+                try:
+                    expanded_values = yaml.safe_load(val)
+                    if not isinstance(expanded_values, list):
                         continue
-
-                if config and SELECT_ITEM_KEY in config:
-                    # Only expand selected items
-                    select_item = config[SELECT_ITEM_KEY]
-                    if not isinstance(select_item, list):
-                        select_item = [select_item]
-                    expanded_values = [
-                        expanded_values[i]
-                        for i in select_item
-                        if i < len(expanded_values)
-                    ]
-
-                # If there are no expanded values then we will drop the current row
-                if len(expanded_values) == 0:
-                    logger.info(
-                        f"No expanded values found for row {idx}, row will be dropped"
-                    )
-                    drop_rows.append(idx)
+                except Exception:
                     continue
+            else:
+                continue
 
-                # Go through each expanded value and create the row for it. The first expanded
-                # value will be assigned to the original row already in the DataFrame.
-                df.loc[idx, column] = expanded_values[0]
-                for expanded_value in expanded_values[1:]:
-                    new_row = row.copy()
-                    new_row[column] = expanded_value
-                    new_rows.append(new_row)
+            if config and SELECT_ITEM_KEY in config:
+                # Only expand selected items
+                select_item = config[SELECT_ITEM_KEY]
+                if not isinstance(select_item, list):
+                    select_item = [select_item]
+                expanded_values = [
+                    expanded_values[i] for i in select_item if i < len(expanded_values)
+                ]
+
+            # If there are no expanded values then we will drop the current row
+            if len(expanded_values) == 0:
+                logger.info(
+                    f"No expanded values found for row {idx}, row will be dropped"
+                )
+                drop_rows.append(idx)
+                continue
+
+            # Go through each expanded value and create the row for it. The first expanded
+            # value will be assigned to the original row already in the DataFrame.
+            df.loc[idx, column] = expanded_values[0]
+            for expanded_value in expanded_values[1:]:
+                new_row = row.copy()
+                new_row[column] = expanded_value
+                new_rows.append(new_row)
 
         # Drop all rows in drop_rows
         keep_rows = [i for i in df.index if i not in drop_rows]
