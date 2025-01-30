@@ -54,8 +54,12 @@ DEBUG_HELP = f"""If set then run in debug mode, which only affects what is
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
-    config_file: Annotated[str, typer.Option(show_default=False, help=CONFIG_FILE_HELP)],
-    id_code_file: Annotated[str, typer.Option(show_default=False, help=ID_CODE_FILE_HELP)],
+    config_file: Annotated[
+        str, typer.Option(show_default=False, help=CONFIG_FILE_HELP)
+    ],
+    id_code_file: Annotated[
+        str, typer.Option(show_default=False, help=ID_CODE_FILE_HELP)
+    ],
     id_code_sheet: Annotated[str, typer.Option(help=ID_CODE_SHEET_HELP)] = None,
     schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
     debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
