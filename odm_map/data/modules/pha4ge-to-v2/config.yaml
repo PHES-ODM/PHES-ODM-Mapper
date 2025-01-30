@@ -22,12 +22,12 @@ steps:
       source_schema: schemas/pha4ge.yaml
       target_schema: schemas/odm_v2.yaml
       mappers_dir: mappers
-  - action: filter
-    params:
-      filters: filters/pha4ge_to_v2_filters.csv
   - action: expand
     params:
       config: expander/expander_config.yaml
+  - action: filter
+    params:
+      filters: filters/pha4ge_to_v2_filters.csv
   - action: save
     if: "{debug_mode}"
     params:
