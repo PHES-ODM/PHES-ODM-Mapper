@@ -1,4 +1,48 @@
 # %%
+"""
+The ArrayExpander expands array values in a DataFrame, so that each item in the array gets its own row. The array values
+can either be a YAML string (eg. "['a','b','c']") that gets converted to an array, or an actual array.
+
+For example, using the following table:
+
+| measure | value    |
+|---------|----------|
+| Orange  | [1, "b"] |
+| Blue    | 3        |
+| Green   | [5, 6]   |
+
+When expanded based on the "value" column, we get the following table:
+
+| measure | value    |
+|---------|----------|
+| Orange  | 1        |
+| Orange  | b        |
+| Blue    | 3        |
+| Green   | 5        |
+| Green   | 6        |
+
+Which table and which columns in those tables that are expanded are determined by the configuration file, which is
+in the following format:
+
+```yaml
+expand_columns:
+    instruments:
+        - name
+        - manufacturer
+    measures:
+        - value
+    samples:
+        - repType
+        - saMaterial
+    sites:
+        - sampleShed
+    # ...
+```
+
+Each key in the `expand_columns` dictionary is a table name. The values are arrays of columns within that table to expand.
+
+"""
+
 import os
 from typing import Union, List, Dict, Any, Optional, Tuple
 from pathlib import Path
