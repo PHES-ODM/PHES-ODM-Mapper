@@ -111,7 +111,7 @@ class DataCleaner(object):
             for c in df.columns
             if c in all_tracking_slots or c in class_definition.attributes
         ]
-        unknown_columns = list(df.columns) - keep_columns
+        unknown_columns = [c for c in list(df.columns) if c not in keep_columns]
         if len(unknown_columns) > 0:
             for c in unknown_columns:
                 logger.warning(f"Removed unrecognized column: {c}")
@@ -575,7 +575,7 @@ class DataCleaner(object):
             Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]: A tuple of [cleaned_data_files, cleaned_data_frames]:
                 cleaned_data_files: Dictionary of all outputed cleaned data files. The keys are the class name
                     the file belongs to and the values are lists of files. If output_dir is None then data_files will be
-                    None (ie. no data saved to disk), instead see data_frames.
+                    None (ie. no data saved to disk), instead see expanded_data_frames.
                 cleaned_data_frames: Dictionary of all cleaned DataFrames. The keys are the class names and the
                     values are lists of cleaned DataFrames.
         """
