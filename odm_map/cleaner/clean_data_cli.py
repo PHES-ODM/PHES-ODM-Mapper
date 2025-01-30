@@ -39,18 +39,9 @@ SCHEMA_HELP = """Schema file that the data conforms to. We will do some basic
 @app.command()
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
-    output_dir: str = typer.Option(
-        default=...,
-        help=OUTPUT_DIR_HELP,
-    ),
-    max_rows: int = typer.Option(
-        default=0,
-        help=MAX_ROWS_HELP,
-    ),
-    schema: str = typer.Option(
-        default=None,
-        help=SCHEMA_HELP,
-    ),
+    output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
+    max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
+    schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
 ):
     if not isinstance(schema, SchemaView) and schema is not None:
         schema = SchemaView(schema)

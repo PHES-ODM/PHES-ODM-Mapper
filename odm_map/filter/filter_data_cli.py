@@ -37,18 +37,9 @@ SCHEMA_HELP = """Schema file that the data conforms to. This will only be used
 @app.command()
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
-    filter_config_file: str = typer.Option(
-        default=...,
-        help=FILTER_CONFIG_FILE_HELP,
-    ),
-    output_dir: str = typer.Option(
-        default=...,
-        help=OUTPUT_DIR_HELP,
-    ),
-    schema: str = typer.Option(
-        default=None,
-        help=SCHEMA_HELP,
-    ),
+    filter_config_file: Annotated[str, typer.Option(show_default=False, help=FILTER_CONFIG_FILE_HELP)],
+    output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
+    schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
 ):
     data_files = get_input_data_files(inputs, schema=schema)
     filterer = DataFilter(filter_config_file)

@@ -53,30 +53,12 @@ DEBUG_HELP = f"""If set then run in debug mode, which only affects what is
 @app.command()
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
-    output_dir: str = typer.Option(
-        default=...,
-        help=OUTPUT_DIR_HELP,
-    ),
-    config_file: str = typer.Option(
-        default=...,
-        help=CONFIG_FILE_HELP,
-    ),
-    id_code_file: str = typer.Option(
-        default=...,
-        help=ID_CODE_FILE_HELP,
-    ),
-    id_code_sheet: str = typer.Option(
-        default=None,
-        help=ID_CODE_SHEET_HELP,
-    ),
-    schema: str = typer.Option(
-        default=None,
-        help=SCHEMA_HELP,
-    ),
-    debug: bool = typer.Option(
-        default=False,
-        help=DEBUG_HELP,
-    ),
+    output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
+    config_file: Annotated[str, typer.Option(show_default=False, help=CONFIG_FILE_HELP)],
+    id_code_file: Annotated[str, typer.Option(show_default=False, help=ID_CODE_FILE_HELP)],
+    id_code_sheet: Annotated[str, typer.Option(help=ID_CODE_SHEET_HELP)] = None,
+    schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
+    debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
 ):
     data_files = get_input_data_files(inputs, schema=schema)
 

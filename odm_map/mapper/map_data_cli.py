@@ -51,34 +51,21 @@ KEEP_TRACKING_COLUMNS_HELP = """If set keep the tracking columns in the output.
 @app.command()
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
-    output_dir: str = typer.Option(
-        default=...,
-        help=OUTPUT_DIR_HELP,
-    ),
-    source_schema: str = typer.Option(
-        default=...,
-        help=SOURCE_SCHEMA_HELP,
-    ),
-    target_schema: str = typer.Option(
-        default=...,
-        help=TARGET_SCHEMA_HELP,
-    ),
-    mappers_dir: str = typer.Option(
-        default=...,
-        help=MAPPERS_DIR_HELP,
-    ),
-    max_rows: int = typer.Option(
-        default=0,
-        help=MAX_ROWS_HELP,
-    ),
-    max_processes: int = typer.Option(
-        default=1,
-        help=MAX_PROCESSES_HELP,
-    ),
-    keep_tracking_columns: bool = typer.Option(
-        default=False,
-        help=KEEP_TRACKING_COLUMNS_HELP,
-    ),
+    output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
+    source_schema: Annotated[
+        str, typer.Option(show_default=False, help=SOURCE_SCHEMA_HELP)
+    ],
+    target_schema: Annotated[
+        str, typer.Option(show_default=False, help=TARGET_SCHEMA_HELP)
+    ],
+    mappers_dir: Annotated[
+        str, typer.Option(show_default=False, help=MAPPERS_DIR_HELP)
+    ],
+    max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
+    max_processes: Annotated[int, typer.Option(help=MAX_PROCESSES_HELP)] = 1,
+    keep_tracking_columns: Annotated[
+        bool, typer.Option(help=KEEP_TRACKING_COLUMNS_HELP)
+    ] = False,
 ):
     data_files = get_input_data_files(inputs, schema=source_schema)
 

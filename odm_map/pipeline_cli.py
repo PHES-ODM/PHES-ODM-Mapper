@@ -101,34 +101,13 @@ DEBUG_HELP = """If set then run ID generation in debug mode, which only affects
 @app.command(help=MAIN_HELP)
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
-    module: str = typer.Option(
-        default=None,
-        help=MODULE_HELP,
-    ),
-    module_dir: str = typer.Option(
-        default=None,
-        help=MODULE_DIR_HELP,
-    ),
-    output_dir: str = typer.Option(
-        default=...,
-        help=OUTPUT_DIR_HELP,
-    ),
-    temp_dir: str = typer.Option(
-        default=None,
-        help=TEMP_DIR_HELP,
-    ),
-    max_rows: int = typer.Option(
-        default=0,
-        help=MAX_ROWS_HELP,
-    ),
-    max_processes: int = typer.Option(
-        default=1,
-        help=MAX_PROCESSES_HELP,
-    ),
-    debug: bool = typer.Option(
-        default=False,
-        help=DEBUG_HELP,
-    ),
+    output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
+    module: Annotated[str, typer.Option(help=MODULE_HELP)] = None,
+    module_dir: Annotated[str, typer.Option(help=MODULE_DIR_HELP)] = None,
+    temp_dir: Annotated[str, typer.Option(help=TEMP_DIR_HELP)] = None,
+    max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
+    max_processes: Annotated[int, typer.Option(help=MAX_PROCESSES_HELP)] = 1,
+    debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
 ):
     try:
         # Do some checks on the CLI options
@@ -224,7 +203,7 @@ if __name__ == "__main__":
             # "inputs": ["../../../PHES-ODM-Data/nwss/private_renamed_test/"],
             # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/"],
             # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/nwss[cdc-nwss-restricted-dataset-wastewater-20240730].csv"],
-            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHA4GE/WW-SC2_examples_20250108.xlsx"],
+            "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108.xlsx"],
             # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"],
             # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"],
             "output_dir": "../gen/pha4ge-to-v2",
