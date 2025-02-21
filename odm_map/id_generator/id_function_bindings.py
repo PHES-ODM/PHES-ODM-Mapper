@@ -11,6 +11,7 @@ from typing import Any, List
 from datetime import datetime
 import dateutil.parser
 import pytz
+import re
 
 from odm_map.utils.logger import get_logger
 from odm_map.id_generator.id_value import IDValue
@@ -90,7 +91,8 @@ class FunctionBindings:
         # group_primary_key is called to ensure that the primary keys are unique when
         # required)
         args = [v.unindexed_value if isinstance(v, IDValue) else v for v in args]
-        args = [str(v).replace(" ", "") for v in args]
+        # args = [str(v).replace(" ", "") for v in args]
+        args = [re.sub("[^A-Za-z0-9]", "_", str(v)) for v in args]
         args = [v for v in args if len(v)]
         # Make first character of each element uppercase. The first element has a first character that is
         # lowercase unless firstcap is True (in which case we uppercase it)
@@ -222,9 +224,9 @@ class FunctionBindings:
             if time_zone_obj is not None:
                 output_format = f"{output_format}{OUTPUT_TZ_FORMAT}"
         if not output_format:
-            logger.warning(
-                f"No output format available for date/time/timezone for input: {d}"
-            )
+            # logger.warning(
+            #     f"No output format available for date/time/timezone for input (class={self.generator.current_class}, row={self.generator.current_row_index}): {d}"
+            # )
             return ""
 
         # Create the single datetime object that contains all of the date, time, and timezone
