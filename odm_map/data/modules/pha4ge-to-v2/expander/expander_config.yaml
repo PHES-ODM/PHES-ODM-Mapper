@@ -1,11 +1,11 @@
 expand_columns:
-    instruments:
-        - name
-        - manufacturer
+    # instruments:
+    #     - name
+    #     - manufacturer
     measures:
         - value
-    samples:
-        - repType
-        - saMaterial
-    sites:
-        - sampleShed
+    # samples:
+    #     - repType
+    #     - saMaterial
+    # sites:
+    #     - sampleShed
