@@ -23,7 +23,7 @@ from odm_map.utils.general_utils import (
     EXCEL_FILE_KEY,
 )
 from odm_map.utils.logger import get_logger, make_logger_bullet_list
-from odm_map.utils.tracking_slots import get_all_tracking_slots
+from odm_map.utils.tracking_slots import is_tracking_slot
 from odm_map.utils.schema_utils import (
     get_ranges_of_slot,
     all_classes_without_tree_root,
@@ -32,12 +32,6 @@ from odm_map.utils.schema_utils import (
 from odm_map.progress import ProgressCounter
 
 CLEAN_BARID = "Cleaning Data"
-
-# If True and max_rows is specified in clean_data_file, then when loading the input dataset, load the
-# full dataset then take a random sample from it. Note that the random state (seed) is kept constant
-# when selecting a random sample, so the same rows will be loaded for the same values of max_rows.
-# If False then load the first max_rows samples (which is faster).
-RANDOM_SAMPLE_DATA = False
 
 logger = get_logger(__name__)
 
@@ -104,12 +98,11 @@ class DataCleaner(object):
         logger.debug(f"Removing unknown columns for class {class_name}")
 
         class_definition = self.schema.induced_class(class_name)
-        all_tracking_slots = get_all_tracking_slots()
 
         keep_columns = [
             c
             for c in df.columns
-            if c in all_tracking_slots or c in class_definition.attributes
+            if is_tracking_slot(c) or c in class_definition.attributes
         ]
         unknown_columns = [c for c in list(df.columns) if c not in keep_columns]
         if len(unknown_columns) > 0:
@@ -147,11 +140,10 @@ class DataCleaner(object):
 
         if isinstance(format_columns_options, str):
             format_columns_options = [format_columns_options]
-        all_tracking_slots = get_all_tracking_slots()
 
         columns = []
         for val in df.columns:
-            if val in all_tracking_slots:
+            if is_tracking_slot(val):
                 columns.append(val)
                 continue
             for options in format_columns_options:
@@ -194,7 +186,7 @@ class DataCleaner(object):
         df.columns = columns
 
         columns_without_tracking_slots = [
-            c for c in df.columns if c not in all_tracking_slots
+            c for c in df.columns if not is_tracking_slot(c)
         ]
         validate_columns_with_schema(
             columns_without_tracking_slots,
@@ -313,9 +305,8 @@ class DataCleaner(object):
         unrecognized_history = {}
 
         # Fix enumerations (Use correct capitalization), and only keep recognized slots
-        all_tracking_slots = get_all_tracking_slots()
         for slot_name in df.columns:
-            if slot_name in all_tracking_slots:
+            if is_tracking_slot(slot_name):
                 continue
             if slot_name not in class_definition.attributes:
                 continue
@@ -342,7 +333,7 @@ class DataCleaner(object):
                 df_orig = df[slot_name].copy()
                 replacements_df = df[slot_name].apply(
                     lambda x: choose_ignore_case_value(
-                        re.sub("  +", " ", x),
+                        re.sub("  +", " ", x) if isinstance(x, str) else x,
                         permissible_values,
                         lowercase_permissible_values,
                         return_same_if_missing=can_be_anything,
@@ -481,15 +472,12 @@ class DataCleaner(object):
             # Read the DataFrame from disk
             df = read_data_frame(
                 data_file,
-                nrows=None if RANDOM_SAMPLE_DATA else (max_rows if max_rows else None),
+                nrows=max_rows if max_rows else None,
                 keep_default_na=False,
                 na_values=None,  # [""],
             )
         else:
             df = data_frame
-
-        if RANDOM_SAMPLE_DATA and max_rows and len(df) > max_rows:
-            df = df.sample(max_rows, random_state=0).reset_index(drop=True)
 
         # Clean the data
         for cur_operation in clean_operations:
