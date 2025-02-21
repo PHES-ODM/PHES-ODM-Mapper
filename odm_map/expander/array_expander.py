@@ -21,6 +21,9 @@ When expanded based on the "value" column, we get the following table:
 | Green   | 5        |
 | Green   | 6        |
 
+The first two rows (Orange) were expanded from [1, "b"], while the last two (Green) were expanded from [5, 6]. All values
+in the other columns are copied over without modification (ie. the measure column).
+
 Which table and which columns in those tables that are expanded are determined by the configuration file, which is
 in the following format:
 
@@ -96,6 +99,10 @@ class ArrayExpander(object):
                 expanded_data_frames: Dictionary of all expanded DataFrames. The keys are the class names and the
                     values are lists of cleaned DataFrames.
         """
+        if not self.config:
+            logger.error("Config for ArrayExpander is empty or missing")
+            return data_files, data_frames
+
         logger.info("Expanding data")
 
         if not data_frames:
