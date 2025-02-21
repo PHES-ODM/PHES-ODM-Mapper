@@ -77,6 +77,7 @@ class DataBindings:
         except Exception as e:
             print(traceback.format_exc())
             raise e
+
         return v
 
     def get(self, name) -> Any:
