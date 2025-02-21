@@ -3,6 +3,15 @@ class_derivations:
   : name: measures[000,0000=fecal_contamination_indicator-fecal_contamination_method-fecal_contamination_unit-fecal_contamination_value]
     populated_from: PHA4GE
     slot_derivations:
+      group:
+        name: group
+        populated_from: organism
+      (__match:sampleID__):
+        name: (__match:sampleID__)
+        expr: '''specimen collector sample ID'''
+      (__match:datasetID__):
+        name: (__match:datasetID__)
+        expr: '''specimen collector project ID'''
       aDateEnd:
         name: aDateEnd
         expr: ''''''
@@ -36,8 +45,16 @@ class_derivations:
       ? measures[000,0000=fecal_contamination_indicator-fecal_contamination_method-fecal_contamination_unit-fecal_contamination_value]
       : populated_from: PHA4GE
 enum_derivations:
-  measure_from_FecalContaminationIndicatorMenu:
-    name: measure_from_FecalContaminationIndicatorMenu
+  OrganismMenu[=mirrored=]:
+    name: OrganismMenu[=mirrored=]
+    mirror_source: true
+    populated_from: OrganismMenu
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  ODMv2_enum_from_FecalContaminationIndicatorMenu:
+    name: ODMv2_enum_from_FecalContaminationIndicatorMenu
     mirror_source: false
     populated_from: FecalContaminationIndicatorMenu
     permissible_value_derivations:
@@ -59,12 +76,8 @@ enum_derivations:
       stercobilin:
         name: stercobilin
         populated_from: Stercobilin [CHEBI:26756]
-  NullValueMenu[=mirrored=]:
-    name: NullValueMenu[=mirrored=]
-    mirror_source: true
-    populated_from: NullValueMenu
-  unit_from_FecalContaminationUnitMenu:
-    name: unit_from_FecalContaminationUnitMenu
+  ODMv2_enum_from_FecalContaminationUnitMenu:
+    name: ODMv2_enum_from_FecalContaminationUnitMenu
     mirror_source: false
     populated_from: FecalContaminationUnitMenu
     permissible_value_derivations:

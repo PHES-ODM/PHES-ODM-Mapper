@@ -3,6 +3,15 @@ class_derivations:
     name: measures[000,0000=conductivity_measurement_method-conductivity_measurement_unit-conductivity_measurement_value]
     populated_from: PHA4GE
     slot_derivations:
+      group:
+        name: group
+        populated_from: organism
+      (__match:sampleID__):
+        name: (__match:sampleID__)
+        expr: '''specimen collector sample ID'''
+      (__match:datasetID__):
+        name: (__match:datasetID__)
+        expr: '''specimen collector project ID'''
       aDateEnd:
         name: aDateEnd
         expr: ''''''
@@ -36,8 +45,16 @@ class_derivations:
       measures[000,0000=conductivity_measurement_method-conductivity_measurement_unit-conductivity_measurement_value]:
         populated_from: PHA4GE
 enum_derivations:
-  unit_from_ConductivityMeasurementUnitMenu:
-    name: unit_from_ConductivityMeasurementUnitMenu
+  OrganismMenu[=mirrored=]:
+    name: OrganismMenu[=mirrored=]
+    mirror_source: true
+    populated_from: OrganismMenu
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  ODMv2_enum_from_ConductivityMeasurementUnitMenu:
+    name: ODMv2_enum_from_ConductivityMeasurementUnitMenu
     mirror_source: false
     populated_from: ConductivityMeasurementUnitMenu
     permissible_value_derivations:
@@ -56,7 +73,3 @@ enum_derivations:
       umhocm:
         name: umhocm
         populated_from: "micromho per centimeter (\u03BCmho/cm)"
-  NullValueMenu[=mirrored=]:
-    name: NullValueMenu[=mirrored=]
-    mirror_source: true
-    populated_from: NullValueMenu

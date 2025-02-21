@@ -24,8 +24,8 @@ class_derivations:
       sites:
         populated_from: PHA4GE
 enum_derivations:
-  sampleShed_from_EnvironmentalSiteMenu:
-    name: sampleShed_from_EnvironmentalSiteMenu
+  shedSet:
+    name: shedSet
     mirror_source: false
     populated_from: EnvironmentalSiteMenu
     permissible_value_derivations:

@@ -1,0 +1,14 @@
+class_derivations:
+  polygons:
+    name: polygons
+    populated_from: PHA4GE
+    slot_derivations:
+      name:
+        name: name
+        populated_from: watershed_shapefile_filename
+  Container:
+    name: Container
+    slot_derivations:
+      polygons:
+        populated_from: PHA4GE
+enum_derivations: {}

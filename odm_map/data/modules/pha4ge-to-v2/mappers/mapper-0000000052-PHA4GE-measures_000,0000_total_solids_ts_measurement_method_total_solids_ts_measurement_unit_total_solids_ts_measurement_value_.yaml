@@ -3,6 +3,15 @@ class_derivations:
     name: measures[000,0000=total_solids_ts_measurement_method-total_solids_ts_measurement_unit-total_solids_ts_measurement_value]
     populated_from: PHA4GE
     slot_derivations:
+      group:
+        name: group
+        populated_from: organism
+      (__match:sampleID__):
+        name: (__match:sampleID__)
+        expr: '''specimen collector sample ID'''
+      (__match:datasetID__):
+        name: (__match:datasetID__)
+        expr: '''specimen collector project ID'''
       aDateEnd:
         name: aDateEnd
         expr: ''''''
@@ -36,8 +45,16 @@ class_derivations:
       measures[000,0000=total_solids_ts_measurement_method-total_solids_ts_measurement_unit-total_solids_ts_measurement_value]:
         populated_from: PHA4GE
 enum_derivations:
-  unit_from_TotalSolidsTsMeasurementUnitMenu:
-    name: unit_from_TotalSolidsTsMeasurementUnitMenu
+  OrganismMenu[=mirrored=]:
+    name: OrganismMenu[=mirrored=]
+    mirror_source: true
+    populated_from: OrganismMenu
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  ODMv2_enum_from_TotalSolidsTsMeasurementUnitMenu:
+    name: ODMv2_enum_from_TotalSolidsTsMeasurementUnitMenu
     mirror_source: false
     populated_from: TotalSolidsTsMeasurementUnitMenu
     permissible_value_derivations:
@@ -47,7 +64,3 @@ enum_derivations:
       gL:
         name: gL
         populated_from: gram per liter (g/L) [UO:0000175]
-  NullValueMenu[=mirrored=]:
-    name: NullValueMenu[=mirrored=]
-    mirror_source: true
-    populated_from: NullValueMenu

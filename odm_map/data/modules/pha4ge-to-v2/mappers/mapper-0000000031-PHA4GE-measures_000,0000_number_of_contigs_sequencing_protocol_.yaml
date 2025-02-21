@@ -3,6 +3,15 @@ class_derivations:
     name: measures[000,0000=number_of_contigs-sequencing_protocol]
     populated_from: PHA4GE
     slot_derivations:
+      group:
+        name: group
+        populated_from: organism
+      (__match:sampleID__):
+        name: (__match:sampleID__)
+        expr: '''specimen collector sample ID'''
+      (__match:datasetID__):
+        name: (__match:datasetID__)
+        expr: '''specimen collector project ID'''
       aDateEnd:
         name: aDateEnd
         expr: ''''''
@@ -35,4 +44,12 @@ class_derivations:
     slot_derivations:
       measures[000,0000=number_of_contigs-sequencing_protocol]:
         populated_from: PHA4GE
-enum_derivations: {}
+enum_derivations:
+  OrganismMenu[=mirrored=]:
+    name: OrganismMenu[=mirrored=]
+    mirror_source: true
+    populated_from: OrganismMenu
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

@@ -21,8 +21,8 @@ class_derivations:
       addresses:
         populated_from: PHA4GE
 enum_derivations:
-  country_from_GeoLocNameCountryMenu:
-    name: country_from_GeoLocNameCountryMenu
+  ODMv2_enum_from_GeoLocNameCountryMenu:
+    name: ODMv2_enum_from_GeoLocNameCountryMenu
     mirror_source: false
     populated_from: GeoLocNameCountryMenu
     permissible_value_derivations:

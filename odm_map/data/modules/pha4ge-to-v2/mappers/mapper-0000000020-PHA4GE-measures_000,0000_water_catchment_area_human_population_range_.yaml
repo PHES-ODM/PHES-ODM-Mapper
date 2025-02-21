@@ -3,6 +3,15 @@ class_derivations:
     name: measures[000,0000=water_catchment_area_human_population_range]
     populated_from: PHA4GE
     slot_derivations:
+      group:
+        name: group
+        populated_from: organism
+      (__match:sampleID__):
+        name: (__match:sampleID__)
+        expr: '''specimen collector sample ID'''
+      (__match:datasetID__):
+        name: (__match:datasetID__)
+        expr: '''specimen collector project ID'''
       aDateEnd:
         name: aDateEnd
         expr: ''''''
@@ -36,6 +45,14 @@ class_derivations:
       measures[000,0000=water_catchment_area_human_population_range]:
         populated_from: PHA4GE
 enum_derivations:
+  OrganismMenu[=mirrored=]:
+    name: OrganismMenu[=mirrored=]
+    mirror_source: true
+    populated_from: OrganismMenu
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
   ODMv2_enum_from_WaterCatchmentAreaHumanPopulationRangeMenu:
     name: ODMv2_enum_from_WaterCatchmentAreaHumanPopulationRangeMenu
     mirror_source: false
@@ -62,7 +79,3 @@ enum_derivations:
       more1mil:
         name: more1mil
         populated_from: 1,000,000+ people
-  NullValueMenu[=mirrored=]:
-    name: NullValueMenu[=mirrored=]
-    mirror_source: true
-    populated_from: NullValueMenu

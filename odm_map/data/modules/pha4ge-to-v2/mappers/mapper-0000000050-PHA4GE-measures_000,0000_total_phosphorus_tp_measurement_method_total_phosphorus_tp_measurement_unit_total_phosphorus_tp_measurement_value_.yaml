@@ -3,6 +3,15 @@ class_derivations:
   : name: measures[000,0000=total_phosphorus_tp_measurement_method-total_phosphorus_tp_measurement_unit-total_phosphorus_tp_measurement_value]
     populated_from: PHA4GE
     slot_derivations:
+      group:
+        name: group
+        populated_from: organism
+      (__match:sampleID__):
+        name: (__match:sampleID__)
+        expr: '''specimen collector sample ID'''
+      (__match:datasetID__):
+        name: (__match:datasetID__)
+        expr: '''specimen collector project ID'''
       aDateEnd:
         name: aDateEnd
         expr: ''''''
@@ -36,8 +45,16 @@ class_derivations:
       ? measures[000,0000=total_phosphorus_tp_measurement_method-total_phosphorus_tp_measurement_unit-total_phosphorus_tp_measurement_value]
       : populated_from: PHA4GE
 enum_derivations:
-  unit_from_TotalPhosphorpusTpMeasurementUnitMenu:
-    name: unit_from_TotalPhosphorpusTpMeasurementUnitMenu
+  OrganismMenu[=mirrored=]:
+    name: OrganismMenu[=mirrored=]
+    mirror_source: true
+    populated_from: OrganismMenu
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  ODMv2_enum_from_TotalPhosphorpusTpMeasurementUnitMenu:
+    name: ODMv2_enum_from_TotalPhosphorpusTpMeasurementUnitMenu
     mirror_source: false
     populated_from: TotalPhosphorpusTpMeasurementUnitMenu
     permissible_value_derivations:
@@ -58,7 +75,3 @@ enum_derivations:
         name: mgPO4PL
         populated_from: milligrams orthophosphate as phosphorus per liter (mg PO4-P/L)
           [GENEPIO:0100999]
-  NullValueMenu[=mirrored=]:
-    name: NullValueMenu[=mirrored=]
-    mirror_source: true
-    populated_from: NullValueMenu
