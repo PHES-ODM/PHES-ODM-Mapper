@@ -89,8 +89,9 @@ def validate_columns_with_schema(
     show_log: bool = True,
 ) -> List[str]:
     """Check for missing or unrecognized columns in the DataFrame. If missing or unrecognized
-    columns are found then they are returned to the caller, so that the results can be
-    reported to the user. No exception or other error occurs. It is for informational purposes.
+    columns are found then they are returned to the caller as a list of logging messages, so that
+    the results can be reported to the user. No exception or other error occurs. It is for
+    informational purposes.
 
     Args:
         columns (List[str]): The list of columns to validate (usually from a DataFrame).
