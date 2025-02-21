@@ -44,15 +44,10 @@ from odm_map.utils.modules import (
 )
 from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
-from odm_map.utils.tracking_slots import load_data_with_tracking_columns
+from odm_map.utils.tracking_slots import load_data_with_source_tracking_columns
 from odm_map.utils.schema_utils import all_classes_without_tree_root
 
 logger = get_logger(__name__)
-
-# If True then if max_rows is specified then we load a random sample of max_rows
-# rows. If False then we load the first max_rows rows. Should usually be False. Use
-# True for debugging purposes.
-RANDOM_SAMPLE_DATA = False
 
 # For loading data progress bar
 LOADING_BARID = "Loading Data"
@@ -149,13 +144,11 @@ class Pipeline(object):
         logger.debug(f"Using temporary directory {self.temp_dir}")
 
         # Load all data
-        data_frames = load_data_with_tracking_columns(
+        data_frames = load_data_with_source_tracking_columns(
             data_files=data_files,
             max_rows=max_rows,
             schema=self.source_schema,
-            random_sample_data=RANDOM_SAMPLE_DATA,
             progress_barid=LOADING_BARID,
-            add_all_tracking_columns=True,
             validate_class_names=True,
         )
 
@@ -227,14 +220,55 @@ class Pipeline(object):
                     map_barid=map_bar_title,
                 )
             elif action == "generate_ids":
-                id_code_file = self.get_module_path(params.get("id_code"))
-                id_code_sheet = params.get("id_code_sheet")
+                # id_code can be a list. Each item of the list can be a single string (code_file)
+                # or a dictionary with keys id_code and id_code_sheet
+                top_id_code_file = params.get("id_code")
+                top_id_code_sheet = params.get("id_code_sheet")
+                id_code_files = []
+                if top_id_code_file:
+                    if isinstance(top_id_code_file, str):
+                        # Single ID code file
+                        id_code_files = [
+                            {
+                                "id_code_file": self.get_module_path(top_id_code_file),
+                                "id_code_sheet": top_id_code_sheet,
+                            }
+                        ]
+                    elif isinstance(top_id_code_file, list):
+                        # Multiple ID code files
+                        for cur_id_code in top_id_code_file:
+                            if isinstance(cur_id_code, str):
+                                # Current entry is a single ID code file string, with no sheet specified
+                                id_code_files.append(
+                                    {
+                                        "id_code_file": self.get_module_path(
+                                            cur_id_code
+                                        ),
+                                        "id_code_sheet": None,
+                                    }
+                                )
+                            elif isinstance(cur_id_code, dict):
+                                # Current entry is a dictionary with an id_code and id_code_sheet
+                                id_code_files.append(
+                                    {
+                                        "id_code_file": self.get_module_path(
+                                            cur_id_code.get("id_code")
+                                        ),
+                                        "id_code_sheet": cur_id_code.get(
+                                            "id_code_sheet"
+                                        ),
+                                    }
+                                )
+                if len(id_code_files) == 0:
+                    raise ValueError(
+                        "Parameters for generate_ids must have at least one id_code entry"
+                    )
+
                 id_config_file = self.get_module_path(params.get("id_config"))
                 data_frames = action_generate_ids(
                     data_frames=data_frames,
                     id_config_file=id_config_file,
-                    id_code_file=id_code_file,
-                    id_code_sheet=id_code_sheet,
+                    id_code_files=id_code_files,
                     multi_bar_progress=multi_bar_progress,
                     debug_mode=debug_mode,
                 )
