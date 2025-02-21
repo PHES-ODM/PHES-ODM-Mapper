@@ -1,0 +1,216 @@
+class_derivations:
+  measures:
+    name: measures
+    populated_from: WWMeasure
+    slot_derivations:
+      aggregation:
+        name: aggregation
+        populated_from: aggregation
+      contactID:
+        name: contactID
+        populated_from: reporterID
+      fraction:
+        name: fraction
+        populated_from: fractionAnalyzed
+      index:
+        name: index
+        populated_from: index
+      measure:
+        name: measure
+        populated_from: type
+      measureRepID:
+        name: measureRepID
+        populated_from: uWwMeasureID
+      notes:
+        name: notes
+        populated_from: notes
+      organizationID:
+        name: organizationID
+        populated_from: labID
+      protocolID:
+        name: protocolID
+        populated_from: assayID
+      reportDate:
+        name: reportDate
+        populated_from: reportDate
+      sampleID:
+        name: sampleID
+        populated_from: sampleID
+      unit:
+        name: unit
+        populated_from: unit
+      value:
+        name: value
+        populated_from: value
+  Container:
+    name: Container
+    slot_derivations:
+      measures:
+        populated_from: WWMeasure
+enum_derivations:
+  aggregations:
+    name: aggregations
+    mirror_source: false
+    populated_from: WWMeasureAggregation
+    permissible_value_derivations:
+      menr:
+        name: menr
+        populated_from: meanNr
+      ngmn:
+        name: ngmn
+        populated_from: geoMnNr
+      sdn:
+        name: sdn
+        populated_from: sdNr
+      gmn:
+        name: gmn
+        populated_from: geoMn
+      maxVal:
+        name: maxVal
+        populated_from: max
+      me:
+        name: me
+        populated_from: mean
+      med:
+        name: med
+        populated_from: median
+      minVal:
+        name: minVal
+        populated_from: min
+      sd:
+        name: sd
+        populated_from: sd
+      sin:
+        name: sin
+        populated_from: single
+  fractionSet:
+    name: fractionSet
+    mirror_source: false
+    populated_from: WWMeasureFractionAnalyzed
+    permissible_value_derivations:
+      liq:
+        name: liq
+        populated_from: liquid
+      mix:
+        name: mix
+        populated_from: mixed
+      sol:
+        name: sol
+        populated_from: solid
+  measurements:
+    name: measurements
+    mirror_source: false
+    populated_from: WWMeasureType
+    permissible_value_derivations:
+      brsvN:
+        name: brsvN
+        populated_from: nbrsv
+      covB117:
+        name: covB117
+        populated_from: varB117
+      covB135:
+        name: covB135
+        populated_from: varB1351
+      covE:
+        name: covE
+        populated_from: covE
+      covN1:
+        name: covN1
+        populated_from: covN1
+      covN2:
+        name: covN2
+        populated_from: covN2
+      covN3:
+        name: covN3
+        populated_from: covN3
+      covP1:
+        name: covP1
+        populated_from: varP1
+      covRdrp:
+        name: covRdrp
+        populated_from: covRdrp
+      cra:
+        name: cra
+        populated_from: ncrA
+      ppmv:
+        name: ppmv
+        populated_from: nPMMoV
+      temp:
+        name: temp
+        populated_from: temp
+      ts:
+        name: ts
+        populated_from: wqTS
+      tss:
+        name: tss
+        populated_from: wqTSS
+      vss:
+        name: vss
+        populated_from: wqVSS
+      cod:
+        name: cod
+        populated_from: wqCOD
+      cond:
+        name: cond
+        populated_from: wqCond
+      nH4N:
+        name: nH4N
+        populated_from: wqNH4N
+      ophos:
+        name: ophos
+        populated_from: wqOPhos
+      ph:
+        name: ph
+        populated_from: wqPh
+      tn:
+        name: tn
+        populated_from: wqTN
+  units:
+    name: units
+    mirror_source: false
+    populated_from: WWMeasureUnit
+    permissible_value_derivations:
+      ct:
+        name: ct
+        populated_from: Ct
+      det:
+        name: det
+        populated_from: detected
+      pp:
+        name: pp
+        populated_from: pp
+      pps:
+        name: pps
+        populated_from: pps
+      propV:
+        name: propV
+        populated_from: propVar
+      cel:
+        name: cel
+        populated_from: c
+      gcCrA:
+        name: gcCrA
+        populated_from: gcCrA
+      gCGS:
+        name: gCGS
+        populated_from: gcGs
+      gcL:
+        name: gcL
+        populated_from: gcL
+      gcMl:
+        name: gcMl
+        populated_from: gcMl
+      gcPpmov:
+        name: gcPpmov
+        populated_from: gcPMMoV
+      mgL:
+        name: mgL
+        populated_from: mgL
+      unitless:
+        name: unitless
+        sources:
+        - bool
+        - ph
+      uSCm:
+        name: uSCm
+        populated_from: uScm

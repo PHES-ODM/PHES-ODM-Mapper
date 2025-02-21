@@ -3,27 +3,38 @@ class_derivations:
     name: polygons
     populated_from: Polygon
     slot_derivations:
+      fileLocation:
+        name: fileLocation
+        populated_from: file
       geoType:
         name: geoType
         populated_from: type
       geoWKT:
         name: geoWKT
         populated_from: wkt
-      fileLocation:
-        name: fileLocation
-        populated_from: file
+      name:
+        name: name
+        populated_from: name
       polygonID:
         name: polygonID
         populated_from: polygonID
       refLink:
         name: refLink
         populated_from: link
-      name:
-        name: name
-        populated_from: name
   Container:
     name: Container
     slot_derivations:
       polygons:
         populated_from: Polygon
-enum_derivations: {}
+enum_derivations:
+  geoTypeSet:
+    name: geoTypeSet
+    mirror_source: false
+    populated_from: PolygonType
+    permissible_value_derivations:
+      hlthReg:
+        name: hlthReg
+        populated_from: hlthReg
+      swrSet:
+        name: swrSet
+        populated_from: swrCat

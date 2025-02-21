@@ -3,9 +3,6 @@ class_derivations:
     name: protocols
     populated_from: AssayMethod
     slot_derivations:
-      summ:
-        name: summ
-        populated_from: summary
       lastEdited:
         name: lastEdited
         populated_from: date
@@ -18,6 +15,9 @@ class_derivations:
       refLink:
         name: refLink
         populated_from: referenceLink
+      summ:
+        name: summ
+        populated_from: summary
   Container:
     name: Container
     slot_derivations:
