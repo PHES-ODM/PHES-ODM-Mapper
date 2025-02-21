@@ -33,7 +33,7 @@ from odm_map.id_generator.id_value import IDValue
 from odm_map.id_generator.id_na import EMPTY_OBJ, isna
 
 from odm_map.utils.logger import get_logger
-from odm_map.utils.tracking_slots import TrackingSlots, get_all_tracking_slots
+from odm_map.utils.tracking_slots import is_tracking_slot
 from odm_map.utils.general_utils import (
     read_data_frame,
     save_data_frame,
@@ -117,12 +117,7 @@ class GeneratorData:
 
         # Create a list of all original columns found in the dataset (excluding the tracking columns)
         columns = list(df.columns)
-        for s in self.get_all_tracking_slots():
-            if s not in columns:
-                raise ValueError(
-                    f"Tracking column '{s}' must exist in the data at {str(file)}"
-                )
-            columns.remove(s)
+        columns = [c for c in columns if not is_tracking_slot(c)]
         self.orig_columns = columns
 
         self.prepare_ids()
@@ -225,22 +220,6 @@ class GeneratorData:
                 row = self.data[idx, :]
                 val = row[self.get_column_index(slot)]
                 self.lookup.add_index(slot, val, idx)
-
-    def get_all_tracking_slots(self) -> List[str]:
-        """Get all the tracking slots, which are all the columns specified in TrackingSlots.
-
-        Tracking slots include the source row number and class name of a row. These get copied over
-        to the mapped data so we know which class and row and output row was derived from. It can
-        be used for sorting and other downstream operations, such as for ID generation.
-
-        Returns:
-            List[str]: List of all tracking slots.
-        """
-        return [
-            getattr(TrackingSlots, v)
-            for v in vars(TrackingSlots)
-            if not v.startswith("__")
-        ]
 
     def get_row_at_index(self, idx):
         return self.data[idx, :]
@@ -616,17 +595,16 @@ class GeneratorData:
         self.data[self.data == EMPTY_OBJ] = None
         self.df = pd.DataFrame(self.data, columns=self.columns)
 
-        # Keep only requrested columns, based on keep_tracking_columns and keep_debug_columns
-        all_tracking_slots = get_all_tracking_slots()
+        # Keep only requested columns, based on keep_tracking_columns and keep_debug_columns
         keep_columns = self.orig_columns.copy()
         if keep_tracking_columns:
-            keep_columns.extend(all_tracking_slots)
+            keep_columns.extend([c for c in self.df.columns if is_tracking_slot(c)])
         if keep_debug_columns:
             keep_columns.extend(
                 [
                     c
                     for c in self.df.columns
-                    if c not in self.orig_columns and c not in all_tracking_slots
+                    if c not in self.orig_columns and not is_tracking_slot(c)
                 ]
             )
         self.df = self.df[keep_columns]
