@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Tuple, Optional, Union, Callable
 import os
 from pathlib import Path
 import yaml
+import json
 from functools import partial
 import pandas as pd
 import math
@@ -18,10 +19,11 @@ from odm_map.utils.schema_utils import (
 )
 from odm_map.progress import ProgressCounter
 from odm_map.utils.tracking_slots import (
-    load_schema_with_tracking_slots,
-    get_all_tracking_slots,
+    add_tracking_slots_to_schema,
+    add_tracking_slots_to_schema_class,
+    is_tracking_slot,
     add_tracking_slots_derivations,
-    load_data_with_tracking_columns,
+    load_data_with_source_tracking_columns,
     drop_tracking_slots,
     TrackingSlots,
 )
@@ -36,26 +38,24 @@ logger = get_logger(__name__)
 
 def run_mapper(
     data: Dict[str, List],
-    mapper_file: Union[str, Path],
+    mapper_spec: Dict,
     source_schema: SchemaView,
-    target_schema: SchemaView,
-    source_schema_file: str,
-    target_schema_file: str,
     file_index: Optional[int] = None,
     unrestricted_eval: bool = False,
 ) -> Dict[str, List[Dict]]:
     """Run the mapper on the specified data using the specified mapper YAML file and save the
     results to disk.
 
+    This is a global function to make it easier to run as a thread. Class objects and threads can be messy.
+
     Args:
-        data (Dict): The input data to map. The keys specify the table/class names and the values are the rows of
+        data (Dict): The input data to map. The keys specify the table/class names and the values are lists of rows of
             the tables. The rows are dictionaries.
         session (Session): The linkml_map.session.Session object to use for running the mapper.
         data_output_dir (Union[str, Path]): Directory to save the output to. The outputs are CSV files
             with a name based on the mapper_file name.
-        mapper_file (Union[str, Path]): The mapper config (YAML) file for the mapper to use.
+        mapper_spec (Dict): The LinkML-Map schema to use for mapping.
         source_schema (SchemaView): The SchemaView of the source schema.
-        target_schema (SchemaView): The SchemaView of the target schema.
         file_index (Optional[int]): Optional file index to add to the output file name. It's just an extra number
             so that we can differentiate between different runs of the mapper when using the same
             mapper_file. It is required if we run the mapper more than once with the same
@@ -63,39 +63,18 @@ def run_mapper(
             (assuming we properly use unique file_index values for each run).
         unrestricted_eval (Optional[bool]): If True then run expr code in slot derivations in unrestricted mode
             (ie. allow any Python code to execute).
-        filter_config_file (Optional[Union[str, Path]], optional): The filter configuration file, to filter the
-            final transformed data (eg. remove rows that should be ignored due to missing data). Defaults to None.
 
     Returns:
         Dict[str, List[Dict]]: The mapped data, where the keys are the output class names and the
             values are the rows. The rows are dictionaries.
     """
-    if source_schema is None:
-        source_schema = load_schema_with_tracking_slots(source_schema_file)
-    if target_schema is None and target_schema_file:
-        target_schema = load_schema_with_tracking_slots(target_schema_file)
-
     session = Session()
     session.set_source_schema(source_schema)
 
-    # Load the mapper spec
-    with open(mapper_file, "r") as f:
-        mapper_spec = yaml.safe_load(f)
-
-    # Add all tracking slot derivations. This will copy all slots found in TrackingSlots, such as the source
-    # class and source row number that the output row was derived from. These slots can be used for sorting
-    # and other downstream operations such as ID generation.
-    add_tracking_slots_derivations(mapper_spec, target_schema)
-
     # Run the mapper to get the mapped data
-    # logger.debug(f"Mapping data with mapper spec {mapper_file}")
-    # trans_tic = datetime.now()
     session.set_object_transformer(mapper_spec)
     session.object_transformer.unrestricted_eval = unrestricted_eval
     mapped_data = session.transform(data)
-    # logger.debug(
-    #     f"Mapped in {datetime.now() - trans_tic} (for mapper spec {mapper_file})"
-    # )
 
     return file_index, mapped_data
 
@@ -103,13 +82,14 @@ def run_mapper(
 class DataMapper(object):
     def __init__(self): ...
 
-    def _cast_types(self, v: Any, cast_types: str) -> Any:
+    def _cast_types(self, v: Any, multivalued: bool, cast_types: str) -> Any:
         """Try to cast a value to the types specified in cast_types. We iterate over all cast types until
         the casting works without throwing an exception. If none of the casting works then the value is returned
         unchanged.
 
         Args:
             v (Any): The value to cast.
+            multivalued (bool): If True then cast as multivalued. Ie. We create an array.
             cast_types (str): A list of the cast types to try. Can have the values "float", "integer", or
             "string". Any other value will be treated as a string (eg. if the cast type is a LinkML enumeration,
             then it will be cast as a string).
@@ -119,6 +99,10 @@ class DataMapper(object):
         """
         if pd.isna(v):
             return v
+
+        if multivalued:
+            v = self.make_multivalued(v)
+
         for cast_type in cast_types:
             # The default cast function is str, this will deal with enums and other types
             cast_func = {
@@ -127,10 +111,48 @@ class DataMapper(object):
                 "string": str,
             }.get(cast_type, str)
             try:
+                if multivalued and isinstance(v, list):
+                    return [cast_func(i) for i in v]
                 return cast_func(v)
             except Exception:
                 pass
         return v
+
+    def make_multivalued(self, v: Any) -> List[Any]:
+        """Make a value (typically from a DataFrame) multivalued. This means converting it to a list of values.
+
+        We try to load the value as as JSON or YAML. If that doesn't work we split on the character "," or ";".
+
+        Args:
+            v (Any): _description_
+
+        Returns:
+            List[Any]: _description_
+        """
+        if isinstance(v, str):
+            try:
+                vs = json.loads(v)
+                if isinstance(vs, list):
+                    return vs
+            except Exception:
+                pass
+            try:
+                vs = yaml.safe_load(v)
+                if isinstance(vs, list):
+                    return vs
+            except Exception:
+                pass
+
+            # @TODO: This doesn't properly deal with commas and semi-colons nested within
+            # quotes, which we would typically not want to split on. This is how LinkML does it,
+            # but it may not be good in all situations.
+            for delimiter in ",;":
+                if delimiter in v:
+                    vs = v.split(delimiter)
+                    vs = [v.strip() if isinstance(v, str) else v for v in vs]
+                    return vs
+
+        return [v]
 
     def get_cast_functions(self, schema: SchemaView) -> Dict[str, Dict[str, Callable]]:
         """Get a dictionary specifying how all slots/attributes in all classes of the schema should
@@ -169,6 +191,8 @@ class DataMapper(object):
                 slot_defn = schema.induced_slot(
                     slot_name=slot_name, class_name=class_name
                 )
+                multivalued = slot_defn.multivalued
+
                 rng = yaml.safe_load(str(slot_defn.range))
                 # Add the casting function according to the range
                 if isinstance(rng, list):
@@ -184,19 +208,21 @@ class DataMapper(object):
                         else order.index("*"),
                     )
                     cur_cast_functions[slot_name] = partial(
-                        self._cast_types, cast_types=rng
+                        self._cast_types, multivalued=multivalued, cast_types=rng
                     )
                 elif rng in ["float", "double"]:
                     cur_cast_functions[slot_name] = partial(
-                        self._cast_types, cast_types=["float"]
+                        self._cast_types, multivalued=multivalued, cast_types=["float"]
                     )
                 elif rng == "integer":
                     cur_cast_functions[slot_name] = partial(
-                        self._cast_types, cast_types=["integer"]
+                        self._cast_types,
+                        multivalued=multivalued,
+                        cast_types=["integer"],
                     )
                 else:
                     cur_cast_functions[slot_name] = partial(
-                        self._cast_types, cast_types=["string"]
+                        self._cast_types, multivalued=multivalued, cast_types=["string"]
                     )
         return cast_functions
 
@@ -235,7 +261,7 @@ class DataMapper(object):
         Args:
             data_frames (Dict[str, List[pd.DataFrame]]): A DataFrames to parse. Keys are the source class
                 name and values are lists of DataFrames that belong to the class. The tracking columns
-                should have already been added by calling add_tracking_columns on each DataFrame.
+                should have already been added by calling add_source_tracking_columns on each DataFrame.
             schema (Union[str, SchemaView]): The schema that the data should conform to. We will only use
                 DataFrames of a recognized class and cast all values to the correct type.
 
@@ -269,13 +295,12 @@ class DataMapper(object):
                         progress.update(prepare_barid, 1)
                         continue
 
-                    # Make sure all columns exist (except for TrackingSlots, which we add later)
+                    # Make sure all columns exist (except for the tracking slots, which we add later)
                     class_definition = schema.induced_class(class_name)
-                    all_tracking_slots = get_all_tracking_slots()
                     missing_slots = [
                         s
                         for s in class_definition.attributes
-                        if s not in df.columns and s not in all_tracking_slots
+                        if s not in df.columns and not is_tracking_slot(s)
                     ]
                     df[missing_slots] = ""
 
@@ -388,7 +413,14 @@ class DataMapper(object):
             if target_schema is not None:
                 class_definition = target_schema.induced_class(class_name)
                 all_slots = list(class_definition.attributes.keys())
-                unrecognized = [s for s in df.columns if s not in all_slots]
+                all_slots = all_slots + [c for c in df.columns if is_tracking_slot(c)]
+                # Drop duplicates
+                all_slots = list(dict.fromkeys(all_slots))
+                unrecognized = [
+                    s
+                    for s in df.columns
+                    if s not in all_slots and not is_tracking_slot(s)
+                ]
                 if len(unrecognized) > 0:
                     raise ValueError(
                         f"Found unrecognized slot(s) in mapped data for class '{class_name}': {unrecognized}"
@@ -469,9 +501,9 @@ class DataMapper(object):
         if not max_processes or max_processes <= 0:
             max_processes = cpu_count()
 
-        source_schema = load_schema_with_tracking_slots(source_schema_file)
+        source_schema = SchemaView(source_schema_file)
         if target_schema_file:
-            target_schema = load_schema_with_tracking_slots(target_schema_file)
+            target_schema = SchemaView(target_schema_file)
         else:
             target_schema = None
 
@@ -480,13 +512,19 @@ class DataMapper(object):
 
         # Load files from disk
         if data_files:
-            loaded_data = load_data_with_tracking_columns(
+            loaded_data = load_data_with_source_tracking_columns(
                 data_files=data_files,
                 schema=source_schema,
-                add_all_tracking_columns=True,
                 max_rows=max_rows,
             )
             data_frames = merge_dicts_of_lists([data_frames, loaded_data])
+
+        # Add all the tracking slots found in the source data to the source schema.
+        # We can't yet add them to the target schema because we don't have access
+        # to the mapped target data yet. We can add the target schema tracking
+        # slots later once we load a LinkML-Map schema, and figure out which tracking
+        # slots get mapped onto the target data.
+        add_tracking_slots_to_schema(data_frames, source_schema)
 
         # Prepare all data in correct format
         data = self.prepare_data(
@@ -521,11 +559,31 @@ class DataMapper(object):
         ]
         mapper_files = [os.path.join(mappers_dir, f) for f in mapper_files]
 
-        # Sort by decreasing data size, to maximize overlap of multiprocessing
-        # mappers = { f: yaml.safe_load(open(f, "r"))["class_derivations"] for f in mapper_files }
-        # source_classes = { f: d[list(d.keys())[0]]["populated_from"] for f, d in mappers.items() }
-        # source_class_sizes = { f: len(data.get(c, [])) for f, c in source_classes.items() }
-        # mapper_files = sorted(mapper_files, key=lambda c: -source_class_sizes[c])
+        # Load all mapper specs
+        mapper_specs = []
+        all_tracking_slots = {}
+        for mapper_file in mapper_files:
+            # Load the mapper spec
+            with open(mapper_file, "r") as f:
+                mapper_spec = yaml.safe_load(f)
+
+            # Add all tracking slot derivations to the mapper spec, and keep track of which
+            # tracking slots were added. We will add all these tracking slots to the target_schema
+            # once we're done
+            cur_tracking_slots = add_tracking_slots_derivations(
+                data, mapper_spec, target_schema
+            )
+            all_tracking_slots = merge_dicts_of_lists(
+                [all_tracking_slots, cur_tracking_slots]
+            )
+
+            mapper_specs.append(mapper_spec)
+
+        # Add all the mapped tracking slots to the target schema
+        for class_name, cur_tracking_slots in all_tracking_slots.items():
+            add_tracking_slots_to_schema_class(
+                cur_tracking_slots, class_name, target_schema
+            )
 
         # Create arguments to pass to run_mapper for each data split and each mapper config file.
         map_args = []
@@ -534,17 +592,11 @@ class DataMapper(object):
                 {
                     "file_index": split_num + file_num * len(mapper_files),
                     "data": split,
-                    # "data_output_dir": data_output_dir,
-                    # "session": session,
-                    "mapper_file": mapper_file,
-                    "source_schema_file": source_schema_file,
-                    "target_schema_file": target_schema_file,
+                    "mapper_spec": mapper_spec,
                     "source_schema": source_schema,
-                    "target_schema": target_schema,
                     "unrestricted_eval": True,
-                    # "filter_config_file": filter_config_file,
                 }
-                for file_num, mapper_file in enumerate(mapper_files)
+                for file_num, mapper_spec in enumerate(mapper_specs)
             ]
             map_args.extend(cur_args)
 
