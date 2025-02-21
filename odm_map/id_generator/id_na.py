@@ -39,4 +39,6 @@ def isna(v: Any) -> bool:
     Returns:
         bool: True if v is an NA value, False otherwise.
     """
+    if isinstance(v, list):
+        return len([i for i in v if not isna(i)]) == 0
     return pd.isna(v) or v is EMPTY_OBJ
