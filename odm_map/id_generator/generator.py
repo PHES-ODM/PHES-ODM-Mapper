@@ -75,8 +75,7 @@ class IDGenerator(object):
         data_files: Dict[str, List[Union[str, Path]]],
         data_frames: Dict[str, List[pd.DataFrame]],
         config_file: str,
-        id_code_file: str,
-        id_code_sheet: str = None,
+        id_code_files: List[Dict],
         multi_bar_progress: bool = True,
     ):
         """Constructor for IDGenerator.
@@ -88,11 +87,10 @@ class IDGenerator(object):
             data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
                 and the values are lists of DataFrames belonging to the class.
             config_file (str): The configuration file.
-            id_code_file (str): The tabular file containing the ID generation code for each class/slot that represents
-                an ID to be generated. Can be an XLSX, CSV, TSV, TXT, YAML, or YML file. If an Excel file then
-                id_code_sheet should also be set.
-            id_code_sheet (str, optional): If id_code_file is an Excel file, then the sheet name to load that contains
-                the ID generation code. If an Excel file and this is None, then the first sheet in the Excel file is used. Defaults to None.
+            id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code. The
+                dictionaries are of the form {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
+                can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which sheet in
+                the Excel file to use. If "id_code_sheet" is None or missing then the first sheet is used.
             multi_bar_progress (bool, optional): If True then output multiple progress bars at the same time showing all classes we will be
                 generating IDs for. If False then only one progress bar is shown at a time (for the class name we are currently
                 generating IDs for).
@@ -112,7 +110,7 @@ class IDGenerator(object):
         self.multi_bar_progress = multi_bar_progress
 
         # Prepare the code for calculating IDs
-        self.prepare_id_code(id_code_file, id_code_sheet)
+        self.prepare_id_code(id_code_files)
 
         # Load all data from disk
         self.load_all(data_files=data_files, data_frames=data_frames)
@@ -267,26 +265,36 @@ class IDGenerator(object):
 
             prev_class = linkage[LinkageKeys.TARGET_CLASS]
 
-    def prepare_id_code(self, id_code_file: str, id_code_sheet: Optional[str] = None):
+    def prepare_id_code(self, id_code_files: List[Dict]):
         """Load and prepare the ID generation code from the specified file. The file should contain all the
         columns found in IDCodeColumns.
 
         Args:
-            id_code_file (str): The XLSX, CSV, TSV, YAML, YML, or TXT file containing the ID generation code. If an Excel file we
-                load the sheet named id_code_sheet.
-            id_code_sheet (Optional[str], Optional): If id_code_file is an Excel file, then this is the sheet name to load. If None
-                then the first sheet is loaded.
+            id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code. The
+                dictionaries are of the form {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
+                can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which sheet in
+                the Excel file to use. If "id_code_sheet" is None or missing then the first sheet is used.
         """
         self.id_code_df = pd.DataFrame()
-        if not id_code_file:
+        if not id_code_files:
             return
 
-        if os.path.splitext(id_code_file)[1].lower() == ".xlsx":
-            id_code_df = pd.read_excel(
-                id_code_file, id_code_sheet if id_code_sheet else 0
-            )
-        else:
-            id_code_df = read_data_frame(id_code_file)
+        id_code_df = []
+        for cur_id_code_file in id_code_files:
+            id_code_file = cur_id_code_file.get("id_code_file")
+            id_code_sheet = cur_id_code_file.get("id_code_sheet", None)
+            if os.path.splitext(id_code_file)[1].lower() == ".xlsx":
+                cur_id_code_df = pd.read_excel(
+                    id_code_file, id_code_sheet if id_code_sheet else 0
+                )
+            else:
+                cur_id_code_df = read_data_frame(id_code_file)
+            id_code_df.append(cur_id_code_df)
+
+        if len(id_code_df) == 0:
+            return
+
+        id_code_df = pd.concat(id_code_df)
 
         # Rename any column that starts with the word "code", so that they're in the form "code000" (maintaining the
         # original order)
@@ -794,9 +802,16 @@ class IDGenerator(object):
                 In the above example, to go link rows in "class1" to rows in "class2", we extract all rows from "class2"
                 where "slot2" is equal to the value found in the source row in "slot1". In some cases, we may need to link
                 through multiple classes to get from the source class to the target class. This is specified by having multiple
-                dictionaries in the returned list. Returns None if no linkage path from source_class to target_class is available.
+                dictionaries in the returned list.
+
+                If the config file does not specify a linkage from source_class to target_class, then the default
+                linking slot becomes TrackingSlots.SOURCE_FILE_AND_ROW.
         """
-        if not self.config.get(ConfigKeys.CLASS_LINKAGES, None):
+        if (
+            not self.config.get(ConfigKeys.CLASS_LINKAGES, None)
+            or source_class not in self.config[ConfigKeys.CLASS_LINKAGES]
+            or target_class not in self.config[ConfigKeys.CLASS_LINKAGES][source_class]
+        ):
             # If no class_linkages are specified in the config file, then link by the source file and row
             # tracking column.
             return {
@@ -806,8 +821,8 @@ class IDGenerator(object):
                 LinkageKeys.TARGET_CLASS: target_class,
             }
 
-        if source_class not in self.config[ConfigKeys.CLASS_LINKAGES]:
-            return None
+        # if source_class not in self.config[ConfigKeys.CLASS_LINKAGES]:
+        #     return None
         linkage = self.config[ConfigKeys.CLASS_LINKAGES][source_class]
         return linkage.get(target_class, None)
 
