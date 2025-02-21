@@ -8,8 +8,7 @@ from odm_map.id_generator import IDGenerator
 def action_generate_ids(
     data_frames: Dict[str, List[pd.DataFrame]],
     id_config_file: Union[str, Path],
-    id_code_file: Union[str, Path],
-    id_code_sheet: Union[str, Path],
+    id_code_files: List[Dict],
     multi_bar_progress: bool,
     debug_mode: bool = False,
 ) -> Dict[str, List[pd.DataFrame]]:
@@ -18,9 +17,10 @@ def action_generate_ids(
     Args:
         data_frames (Dict[str, List[pd.DataFrame]]): The data frames to add IDs to.
         id_config_file (Union[str, Path]): ID Generator config file.
-        id_code_file (Union[str, Path]): File containing the code for generating IDs (csv, tsv, xlsx).
-        id_code_sheet (Union[str, Path]): If id_code_file is an Excel file, then this is the sheet
-            to use in the code file.
+        id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code. The
+            dictionaries are of the form {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
+            can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which sheet in
+            the Excel file to use. If "id_code_sheet" is None or missing then the first sheet is used.
         multi_bar_progress (bool): If True, then show a progress bar for each class to generate the IDs
             for at the same time. If False then only show one progress bar at a time. False should be
             used in a Jupyter notebook.
@@ -38,8 +38,7 @@ def action_generate_ids(
         data_files=None,
         data_frames=data_frames,
         config_file=id_config_file,
-        id_code_file=id_code_file,
-        id_code_sheet=id_code_sheet,
+        id_code_files=id_code_files,
         multi_bar_progress=multi_bar_progress,
     )
     return gen.run_generator(
