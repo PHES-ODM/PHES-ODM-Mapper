@@ -15,15 +15,6 @@ primary_keys:
   samples: sampleID
   sites: siteID
 
-class_linkages:
-  measures:
-    samples:
-      source_slot: ["(__source_file_and_row__)", "_extra_sampleID"]
-      target_slot: ["(__source_file_and_row__)", "_extra_sampleID"]
-    datasets:
-      source_slot: ["(__source_file_and_row__)", "_extra_datasetID"]
-      target_slot: ["(__source_file_and_row__)", "_extra_datasetID"]
-
 # Class linkages determines how to link a row in one table to a row in another table. We match the value
 # in the source slot of the source row to the target slot in the target row.
 # These are the default slots to use, when no linkage slots are explicitly specified.

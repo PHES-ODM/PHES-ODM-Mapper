@@ -33,7 +33,7 @@ from odm_map.id_generator.id_value import IDValue
 from odm_map.id_generator.id_na import EMPTY_OBJ, isna
 
 from odm_map.utils.logger import get_logger
-from odm_map.utils.tracking_slots import is_tracking_slot
+from odm_map.utils.extra_and_tracking_slots import is_extra_or_tracking_slot
 from odm_map.utils.general_utils import (
     read_data_frame,
     save_data_frame,
@@ -117,7 +117,7 @@ class GeneratorData:
 
         # Create a list of all original columns found in the dataset (excluding the tracking columns)
         columns = list(df.columns)
-        columns = [c for c in columns if not is_tracking_slot(c)]
+        columns = [c for c in columns if not is_extra_or_tracking_slot(c)]
         self.orig_columns = columns
 
         self.prepare_ids()
@@ -598,13 +598,15 @@ class GeneratorData:
         # Keep only requested columns, based on keep_tracking_columns and keep_debug_columns
         keep_columns = self.orig_columns.copy()
         if keep_tracking_columns:
-            keep_columns.extend([c for c in self.df.columns if is_tracking_slot(c)])
+            keep_columns.extend(
+                [c for c in self.df.columns if is_extra_or_tracking_slot(c)]
+            )
         if keep_debug_columns:
             keep_columns.extend(
                 [
                     c
                     for c in self.df.columns
-                    if c not in self.orig_columns and not is_tracking_slot(c)
+                    if c not in self.orig_columns and not is_extra_or_tracking_slot(c)
                 ]
             )
         self.df = self.df[keep_columns]

@@ -7,7 +7,7 @@ from pathlib import Path
 from odm_map.progress import ProgressCounter, EmptyCounter
 from odm_map.utils.logger import get_logger
 from odm_map.utils.general_utils import save_data_frame
-from odm_map.utils.tracking_slots import drop_tracking_slots
+from odm_map.utils.extra_and_tracking_slots import drop_extra_and_tracking_slots
 
 logger = get_logger(__name__)
 
@@ -66,7 +66,7 @@ def action_save_data(
 
             # Drop the tracking slots if requested
             if not keep_tracking_slots:
-                df = drop_tracking_slots(df)
+                df = drop_extra_and_tracking_slots(df)
 
             # Determine the output file name, based on name_format and name_format_kwargs
             kwargs = name_format_kwargs.copy()

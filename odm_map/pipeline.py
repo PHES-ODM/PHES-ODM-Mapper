@@ -44,7 +44,9 @@ from odm_map.utils.modules import (
 )
 from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
-from odm_map.utils.tracking_slots import load_data_with_source_tracking_columns
+from odm_map.utils.extra_and_tracking_slots import (
+    load_data_with_source_tracking_columns,
+)
 from odm_map.utils.schema_utils import all_classes_without_tree_root
 
 logger = get_logger(__name__)

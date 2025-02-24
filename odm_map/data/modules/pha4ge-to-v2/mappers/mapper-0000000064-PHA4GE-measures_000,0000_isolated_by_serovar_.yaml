@@ -6,30 +6,21 @@ class_derivations:
       group:
         name: group
         populated_from: organism
-      (__match:sampleID__):
-        name: (__match:sampleID__)
-        expr: '''specimen collector sample ID'''
-      (__match:datasetID__):
-        name: (__match:datasetID__)
+      _extra_datasetID:
+        name: _extra_datasetID
         expr: '''isolated by laboratory name'''
-      aDateEnd:
-        name: aDateEnd
-        expr: ''''''
+      _extra_sampleID:
+        name: _extra_sampleID
+        expr: '"specimen collector sample ID"'
       organizationID:
         name: organizationID
         populated_from: isolated_by
-      protocolID:
-        name: protocolID
-        expr: ''''''
       specimen:
         name: specimen
         expr: '''sa'''
       measure:
         name: measure
         expr: '''serovar'''
-      measureSetRepID:
-        name: measureSetRepID
-        expr: ''''''
       value:
         name: value
         populated_from: serovar

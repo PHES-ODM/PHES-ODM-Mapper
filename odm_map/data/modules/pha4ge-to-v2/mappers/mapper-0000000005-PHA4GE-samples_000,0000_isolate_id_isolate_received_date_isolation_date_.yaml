@@ -30,8 +30,8 @@ class_derivations:
       recDate:
         name: recDate
         populated_from: isolate_received_date
-      (__match:sampleID__):
-        name: (__match:sampleID__)
+      _extra_sampleID:
+        name: _extra_sampleID
         expr: '''isolate ID'''
       sampleID:
         name: sampleID

@@ -22,7 +22,7 @@ from odm_map.utils.general_utils import (
     read_data_frame,
     merge_dicts_of_lists,
 )
-from odm_map.utils.tracking_slots import TrackingSlots
+from odm_map.utils.extra_and_tracking_slots import TrackingSlots
 from odm_map.progress import ProgressCounter, EmptyCounter
 from odm_map.id_generator.id_function_bindings import FunctionBindings
 from odm_map.id_generator.id_data_bindings import DataBindings

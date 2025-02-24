@@ -30,9 +30,9 @@ class_derivations:
           + '/!/'
       recDate:
         name: recDate
-        expr: ''''''
-      (__match:sampleID__):
-        name: (__match:sampleID__)
+        populated_from: sample_received_date
+      _extra_sampleID:
+        name: _extra_sampleID
         expr: '''sampling event ID'''
       sampleID:
         name: sampleID

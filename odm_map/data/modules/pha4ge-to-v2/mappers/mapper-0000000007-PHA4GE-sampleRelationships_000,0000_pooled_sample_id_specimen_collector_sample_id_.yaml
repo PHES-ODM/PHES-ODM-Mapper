@@ -3,9 +3,6 @@ class_derivations:
     name: sampleRelationships[000,0000=pooled_sample_id-specimen_collector_sample_id]
     populated_from: PHA4GE
     slot_derivations:
-      sampleRelationshipsID:
-        name: sampleRelationshipsID
-        expr: ''''''
       sampleIDSubject:
         name: sampleIDSubject
         populated_from: pooled_sample_id

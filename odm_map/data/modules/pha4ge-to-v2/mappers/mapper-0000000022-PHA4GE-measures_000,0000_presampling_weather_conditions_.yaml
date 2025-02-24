@@ -6,30 +6,18 @@ class_derivations:
       group:
         name: group
         populated_from: organism
-      (__match:sampleID__):
-        name: (__match:sampleID__)
-        expr: '''specimen collector sample ID'''
-      (__match:datasetID__):
-        name: (__match:datasetID__)
-        expr: '''specimen collector project ID'''
-      aDateEnd:
-        name: aDateEnd
-        expr: ''''''
-      organizationID:
-        name: organizationID
-        expr: ''''''
-      protocolID:
-        name: protocolID
-        expr: ''''''
+      _extra_datasetID:
+        name: _extra_datasetID
+        expr: '"specimen collector project ID"'
+      _extra_sampleID:
+        name: _extra_sampleID
+        expr: '"specimen collector sample ID"'
       specimen:
         name: specimen
         expr: '''si'''
       measure:
         name: measure
         expr: '''preSampWeath'''
-      measureSetRepID:
-        name: measureSetRepID
-        expr: ''''''
       value:
         name: value
         populated_from: presampling_weather_conditions

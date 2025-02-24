@@ -22,6 +22,9 @@ logger = get_logger(__name__)
 TRACKING_SLOT_PREFIX = "(__"
 TRACKING_SLOT_SUFFIX = "__)"
 
+EXTRA_SLOT_PREFIX = "_extra_"
+EXTRA_SLOT_SUFFIX = ""
+
 
 def make_tracking_slot_name(name: str) -> str:
     """Create a tracking slot name based on the specified name.
@@ -59,9 +62,10 @@ TrackingSlotsTypes = {
 }
 
 
-def is_tracking_slot(c: str) -> bool:
-    """Determine if the column is a tracking slot. Tracking slots are all slots that start with
-    TRACKING_SLOT_PREFIX and end with TRACKING_SLOT_SUFFIX.
+def is_extra_or_tracking_slot(c: str) -> bool:
+    """Determine if the column is an extra/tracking slot. Tracking slots are all slots that start with
+    TRACKING_SLOT_PREFIX and end with TRACKING_SLOT_SUFFIX, and extra slots are all slots that
+    start with EXTRA_SLOT_PREFIX and end with EXTRA_SLOT_SUFFIX.
 
     Args:
         c (str): The slot to test.
@@ -69,11 +73,13 @@ def is_tracking_slot(c: str) -> bool:
     Returns:
         bool: True if c is a tracking slot, False otherwise.
     """
-    return c.startswith(TRACKING_SLOT_PREFIX) and c.endswith(TRACKING_SLOT_SUFFIX)
+    return (
+        c.startswith(TRACKING_SLOT_PREFIX) and c.endswith(TRACKING_SLOT_SUFFIX)
+    ) or (c.startswith(EXTRA_SLOT_PREFIX) and c.endswith(EXTRA_SLOT_SUFFIX))
 
 
-def drop_tracking_slots(df: pd.DataFrame) -> pd.DataFrame:
-    """Drop all the tracking columns in the specified DataFrame.
+def drop_extra_and_tracking_slots(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop all the extra/tracking columns in the specified DataFrame.
 
     Args:
         df (pd.DataFrame): The DataFrame to drop the tracking columns from.
@@ -81,17 +87,17 @@ def drop_tracking_slots(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A copy of df with all tracking columns removed.
     """
-    drop_cols = [c for c in df.columns if is_tracking_slot(c)]
+    drop_cols = [c for c in df.columns if is_extra_or_tracking_slot(c)]
     df = df.drop(drop_cols, axis=1)
     return df
 
 
-def add_tracking_slots_derivations(
+def add_extra_and_tracking_slot_derivations(
     data: Dict[str, Union[List[Dict], pd.DataFrame]],
     spec: Dict,
     target_schema: SchemaView,
 ) -> Dict[str, List[str]]:
-    """Add slot derivations in the mapping spec to copy over all tracking columns from the source data.
+    """Add slot derivations in the mapping spec to copy over all extra/tracking columns from the source data.
 
     If there is already a slot derivation for a tracking column then a new slot derivation is NOT added.
 
@@ -113,8 +119,8 @@ def add_tracking_slots_derivations(
         c for c, defn in target_schema.all_classes().items() if defn.tree_root
     ][0]
 
-    all_tracking_slots = get_tracking_slots_from_data(data)
-    added_tracking_slots = {}
+    all_extra_slots = get_extra_and_tracking_slots_from_data(data)
+    added_extra_slots = {}
 
     # Go through all classes in the mapper spec
     for target_class_name, class_derivation in spec["class_derivations"].items():
@@ -132,24 +138,22 @@ def add_tracking_slots_derivations(
             continue
 
         # Get all tracking slots that already exist in the class derivation
-        existing_tracking_slots = [
+        existing_extra_slots = [
             c
             for c in class_derivation["slot_derivations"].keys()
-            if is_tracking_slot(c)
+            if is_extra_or_tracking_slot(c)
         ]
 
-        # Get all tracking slots that exist in the source data (these will be copied over without modification, specified
+        # Get all extra/tracking slots that exist in the source data (these will be copied over without modification, specified
         # in the mapper spec)
-        source_tracking_slots = all_tracking_slots.get(source_class_name, [])
+        source_extra_slots = all_extra_slots.get(source_class_name, [])
 
-        cur_tracking_slots = list(
-            dict.fromkeys(existing_tracking_slots + source_tracking_slots)
-        )
+        cur_extra_slots = list(dict.fromkeys(existing_extra_slots + source_extra_slots))
 
-        added_tracking_slots[target_class_name] = cur_tracking_slots
+        added_extra_slots[target_class_name] = cur_extra_slots
 
         # Go through all of the tracking slots and add a slot derivation for each of them.
-        for col in cur_tracking_slots:
+        for col in cur_extra_slots:
             # If a slot derivation already exists then don't add one.
             if col in class_derivation["slot_derivations"]:
                 continue
@@ -158,18 +162,18 @@ def add_tracking_slots_derivations(
                 "populated_from": col,
             }
 
-    return added_tracking_slots
+    return added_extra_slots
 
 
-def add_tracking_slots_to_schema_class(
-    tracking_slots: List[str], class_name: str, schema: SchemaView
+def add_extra_and_tracking_slots_to_schema_class(
+    extra_and_tracking_slots: List[str], class_name: str, schema: SchemaView
 ):
-    """Add all the specified tracking slots to the class definition for class_name in the schema. They
+    """Add all the specified extra/tracking slots to the class definition for class_name in the schema. They
     will be added to both the top-level list of slots in the schema as well as the class definition
     for class_name in the schema.
 
     Args:
-        tracking_slots (List[str]): A list of tracking slot names to add to the class definition in
+        extra_and_tracking_slots (List[str]): A list of extra/tracking slot names to add to the class definition in
             the schema.
         class_name (str): The name of the class to add the tracking slots to.
         schema (SchemaView): The schema to add the tracking slots to. The tracking slots are added to
@@ -178,29 +182,31 @@ def add_tracking_slots_to_schema_class(
     class_definition = schema.schema.classes[class_name]
 
     # Add all the tracking slots to the class definition, if they don't already exist
-    tracking_slots = list(
-        dict.fromkeys([c for c in tracking_slots if c not in class_definition.slots])
+    extra_and_tracking_slots = list(
+        dict.fromkeys(
+            [c for c in extra_and_tracking_slots if c not in class_definition.slots]
+        )
     )
-    class_definition.slots.extend(tracking_slots)
+    class_definition.slots.extend(extra_and_tracking_slots)
 
     # Add all the tracking slots to the top-level schema slots
-    for slot in tracking_slots:
+    for slot in extra_and_tracking_slots:
         rng = TrackingSlotsTypes.get(slot, "string")
         schema.schema.slots[slot] = SlotDefinition(
             name=slot, from_schema=schema.schema.id, range=rng
         )
 
 
-def add_tracking_slots_to_schema(
+def add_extra_and_tracking_slots_to_schema(
     data: Dict[str, Union[List[Dict], pd.DataFrame]], schema: SchemaView
 ):
-    """Add all tracking slots found in the data to all classes in the schema.
+    """Add all extra/tracking slots found in the data to all classes in the schema.
 
     Tracking slots include the source row number and class name of a row. These get copied over
     to the mapped data so we know which class and row and output row was derived from. It can
-    be used for sorting and other downstream operations, such as for ID generation. Other tracking
-    slots may also be present. Any slot that is_tracking_slot(slot) returns True for is a tracking
-    slot.
+    be used for sorting and other downstream operations, such as for ID generation. Extra slots are
+    just additional slots that are not found in the original schema that follow a certain naming pattern.
+    All of the extra and tracking slots will result in is_extra_or_tracking_slot returning True.
 
     Args:
         data (Dict[str, Union[List[Dict], pd.DataFrame]]): The data that contains the tracking slots that
@@ -209,56 +215,54 @@ def add_tracking_slots_to_schema(
             a DataFrame, where each column is tested to see if it's a tracking column.
         schema (SchemaView): The schema to add the tracking slots to (for all classes).
     """
-    # Get all the tracking slots for each class in the data. all_tracking_slots is a dictionary where
-    # the keys are the class names in the data and the values are lists of strings (of tracking slot names)
-    all_tracking_slots = get_tracking_slots_from_data(data)
+    # Get all the extra/tracking slots for each class in the data. all_extra_slots is a dictionary where
+    # the keys are the class names in the data and the values are lists of strings (of extra/tracking slot names)
+    all_extra_slots = get_extra_and_tracking_slots_from_data(data)
 
     all_classes = all_classes_without_tree_root(schema)
 
-    # Go through all tracking slots for each class, and add them to the schema.
-    for class_name, tracking_slots in all_tracking_slots.items():
+    # Go through all extra/tracking slots for each class, and add them to the schema.
+    for class_name, extra_slots in all_extra_slots.items():
         if class_name not in all_classes:
             continue
-        add_tracking_slots_to_schema_class(tracking_slots, class_name, schema)
+        add_extra_and_tracking_slots_to_schema_class(extra_slots, class_name, schema)
 
 
-def get_tracking_slots_from_data(
+def get_extra_and_tracking_slots_from_data(
     data: Dict[str, Union[List[Dict], pd.DataFrame]],
 ) -> Dict[str, List[str]]:
-    """Get a list of all tracking slots found in the data, for all classes. Tracking slots are any
-    slot that is_tracking_slot(slot) returns True for.
+    """Get a list of all extra/tracking slots found in the data, for all classes. Extra/tracking slots are any
+    slot that is_extra_or_tracking_slot(slot) returns True for.
 
     Args:
-        data (Dict[str, Union[List[Dict], pd.DataFrame]]): The data to get the tracking slots from. Keys are
+        data (Dict[str, Union[List[Dict], pd.DataFrame]]): The data to get the extra/tracking slots from. Keys are
             the source class names, and values are the data. The data are either a list of rows (where a row
             is a dictionary with column names as the keys) or a DataFrame, where each column is tested to see
-            if it's a tracking column.
+            if it's an extra/tracking column.
 
     Returns:
         Dict[str, List[str]]: A dictionary where the keys are the class names and the values are lists of strings,
-            where each string is the name of a tracking slot found in the data.
+            where each string is the name of an extra/tracking slot found in the data.
     """
-    tracking_slots = {}
+    extra_slots = {}
 
-    # Go through all classes in the data, and find all tracking slots in the data for the class.
+    # Go through all classes in the data, and find all extra/tracking slots in the data for the class.
     for class_name, class_data in data.items():
         if len(class_data) == 0:
             continue
         if isinstance(class_data, pd.DataFrame):
-            tracking_slots[class_name] = [
-                c for c in class_data.columns if is_tracking_slot(c)
+            extra_slots[class_name] = [
+                c for c in class_data.columns if is_extra_or_tracking_slot(c)
             ]
         else:
-            tracking_slots[class_name] = [
-                c for c in class_data[0].keys() if is_tracking_slot(c)
+            extra_slots[class_name] = [
+                c for c in class_data[0].keys() if is_extra_or_tracking_slot(c)
             ]
-    return tracking_slots
+    return extra_slots
 
 
 def get_predefined_tracking_slots() -> List[str]:
     """Get all the predefined tracking slots, which are all the columns specified in TrackingSlots.
-    A non-predefined tracking slot is a custom/dynamic tracking slot that is not found in TrackingSlots,
-    such as a tracking slot used for matching (eg (__match:sampleID__)).
 
     Returns:
         List[str]: List of all predefined tracking slots.

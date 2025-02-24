@@ -23,7 +23,7 @@ from odm_map.utils.general_utils import (
     EXCEL_FILE_KEY,
 )
 from odm_map.utils.logger import get_logger, make_logger_bullet_list
-from odm_map.utils.tracking_slots import is_tracking_slot
+from odm_map.utils.extra_and_tracking_slots import is_extra_or_tracking_slot
 from odm_map.utils.schema_utils import (
     get_ranges_of_slot,
     all_classes_without_tree_root,
@@ -102,7 +102,7 @@ class DataCleaner(object):
         keep_columns = [
             c
             for c in df.columns
-            if is_tracking_slot(c) or c in class_definition.attributes
+            if is_extra_or_tracking_slot(c) or c in class_definition.attributes
         ]
         unknown_columns = [c for c in list(df.columns) if c not in keep_columns]
         if len(unknown_columns) > 0:
@@ -143,7 +143,7 @@ class DataCleaner(object):
 
         columns = []
         for val in df.columns:
-            if is_tracking_slot(val):
+            if is_extra_or_tracking_slot(val):
                 columns.append(val)
                 continue
             for options in format_columns_options:
@@ -186,7 +186,7 @@ class DataCleaner(object):
         df.columns = columns
 
         columns_without_tracking_slots = [
-            c for c in df.columns if not is_tracking_slot(c)
+            c for c in df.columns if not is_extra_or_tracking_slot(c)
         ]
         validate_columns_with_schema(
             columns_without_tracking_slots,
@@ -306,7 +306,7 @@ class DataCleaner(object):
 
         # Fix enumerations (Use correct capitalization), and only keep recognized slots
         for slot_name in df.columns:
-            if is_tracking_slot(slot_name):
+            if is_extra_or_tracking_slot(slot_name):
                 continue
             if slot_name not in class_definition.attributes:
                 continue

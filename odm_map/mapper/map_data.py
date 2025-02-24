@@ -18,13 +18,13 @@ from odm_map.utils.schema_utils import (
     find_class,
 )
 from odm_map.progress import ProgressCounter
-from odm_map.utils.tracking_slots import (
-    add_tracking_slots_to_schema,
-    add_tracking_slots_to_schema_class,
-    is_tracking_slot,
-    add_tracking_slots_derivations,
+from odm_map.utils.extra_and_tracking_slots import (
+    add_extra_and_tracking_slots_to_schema,
+    add_extra_and_tracking_slots_to_schema_class,
+    is_extra_or_tracking_slot,
+    add_extra_and_tracking_slot_derivations,
     load_data_with_source_tracking_columns,
-    drop_tracking_slots,
+    drop_extra_and_tracking_slots,
     TrackingSlots,
 )
 from odm_map.utils.general_utils import (
@@ -300,7 +300,7 @@ class DataMapper(object):
                     missing_slots = [
                         s
                         for s in class_definition.attributes
-                        if s not in df.columns and not is_tracking_slot(s)
+                        if s not in df.columns and not is_extra_or_tracking_slot(s)
                     ]
                     df[missing_slots] = ""
 
@@ -413,13 +413,15 @@ class DataMapper(object):
             if target_schema is not None:
                 class_definition = target_schema.induced_class(class_name)
                 all_slots = list(class_definition.attributes.keys())
-                all_slots = all_slots + [c for c in df.columns if is_tracking_slot(c)]
+                all_slots = all_slots + [
+                    c for c in df.columns if is_extra_or_tracking_slot(c)
+                ]
                 # Drop duplicates
                 all_slots = list(dict.fromkeys(all_slots))
                 unrecognized = [
                     s
                     for s in df.columns
-                    if s not in all_slots and not is_tracking_slot(s)
+                    if s not in all_slots and not is_extra_or_tracking_slot(s)
                 ]
                 if len(unrecognized) > 0:
                     raise ValueError(
@@ -519,12 +521,12 @@ class DataMapper(object):
             )
             data_frames = merge_dicts_of_lists([data_frames, loaded_data])
 
-        # Add all the tracking slots found in the source data to the source schema.
-        # We can't yet add them to the target schema because we don't have access
-        # to the mapped target data yet. We can add the target schema tracking
+        # Add all the extra slots (tracking and extra slots) found in the source data to
+        # the source schema. We can't yet add them to the target schema because we don't
+        # have access to the mapped target data yet. We can add the target schema tracking
         # slots later once we load a LinkML-Map schema, and figure out which tracking
         # slots get mapped onto the target data.
-        add_tracking_slots_to_schema(data_frames, source_schema)
+        add_extra_and_tracking_slots_to_schema(data_frames, source_schema)
 
         # Prepare all data in correct format
         data = self.prepare_data(
@@ -561,27 +563,25 @@ class DataMapper(object):
 
         # Load all mapper specs
         mapper_specs = []
-        all_tracking_slots = {}
+        all_extra_slots = {}
         for mapper_file in mapper_files:
             # Load the mapper spec
             with open(mapper_file, "r") as f:
                 mapper_spec = yaml.safe_load(f)
 
-            # Add all tracking slot derivations to the mapper spec, and keep track of which
-            # tracking slots were added. We will add all these tracking slots to the target_schema
+            # Add all extra/tracking slot derivations to the mapper spec, and keep track of which
+            # tracking slots were added. We will add all these extra/tracking slots to the target_schema
             # once we're done
-            cur_tracking_slots = add_tracking_slots_derivations(
+            cur_extra_slots = add_extra_and_tracking_slot_derivations(
                 data, mapper_spec, target_schema
             )
-            all_tracking_slots = merge_dicts_of_lists(
-                [all_tracking_slots, cur_tracking_slots]
-            )
+            all_extra_slots = merge_dicts_of_lists([all_extra_slots, cur_extra_slots])
 
             mapper_specs.append(mapper_spec)
 
-        # Add all the mapped tracking slots to the target schema
-        for class_name, cur_tracking_slots in all_tracking_slots.items():
-            add_tracking_slots_to_schema_class(
+        # Add all the mapped extra/tracking slots to the target schema
+        for class_name, cur_tracking_slots in all_extra_slots.items():
+            add_extra_and_tracking_slots_to_schema_class(
                 cur_tracking_slots, class_name, target_schema
             )
 
@@ -651,7 +651,7 @@ class DataMapper(object):
             # Retain the original order by sorting by the TrackingSlots.
             df = self.sort_mapped_data(df)
             if not keep_tracking_columns:
-                df = drop_tracking_slots(df)
+                df = drop_extra_and_tracking_slots(df)
             all_mapped_data[class_name] = [df]
 
         # Save data to disk

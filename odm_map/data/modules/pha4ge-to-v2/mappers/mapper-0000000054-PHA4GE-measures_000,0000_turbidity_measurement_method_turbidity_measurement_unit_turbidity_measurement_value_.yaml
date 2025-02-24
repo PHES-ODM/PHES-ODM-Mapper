@@ -6,18 +6,12 @@ class_derivations:
       group:
         name: group
         populated_from: organism
-      (__match:sampleID__):
-        name: (__match:sampleID__)
-        expr: '''specimen collector sample ID'''
-      (__match:datasetID__):
-        name: (__match:datasetID__)
-        expr: '''specimen collector project ID'''
-      aDateEnd:
-        name: aDateEnd
-        expr: ''''''
-      organizationID:
-        name: organizationID
-        expr: ''''''
+      _extra_datasetID:
+        name: _extra_datasetID
+        expr: '"specimen collector project ID"'
+      _extra_sampleID:
+        name: _extra_sampleID
+        expr: '"specimen collector sample ID"'
       protocolID:
         name: protocolID
         populated_from: turbidity_measurement_method
@@ -27,9 +21,6 @@ class_derivations:
       measure:
         name: measure
         expr: '''turb'''
-      measureSetRepID:
-        name: measureSetRepID
-        expr: ''''''
       value:
         name: value
         populated_from: turbidity_measurement_value

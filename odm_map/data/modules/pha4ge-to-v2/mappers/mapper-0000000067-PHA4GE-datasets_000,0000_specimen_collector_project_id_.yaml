@@ -3,8 +3,8 @@ class_derivations:
     name: datasets[000,0000=specimen_collector_project_id]
     populated_from: PHA4GE
     slot_derivations:
-      (__match:datasetID__):
-        name: (__match:datasetID__)
+      _extra_datasetID:
+        name: _extra_datasetID
         expr: '''specimen collector project ID'''
       datasetID:
         name: datasetID
