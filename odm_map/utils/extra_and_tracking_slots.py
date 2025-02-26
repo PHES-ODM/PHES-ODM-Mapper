@@ -261,7 +261,7 @@ def get_extra_and_tracking_slots_from_data(
     return extra_slots
 
 
-def get_predefined_tracking_slots() -> List[str]:
+def get_tracking_slots() -> List[str]:
     """Get all the predefined tracking slots, which are all the columns specified in TrackingSlots.
 
     Returns:
@@ -290,8 +290,8 @@ def add_source_tracking_columns(
     # First make sure the predefined tracking columns don't already exist (this would be due to a name
     # conflict, where the source data already has columns with the same name as a tracking
     # column)
-    predefined_tracking_slots = get_predefined_tracking_slots()
-    existing_tracking_slots = [c for c in df.columns if c in predefined_tracking_slots]
+    tracking_slots = get_tracking_slots()
+    existing_tracking_slots = [c for c in df.columns if c in tracking_slots]
     if len(existing_tracking_slots) > 0:
         raise ValueError(
             f"Loaded data already has one or more columns with the same name as a tracking column: {existing_tracking_slots}"
