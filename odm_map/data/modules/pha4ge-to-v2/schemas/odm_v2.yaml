@@ -6832,6 +6832,8 @@ slots:
     from_schema: https://onto.phes-odm.org/odm/v2
 classes:
   wideNames:
+    description: The table for wide names.
+    title: Wide name table
     slots:
     - wideName
     - label
@@ -7032,6 +7034,8 @@ classes:
         range: string
         pattern: ^.{0,30}$
   organizations:
+    description: The table that contains information about a laboratory.
+    title: Organization table
     slots:
     - organizationID
     - name
@@ -7076,7 +7080,7 @@ classes:
       addressID:
         description: A unique identifier for an address.
         title: Address ID
-        range: string
+        range: addresses
         required: true
         pattern: ^.{0,30}$
       datasetID:
@@ -7087,7 +7091,7 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         pattern: ^.{0,30}$
       orgType:
         description: Specifies the type or purpose of a given organization.
@@ -7134,6 +7138,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   qualityReports:
+    description: The table for recording the various quality metrics and indicators
+      for samples and measures.
+    title: Quality reports table
     slots:
     - qualityReportID
     - measureRepID
@@ -7156,19 +7163,19 @@ classes:
         title: Report ID
         notes:
         - Report IDs cannot be repeated.
-        range: string
+        range: measures
         pattern: ^.{0,30}$
       sampleID:
         description: Unique identifier for a sample.
         title: Sample ID
         notes:
         - Suggestion:siteID-date-index.
-        range: string
+        range: samples
         pattern: ^.{0,30}$
       measureSetRepID:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
-        range: string
+        range: measureSets
         pattern: ^.{0,30}$
       qualityFlag:
         description: A field for reporting any quality concerns - of lack thereof
@@ -7212,6 +7219,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   translations:
+    description: Look up table for translations of the description, label, and instruction
+      for all parts.
+    title: Translation look-up table
     slots:
     - translationID
     - lang
@@ -7239,7 +7249,7 @@ classes:
         title: Language ID
         notes:
         - Follow the ISO639-3 codes for now.
-        range: string
+        range: languages
         required: true
         pattern: ^.{0,30}$
       partID:
@@ -7261,7 +7271,7 @@ classes:
           representing ovid allele N1, mean observation of viral copies per litre
           of effluent). A similar approach to naming subComponent is use for naming
           parts in a reprotTable.
-        range: string
+        range: parts
         required: true
         pattern: ^.{0,28}$
       label:
@@ -7318,6 +7328,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   languages:
+    description: Look up table for all languages, used to give structure to the translation
+      table.
+    title: Language Look-up table
     slots:
     - lang
     - langFam
@@ -7482,95 +7495,98 @@ classes:
     - wideNames
     slot_usage:
       protocolSteps:
-        multivalued: true
         range: protocolSteps
+        multivalued: true
         inlined_as_list: true
       protocolRelationships:
-        multivalued: true
         range: protocolRelationships
+        multivalued: true
         inlined_as_list: true
       measures:
-        multivalued: true
         range: measures
+        multivalued: true
         inlined_as_list: true
       measureSets:
-        multivalued: true
         range: measureSets
+        multivalued: true
         inlined_as_list: true
       datasets:
-        multivalued: true
         range: datasets
+        multivalued: true
         inlined_as_list: true
       sites:
-        multivalued: true
         range: sites
+        multivalued: true
         inlined_as_list: true
       samples:
-        multivalued: true
         range: samples
+        multivalued: true
         inlined_as_list: true
       addresses:
-        multivalued: true
         range: addresses
+        multivalued: true
         inlined_as_list: true
       contacts:
-        multivalued: true
         range: contacts
+        multivalued: true
         inlined_as_list: true
       organizations:
-        multivalued: true
         range: organizations
+        multivalued: true
         inlined_as_list: true
       instruments:
-        multivalued: true
         range: instruments
+        multivalued: true
         inlined_as_list: true
       polygons:
-        multivalued: true
         range: polygons
+        multivalued: true
         inlined_as_list: true
       languages:
-        multivalued: true
         range: languages
+        multivalued: true
         inlined_as_list: true
       translations:
-        multivalued: true
         range: translations
+        multivalued: true
         inlined_as_list: true
       parts:
-        multivalued: true
         range: parts
+        multivalued: true
         inlined_as_list: true
       sets:
-        multivalued: true
         range: sets
+        multivalued: true
         inlined_as_list: true
       qualityReports:
-        multivalued: true
         range: qualityReports
+        multivalued: true
         inlined_as_list: true
       sampleRelationships:
-        multivalued: true
         range: sampleRelationships
+        multivalued: true
         inlined_as_list: true
       protocols:
-        multivalued: true
         range: protocols
+        multivalued: true
         inlined_as_list: true
       countries:
-        multivalued: true
         range: countries
+        multivalued: true
         inlined_as_list: true
       zones:
-        multivalued: true
         range: zones
+        multivalued: true
         inlined_as_list: true
       wideNames:
-        multivalued: true
         range: wideNames
+        multivalued: true
         inlined_as_list: true
     tree_root: true
   protocolSteps:
+    description: The table for collecting metadata on individual steps in a protocol,
+      methodological process, or assay.
+    title: Protocol steps table
     slots:
     - stepID
     - method
@@ -7647,17 +7663,17 @@ classes:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
+        range: organizations
         pattern: ^.{0,100}$
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: string
+        range: contacts
         pattern: ^.{0,30}$
       instrumentID:
         description: A unique identifier for an instrument.
         title: Instrument ID
-        range: string
+        range: instruments
         pattern: ^.{0,10}$
       value:
         description: Value of a measure, observation or attribute.
@@ -7710,6 +7726,10 @@ classes:
         range: string
         pattern: ^.{0,200}$
   protocolRelationships:
+    description: The table that contains the organizational information and details
+      (such as order) about a given protocol, recorded as a series of protocol steps
+      (protocolSteps).
+    title: Protocol relationships table
     slots:
     - protocolRelationshipsID
     - protocolIDContainer
@@ -7767,10 +7787,9 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
-        range: string
-        # range:
-        #   - sampleRelSet
-        #   - protocolRelSet
+        range:
+        - sampleRelSet
+        - protocolRelSet
         required: true
         pattern: ^.{0,30}$
       protocolIDSub:
@@ -7822,6 +7841,10 @@ classes:
         range: string
         pattern: ^.{0,200}$
   samples:
+    description: The table that contains information about a sample. A sample is defined
+      as a representative volume of wastewater (or other forms of water or liquid),
+      air, or surface area taken from a site.
+    title: Sample report table
     slots:
     - sampleID
     - repType
@@ -7922,7 +7945,7 @@ classes:
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
-        range: string
+        range: protocols
         pattern: ^.{0,30}$
       reportable:
         description: Flag for whether a measure is reportable or not, based on confidence
@@ -7965,12 +7988,12 @@ classes:
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: string
+        range: contacts
         pattern: ^.{0,30}$
       siteID:
         description: Unique identifier for the location where a sample was taken.
         title: Site ID
-        range: string
+        range: sites
         required: true
         pattern: ^.{0,30}$
       purpose:
@@ -7994,7 +8017,7 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         pattern: ^.{0,30}$
       origin:
         description: An attribute of a sample specifying the origin.
@@ -8002,6 +8025,8 @@ classes:
         range: originSet
         pattern: ^.{0,30}$
   measures:
+    description: The table that contains information and details about a given measure
+    title: Measure report table
     slots:
     - measureRepID
     - protocolID
@@ -8047,14 +8072,14 @@ classes:
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
-        range: string
+        range: protocols
         pattern: ^.{0,30}$
       sampleID:
         description: Unique identifier for a sample.
         title: Sample ID
         notes:
         - Suggestion:siteID-date-index.
-        range: string
+        range: samples
         required: true
         pattern: ^.{0,30}$
       purpose:
@@ -8070,12 +8095,12 @@ classes:
         notes:
         - A polygon is a geographic are representing the capment area of an environmental
           sample.
-        range: string
+        range: polygons
         pattern: ^.{0,10}$
       siteID:
         description: Unique identifier for the location where a sample was taken.
         title: Site ID
-        range: string
+        range: sites
         pattern: ^.{0,30}$
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
@@ -8085,12 +8110,12 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         pattern: ^.{0,30}$
       measureSetRepID:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
-        range: string
+        range: measureSets
         pattern: ^.{0,30}$
       aDateStart:
         description: Date the measurement or analysis was started.
@@ -8278,6 +8303,8 @@ classes:
         range: string
         pattern: ^.{0,200}$
   parts:
+    description: Look up table containing all parts in of the data model.
+    title: Parts Look-up table
     slots:
     - partID
     - label
@@ -9014,6 +9041,8 @@ classes:
         range: integer
         pattern: ^.{0,30}$
   protocols:
+    description: The table for protocols.
+    title: Protocols table
     slots:
     - sourceProtocol
     - protocolID
@@ -9051,7 +9080,7 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         pattern: ^.{0,30}$
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
@@ -9083,12 +9112,12 @@ classes:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
+        range: organizations
         pattern: ^.{0,100}$
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: string
+        range: contacts
         pattern: ^.{0,30}$
       protocolVersion:
         description: Specifies the version of a method set.
@@ -9124,6 +9153,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   sets:
+    description: Look up table for all sets, managing how categorical inputs for various
+      methods and attributes are grouped together.
+    title: Sets look-up table
     slots:
     - setCompID
     - setID
@@ -9180,7 +9212,7 @@ classes:
           representing ovid allele N1, mean observation of viral copies per litre
           of effluent). A similar approach to naming subComponent is use for naming
           parts in a reprotTable.
-        range: string
+        range: parts
         required: true
         pattern: ^.{0,28}$
       label:
@@ -9242,6 +9274,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   polygons:
+    description: The table that contains information about the geometry of a geographic
+      area.
+    title: Polygon table
     slots:
     - polygonID
     - datasetID
@@ -9275,7 +9310,7 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         pattern: ^.{0,30}$
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
@@ -9321,7 +9356,7 @@ classes:
         title: File location of polygon
         notes:
         - File path specified, or a URL
-        range: string
+        range: blob
         pattern: ^.{0,65535}$
       refLink:
         description: Link to the reference material for a part. May link to literature
@@ -9371,6 +9406,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   datasets:
+    description: A report table for capturing details about data's parental data set
+      and data custodians. Supplying attribution for data collectors.
+    title: Dataset table
     slots:
     - parDatasetID
     - datasetID
@@ -9457,7 +9495,7 @@ classes:
         title: Language ID
         notes:
         - Follow the ISO639-3 codes for now.
-        range: string
+        range: languages
         pattern: ^.{0,30}$
       funderCont:
         description: A unique identifier for a funder.
@@ -9513,6 +9551,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   addresses:
+    description: The table that contains information about addresses. Addresses can
+      recorded for sites, organizations or contacts (indivduals).
+    title: Address table
     slots:
     - addressID
     - notes
@@ -9548,7 +9589,7 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         required: true
         pattern: ^.{0,30}$
       addL1:
@@ -9608,6 +9649,8 @@ classes:
         range: datetime
         pattern: ^.{0,30}$
   sampleRelationships:
+    description: Table for recording the relationships between samples.
+    title: Sample relationships table
     slots:
     - sampleRelationshipsID
     - sampleIDSubject
@@ -9642,10 +9685,9 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
-        range: string
-        # range:
-        #   - sampleRelSet
-        #   - protocolRelSet
+        range:
+        - sampleRelSet
+        - protocolRelSet
         required: true
         pattern: ^.{0,30}$
       sampleIDObject:
@@ -9686,6 +9728,8 @@ classes:
         range: string
         pattern: ^.{0,200}$
   instruments:
+    description: The table that contains information about instruments.
+    title: Instrument table
     slots:
     - instrumentID
     - datasetID
@@ -9717,7 +9761,7 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         required: true
         pattern: ^.{0,30}$
       name:
@@ -9744,13 +9788,13 @@ classes:
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: string
+        range: contacts
         pattern: ^.{0,30}$
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
+        range: organizations
         pattern: ^.{0,100}$
       descr:
         description: A detailed description of a measure, method, or attribute.
@@ -9816,6 +9860,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   sites:
+    description: The table that contains information about a site; the location where
+      an environmental sample was taken.
+    title: Sites table
     slots:
     - parSiteID
     - siteID
@@ -9862,7 +9909,7 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         pattern: ^.{0,30}$
       polygonID:
         description: Unique identifier for the polygon.
@@ -9870,7 +9917,7 @@ classes:
         notes:
         - A polygon is a geographic are representing the capment area of an environmental
           sample.
-        range: string
+        range: polygons
         pattern: ^.{0,10}$
       siteType:
         description: Type of site or institution where sample was taken.
@@ -9891,7 +9938,7 @@ classes:
       addressID:
         description: A unique identifier for an address.
         title: Address ID
-        range: string
+        range: addresses
         pattern: ^.{0,30}$
       organizationID:
         description: A unique identifier for the organization to which the reporter
@@ -9902,7 +9949,7 @@ classes:
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: string
+        range: contacts
         required: true
         pattern: ^.{0,30}$
       name:
@@ -10007,6 +10054,9 @@ classes:
         range: string
         pattern: ^.{0,200}$
   contacts:
+    description: The table that contains information about a contact; a person who
+      is the contact of a site or laboratory.
+    title: Contact table
     slots:
     - contactID
     - datasetID
@@ -10034,13 +10084,13 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: string
+        range: datasets
         pattern: ^.{0,30}$
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
+        range: organizations
         required: true
         pattern: ^.{0,100}$
       firstName:
@@ -10096,6 +10146,8 @@ classes:
         range: string
         pattern: ^.{0,200}$
   measureSets:
+    description: The table that identifies sets of measures.
+    title: Measure set report table
     slots:
     - measureSetRepID
     - protocolID
@@ -10115,7 +10167,7 @@ classes:
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
-        range: string
+        range: protocols
         pattern: ^.{0,30}$
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
@@ -10131,12 +10183,12 @@ classes:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
+        range: organizations
         pattern: ^.{0,100}$
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: string
+        range: contacts
         pattern: ^.{0,30}$
       lastEdited:
         description: The date the entry was last updated.
@@ -10165,6 +10217,8 @@ classes:
         range: string
         pattern: ^.{0,200}$
   countries:
+    description: Look up table for the possible country inputs.
+    title: Countries look-up tables
     slots:
     - isoCode
     - isoCodeX
@@ -10316,6 +10370,8 @@ classes:
         required: true
         pattern: ^.{0,75}$
   zones:
+    description: Look up table for the possible sub-national region or zone inputs.
+    title: Zones look-up table
     slots:
     - isoCode
     - isoZone
@@ -10328,7 +10384,7 @@ classes:
         title: ISO 3166-1 alpha-2 country code
         notes:
         - Preprogrammed into dictionary tables, not editable by users.
-        range: string
+        range: countries
         required: true
         pattern: ^.{2,2}$
       isoZone:
