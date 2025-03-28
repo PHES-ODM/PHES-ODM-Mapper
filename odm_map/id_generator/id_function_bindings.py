@@ -8,7 +8,7 @@ For example:
 """
 
 from typing import Any, List
-from datetime import datetime
+import datetime
 import dateutil.parser
 import pytz
 import re
@@ -26,12 +26,12 @@ logger = get_logger(__name__)
 DATE_TIME_TIMEZONE_FORMATS = [
     # Date formats
     [
-        "dateutil",
+        "dateutil_date",
         # "%Y-%m-%d"
     ],
     # Time formats
     [
-        "dateutil",
+        "dateutil_time",
         # "%H:%M:%S.%f",
         # "%H:%M:%S",
         # "%H:%M",
@@ -103,7 +103,7 @@ class FunctionBindings:
         v = "".join(args)
         return v
 
-    def _customtz(self, val: str) -> datetime:
+    def _customtz(self, val: str) -> datetime.datetime:
         """Customized parsing of a timezone that isn't handled by other parsing methods.
 
         This function handles cases such as UTC+4, which we convert to +0400 and pass
@@ -141,7 +141,7 @@ class FunctionBindings:
                     delta *= 100
                 # Create the new timezone string and parse it
                 val = f"{sign}{delta:04d}"
-                tz_obj = datetime.strptime(val, "%z")
+                tz_obj = datetime.datetime.strptime(val, "%z")
                 return tz_obj
 
         raise ValueError(f"Cannot parse value as timezone: {orig_val}")
@@ -190,8 +190,29 @@ class FunctionBindings:
                         date_obj = self._customtz(val)
                     elif fmt == "dateutil":
                         date_obj = dateutil.parser.parse(val)
+                    elif fmt == "dateutil_date":
+                        # dateutil.parser.parse defaults to today's month, day, or year if there is no 
+                        # month, day, or year in the string val. We want an error if no date is in val, so
+                        # we create two date_objs: If no date is specified for val, then date_obj gets the
+                        # date 2000-1-1 and other_date_obj gets the date 2001-2-2. Therefore if the day, month,
+                        # or year is missing then date_obj != other_date_obj, but if they are not missing
+                        # then date_obj == other_date_obj
+                        date_obj = dateutil.parser.parse(
+                            val, default=datetime.datetime(2000, 1, 1)
+                        )
+                        other_date_obj = dateutil.parser.parse(
+                            val, default=datetime.datetime(2001, 2, 2)
+                        )
+                        if date_obj != other_date_obj:
+                            # This occurs when no month, day, or year is specified in val
+                            date_obj = None
+                            raise Exception(f"Not a date: {val}")
+                        date_obj = date_obj.date()
+                    elif fmt == "dateutil_time":
+                        date_obj = dateutil.parser.parse(val)
+                        date_obj = date_obj.time()
                     else:
-                        date_obj = datetime.strptime(val, fmt)
+                        date_obj = datetime.datetime.strptime(val, fmt)
                     objects[idx] = date_obj
                     break
                 except Exception:
@@ -233,7 +254,10 @@ class FunctionBindings:
         dt = None
         if date_obj is not None and time_obj is not None:
             # Both date and time available
-            dt = datetime.combine(date_obj.date(), time_obj.time())
+            dt = datetime.datetime.combine(
+                date_obj if isinstance(date_obj, datetime.date) else date_obj.date(),
+                time_obj if isinstance(time_obj, datetime.time) else time_obj.time(),
+            )
         elif date_obj is not None:
             # Only date available
             dt = date_obj
@@ -274,17 +298,10 @@ class FunctionBindings:
     def datetimeparse(self, d, ignoretz=True) -> Any:
         if not d or not isinstance(d, str):
             return d
-        try:
-            return dateutil.parser.parse(d, ignoretz=ignoretz).isoformat()
-        except Exception:
-            # @TODO: What to do if fail to parse date?
-            return d
+
+        return self.datetimetz([d, d])
 
     def dateparse(self, d) -> Any:
         if not d or not isinstance(d, str):
             return d
-        try:
-            return dateutil.parser.parse(d).date().isoformat()
-        except Exception:
-            # @TODO: What to do if fail to parse date?
-            return d
+        return self.datetimetz([d])
