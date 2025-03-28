@@ -7368,7 +7368,7 @@ classes:
         title: Native Name
         notes:
         - Part of the metedata for a languageID.
-        range: natNames
+        range: string
         required: true
         pattern: ^.{0,30}$
       iso6391:
@@ -7379,7 +7379,7 @@ classes:
         title: ISO639-1
         notes:
         - Part of the metedata for a languageID.
-        range: iso6391s
+        range: string
         required: true
         pattern: ^.{0,30}$
       iso6392B:
@@ -7390,7 +7390,7 @@ classes:
         title: ISO639-2B
         notes:
         - Part of the metedata for a languageID.
-        range: iso6392Bs
+        range: string
         required: true
         pattern: ^.{0,30}$
       iso6392T:
@@ -7401,7 +7401,7 @@ classes:
         title: ISO639-2T
         notes:
         - Part of the metedata for a languageID.
-        range: iso6392Ts
+        range: string
         required: true
         pattern: ^.{0,30}$
       iso6393:
@@ -7411,7 +7411,7 @@ classes:
         title: ISO639-3
         notes:
         - Part of the metedata for a languageID.
-        range: iso6393s
+        range: string
         required: true
         pattern: ^.{0,30}$
       iso6396:
@@ -7422,7 +7422,7 @@ classes:
         title: ISO639-6
         notes:
         - Part of the metedata for a languageID.
-        range: iso6396s
+        range: string
         required: true
         pattern: ^.{0,30}$
       firstReleased:
@@ -7767,7 +7767,10 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
-        range: sampleRelSet, protocolRelSet
+        range: string
+        # range:
+        #   - sampleRelSet
+        #   - protocolRelSet
         required: true
         pattern: ^.{0,30}$
       protocolIDSub:
@@ -9318,7 +9321,7 @@ classes:
         title: File location of polygon
         notes:
         - File path specified, or a URL
-        range: blob
+        range: string
         pattern: ^.{0,65535}$
       refLink:
         description: Link to the reference material for a part. May link to literature
@@ -9639,7 +9642,10 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
-        range: sampleRelSet, protocolRelSet
+        range: string
+        # range:
+        #   - sampleRelSet
+        #   - protocolRelSet
         required: true
         pattern: ^.{0,30}$
       sampleIDObject:
