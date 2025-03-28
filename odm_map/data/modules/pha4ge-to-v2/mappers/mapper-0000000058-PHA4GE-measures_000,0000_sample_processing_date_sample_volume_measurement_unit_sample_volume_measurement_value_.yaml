@@ -1,0 +1,80 @@
+class_derivations:
+  measures[000,0000=sample_processing_date-sample_volume_measurement_unit-sample_volume_measurement_value]:
+    name: measures[000,0000=sample_processing_date-sample_volume_measurement_unit-sample_volume_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      reportable:
+        name: reportable
+        populated_from: quality_control_determination
+      siteID:
+        name: siteID
+        populated_from: sampling_site_id
+      aDateStart:
+        name: aDateStart
+        populated_from: sample_processing_date
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sample_processing_date
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_sampleID_tag:
+        name: _extra_sampleID_tag
+        expr: '"specimen collector sample ID"'
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''samVol'''
+      value:
+        name: value
+        populated_from: sample_volume_measurement_value
+      unit:
+        name: unit
+        populated_from: sample_volume_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=sample_processing_date-sample_volume_measurement_unit-sample_volume_measurement_value]:
+        populated_from: PHA4GE
+enum_derivations:
+  booleanSet:
+    name: booleanSet
+    mirror_source: false
+    populated_from: QualityControlDeterminationMenu
+    permissible_value_derivations:
+      'True':
+        name: 'True'
+        sources:
+        - no quality control issues identified
+        - sequence passed quality control
+        - minor quality control issues identified
+        - sequence flagged for potential quality control issues
+      'False':
+        name: 'False'
+        populated_from: sequence failed quality control
+      nr:
+        name: nr
+        populated_from: quality control not performed
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  ODMv2_enum_from_SampleVolumeMeasurementUnitMenu:
+    name: ODMv2_enum_from_SampleVolumeMeasurementUnitMenu
+    mirror_source: false
+    populated_from: SampleVolumeMeasurementUnitMenu
+    permissible_value_derivations:
+      ul:
+        name: ul
+        populated_from: microliter (uL) [UO:0000101]
+      ml:
+        name: ml
+        populated_from: milliliter (mL) [UO:0000098]
+      l:
+        name: l
+        populated_from: liter (L) [UO:0000099]

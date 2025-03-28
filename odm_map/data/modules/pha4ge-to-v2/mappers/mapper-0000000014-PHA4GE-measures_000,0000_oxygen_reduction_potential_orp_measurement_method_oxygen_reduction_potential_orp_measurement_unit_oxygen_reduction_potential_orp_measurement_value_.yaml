@@ -1,0 +1,77 @@
+class_derivations:
+  ? measures[000,0000=oxygen_reduction_potential_orp_measurement_method-oxygen_reduction_potential_orp_measurement_unit-oxygen_reduction_potential_orp_measurement_value]
+  : name: measures[000,0000=oxygen_reduction_potential_orp_measurement_method-oxygen_reduction_potential_orp_measurement_unit-oxygen_reduction_potential_orp_measurement_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      reportable:
+        name: reportable
+        populated_from: quality_control_determination
+      siteID:
+        name: siteID
+        populated_from: sampling_site_id
+      aDateStart:
+        name: aDateStart
+        populated_from: sample_processing_date
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sequencing_date
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_sampleID_tag:
+        name: _extra_sampleID_tag
+        expr: '"specimen collector sample ID"'
+      protocolID:
+        name: protocolID
+        populated_from: oxygen_reduction_potential_orp_measurement_method
+      specimen:
+        name: specimen
+        expr: '''si'''
+      measure:
+        name: measure
+        expr: '''orp'''
+      value:
+        name: value
+        populated_from: oxygen_reduction_potential_orp_measurement_value
+      unit:
+        name: unit
+        populated_from: oxygen_reduction_potential_orp_measurement_unit
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=oxygen_reduction_potential_orp_measurement_method-oxygen_reduction_potential_orp_measurement_unit-oxygen_reduction_potential_orp_measurement_value]
+      : populated_from: PHA4GE
+enum_derivations:
+  booleanSet:
+    name: booleanSet
+    mirror_source: false
+    populated_from: QualityControlDeterminationMenu
+    permissible_value_derivations:
+      'True':
+        name: 'True'
+        sources:
+        - no quality control issues identified
+        - sequence passed quality control
+        - minor quality control issues identified
+        - sequence flagged for potential quality control issues
+      'False':
+        name: 'False'
+        populated_from: sequence failed quality control
+      nr:
+        name: nr
+        populated_from: quality control not performed
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  ODMv2_enum_from_OxygenReductionPotentialOrpMeasurementUnitMenu:
+    name: ODMv2_enum_from_OxygenReductionPotentialOrpMeasurementUnitMenu
+    mirror_source: false
+    populated_from: OxygenReductionPotentialOrpMeasurementUnitMenu
+    permissible_value_derivations:
+      mvolt:
+        name: mvolt
+        populated_from: milliVolt (mV) [UO:0000247]

@@ -1,0 +1,23 @@
+class_derivations:
+  protocols[000,0000=alkalinity_measurement_method-experimental_protocol_field]:
+    name: protocols[000,0000=alkalinity_measurement_method-experimental_protocol_field]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      name:
+        name: name
+        populated_from: experimental_protocol_field
+      protocolID:
+        name: protocolID
+        populated_from: alkalinity_measurement_method
+      notes:
+        name: notes
+        expr: '''alkalinity measurement method'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocols[000,0000=alkalinity_measurement_method-experimental_protocol_field]:
+        populated_from: PHA4GE
+enum_derivations: {}

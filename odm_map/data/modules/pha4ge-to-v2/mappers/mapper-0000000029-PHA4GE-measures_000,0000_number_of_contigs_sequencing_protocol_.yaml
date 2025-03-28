@@ -1,0 +1,69 @@
+class_derivations:
+  measures[000,0000=number_of_contigs-sequencing_protocol]:
+    name: measures[000,0000=number_of_contigs-sequencing_protocol]
+    populated_from: PHA4GE
+    slot_derivations:
+      reportable:
+        name: reportable
+        populated_from: quality_control_determination
+      siteID:
+        name: siteID
+        populated_from: sampling_site_id
+      aDateStart:
+        name: aDateStart
+        populated_from: sample_processing_date
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sequencing_date
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_sampleID_tag:
+        name: _extra_sampleID_tag
+        expr: '"specimen collector sample ID"'
+      protocolID:
+        name: protocolID
+        populated_from: sequencing_protocol
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''nContig'''
+      value:
+        name: value
+        populated_from: number_of_contigs
+      unit:
+        name: unit
+        expr: '''unitless'''
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=number_of_contigs-sequencing_protocol]:
+        populated_from: PHA4GE
+enum_derivations:
+  booleanSet:
+    name: booleanSet
+    mirror_source: false
+    populated_from: QualityControlDeterminationMenu
+    permissible_value_derivations:
+      'True':
+        name: 'True'
+        sources:
+        - no quality control issues identified
+        - sequence passed quality control
+        - minor quality control issues identified
+        - sequence flagged for potential quality control issues
+      'False':
+        name: 'False'
+        populated_from: sequence failed quality control
+      nr:
+        name: nr
+        populated_from: quality control not performed
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

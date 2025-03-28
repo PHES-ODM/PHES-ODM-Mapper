@@ -1,0 +1,23 @@
+class_derivations:
+  protocols[000,0000=experimental_protocol_field-total_daily_flow_rate_measurement_method]:
+    name: protocols[000,0000=experimental_protocol_field-total_daily_flow_rate_measurement_method]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      name:
+        name: name
+        populated_from: experimental_protocol_field
+      protocolID:
+        name: protocolID
+        populated_from: total_daily_flow_rate_measurement_method
+      notes:
+        name: notes
+        expr: '''total daily flow rate measurement method'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocols[000,0000=experimental_protocol_field-total_daily_flow_rate_measurement_method]:
+        populated_from: PHA4GE
+enum_derivations: {}

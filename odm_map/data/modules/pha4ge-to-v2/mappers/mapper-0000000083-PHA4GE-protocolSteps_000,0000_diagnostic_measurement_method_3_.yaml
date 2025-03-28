@@ -1,0 +1,35 @@
+class_derivations:
+  protocolSteps[000,0000=diagnostic_measurement_method_3]:
+    name: protocolSteps[000,0000=diagnostic_measurement_method_3]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_protocolRelationships_containerProtocolID:
+        name: _extra_protocolRelationships_containerProtocolID
+        expr: '''artificial_diagnosticProtocol3'''
+      method:
+        name: method
+        expr: '''pcrmeth'''
+      value:
+        name: value
+        populated_from: diagnostic_measurement_method_3
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=diagnostic_measurement_method_3]:
+        populated_from: PHA4GE
+enum_derivations:
+  ODMv2_enum_from_DiagnosticMeasurementMethodMenu:
+    name: ODMv2_enum_from_DiagnosticMeasurementMethodMenu
+    mirror_source: false
+    populated_from: DiagnosticMeasurementMethodMenu
+    permissible_value_derivations:
+      ? ''
+      : name: ''
+        sources:
+        - Quantitative real time polymerase chain reaction (qPCR) [OBI:0000893]
+        - Digital real time polymerase chain reaction (dPCR)
+        - Bacteria culture test
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

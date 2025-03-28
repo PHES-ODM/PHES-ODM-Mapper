@@ -1,0 +1,17 @@
+class_derivations:
+  datasets[000,0000=specimen_collector_project_id]:
+    name: datasets[000,0000=specimen_collector_project_id]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '''specimen collector project ID'''
+      datasetID:
+        name: datasetID
+        populated_from: specimen_collector_project_id
+  Container:
+    name: Container
+    slot_derivations:
+      datasets[000,0000=specimen_collector_project_id]:
+        populated_from: PHA4GE
+enum_derivations: {}

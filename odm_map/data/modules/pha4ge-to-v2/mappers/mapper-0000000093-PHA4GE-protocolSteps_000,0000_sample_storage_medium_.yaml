@@ -1,0 +1,20 @@
+class_derivations:
+  protocolSteps[000,0000=sample_storage_medium]:
+    name: protocolSteps[000,0000=sample_storage_medium]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_protocolRelationships_containerProtocolID:
+        name: _extra_protocolRelationships_containerProtocolID
+        expr: '''artificial_specimenProcessProtocol'''
+      method:
+        name: method
+        expr: '''stoMed'''
+      value:
+        name: value
+        populated_from: sample_storage_medium
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=sample_storage_medium]:
+        populated_from: PHA4GE
+enum_derivations: {}

@@ -1,0 +1,36 @@
+class_derivations:
+  contacts[000,0000=sequenced_by-sequenced_by_contact_email]:
+    name: contacts[000,0000=sequenced_by-sequenced_by_contact_email]
+    populated_from: PHA4GE
+    slot_derivations:
+      organizationID:
+        name: organizationID
+        populated_from: sequenced_by
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sequenced by'''
+      email:
+        name: email
+        populated_from: sequenced_by_contact_email
+      firstName:
+        name: firstName
+        expr: "def get_name(full_name, get_first):\n    if not full_name:\n      \
+          \  return \"\"\n    names = full_name.strip().rsplit(\" \", 1)\n    idx\
+          \ = 0 if get_first else 1\n    return names[idx] if len(names) > idx else\
+          \ \"\"\ntarget = get_name(src.sequenced_by_contact_name, True)"
+      lastName:
+        name: lastName
+        expr: "def get_name(full_name, get_first):\n    if not full_name:\n      \
+          \  return \"\"\n    names = full_name.strip().rsplit(\" \", 1)\n    idx\
+          \ = 0 if get_first else 1\n    return names[idx] if len(names) > idx else\
+          \ \"\"\ntarget = get_name(src.sequenced_by_contact_name, False)"
+  Container:
+    name: Container
+    slot_derivations:
+      contacts[000,0000=sequenced_by-sequenced_by_contact_email]:
+        populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

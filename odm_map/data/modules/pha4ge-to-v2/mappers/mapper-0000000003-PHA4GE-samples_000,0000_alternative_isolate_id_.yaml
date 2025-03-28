@@ -1,0 +1,165 @@
+class_derivations:
+  samples[000,0000=alternative_isolate_id]:
+    name: samples[000,0000=alternative_isolate_id]
+    populated_from: PHA4GE
+    slot_derivations:
+      collType:
+        name: collType
+        expr: "if len([d for d in emap.collection_device if len(d) > 0]):\n    target\
+          \ = emap.collection_device\nelse:\n    target = emap.collection_method\n\
+          # case((collection_device != \"\", collection_device), (True, collection_method))"
+      saMaterial:
+        name: saMaterial
+        populated_from: environmental_material
+      repType:
+        name: repType
+        populated_from: experimental_specimen_role_type
+      organizationID:
+        name: organizationID
+        populated_from: sample_collected_by
+      collDT:
+        name: collDT
+        expr: sample_collection_start_date + '/!/' + sample_collection_start_time
+          + '/!/'
+      collDTEnd:
+        name: collDTEnd
+        expr: sample_collection_end_date + '/!/' + sample_collection_end_time + '/!/'
+      collDTStart:
+        name: collDTStart
+        expr: sample_collection_start_date + '/!/' + sample_collection_start_time
+          + '/!/'
+      recDate:
+        name: recDate
+        populated_from: sample_received_date
+      _extra_sampleID_tag:
+        name: _extra_sampleID_tag
+        expr: '''alternative isolate ID'''
+      sampleID:
+        name: sampleID
+        populated_from: alternative_isolate_id
+  Container:
+    name: Container
+    slot_derivations:
+      samples[000,0000=alternative_isolate_id]:
+        populated_from: PHA4GE
+enum_derivations:
+  ODMv2_enum_from_CollectionDeviceMenu:
+    name: ODMv2_enum_from_CollectionDeviceMenu
+    mirror_source: false
+    populated_from: CollectionDeviceMenu
+    permissible_value_derivations:
+      grb:
+        name: grb
+        populated_from: Grab sampler [GENEPIO:0100941]
+      core:
+        name: core
+        populated_from: Core sampling device [GENEPIO:0100943]
+      vac:
+        name: vac
+        populated_from: Vacuum sludge sampling device [GENEPIO:0100944]
+      one:
+        name: one
+        populated_from: Cone-shaped sampling device [GENEPIO:0100945]
+      horGrb:
+        name: horGrb
+        populated_from: Horizontal grab sampling device [GENEPIO:0100946]
+      vertGrb:
+        name: vertGrb
+        populated_from: Vertical grab sampling device [GENEPIO:0100947]
+      comp:
+        name: comp
+        populated_from: Composite sampler [GENEPIO:0100942]
+      trap:
+        name: trap
+        populated_from: Passive (trap) sampler [GENEPIO:0100948]
+      moorSw:
+        name: moorSw
+        populated_from: Moore swab [GENEPIO:0100949]
+      autoComp:
+        name: autoComp
+        populated_from: Automatic composite sampler [GENEPIO:0100950]
+      flowPr:
+        name: flowPr
+        populated_from: Automatic flow-proportional sampler [GENEPIO:0100951]
+      autoSeq:
+        name: autoSeq
+        populated_from: Automatic sequential (time-proportional) sampler [GENEPIO:0100952]
+      bagFilt:
+        name: bagFilt
+        populated_from: Bag filtration device [GENEPIO:0102027]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
+  ODMv2_enum_from_CollectionMethodMenu:
+    name: ODMv2_enum_from_CollectionMethodMenu
+    mirror_source: false
+    populated_from: CollectionMethodMenu
+    permissible_value_derivations:
+      grb:
+        name: grb
+        populated_from: Grab sampling [GENEPIO:0100953]
+      comp:
+        name: comp
+        populated_from: Composite sampling [GENEPIO:0100954]
+      passiveGen:
+        name: passiveGen
+        populated_from: Passive composite sampling [GENEPIO:0100955]
+      autoComp:
+        name: autoComp
+        populated_from: Automatic composite sampling [GENEPIO:0100956]
+      manComp:
+        name: manComp
+        populated_from: Manual composite sampling [GENEPIO:0100957]
+      bagFilt:
+        name: bagFilt
+        populated_from: Bag Mediated Filtration [GENEPIO:0102028]
+  ODMv2_enum_from_EnvironmentalMaterialMenu:
+    name: ODMv2_enum_from_EnvironmentalMaterialMenu
+    mirror_source: false
+    populated_from: EnvironmentalMaterialMenu
+    permissible_value_derivations:
+      nww:
+        name: nww
+        populated_from: Surface water [ENVO:00002042]
+      rawWW:
+        name: rawWW
+        populated_from: Wastewater [ENVO:00002001]
+      swrSed:
+        name: swrSed
+        populated_from: Wastewater sediment [ENVO:03501456]
+      sludgeNS:
+        name: sludgeNS
+        populated_from: Sludge [ENVO:00002044]
+      pSludge:
+        name: pSludge
+        populated_from: Primary sludge [ENVO:00002057]
+      sSludge:
+        name: sSludge
+        populated_from: Secondary sludge [ENVO:00002058]
+      effluNS:
+        name: effluNS
+        populated_from: Wastewater effluent [ENVO:03501457]
+      pEfflu:
+        name: pEfflu
+        populated_from: Primary wastewater effluent [GENEPIO:0100892]
+      sEfflu:
+        name: sEfflu
+        populated_from: Secondary wastewater effluent [GENEPIO:0100893]
+  ODMv2_enum_from_ExperimentalSpecimenRoleTypeMenu:
+    name: ODMv2_enum_from_ExperimentalSpecimenRoleTypeMenu
+    mirror_source: false
+    populated_from: ExperimentalSpecimenRoleTypeMenu
+    permissible_value_derivations:
+      posCon:
+        name: posCon
+        populated_from: Positive experimental control [GENEPIO:0101018]
+      negCon:
+        name: negCon
+        populated_from: Negative experimental control [GENEPIO:0101019]
+      techRep:
+        name: techRep
+        populated_from: Technical replicate [EFO:0002090]
+      bioRep:
+        name: bioRep
+        populated_from: Biological replicate [EFO:0002091]

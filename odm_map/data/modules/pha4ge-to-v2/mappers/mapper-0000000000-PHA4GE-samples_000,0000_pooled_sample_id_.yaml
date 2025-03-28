@@ -31,8 +31,8 @@ class_derivations:
       recDate:
         name: recDate
         populated_from: sample_received_date
-      _extra_sampleID:
-        name: _extra_sampleID
+      _extra_sampleID_tag:
+        name: _extra_sampleID_tag
         expr: '''pooled sample ID'''
       sampleID:
         name: sampleID
@@ -87,6 +87,9 @@ enum_derivations:
       autoSeq:
         name: autoSeq
         populated_from: Automatic sequential (time-proportional) sampler [GENEPIO:0100952]
+      bagFilt:
+        name: bagFilt
+        populated_from: Bag filtration device [GENEPIO:0102027]
   NullValueMenu[=mirrored=]:
     name: NullValueMenu[=mirrored=]
     mirror_source: true
@@ -111,6 +114,9 @@ enum_derivations:
       manComp:
         name: manComp
         populated_from: Manual composite sampling [GENEPIO:0100957]
+      bagFilt:
+        name: bagFilt
+        populated_from: Bag Mediated Filtration [GENEPIO:0102028]
   ODMv2_enum_from_EnvironmentalMaterialMenu:
     name: ODMv2_enum_from_EnvironmentalMaterialMenu
     mirror_source: false
