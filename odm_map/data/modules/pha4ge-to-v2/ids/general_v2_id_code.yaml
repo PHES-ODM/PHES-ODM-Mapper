@@ -18,11 +18,32 @@ primary_keys:
 class_linkages:
   measures:
     samples:
-      source_slot: ["(__source_file_and_row__)", "_extra_sampleID"]
-      target_slot: ["(__source_file_and_row__)", "_extra_sampleID"]
+      source_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
     datasets:
-      source_slot: ["(__source_file_and_row__)", "_extra_datasetID"]
-      target_slot: ["(__source_file_and_row__)", "_extra_datasetID"]
+      source_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
+  protocols:
+    datasets:
+      source_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
+  contacts:
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+
+named_class_linkages:
+  sampleRelationships_to_samples_subject:
+    sampleRelationships:
+      samples:
+        source_slot: ["(__source_file_and_row__)", "_extra_sampleIDSubject_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+  sampleRelationships_to_samples_object:
+    sampleRelationships:
+      samples:
+        source_slot: ["(__source_file_and_row__)", "_extra_sampleIDObject_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+
 
 # Class linkages determines how to link a row in one table to a row in another table. We match the value
 # in the source slot of the source row to the target slot in the target row.
