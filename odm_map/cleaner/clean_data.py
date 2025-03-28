@@ -160,8 +160,8 @@ class DataCleaner(object):
                         val = re.sub("[^A-Za-z0-9]", "_", val)
                     if option == "single_underscores":
                         val = re.sub("__+", "_", val)
-                    if option == "trim_underscores":
-                        val = val.strip("_")
+                    if option == "trim_trailing_underscores":
+                        val = val.rstrip("_")
                     if option == "trim_whitespace":
                         val = re.sub(r"^\s*", "", val)
                         val = re.sub(r"\s*$", "", val)
@@ -546,7 +546,7 @@ class DataCleaner(object):
                                 "alpha_numeric_underscore": Replace non alpha-numeric values with underscores.
                                 "single_underscores": Replace double (or more) underscores (eg. __, ___) with single underscores
                                 "trim_whitespace": Remove leading and trailing whitespace.
-                                "trim_underscores": Remove leading and trailing underscores.
+                                "trim_trailing_underscores": Remove trailing underscores.
                                 "remove_chars": Remove all the specified characters. This should be specified as either a JSON/YAML
                                     string or as a dictionary of the form { "remove_chars": "abc" } where "abc" contains all the
                                     characters to remove (ie. "a", "b", and "c" will be removed).

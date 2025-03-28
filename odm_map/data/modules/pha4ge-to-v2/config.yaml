@@ -7,7 +7,7 @@ steps:
     params:
       schema: schemas/pha4ge.yaml
       operations:
-        - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_underscores ]
+        - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
         - add_ontology_ids_to_enums: True
         - correct_enums: True
         - remove_unknown_columns: True

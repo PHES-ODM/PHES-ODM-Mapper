@@ -115,7 +115,7 @@ Example:
   params:
     schema: schemas/nwss_reporting.yaml
     operations:
-      - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_underscores ]
+      - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
       - add_ontology_ids_to_enums: True
       - correct_enums: True
       - remove_unknown_columns: True
@@ -160,7 +160,7 @@ Format the column names of the DataFrame.
 
 ```yaml
 operations:
-  - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_underscores ]
+  - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
 ```
 
 The value is a list of formatting operations to perform:
@@ -171,8 +171,8 @@ The value is a list of formatting operations to perform:
   underscore.
 - **single_underscores**: Replace any sequence of multiple underscores to a
   single underscore (eg. "column__name" becomes "column_name")
-- **trim_underscores**: Remove all leading and trailing underscores (eg.
-  "_column_name__" becomes "column_name")
+- **trim_trailing_underscores**: Remove all trailing underscores (eg.
+  "_column_name__" becomes "_column_name")
 - **{ remove_chars: "chars" }**: Remove all characters found in the string
   "chars" in the column names.
 
