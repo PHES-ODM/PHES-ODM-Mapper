@@ -28,6 +28,7 @@ from odm_map.id_generator.id_function_bindings import FunctionBindings
 from odm_map.id_generator.id_data_bindings import DataBindings
 from odm_map.id_generator.generator_data import GeneratorData, IDValue
 from odm_map.id_generator.id_na import isna, EMPTY_OBJ
+from odm_map.id_generator.generator_config_keys import ConfigKeys
 
 PREPARING_BARID = "Preparing IDS"
 TOTAL_IDS_TITLE = "TOTAL IDs"
@@ -61,12 +62,6 @@ class LinkageKeys:
 MAKE_ROW_INDEX_LOOKUPS = {
     "*": [TrackingSlots.SOURCE_FILE_AND_ROW],
 }
-
-
-# Keys found in the YAML config file
-class ConfigKeys:
-    PRIMARY_KEYS = "primary_keys"
-    CLASS_LINKAGES = "class_linkages"
 
 
 class IDGenerator(object):
