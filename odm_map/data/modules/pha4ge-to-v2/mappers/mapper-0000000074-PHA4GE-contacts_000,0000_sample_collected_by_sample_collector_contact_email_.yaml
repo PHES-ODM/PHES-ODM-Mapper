@@ -1,0 +1,39 @@
+class_derivations:
+  contacts[000,0000=sample_collected_by-sample_collector_contact_email]:
+    name: contacts[000,0000=sample_collected_by-sample_collector_contact_email]
+    populated_from: PHA4GE
+    slot_derivations:
+      organizationID:
+        name: organizationID
+        populated_from: sample_collected_by
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sample collected by'''
+      email:
+        name: email
+        populated_from: sample_collector_contact_email
+      firstName:
+        name: firstName
+        expr: "def get_name(full_name, get_first):\n    if not full_name:\n      \
+          \  return \"\"\n    names = full_name.strip().rsplit(\" \", 1)\n    idx\
+          \ = 0 if get_first else 1\n    return names[idx] if len(names) > idx else\
+          \ \"\"\ntarget = get_name(src.sample_collection_data_steward_name, True)"
+      lastName:
+        name: lastName
+        expr: "def get_name(full_name, get_first):\n    if not full_name:\n      \
+          \  return \"\"\n    names = full_name.strip().rsplit(\" \", 1)\n    idx\
+          \ = 0 if get_first else 1\n    return names[idx] if len(names) > idx else\
+          \ \"\"\ntarget = get_name(src.sample_collection_data_steward_name, False)"
+  Container:
+    name: Container
+    slot_derivations:
+      contacts[000,0000=sample_collected_by-sample_collector_contact_email]:
+        populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

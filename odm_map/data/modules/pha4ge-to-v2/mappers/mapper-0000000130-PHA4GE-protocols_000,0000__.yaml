@@ -8,10 +8,10 @@ class_derivations:
         expr: '"specimen collector project ID"'
       name:
         name: name
-        expr: '''Serotyping Method'''
+        expr: '''Genomic Target Enrichment Method'''
       protocolID:
         name: protocolID
-        expr: '''artificial_serotypeProtocol'''
+        expr: '''artificial_genEnrichProtocol'''
       notes:
         name: notes
         expr: '''articifical protocol container for capturing protocolSteps that link

@@ -8,10 +8,10 @@ class_derivations:
         expr: '"specimen collector project ID"'
       name:
         name: name
-        expr: '''Genomic Target Enrichment Method'''
+        expr: '''Protocol for Human Population Size Ascertainment'''
       protocolID:
         name: protocolID
-        expr: '''artificial_genEnrichProtocol'''
+        expr: '''artificial_humanPopProtocol'''
       notes:
         name: notes
         expr: '''articifical protocol container for capturing protocolSteps that link

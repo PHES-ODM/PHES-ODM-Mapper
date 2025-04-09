@@ -8,10 +8,10 @@ class_derivations:
         expr: '"specimen collector project ID"'
       name:
         name: name
-        expr: '''Diagnostic Measurement Method'''
+        expr: '''PCR Primer Used for Protocol'''
       protocolID:
         name: protocolID
-        expr: '''artificial_diagnosticProtocol3'''
+        expr: '''artificial_pcrPrimerProtocol'''
       notes:
         name: notes
         expr: '''articifical protocol container for capturing protocolSteps that link

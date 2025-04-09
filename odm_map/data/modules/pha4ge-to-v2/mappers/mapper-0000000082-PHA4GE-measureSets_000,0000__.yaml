@@ -1,0 +1,14 @@
+class_derivations:
+  measureSets[000,0000=]:
+    name: measureSets[000,0000=]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_measureSetRepID_tag:
+        name: _extra_measureSetRepID_tag
+        expr: '''bioinformatics and qc metrics'''
+  Container:
+    name: Container
+    slot_derivations:
+      measureSets[000,0000=]:
+        populated_from: PHA4GE
+enum_derivations: {}

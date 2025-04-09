@@ -21,6 +21,15 @@ class_derivations:
       _extra_sampleID_tag:
         name: _extra_sampleID_tag
         expr: '"specimen collector sample ID"'
+      _extra_measureRepID_tag:
+        name: _extra_measureRepID_tag
+        expr: '""'
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sample collected by'''
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
       protocolID:
         name: protocolID
         populated_from: total_daily_flow_rate_measurement_method
@@ -53,16 +62,16 @@ enum_derivations:
       'True':
         name: 'True'
         sources:
-        - no quality control issues identified
-        - sequence passed quality control
-        - minor quality control issues identified
-        - sequence flagged for potential quality control issues
+        - No quality control issues identified [GENEPIO:0100562]
+        - Sequence passed quality control [GENEPIO:0100563]
+        - Minor quality control issues identified [GENEPIO:0100565]
+        - Sequence flagged for potential quality control issues [GENEPIO:0100566]
       'False':
         name: 'False'
-        populated_from: sequence failed quality control
+        populated_from: Sequence failed quality control [GENEPIO:0100564]
       nr:
         name: nr
-        populated_from: quality control not performed
+        populated_from: Quality control not performed [GENEPIO:0100567]
   NullValueMenu[=mirrored=]:
     name: NullValueMenu[=mirrored=]
     mirror_source: true

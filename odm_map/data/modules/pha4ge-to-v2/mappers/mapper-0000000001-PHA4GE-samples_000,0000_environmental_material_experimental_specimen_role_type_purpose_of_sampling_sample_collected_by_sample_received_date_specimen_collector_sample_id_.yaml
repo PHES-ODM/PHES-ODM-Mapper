@@ -29,6 +29,12 @@ class_derivations:
       recDate:
         name: recDate
         populated_from: sample_received_date
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sample collected by'''
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
       _extra_sampleID_tag:
         name: _extra_sampleID_tag
         expr: '''specimen collector sample ID'''

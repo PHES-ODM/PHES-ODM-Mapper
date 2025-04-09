@@ -1,0 +1,29 @@
+class_derivations:
+  protocols[000,0000=experimental_protocol_field]:
+    name: protocols[000,0000=experimental_protocol_field]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sample collected by'''
+      name:
+        name: name
+        populated_from: experimental_protocol_field
+      protocolID:
+        name: protocolID
+        expr: '''{{total suspended solids (TSS) measurement method}'''
+      notes:
+        name: notes
+        expr: '''total suspended solids (TSS) measurement method'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocols[000,0000=experimental_protocol_field]:
+        populated_from: PHA4GE
+enum_derivations: {}
