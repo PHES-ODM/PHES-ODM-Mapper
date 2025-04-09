@@ -7,7 +7,7 @@ For example:
     fn.datetimetz(["2024-09-13", "12:15:15 pm", "UTC-04:00"])
 """
 
-from typing import Any, List
+from typing import Any, List, Union, Dict
 import datetime
 import dateutil.parser
 import pytz
@@ -92,6 +92,11 @@ class FunctionBindings:
         # required)
         args = [v.unindexed_value if isinstance(v, IDValue) else v for v in args]
         # args = [str(v).replace(" ", "") for v in args]
+        # Implode arrays to strings
+        args = [
+            "".join([str(s) for s in v]) if isinstance(v, list) else str(v)
+            for v in args
+        ]
         args = [re.sub("[^A-Za-z0-9]", "_", str(v)) for v in args]
         args = [v for v in args if len(v)]
         # Make first character of each element uppercase. The first element has a first character that is
@@ -191,7 +196,7 @@ class FunctionBindings:
                     elif fmt == "dateutil":
                         date_obj = dateutil.parser.parse(val)
                     elif fmt == "dateutil_date":
-                        # dateutil.parser.parse defaults to today's month, day, or year if there is no 
+                        # dateutil.parser.parse defaults to today's month, day, or year if there is no
                         # month, day, or year in the string val. We want an error if no date is in val, so
                         # we create two date_objs: If no date is specified for val, then date_obj gets the
                         # date 2000-1-1 and other_date_obj gets the date 2001-2-2. Therefore if the day, month,
@@ -280,19 +285,34 @@ class FunctionBindings:
         v = dt.strftime(output_format)
         return v
 
-    def countrows(self, class_name: str, slot: str, equals: Any) -> int:
-        """Count number of rows in class class_name where the value in the slot is equal to any value in equals.
+    def countrows(
+        self, class_name: str, linkage_path: Union[str, Dict, List[Dict]] = None
+    ) -> int:
+        """Count number of linked rows (relative to the current class and row) in class class_name. We follow the
+        specified linkage path, or the default linkage path if none is specified.
 
         Args:
             class_name (str): The class to count the rows in.
-            slot (str): The slot in the class where we match to the equals parameter.
-            equals (Any): The value(s) to match. If a list or tuple then we match any of the values in the list. If not a list
-                then we only match the single value.
+            linkage_path (Union[str, Dict, List[Dict]]): The linkage path to follow, which can either be
+                the dictionary or list of linkage paths, or a named linkage path. Named linkage paths are found
+                in the ID generation config file. If None then the default linkage path from the current class
+                to class_name is used, as specified in the config file.
 
         Returns:
-            int: The number of rows in the class where the value in the slot matches equals.
+            int: The number of rows in the class that are linked to the current class and row index.
         """
-        rows = self.generator.data[class_name].get_rows_equal(slot, equals)
+        source_class = self.generator.current_class
+        source_index = self.generator.current_row_index
+
+        rows = self.generator.get_linked_rows(
+            source_class,
+            source_index,
+            class_name,
+            max_rows=None,
+            linkage_path=linkage_path,
+            return_indices=False,
+        )
+
         return len(rows) if rows is not None else 0
 
     def datetimeparse(self, d, ignoretz=True) -> Any:
