@@ -251,12 +251,18 @@ class IDGenerator(object):
             # Rename the SOURCE_SLOT and TARGET_SLOT so that they point to the columns where the original
             # values for the slots are stored. This applies only to generated slots (ie. that need to be generated
             # through ID code).
-            linkage[LinkageKeys.SOURCE_SLOT] = self.data[
-                source_class
-            ].make_orig_slot_names_if_generated_slots(linkage[LinkageKeys.SOURCE_SLOT])
-            linkage[LinkageKeys.TARGET_SLOT] = self.data[
-                target_class
-            ].make_orig_slot_names_if_generated_slots(linkage[LinkageKeys.TARGET_SLOT])
+            if source_class in self.data:
+                linkage[LinkageKeys.SOURCE_SLOT] = self.data[
+                    source_class
+                ].make_orig_slot_names_if_generated_slots(
+                    linkage[LinkageKeys.SOURCE_SLOT]
+                )
+            if target_class in self.data:
+                linkage[LinkageKeys.TARGET_SLOT] = self.data[
+                    target_class
+                ].make_orig_slot_names_if_generated_slots(
+                    linkage[LinkageKeys.TARGET_SLOT]
+                )
 
             prev_class = linkage[LinkageKeys.TARGET_CLASS]
 
@@ -274,6 +280,7 @@ class IDGenerator(object):
         if not id_code_files:
             return
 
+        # Load all code files and concatenate them into one DataFrame
         id_code_df = []
         for cur_id_code_file in id_code_files:
             id_code_file = cur_id_code_file.get("id_code_file")
@@ -301,13 +308,19 @@ class IDGenerator(object):
         }
         id_code_df.columns = [code_columns_map.get(c, c) for c in id_code_df.columns]
 
-        # Drop code columns where either the class or slot are empty, or where all code columns are empty
+        # Drop rows where either the class or slot are empty
         id_code_df = id_code_df.dropna(
             subset=[IDCodeColumns.CLASS, IDCodeColumns.SLOT], axis=0, how="any"
         )
+        # Drop rows where all code columns are empty
         id_code_df = id_code_df.dropna(
             subset=code_columns_map.values(), axis=0, how="all"
         )
+        # Drop duplicates where the class and slot are equal, keeping the last duplicate only
+        id_code_df = id_code_df.drop_duplicates(
+            subset=[IDCodeColumns.CLASS, IDCodeColumns.SLOT], keep="last"
+        )
+
         self.id_code_df = id_code_df
 
     def get_all_generated_slots_from_id_code(self):
