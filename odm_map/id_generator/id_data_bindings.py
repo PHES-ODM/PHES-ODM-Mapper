@@ -84,6 +84,28 @@ class DataBindings:
     def get(self, name) -> Any:
         return self.__getattr__(name)
 
+    def get_named_linkage_path(self, source_class: str, linkage_path_name: str):
+        named_class_linkages = self.generator.config.get(
+            ConfigKeys.NAMED_CLASS_LINKAGES
+        )
+        if named_class_linkages is None:
+            raise ValueError(
+                f"Named linkage path '{linkage_path_name}' specified for get_first_linked_value, but no named linkage paths specified in config file"
+            )
+        named_class_linkage = named_class_linkages.get(linkage_path_name)
+        if named_class_linkage is None:
+            raise ValueError(
+                f"Named linkage path '{linkage_path_name}' does not exist in config file"
+            )
+        linkage_path = named_class_linkage.get(source_class, {}).get(
+            self.root_class, {}
+        )
+        if not linkage_path:
+            raise ValueError(
+                f"Named linkage path '{linkage_path}' exists but no path from soure class '{source_class}' to target class '{self.root_class}' in config file"
+            )
+        return linkage_path
+
     def get_first_linked_value(
         self, target_slot: str, linkage_path: Union[str, Dict, List[Dict]] = None
     ) -> Any:
@@ -95,26 +117,7 @@ class DataBindings:
         source_index = self.generator.current_row_index
 
         if isinstance(linkage_path, str):
-            named_class_linkages = self.generator.config.get(
-                ConfigKeys.NAMED_CLASS_LINKAGES
-            )
-            if named_class_linkages is None:
-                raise ValueError(
-                    f"Named linkage path '{linkage_path}' specified for get_first_linked_value, but no named linkage paths specified in config file"
-                )
-            named_class_linkage = named_class_linkages.get(linkage_path)
-            if named_class_linkage is None:
-                raise ValueError(
-                    f"Named linkage path '{linkage_path}' does not exist in config file"
-                )
-            new_linkage_path = named_class_linkage.get(source_class, {}).get(
-                self.root_class, {}
-            )
-            if not new_linkage_path:
-                raise ValueError(
-                    f"Named linkage path '{new_linkage_path}' exists but no path from soure class '{source_class}' to target class '{self.root_class}' in config file"
-                )
-            linkage_path = new_linkage_path
+            linkage_path = self.get_named_linkage_path(source_class, linkage_path)
 
         v = self.generator.get_first_linked_value(
             source_class,
@@ -129,9 +132,17 @@ class DataBindings:
             if int(v) == v:
                 v = int(v)
 
+        def _is_empty(v: Any) -> bool:
+            if isna(v) or v == "":
+                return True
+            if isinstance(v, list):
+                v = [s for s in v if not _is_empty(s)]
+                return len(v) == 0
+            return False
+
         # Replace empty values
         if self.replace_empty_values:
-            if isna(v) or v == "":
+            if _is_empty(v):
                 v = EMPTY_VALUE
         else:
             if isna(v):
