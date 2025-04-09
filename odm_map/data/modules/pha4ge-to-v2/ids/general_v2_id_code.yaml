@@ -64,7 +64,7 @@ class_linkages:
     contacts:
       source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
       target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
-    instrument:
+    instruments:
       source_slot: ["(__source_file_and_row__)", "_extra_instrumentID_tag"]
       target_slot: ["(__source_file_and_row__)", "_extra_instrumentID_tag"]
   samples:
