@@ -97,7 +97,7 @@ class FunctionBindings:
             "".join([str(s) for s in v]) if isinstance(v, list) else str(v)
             for v in args
         ]
-        args = [re.sub("[^A-Za-z0-9]", "_", str(v)) for v in args]
+        args = [re.sub("[^A-Za-z0-9]+", "_", str(v)) for v in args]
         args = [v for v in args if len(v)]
         # Make first character of each element uppercase. The first element has a first character that is
         # lowercase unless firstcap is True (in which case we uppercase it)
