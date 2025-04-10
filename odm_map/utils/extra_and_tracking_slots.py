@@ -73,9 +73,35 @@ def is_extra_or_tracking_slot(c: str) -> bool:
     Returns:
         bool: True if c is a tracking slot, False otherwise.
     """
-    return (
-        c.startswith(TRACKING_SLOT_PREFIX) and c.endswith(TRACKING_SLOT_SUFFIX)
-    ) or (c.startswith(EXTRA_SLOT_PREFIX) and c.endswith(EXTRA_SLOT_SUFFIX))
+    return is_extra_slot(c) or is_tracking_slot(c)
+
+
+def is_extra_slot(c: str) -> bool:
+    """Determine if the column is an extra slot. extra slots are all slots that start with EXTRA_SLOT_PREFIX
+    and end with EXTRA_SLOT_SUFFIX. They can contain any values that we may need downstream of mapping,
+    where the mapping that defines their contents are specified in the LinkML mapping files.
+
+    Args:
+        c (str): The slot to test.
+
+    Returns:
+        bool: True if c is an extra slot.
+    """
+    return c.startswith(EXTRA_SLOT_PREFIX) and c.endswith(EXTRA_SLOT_SUFFIX)
+
+
+def is_tracking_slot(c: str) -> bool:
+    """Determine if the column is a tracking slot. Tracking slots are all slots that start with
+    TRACKING_SLOT_PREFIX and end with TRACKING_SLOT_SUFFIX. They define which rows/columns in the
+    source dataset that was used to generate a row in the target dataset.
+
+    Args:
+        c (str): The column to test.
+
+    Returns:
+        bool: True if c is a tracking slot.
+    """
+    return c.startswith(TRACKING_SLOT_PREFIX) and c.endswith(TRACKING_SLOT_SUFFIX)
 
 
 def drop_extra_and_tracking_slots(df: pd.DataFrame) -> pd.DataFrame:
