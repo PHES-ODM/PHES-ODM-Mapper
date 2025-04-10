@@ -6,6 +6,9 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: sequenced_by
+      notes:
+        name: notes
+        expr: '''sequenced by'''
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
         expr: '''sequenced by'''

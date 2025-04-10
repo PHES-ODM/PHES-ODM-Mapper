@@ -15,6 +15,9 @@ class_derivations:
       email:
         name: email
         populated_from: sample_collector_contact_email
+      notes:
+        name: notes
+        expr: '''sample collected by'''
       firstName:
         name: firstName
         expr: "def get_name(full_name, get_first):\n    if not full_name:\n      \

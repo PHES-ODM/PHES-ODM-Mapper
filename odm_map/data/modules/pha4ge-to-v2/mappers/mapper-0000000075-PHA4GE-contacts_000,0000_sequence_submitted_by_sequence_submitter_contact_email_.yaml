@@ -15,6 +15,9 @@ class_derivations:
       email:
         name: email
         populated_from: sequence_submitter_contact_email
+      notes:
+        name: notes
+        expr: '''sequence submitted by'''
   Container:
     name: Container
     slot_derivations:

@@ -6,6 +6,9 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: sample_collected_by
+      notes:
+        name: notes
+        expr: '''sample collected by'''
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
         expr: '''sample collected by'''

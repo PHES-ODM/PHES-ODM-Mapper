@@ -6,6 +6,9 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: sequence_submitted_by
+      notes:
+        name: notes
+        expr: '''sequence submitted by'''
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
         expr: '''sequence submitted by'''

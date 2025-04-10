@@ -15,6 +15,9 @@ class_derivations:
       email:
         name: email
         populated_from: isolated_by_contact_email
+      notes:
+        name: notes
+        expr: '''isolated by'''
       firstName:
         name: firstName
         expr: "def get_name(full_name, get_first):\n    if not full_name:\n      \

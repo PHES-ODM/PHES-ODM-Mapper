@@ -6,6 +6,9 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: isolated_by
+      notes:
+        name: notes
+        expr: '''isolated by'''
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
         expr: '''isolated by'''
