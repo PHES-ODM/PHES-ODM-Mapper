@@ -14,3 +14,8 @@ inputFilter,outputFilter,class,slot,operation,value
 2,2,protocolSteps,method,exclude_equals,<ignore>
 2,2,protocolSteps,value,exclude_equals,
 2,,protocolSteps,,apply_filter,protocolSteps
+,,,,,
+,3,sampleRelationships,,create_filter,TRUE
+3,3,sampleRelationships,sampleIDSubject,exclude_equals,
+3,3,sampleRelationships,sampleIDObject,exclude_equals,
+3,,sampleRelationships,,apply_filter,sampleRelationships
