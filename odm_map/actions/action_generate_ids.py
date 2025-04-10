@@ -42,7 +42,7 @@ def action_generate_ids(
         multi_bar_progress=multi_bar_progress,
     )
     return gen.run_generator(
-        keep_tracking_columns=True,
+        keep_extra_and_tracking_columns=True,
         keep_debug_columns=debug_mode,
         remove_duplicates=not debug_mode,
     )
