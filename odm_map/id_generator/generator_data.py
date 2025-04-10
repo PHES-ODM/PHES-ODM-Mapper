@@ -33,7 +33,11 @@ from odm_map.id_generator.id_value import IDValue
 from odm_map.id_generator.id_na import EMPTY_OBJ, isna
 
 from odm_map.utils.logger import get_logger
-from odm_map.utils.extra_and_tracking_slots import is_extra_or_tracking_slot
+from odm_map.utils.extra_and_tracking_slots import (
+    is_extra_or_tracking_slot,
+    is_tracking_slot,
+    is_extra_slot,
+)
 from odm_map.utils.general_utils import (
     read_data_frame,
     save_data_frame,
@@ -566,7 +570,7 @@ class GeneratorData:
 
     def finalize_data(
         self,
-        keep_tracking_columns: bool,
+        keep_extra_and_tracking_columns: bool,
         keep_debug_columns: bool,
         remove_duplicates: bool,
     ) -> Tuple[Dict[str, List[pd.DataFrame]], int, int, int]:
@@ -574,7 +578,7 @@ class GeneratorData:
         primary key.
 
         Args:
-            keep_tracking_columns (bool): If True then keep the tracking columns in the final output.
+            keep_extra_and_tracking_columns (bool): If True then keep the tracking columns in the final output.
                 The tracking columns indicate which file and row a given output row was populated from.
             keep_debug_columns (bool): If True then keep additional columns for debugging. These are
                 temporary columns that are used for running, such as columns containing the old IDs
@@ -595,12 +599,12 @@ class GeneratorData:
         self.data[self.data == EMPTY_OBJ] = None
         self.df = pd.DataFrame(self.data, columns=self.columns)
 
-        # Keep only requested columns, based on keep_tracking_columns and keep_debug_columns
+        # Keep only requested columns, based on keep_extra_and_tracking_columns and keep_debug_columns
         keep_columns = self.orig_columns.copy()
-        if keep_tracking_columns:
-            keep_columns.extend(
-                [c for c in self.df.columns if is_extra_or_tracking_slot(c)]
-            )
+        if keep_extra_and_tracking_columns:
+            # Put the extra slots first, followed by the tracking slots
+            keep_columns.extend([c for c in self.df.columns if is_extra_slot(c)])
+            keep_columns.extend([c for c in self.df.columns if is_tracking_slot(c)])
         if keep_debug_columns:
             keep_columns.extend(
                 [
@@ -609,6 +613,7 @@ class GeneratorData:
                     if c not in self.orig_columns and not is_extra_or_tracking_slot(c)
                 ]
             )
+
         self.df = self.df[keep_columns]
 
         total_rows = len(self.df)
