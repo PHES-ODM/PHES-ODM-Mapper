@@ -337,15 +337,16 @@ class IDGenerator(object):
 
     def run_generator(
         self,
-        keep_tracking_columns: bool,
+        keep_extra_and_tracking_columns: bool,
         keep_debug_columns: bool,
         remove_duplicates: bool,
     ) -> Dict[str, List[pd.DataFrame]]:
         """Run the generator and retrieve the final DataFrames.
 
         Args:
-            keep_tracking_columns (bool): If True then keep the tracking columns in the final output.
-                The tracking columns indicate which file and row a given output row was populated from.
+            keep_extra_and_tracking_columns (bool): If True then keep the extra and tracking columns in the final output.
+                The tracking columns indicate which file and row a given output row was populated from, extra columns
+                are neither tracking columns or any columns that are part of the target dataset.
             keep_debug_columns (bool): If True then keep additional columns for debugging. These are
                 temporary columns that are used for running, such as columns containing the old IDs
                 before generation was run, the hash column, etc.
@@ -373,7 +374,7 @@ class IDGenerator(object):
                     cur_total_rows_minus_dropped_rows,
                     cur_total_dropped_rows,
                 ) = data.finalize_data(
-                    keep_tracking_columns=keep_tracking_columns,
+                    keep_extra_and_tracking_columns=keep_extra_and_tracking_columns,
                     keep_debug_columns=keep_debug_columns,
                     remove_duplicates=remove_duplicates,
                 )
