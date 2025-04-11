@@ -106,6 +106,8 @@ class FunctionBindings:
             for idx, v in enumerate(args)
         ]
         v = "".join(args)
+        # Remove leading and trailing underscores
+        v = re.sub("^_+|_+$", "", v)
         return v
 
     def _customtz(self, val: str) -> datetime.datetime:
