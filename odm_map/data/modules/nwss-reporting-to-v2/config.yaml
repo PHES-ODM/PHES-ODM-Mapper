@@ -30,7 +30,9 @@ steps:
       output_name: "{class_name}[preid].csv"
   - action: generate_ids
     params:
-      id_code: ids/general_v2_id_code.xlsx
+      id_code: 
+        - ids/general_v2_id_code.xlsx
+        - ids/nwss_reporting_to_v2_id_code.xlsx
       id_config: ids/general_v2_id_code.yaml
   - action: save
     params:
