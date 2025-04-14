@@ -17,7 +17,7 @@ data = GeneratorData(
 
 # ... process the data, generate IDs, etc ...
 
-data_frames, *_ = data.finalize_data(orig_columns_only=True, remove_duplicates=True)
+data_frames, *_ = data.finalize_data(keep_extra_and_tracking_columns=False, keep_debug_columns=False, remove_duplicates=True)
 ```
 """
 
@@ -55,11 +55,11 @@ DROP_COLUMN = "__drop"
 HASH_COLUMN = "__hash"
 
 # We save the original ID values in the loaded DataFrames to new columns with the same column
-# name as the original preceded by ORIG_ID_PREFIX (ie. f"{ORIG_ID_PREFIX}{column_name}")
-ORIG_ID_PREFIX = "__"
+# name as the original preceded by INITIAL_ID_PREFIX (ie. f"{INITIAL_ID_PREFIX}{column_name}")
+INITIAL_ID_PREFIX = "__"
 
-UNINDEXED_PK_SLOT = f"{ORIG_ID_PREFIX * 2}pk_unindexed"
-PK_INDEX_SLOT = f"{ORIG_ID_PREFIX * 2}pk_index"
+UNINDEXED_PK_SLOT = f"{INITIAL_ID_PREFIX * 2}pk_unindexed"
+PK_INDEX_SLOT = f"{INITIAL_ID_PREFIX * 2}pk_index"
 
 USE_PRIMARY_KEY_LIST = True
 
@@ -73,6 +73,14 @@ class GeneratorData:
         lookup_slots: Optional[List[str]] = None,
         generated_slots: Optional[List[str]] = None,
     ):
+        # If True, then for determining if two rows are identical matches, include the columns that contain
+        # the initial ID values (ie. if an ID needs to be generated, the initial value is what is loaded
+        # from disk for that ID before it gets generated). This may be helpful in cases where two initial
+        # IDs are different but after parsing becomes the same. For example "Public Health Ontario (PHO)"
+        # and "Public Health Ontario (PHO)!" will both become "public_Health_Ontario_PHO", but we may
+        # want them to be treated as different, in which case including the original values as match columns
+        # will ensure the two rows are treated as being different.
+        self.include_initial_value_slots_in_match_columns = True
         self.class_name = class_name
         self.primary_key = primary_key
         self.generated_slots = generated_slots if generated_slots else []
@@ -141,6 +149,10 @@ class GeneratorData:
         self.match_columns = [
             self.get_column_index(c) for c in self.orig_columns if c != self.primary_key
         ]
+        if self.include_initial_value_slots_in_match_columns:
+            self.match_columns.extend(
+                [self.get_column_index(c) for c in self.initial_value_columns]
+            )
         self.match_columns.append(self.get_column_index(UNINDEXED_PK_SLOT))
 
         # Convert the DataFrame to a Numpy array
@@ -153,7 +165,7 @@ class GeneratorData:
     def __len__(self):
         return len(self.data)
 
-    def make_orig_slot_names_if_generated_slots(
+    def make_initial_slot_names_if_generated_slots(
         self, slots: Union[str, List[str]]
     ) -> List[str]:
         """If any of the specified slots is for a slot that is generated adjust the slot name so
@@ -175,13 +187,13 @@ class GeneratorData:
             slots = slots.copy()
         for idx, s in enumerate(slots):
             if s in self.generated_slots:
-                slots[idx] = f"{ORIG_ID_PREFIX}{s}"
+                slots[idx] = f"{INITIAL_ID_PREFIX}{s}"
         return slots
 
     def prepare_ids(self):
         """Do some preparation of the ID columns in the loaded DataFrame.
 
-        We will copy the IDs to new columns where the names are preceded by ORIG_ID_PREFIX. The values
+        We will copy the IDs to new columns where the names are preceded by INITIAL_ID_PREFIX. The values
         in the new columns will remain unchanged, but the values in the old columns will be set to None and
         their IDs generated once make_all_ids is called.
 
@@ -189,17 +201,19 @@ class GeneratorData:
         """
         self.current_class = None
         self.current_row_index = None
+        self.initial_value_columns = []
 
         logger.debug(f"Preparing IDs for class '{self.class_name}'")
-        # Copy all ID columns to new columns preceded by ORIG_ID_PREFIX (eg. __), and clear the
+        # Copy all ID columns to new columns preceded by INITIAL_ID_PREFIX (eg. __), and clear the
         # original column. Once make_all_ids is called, if the original column has a None value
         # then that means we need to calculate the ID for that column (while the double-underscore
         # column remains unchanged).
         slots = [s for s in self.generated_slots if s in self.orig_df.columns]
         if len(slots) > 0:
-            orig_values_slots = [f"{ORIG_ID_PREFIX}{s}" for s in slots]
+            orig_values_slots = [f"{INITIAL_ID_PREFIX}{s}" for s in slots]
             self.orig_df[orig_values_slots] = self.orig_df[slots]
             self.orig_df[slots] = None  # IDValue(None)
+            self.initial_value_columns.extend(orig_values_slots)
 
     def init_lookup_table(self, lookup_slots: List[str]):
         """Initialize the lookup tables and populate them.
