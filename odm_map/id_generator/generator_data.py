@@ -48,11 +48,11 @@ logger = get_logger(__name__)
 # In debug mode, instead of dropping rows with duplicate primary IDs (except for the first duplicate),
 # we retain all rows and add a column named DROP_COLUMN which is True if the row would have been dropped
 # if not in debug mode.
-DROP_COLUMN = "__drop"
+DROP_COLUMN = "____drop"
 
 # Column to store the row hashes in. Row hashes are created by make_row_hash, and allows faster lookup
 # of matching rows.
-HASH_COLUMN = "__hash"
+HASH_COLUMN = "____hash"
 
 # We save the original ID values in the loaded DataFrames to new columns with the same column
 # name as the original preceded by INITIAL_ID_PREFIX (ie. f"{INITIAL_ID_PREFIX}{column_name}")
