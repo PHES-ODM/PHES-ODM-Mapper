@@ -3,30 +3,18 @@ class_derivations:
     name: protocolRelationships[000,0000=major_lab_method-pre_conc_storage_temp-pre_conc_storage_time]
     populated_from: nwss
     slot_derivations:
-      protocolRelationshipsID:
-        name: protocolRelationshipsID
-        expr: ''''''
       protocolIDContainer:
         name: protocolIDContainer
         populated_from: major_lab_method
-      protocolIDObj:
-        name: protocolIDObj
-        expr: ''''''
       stepIDObj:
         name: stepIDObj
         populated_from: pre_conc_storage_temp
       relationshipID:
         name: relationshipID
         expr: '''specifies'''
-      protocolIDSub:
-        name: protocolIDSub
-        expr: ''''''
       stepIDSub:
         name: stepIDSub
         populated_from: pre_conc_storage_time
-      notes:
-        name: notes
-        expr: ''''''
   Container:
     name: Container
     slot_derivations:

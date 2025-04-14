@@ -9,27 +9,12 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: lab_id
-      stepID:
-        name: stepID
-        expr: ''''''
-      measure:
-        name: measure
-        expr: ''''''
       method:
         name: method
         expr: '''extraction'''
       value:
         name: value
         populated_from: extraction_method
-      unit:
-        name: unit
-        expr: ''''''
-      aggregation:
-        name: aggregation
-        expr: ''''''
-      refLink:
-        name: refLink
-        expr: ''''''
   Container:
     name: Container
     slot_derivations:

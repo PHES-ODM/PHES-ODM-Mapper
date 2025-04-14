@@ -24,21 +24,12 @@ class_derivations:
       compartment:
         name: compartment
         expr: '"wat"'
-      measureRepID:
-        name: measureRepID
-        expr: ''''''
-      purpose:
-        name: purpose
-        expr: ''''''
       specimen:
         name: specimen
         expr: '''sa'''
       measure:
         name: measure
         populated_from: pcr_gene_target
-      value:
-        name: value
-        expr: case((pcr_target_std_error == -1, "na"), (True, pcr_target_std_error))
       unit:
         name: unit
         populated_from: pcr_target_units
@@ -48,12 +39,9 @@ class_derivations:
       refLink:
         name: refLink
         populated_from: pcr_gene_target_ref
-      group:
-        name: group
-        expr: ''''''
-      notes:
-        name: notes
-        expr: ''''''
+      value:
+        name: value
+        expr: case((pcr_target_std_error == -1, "na"), (True, pcr_target_std_error))
   Container:
     name: Container
     slot_derivations:

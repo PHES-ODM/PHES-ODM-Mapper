@@ -24,37 +24,22 @@ class_derivations:
       compartment:
         name: compartment
         expr: '"wat"'
-      measureRepID:
-        name: measureRepID
-        expr: ''''''
-      purpose:
-        name: purpose
-        expr: ''''''
       specimen:
         name: specimen
         expr: '''si'''
       measure:
         name: measure
         expr: '''sewTrTi'''
-      value:
-        name: value
-        expr: case(((sewage_travel_time == "") + (sewage_travel_time == None), "nr"),
-          (True, sewage_travel_time))
       unit:
         name: unit
         expr: '''hours'''
       aggregation:
         name: aggregation
         expr: '''me'''
-      refLink:
-        name: refLink
-        expr: ''''''
-      group:
-        name: group
-        expr: ''''''
-      notes:
-        name: notes
-        expr: ''''''
+      value:
+        name: value
+        expr: case(((sewage_travel_time == "") + (sewage_travel_time == None), "nr"),
+          (True, sewage_travel_time))
   Container:
     name: Container
     slot_derivations:

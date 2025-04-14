@@ -9,27 +9,12 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: lab_id
-      stepID:
-        name: stepID
-        expr: ''''''
-      measure:
-        name: measure
-        expr: ''''''
       method:
         name: method
         expr: '''pcrmeth'''
       value:
         name: value
         populated_from: pcr_type
-      unit:
-        name: unit
-        expr: ''''''
-      aggregation:
-        name: aggregation
-        expr: ''''''
-      refLink:
-        name: refLink
-        expr: ''''''
   Container:
     name: Container
     slot_derivations:

@@ -9,15 +9,9 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: lab_id
-      stepID:
-        name: stepID
-        expr: ''''''
       measure:
         name: measure
         expr: '''preExtractTime'''
-      method:
-        name: method
-        expr: ''''''
       value:
         name: value
         populated_from: pre_ext_storage_time
@@ -27,9 +21,6 @@ class_derivations:
       aggregation:
         name: aggregation
         expr: '''sin'''
-      refLink:
-        name: refLink
-        expr: ''''''
   Container:
     name: Container
     slot_derivations:

@@ -24,36 +24,21 @@ class_derivations:
       compartment:
         name: compartment
         expr: '"wat"'
-      measureRepID:
-        name: measureRepID
-        expr: ''''''
-      purpose:
-        name: purpose
-        expr: ''''''
       specimen:
         name: specimen
         expr: '''sa'''
       measure:
         name: measure
         expr: '''percRec'''
-      value:
-        name: value
-        expr: case((rec_eff_percent == -1, "nr"), (True, rec_eff_percent))
       unit:
         name: unit
         expr: '''perc'''
       aggregation:
         name: aggregation
         expr: '''me'''
-      refLink:
-        name: refLink
-        expr: ''''''
-      group:
-        name: group
-        expr: ''''''
-      notes:
-        name: notes
-        expr: ''''''
+      value:
+        name: value
+        expr: case((rec_eff_percent == -1, "nr"), (True, rec_eff_percent))
   Container:
     name: Container
     slot_derivations:

@@ -3,12 +3,6 @@ class_derivations:
     name: qualityReports[000,0000=qc_ignore]
     populated_from: nwss
     slot_derivations:
-      measureRepID:
-        name: measureRepID
-        expr: ''''''
-      qualityReportID:
-        name: qualityReportID
-        expr: ''''''
       qualityFlag:
         name: qualityFlag
         populated_from: qc_ignore

@@ -24,9 +24,6 @@ class_derivations:
       compartment:
         name: compartment
         expr: '"wat"'
-      measureRepID:
-        name: measureRepID
-        expr: ''''''
       purpose:
         name: purpose
         expr: '''norm'''
@@ -48,12 +45,6 @@ class_derivations:
       refLink:
         name: refLink
         populated_from: other_norm_ref
-      group:
-        name: group
-        expr: ''''''
-      notes:
-        name: notes
-        expr: ''''''
   Container:
     name: Container
     slot_derivations:

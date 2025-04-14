@@ -3,30 +3,18 @@ class_derivations:
     name: protocolRelationships[000,0000=major_lab_method-num_no_target_control-pcr_type]
     populated_from: nwss
     slot_derivations:
-      protocolRelationshipsID:
-        name: protocolRelationshipsID
-        expr: ''''''
       protocolIDContainer:
         name: protocolIDContainer
         populated_from: major_lab_method
-      protocolIDObj:
-        name: protocolIDObj
-        expr: ''''''
       stepIDObj:
         name: stepIDObj
         populated_from: num_no_target_control
       relationshipID:
         name: relationshipID
         expr: '''specifies'''
-      protocolIDSub:
-        name: protocolIDSub
-        expr: ''''''
       stepIDSub:
         name: stepIDSub
         populated_from: pcr_type
-      notes:
-        name: notes
-        expr: ''''''
   Container:
     name: Container
     slot_derivations:

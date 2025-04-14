@@ -24,12 +24,6 @@ class_derivations:
       compartment:
         name: compartment
         expr: '"wat"'
-      measureRepID:
-        name: measureRepID
-        expr: ''''''
-      purpose:
-        name: purpose
-        expr: ''''''
       specimen:
         name: specimen
         expr: '''si'''
@@ -39,21 +33,6 @@ class_derivations:
       value:
         name: value
         populated_from: influent_equilibrated
-      unit:
-        name: unit
-        expr: ''''''
-      aggregation:
-        name: aggregation
-        expr: ''''''
-      refLink:
-        name: refLink
-        expr: ''''''
-      group:
-        name: group
-        expr: ''''''
-      notes:
-        name: notes
-        expr: ''''''
   Container:
     name: Container
     slot_derivations:
