@@ -254,13 +254,13 @@ class IDGenerator(object):
             if source_class in self.data:
                 linkage[LinkageKeys.SOURCE_SLOT] = self.data[
                     source_class
-                ].make_orig_slot_names_if_generated_slots(
+                ].make_initial_slot_names_if_generated_slots(
                     linkage[LinkageKeys.SOURCE_SLOT]
                 )
             if target_class in self.data:
                 linkage[LinkageKeys.TARGET_SLOT] = self.data[
                     target_class
-                ].make_orig_slot_names_if_generated_slots(
+                ].make_initial_slot_names_if_generated_slots(
                     linkage[LinkageKeys.TARGET_SLOT]
                 )
 
