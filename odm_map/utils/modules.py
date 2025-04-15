@@ -22,6 +22,9 @@ MODULE_STEPS_KEY = "steps"
 MODULE_ACTION_KEY = "action"
 MODULE_PARAMS_KEY = "params"
 
+# Name of the shared module, that has data accesible to any of the other modules
+SHARED_MODULE = "_shared"
+
 # Also available below: ModulesEnum for all available installed modules (based on get_all_modules(include_titles=False))
 
 
@@ -36,7 +39,11 @@ def get_all_modules(include_titles: bool = False) -> List[str]:
         List[str]: List of all available modules.
     """
     try:
-        modules = [d for d in os.listdir(MODULE_DIR) if (MODULE_DIR / d).is_dir()]
+        modules = [
+            d
+            for d in os.listdir(MODULE_DIR)
+            if (MODULE_DIR / d).is_dir() and d != SHARED_MODULE
+        ]
         modules = sorted(modules)
 
         if include_titles:

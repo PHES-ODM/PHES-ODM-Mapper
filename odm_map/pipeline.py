@@ -41,6 +41,7 @@ from odm_map.utils.modules import (
     MODULE_IF_KEY,
     MODULE_ACTION_KEY,
     MODULE_PARAMS_KEY,
+    SHARED_MODULE,
 )
 from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
@@ -53,6 +54,11 @@ logger = get_logger(__name__)
 
 # For loading data progress bar
 LOADING_BARID = "Loading Data"
+
+# Shared tag in all file paths of a module config file.
+# eg. "{shared}/ids/general_v2_id_code.xlsx" in config.yaml will point to "ids/general_v2_id_code.xlsx"
+# in the shared module.
+SHARED_DIR_TAG = "{shared}"
 
 
 class Pipeline(object):
@@ -92,7 +98,13 @@ class Pipeline(object):
         if not path:
             return None
         if isinstance(path, list):
-            return [self.module_dir / p for p in path]
+            return [self.get_module_path(p) for p in path]
+
+        if path.startswith(SHARED_DIR_TAG):
+            shared_dir = get_module_dir(module=SHARED_MODULE, module_dir=None)
+            path = path[len(SHARED_DIR_TAG) + 1 :]
+            return shared_dir / path
+
         return self.module_dir / path
 
     def run(

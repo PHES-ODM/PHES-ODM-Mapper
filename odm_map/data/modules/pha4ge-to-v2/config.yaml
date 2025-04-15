@@ -40,9 +40,11 @@ steps:
   - action: generate_ids
     params:
       id_code:
-        - ids/general_v2_id_code.xlsx
+        - "{shared}/ids/general_v2_id_code.xlsx"
         - ids/pha4ge_to_v2_id_code.xlsx
-      id_config: ids/general_v2_id_code.yaml
+      id_config:
+        - "{shared}/ids/general_v2_id_code.yaml"
+        - ids/pha4ge_to_v2_id_code.yaml
   - action: save
     params:
       output_dir: "{output_dir}"
