@@ -1,0 +1,97 @@
+
+class_linkages:
+  measures:
+    samples:
+      source_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+    # datasets:
+    #   source_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
+    #   target_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+    contacts:
+      source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+    measureSets:
+      source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+  protocols:
+    # datasets:
+    #   source_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
+    #   target_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+    contacts:
+      source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+  measureSets:
+    measures:
+      source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+  qualityReports:
+    measures:
+      source_slot: ["(__source_file_and_row__)", "_extra_measureRepID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_measureRepID_tag"]
+    measureSets:
+      source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+    samples:
+      source_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+  contacts:
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+  protocolSteps:
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+    contacts:
+      source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+    instruments:
+      source_slot: ["(__source_file_and_row__)", "_extra_instrumentID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_instrumentID_tag"]
+  samples:
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+    contacts:
+      source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+  instruments:
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+    contacts:
+      source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+  sites:
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+    contacts:
+      source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+  polygons:
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+    contacts:
+      source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+
+
+named_class_linkages:
+  sampleRelationships_to_samples_subject:
+    sampleRelationships:
+      samples:
+        source_slot: ["(__source_file_and_row__)", "_extra_sampleIDSubject_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+  sampleRelationships_to_samples_object:
+    sampleRelationships:
+      samples:
+        source_slot: ["(__source_file_and_row__)", "_extra_sampleIDObject_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
