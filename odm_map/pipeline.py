@@ -88,9 +88,11 @@ class Pipeline(object):
         all_classes = ", ".join(all_classes)
         logger.info(f"Recognized input tables are: {all_classes}")
 
-    def get_module_path(self, path: str) -> Optional[Path]:
+    def get_module_path(self, path: Union[str, List[str]]) -> Optional[Path]:
         if not path:
             return None
+        if isinstance(path, list):
+            return [self.module_dir / p for p in path]
         return self.module_dir / path
 
     def run(
