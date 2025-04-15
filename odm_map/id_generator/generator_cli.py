@@ -23,7 +23,8 @@ precede the file path with the table name and a colon (eg.
 or sheet names), any text after the first opening square or round bracket is
 ignored."""
 
-CONFIG_FILE_HELP = """The YAML config file."""
+CONFIG_FILE_HELP = """The YAML config files. If multiple files are specified
+                   then they are merged together."""
 
 ID_CODE_FILE_HELP = """The XLSX, CSV, TSV, TXT, YAML, or YML configuration file
                     that contains the ID generation code. If an XLSX file then
@@ -55,7 +56,7 @@ def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     config_file: Annotated[
-        str, typer.Option(show_default=False, help=CONFIG_FILE_HELP)
+        List[str], typer.Option(show_default=False, help=CONFIG_FILE_HELP)
     ],
     id_code_file: Annotated[
         str, typer.Option(show_default=False, help=ID_CODE_FILE_HELP)
@@ -70,12 +71,11 @@ def main(
         data_files=data_files,
         data_frames=None,
         config_file=config_file,
-        id_code_file=id_code_file,
-        id_code_sheet=id_code_sheet,
+        id_code_files=[{"id_code_file": id_code_file, "id_code_sheet": id_code_sheet}],
         multi_bar_progress="get_ipython" not in globals(),
     )
     gen.run_generator(
-        keep_tracking_columns=debug,
+        keep_extra_and_tracking_columns=debug,
         keep_debug_columns=debug,
         remove_duplicates=not debug,
     )
@@ -94,14 +94,12 @@ if __name__ == "__main__":
             # "config_file": "../data/modules/test/ids.yaml",
             
             # NWSS to ODM v2
-            # "inputs": ["../../gen/nwss-reporting-to-v2/temp-1000/mapped_data"],
-            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"],
-            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel"],
-            "output_dir": "../../gen/nwss-reporting-to-v2-test/mapped_data_ids",
-            "id_code_file": "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_code.xlsx",
-            "id_code_sheet": "id_code",
-            "config_file": "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_config.yaml",
-            "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
+            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel"],
+            # "output_dir": "../../gen/nwss-reporting-to-v2-test/mapped_data_ids",
+            # "id_code_file": "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_code.xlsx",
+            # "id_code_sheet": "id_code",
+            # "config_file": "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_config.yaml",
+            # "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
 
             # ODM v1 to ODM v2,
             # "inputs": ["../../gen/odm-v1-to-v2/temp/mapped_data"],
@@ -110,6 +108,14 @@ if __name__ == "__main__":
             # "id_code_sheet": "id_code",
             # "config_file": "../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_config.yaml",
             # "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",
+
+            # PHA4GE to ODM v2
+            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/temp/mapped_data"],
+            "output_dir": "../../gen/phage-to-v2-test/mapped_data_ids",
+            "id_code_file": "../data/modules/pha4ge-to-v2/ids/general_v2_id_code.xlsx",
+            "id_code_sheet": "id_code",
+            "config_file": ["../data/modules/pha4ge-to-v2/ids/general_v2_id_code.yaml", "../data/modules/pha4ge-to-v2/ids/pha4ge_to_v2_id_code.yaml"],
+            "schema": "../data/modules/pha4ge-to-v2/schemas/odm_v2.yaml",
 
             "debug": True,
         }

@@ -69,7 +69,7 @@ class IDGenerator(object):
         self,
         data_files: Dict[str, List[Union[str, Path]]],
         data_frames: Dict[str, List[pd.DataFrame]],
-        config_file: str,
+        config_file: Union[str, List[str]],
         id_code_files: List[Dict],
         multi_bar_progress: bool = True,
     ):
@@ -81,7 +81,8 @@ class IDGenerator(object):
                 TXT, YAML, or YML files.
             data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
                 and the values are lists of DataFrames belonging to the class.
-            config_file (str): The configuration file.
+            config_file (Union[str, List[str]]): The configuration file(s). If multiple files are specified then
+                they are merged together.
             id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code. The
                 dictionaries are of the form {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
                 can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which sheet in
@@ -95,10 +96,7 @@ class IDGenerator(object):
         # Sort data_files by key (class name), and sort all the values (file names)
         # data_files = { k: sorted(v) for k, v in sorted(data_files.items())}
 
-        self.config = {}
-        if config_file:
-            with open(config_file, "r") as f:
-                self.config = yaml.safe_load(f)
+        self.load_configs(config_file)
 
         self.current_class = None
         self.current_row_index = None
@@ -119,6 +117,59 @@ class IDGenerator(object):
         # Create the interpreter for executing Python code (the code is in the form of strings)
         self.interpreter = Interpreter(usersyms=self.bindings)
         self.interpreter_clean_symtable = self.interpreter.symtable.copy()
+
+    def load_configs(self, config_files: Union[str, List[str]]):
+        """Load and merge all the specified configuration file(s).
+
+        The following rules are applied when merging for each key in the config file:
+
+            ConfigKeys.PRIMARY_KEYS: The top-level dictionary (config[ConfigKeys.PRIMARY_KEYS]) gets updated
+                (by calling dict.update) in order of the config files.
+            ConfigKeys.CLASS_LINKAGES: Each dictionary at config[ConfigKeys.CLASS_LINKAGES][class_name]
+                gets updated (by calling dict.update) in order of the config files.
+            ConfigKeys.NAMED_CLASS_LINKAGES: The top-level dictionary (config[ConfigKeys.NAMED_CLASS_LINKAGES]) gets
+                updated (by calling dict.update) in order of the config files. In other words named linkages
+                with the same name get replaced.
+
+        Args:
+            config_files (Union[str, List[str]]): Either the path to a single YAML configuration file or
+                a list of paths of configuration files to merge together.
+        """
+        self.config = {}
+        if not config_files:
+            return
+
+        if not isinstance(config_files, list):
+            config_files = [config_files]
+        self.config = {}
+        for cur_config_file in config_files:
+            with open(cur_config_file, "r") as f:
+                cur_config = yaml.safe_load(f)
+
+            # Do primary keys
+            if ConfigKeys.PRIMARY_KEYS in cur_config:
+                if ConfigKeys.PRIMARY_KEYS not in self.config:
+                    self.config[ConfigKeys.PRIMARY_KEYS] = {}
+                self.config[ConfigKeys.PRIMARY_KEYS].update(
+                    cur_config[ConfigKeys.PRIMARY_KEYS]
+                )
+
+            # Do class linkages
+            if ConfigKeys.CLASS_LINKAGES in cur_config:
+                if ConfigKeys.CLASS_LINKAGES not in self.config:
+                    self.config[ConfigKeys.CLASS_LINKAGES] = {}
+                for key, val in cur_config[ConfigKeys.CLASS_LINKAGES].items():
+                    if key not in self.config[ConfigKeys.CLASS_LINKAGES]:
+                        self.config[ConfigKeys.CLASS_LINKAGES][key] = {}
+                    self.config[ConfigKeys.CLASS_LINKAGES][key].update(val)
+
+            # Do named class linkages
+            if ConfigKeys.NAMED_CLASS_LINKAGES in cur_config:
+                if ConfigKeys.NAMED_CLASS_LINKAGES not in self.config:
+                    self.config[ConfigKeys.NAMED_CLASS_LINKAGES] = {}
+                self.config[ConfigKeys.NAMED_CLASS_LINKAGES].update(
+                    cur_config[ConfigKeys.NAMED_CLASS_LINKAGES]
+                )
 
     def load_all(
         self,
