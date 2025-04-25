@@ -645,7 +645,10 @@ class GeneratorData:
                 # Add "drop" column for testing
                 columns = list(self.df.columns)
                 dupes_filt = self.df.duplicated(self.primary_key, keep="first")
-                self.df.loc[dupes_filt, DROP_COLUMN] = True
+                if dupes_filt.any():
+                    self.df.loc[dupes_filt, DROP_COLUMN] = True
+                else:
+                    self.df[DROP_COLUMN] = None
                 self.df = self.df[[DROP_COLUMN] + columns]
                 new_len = orig_len - self.df[DROP_COLUMN].sum()
 
