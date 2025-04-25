@@ -95,3 +95,18 @@ named_class_linkages:
       samples:
         source_slot: ["(__source_file_and_row__)", "_extra_sampleIDObject_tag"]
         target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+  protocolRelationships_to_protocolSteps_subject:
+    protocolRelationships:
+      protocolSteps:
+        source_slot: ["(__source_file_and_row__)", "_extra_stepIDSub_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_stepID_tag"]
+  protocolRelationships_to_protocolSteps_object:
+    protocolRelationships:
+      protocolSteps:
+        source_slot: ["(__source_file_and_row__)", "_extra_stepIDObj_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_stepID_tag"]
+  protocolRelationships_to_protocols_container:
+    protocolRelationships:
+      protocols:
+        source_slot: ["(__source_file_and_row__)", "_extra_protocolIDContainer_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_protocolID_tag"]
