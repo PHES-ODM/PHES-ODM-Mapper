@@ -28,10 +28,10 @@ steps:
   # Each PHA4GE row only has one sample ID, so drop all the samples other than the non-empty one
   - action: filter
     params:
-      filters: filters/pha4ge_to_v2_filters_dropsamples.csv
+      filters: filters/pha4ge_to_v2_filters_empty_samples.csv
   # - action: filter
   #   params:
-  #     filters: filters/pha4ge_to_v2_filters.csv
+  #     filters: filters/pha4ge_to_v2_filters_before_id.csv
   - action: save
     if: "{debug_mode}"
     params:
@@ -45,6 +45,9 @@ steps:
       id_config:
         - "{shared}/ids/general_v2_id_code.yaml"
         - ids/pha4ge_to_v2_id_code.yaml
+  # - action: filter
+  #   params:
+  #     filters: filters/pha4ge_to_v2_filters_after_id.csv
   - action: save
     params:
       output_dir: "{output_dir}"
