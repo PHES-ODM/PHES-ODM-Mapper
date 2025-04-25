@@ -1,0 +1,29 @@
+class_derivations:
+  protocolSteps[000,0000=read_mapping_software_name]:
+    name: protocolSteps[000,0000=read_mapping_software_name]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sequenced by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sequenced by'''
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''read mapping software name'''
+      _extra_protocolRelationships_containerProtocolID:
+        name: _extra_protocolRelationships_containerProtocolID
+        expr: '''artificial_SequencingProtocol'''
+      measure:
+        name: measure
+        expr: '''readMapper'''
+      value:
+        name: value
+        populated_from: read_mapping_software_name
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=read_mapping_software_name]:
+        populated_from: PHA4GE
+enum_derivations: {}

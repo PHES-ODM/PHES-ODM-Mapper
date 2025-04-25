@@ -1,0 +1,33 @@
+class_derivations:
+  protocolSteps[000,0000=raw_sequence_data_processing_method]:
+    name: protocolSteps[000,0000=raw_sequence_data_processing_method]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sequenced by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sequenced by'''
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''raw sequence data processing method'''
+      _extra_protocolRelationships_containerProtocolID:
+        name: _extra_protocolRelationships_containerProtocolID
+        expr: '''artificial_SequencingProtocol'''
+      method:
+        name: method
+        expr: '''rawSeqProc'''
+      value:
+        name: value
+        populated_from: raw_sequence_data_processing_method
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=raw_sequence_data_processing_method]:
+        populated_from: PHA4GE
+enum_derivations:
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu

@@ -1,0 +1,27 @@
+class_derivations:
+  protocols[000,0000=]:
+    name: protocols[000,0000=]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''artificial_SequencingProtocol'''
+      name:
+        name: name
+        expr: '''Sequencing protocol (includes sample processing)'''
+      protocolID:
+        name: protocolID
+        expr: '''artificial_SequencingProtocol'''
+      notes:
+        name: notes
+        expr: '''articifical protocol container for capturing protocolSteps that link
+          to measures being imported from a PHA4GE data format.'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocols[000,0000=]:
+        populated_from: PHA4GE
+enum_derivations: {}

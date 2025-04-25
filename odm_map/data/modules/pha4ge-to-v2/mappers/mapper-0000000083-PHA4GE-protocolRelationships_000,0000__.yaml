@@ -1,0 +1,23 @@
+class_derivations:
+  protocolRelationships[000,0000=]:
+    name: protocolRelationships[000,0000=]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_protocolIDContainer_tag:
+        name: _extra_protocolIDContainer_tag
+        expr: '''artificial_SequencingProtocol'''
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''amplicon pcr primer scheme'''
+      relationshipID:
+        name: relationshipID
+        expr: '''relNR'''
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''diagnostic measurement method 1'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolRelationships[000,0000=]:
+        populated_from: PHA4GE
+enum_derivations: {}
