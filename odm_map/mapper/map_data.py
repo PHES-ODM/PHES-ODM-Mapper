@@ -645,6 +645,7 @@ class DataMapper(object):
                 convert_progress.update(convert_barid, 1)
 
         # Combine the DataFrames in all_mapped_data and drop tracking columns if required
+        total_rows = 0
         logger.info("Combining all mapped data...")
         for class_name, all_df in all_mapped_data.items():
             df = pd.concat(all_df, ignore_index=True, axis=0)
@@ -653,6 +654,7 @@ class DataMapper(object):
             if not keep_tracking_columns:
                 df = drop_extra_and_tracking_slots(df)
             all_mapped_data[class_name] = [df]
+            total_rows += len(df)
 
         # Save data to disk
         output_files = {}
@@ -666,6 +668,7 @@ class DataMapper(object):
                     output_files[class_name] = []
                 output_files[class_name].append(Path(output_file))
 
+        logger.info(f"Total output rows: {total_rows}")
         logger.info(f"Finished initial mapping in {datetime.now() - map_tic}")
 
         return all_mapped_data, output_files
