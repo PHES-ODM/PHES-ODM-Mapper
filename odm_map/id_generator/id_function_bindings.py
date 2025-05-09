@@ -271,7 +271,7 @@ class FunctionBindings:
         elif time_obj is not None:
             # Only time available
             dt = time_obj
-        if dt is not None and time_zone_obj is not None:
+        if dt is not None and time_obj is not None and time_zone_obj is not None:
             # Timezone is available, so add it to the dt object. time_zone_obj is either a datetime object
             # (created from datetime.strptime) or a BaseTzInfo object (created by pytz.timezone)
             dt = dt.replace(
