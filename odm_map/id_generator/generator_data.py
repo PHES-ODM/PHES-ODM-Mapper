@@ -305,7 +305,7 @@ class GeneratorData:
 
         # If we're setting a primary key value, then update the largest index used by
         # the primary key
-        if slot == self.primary_key and isinstance(v, IDValue):
+        if slot == self.primary_key and isinstance(v, IDValue) and v.index is not None:
             prev_value = self.largest_pk_indices.get(v.unindexed_value, -1)
             self.largest_pk_indices[v.unindexed_value] = max(v.index, prev_value)
 
