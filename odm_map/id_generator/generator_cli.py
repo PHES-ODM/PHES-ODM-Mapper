@@ -1,6 +1,4 @@
 # %%
-%load_ext autoreload
-%autoreload 2
 from typing import List, Annotated
 import typer
 
@@ -68,12 +66,14 @@ def main(
     debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
 ):
     data_files = get_input_data_files(inputs, schema=schema)
-    
+
     new_code_files = []
     if not id_code_sheets:
         id_code_sheets = len(id_code_files) * [None]
     for id_code_file, id_code_sheet in zip(id_code_files, id_code_sheets):
-        new_code_files.append({"id_code_file": id_code_file, "id_code_sheet": id_code_sheet})
+        new_code_files.append(
+            {"id_code_file": id_code_file, "id_code_sheet": id_code_sheet}
+        )
     id_code_files = new_code_files
 
     gen = IDGenerator(
