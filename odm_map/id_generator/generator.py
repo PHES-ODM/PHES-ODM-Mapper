@@ -224,6 +224,7 @@ class IDGenerator(object):
                 self,
                 root_class="",
                 sub_class_names=all_classes,
+                prefix="dat",
                 replace_empty_values=False,
             ),
             # Same as dat, but if a value is empty then automatically convert it to id_data_bindings.EMPTY_VALUE
@@ -231,6 +232,7 @@ class IDGenerator(object):
                 self,
                 root_class="",
                 sub_class_names=all_classes,
+                prefix="datEmpty",
                 replace_empty_values=True,
             ),
             "fn": FunctionBindings(self),
@@ -447,6 +449,7 @@ class IDGenerator(object):
         self,
         class_names: Optional[Union[str, List[str]]] = None,
         row_indices: Optional[Union[int, List[int]]] = None,
+        skip_slots: Optional[Union[str, List[str]]] = None,
     ):
         """Make all IDs that need to be generated.
 
@@ -460,12 +463,19 @@ class IDGenerator(object):
                 all known classes are used. Defaults to None.
             row_indices (Optional[Union[int, List[int]]], optional): The row index or array of row indices to generate
                 the IDs for. If None then all rows in all specified classes are generated. Defaults to None.
+            skip_slots (Optional[Union[str, List[str]]], optional): If specified, then skip generating IDs for
+                these slots.
 
         Raises:
             ValueError: A slot was specified in the ID code config file that does not exist in the loaded data for
                 the class.
         """
         orig_row_indices = row_indices
+
+        if not skip_slots:
+            skip_slots = []
+        if not isinstance(skip_slots, (list, tuple)):
+            skip_slots = [skip_slots]
 
         # We only output progress information if all classes and all row indices are being generated.
         # This is the top-level call to make_all_ids and should only occur once.
@@ -547,11 +557,15 @@ class IDGenerator(object):
                             raise ValueError(
                                 f"Found slot '{slot}' in class '{class_name}' in ID code file that does not exist in the source data."
                             )
+                        if slot in skip_slots:
+                            continue
 
                         # Get the current value for the ID in the data. If it is non-null then it has already been
                         # generated and we can continue to the next loop.
                         v = self.data[class_name].get_data_value(slot, idx)
-                        if not self.is_id_empty(v):
+                        if not self.is_id_empty(v) and (
+                            not self.requires_primary_key_grouping(class_name, slot, v)
+                        ):  # or v.index_in_progress):
                             continue
 
                         # Calculate the ID
@@ -808,6 +822,7 @@ class IDGenerator(object):
         target_class: str,
         target_slot: str,
         linkage_path: Optional[Union[Dict, List[Dict]]] = None,
+        generate_index_if_primary_key: bool = True,
     ) -> Any:
         """Get the first value in target_class and slot target_slot that is linked to the row in source_class at row index source_index, using
         the linkage_path to determine how to link from source_class to target_class. If linkage_path is None then we use the
@@ -833,11 +848,30 @@ class IDGenerator(object):
         # If the target slot is an ID that needs to be generated, then generate it and return the value
         if target_slot in self.data[target_class].generated_slots:
             cur_value = self.data[target_class].get_value_from_row(row, target_slot)
-            if self.is_id_empty(cur_value):
-                return self.calculate_id(target_class, target_slot, idx)
+            # The value needs to be generated if it is empty (ie. None, EMPTY_OBJ, or root_id is None) or
+            # if the root ID has been generated but its index has not (ie. group_primary_key() hasn't been called yet)
+            if self.is_id_empty(cur_value) or self.requires_primary_key_grouping(
+                target_class, target_slot, cur_value
+            ):
+                return self.calculate_id(
+                    target_class,
+                    target_slot,
+                    idx,
+                    generate_index_if_primary_key=generate_index_if_primary_key,
+                )
 
         # return row[self.get_column_index(target_class, target_slot)]
         return self.data[target_class].get_value_from_row(row, target_slot)
+
+    def requires_primary_key_grouping(
+        self, class_name: str, slot: str, id_value: Any
+    ) -> bool:
+        if not isinstance(id_value, IDValue):
+            return False
+        return (
+            self.data[class_name].primary_key == slot
+            and not id_value.is_index_generated()
+        )
 
     def get_default_linkage_path(
         self, source_class: str, target_class: str
@@ -891,7 +925,13 @@ class IDGenerator(object):
             return v.is_empty()
         return v is None or v is EMPTY_OBJ
 
-    def calculate_id(self, class_name: str, slot: str, row_index: int) -> Any:
+    def calculate_id(
+        self,
+        class_name: str,
+        slot: str,
+        row_index: int,
+        generate_index_if_primary_key: bool = True,
+    ) -> Any:
         """Calculate the ID for the slot in the class at the specified row index. The ID is
         calculated based on the ID generation code for the class/slot combination, and is found
         in the ID code config file.
@@ -900,110 +940,150 @@ class IDGenerator(object):
             class_name (str): The class that the slot belongs to.
             slot (str): The slot to calculate the ID for.
             row_index (int): The row index in the class's DataFrame that we calculate the slot for.
+            generate_index_if_primary_key (bool, optional): If True, and the slot is the primary key for
+                the class, then also generate the index for the resulting IDValue. For IDValues that
+                are not for a primary key we do not need the index. If the caller is creating a
+                composite ID (ie. using several IDs to create one bigger ID) then it should typically
+                not use the index (using the index for each component ID would lead to too many
+                circular references where the index cannot be calculated due to its dependency
+                on other IDs with indices).
 
         Returns:
             Any: The calculated ID.
         """
+
+        def _is_id_ready(v: Any) -> bool:
+            """Check if the IDValue is ready to return. The value is ready when it is of type IDValue
+            and either we do not need the IDValue's index or the IDValue's index has been generated.
+            The index gets generated by calling group_primary_key().
+
+            Args:
+                v (Any): The IDValue to test.
+
+            Returns:
+                bool: True if the IDValue is ready to return, False otherwise.
+            """
+            # return isinstance(v, IDValue) and (not self.group_primary_keys or v.is_index_generated())
+            return isinstance(v, IDValue) and (
+                not generate_index_if_primary_key
+                or not self.requires_primary_key_grouping(class_name, slot, v)
+            )
+
         if class_name not in self.data:
             return None
 
         orig_v = self.data[class_name].get_data_value(slot, row_index)
-        if isinstance(orig_v, IDValue):
+        if _is_id_ready(orig_v):
             return orig_v
 
-        # We loop through all code columns for the slot. Once executing the code generates a
-        # non-empty value (either returned from the code or with the "target" variable being set
-        # in the code), we use that value as the generated ID and stop looping over the code
-        # columns. If we have executed all the code columns and all of them have generated an
-        # empty value, we return without setting the ID
-        v = None
-        interpreter = self.interpreter
-        orig_symtable = interpreter.symtable
+        # Generate the IDValue if it is currently empty
+        if self.is_id_empty(orig_v):  # not isinstance(orig_v, IDValue):
+            # We loop through all code columns for the slot. Once executing the code generates a
+            # non-empty value (either returned from the code or with the "target" variable being set
+            # in the code), we use that value as the generated ID and stop looping over the code
+            # columns. If we have executed all the code columns and all of them have generated an
+            # empty value, we return without setting the ID
+            v = None
+            interpreter = self.interpreter
+            orig_symtable = interpreter.symtable
 
-        code_idx = -1
-        while True:
-            code_idx += 1
-            code = self.get_code(class_name, slot, code_idx)
+            code_idx = -1
+            while True:
+                code_idx += 1
+                code = self.get_code(class_name, slot, code_idx)
 
-            if pd.isna(code) or not code:
-                v = None
+                if pd.isna(code) or not code:
+                    v = None
+                    break
+
+                orig_current_class = self.current_class
+                orig_current_row_index = self.current_row_index
+                self.current_class = class_name
+                self.current_row_index = row_index
+
+                interpreter.symtable = self.interpreter_clean_symtable.copy()
+                try:
+                    v = interpreter(code, raise_errors=True)
+                except Exception as e:
+                    # format_exc() will provide extra traceback information related to the exception that occurred
+                    # when executing the code string.
+                    print("*" * 100)
+                    print(traceback.format_exc())
+                    print("=" * 100)
+                    raise ValueError(
+                        f"Error when calculating ID for '{class_name}.{slot}:{row_index}': {e}\nCode: {code}"
+                    )
+                finally:
+                    self.current_class = orig_current_class
+                    self.current_row_index = orig_current_row_index
+
+                # If the variable "target" has been set by the code, then use that value instead
+                if "target" in interpreter.symtable:
+                    v = interpreter.symtable["target"]
+
+                # If the code resulted in an empty value, continue to the next code column
+                if isna(v) or v == "":
+                    continue
+
                 break
 
-            orig_current_class = self.current_class
-            orig_current_row_index = self.current_row_index
-            self.current_class = class_name
-            self.current_row_index = row_index
+            interpreter.symtable = orig_symtable
 
-            interpreter.symtable = self.interpreter_clean_symtable.copy()
+            if isna(v):
+                v = ""
+
+            # IDs must be strings. Numbers like "1.0" will be loaded as an integer by Excel and possibly
+            # other tools, so is indistinguishable from "1". To avoid this, get rid of the ".0" if it exists
             try:
-                v = interpreter(code, raise_errors=True)
-            except Exception as e:
-                # format_exc() will provide extra traceback information related to the exception that occurred
-                # when executing the code string.
-                print("*" * 100)
-                print(traceback.format_exc())
-                print("=" * 100)
-                raise ValueError(
-                    f"Error when calculating ID for '{class_name}.{slot}:{row_index}': {e}\nCode: {code}"
-                )
-            finally:
-                self.current_class = orig_current_class
-                self.current_row_index = orig_current_row_index
+                # It's alright for numbers that have a "_" in it (which is allowed in Python)
+                if isinstance(v, str) and "." in v and "_" not in v:
+                    f = float(v)
+                    if f == int(f):
+                        v = f"{int(f)}"
+            except Exception:
+                pass
 
-            # If the variable "target" has been set by the code, then use that value instead
-            if "target" in interpreter.symtable:
-                v = interpreter.symtable["target"]
+            # During calculation of the value above, it's possible that we recursed into calculating
+            # other IDs, which eventually led to calculating of the current ID (for class_name, slot, and
+            # row_index). If that occurs, then we can stop here.
+            new_v = self.data[class_name].get_data_value(slot, row_index)
+            if _is_id_ready(new_v):
+                return new_v
 
-            # If the code resulted in an empty value, continue to the next code column
-            if isna(v) or v == "":
-                continue
-
-            break
-
-        interpreter.symtable = orig_symtable
-
-        if isinstance(v, IDValue) and v.index_in_progress:
-            raise ValueError(
-                f"Retrieved in-progress IDValue in calculate_id for {class_name}.{slot}:{row_index}: {v}"
-            )
-
-        if isna(v):
-            v = ""
-
-        # IDs must be strings. Numbers like "1.0" will be loaded as an integer by Excel and possibly
-        # other tools, so is indistinguishable from "1". To avoid this, get rid of the ".0" if it exists
-        try:
-            # It's alright for numbers that have a "_" in it (which is allowed in Python)
-            if isinstance(v, str) and "." in v and "_" not in v:
-                f = float(v)
-                if f == int(f):
-                    v = f"{int(f)}"
-        except Exception:
-            pass
-
-        # During calculation of the value above, it's possible that we recursed into calculating
-        # other IDs, which eventually led to calculating of the current ID (for class_name, slot, and
-        # row_index). If that occurs, then we can stop here.
-        new_v = self.data[class_name].get_data_value(slot, row_index)
-        if isinstance(new_v, IDValue):
-            return new_v
-
-        v = self.data[class_name].set_data_value(slot, row_index, v)
+            v = self.data[class_name].set_data_value(slot, row_index, v)
+        else:
+            v = orig_v
 
         # If the slot is the primary key, then calculate the remainder of the row, so we can determine if the
         # row is a duplicate or not of all other rows generated so far that have the same primary key value.
         # If it is a duplicate, we reuse an existing primary key ID from the duplicates. If it is not
         # a duplicate we make sure the primary key value is unique.
-        if self.data[class_name].primary_key == slot:
+        # if self.data[class_name].primary_key == slot and self.group_primary_keys:
+        if generate_index_if_primary_key and self.requires_primary_key_grouping(
+            class_name, slot, v
+        ):  # and not v.index_in_progress:
+            # if v.index_in_progress:
+            #     raise ValueError(f"Primary key grouping is required for value at {class_name}.{slot}:{row_index} but grouping is already in progress. This is due to circular dependencies for ID generation in the code file.")
             v.index_in_progress = True
-            self.make_all_ids(class_name, row_index)
+            self.make_all_ids(class_name, row_index, skip_slots=[slot])
+
+            new_v = self.data[class_name].get_data_value(slot, row_index)
+            if _is_id_ready(new_v):
+                return new_v
+
             # Grouping the primary keys will either group the new calculated ID with an existing
             # ID where the rows are identical, or will add an index to the end of the new ID
             # if there are no identical rows but the new ID is already in use (ie. we will
             # make the new ID unique)
             v = self.data[class_name].group_primary_key(row_index)
 
-        self.update_progress(class_name, 1)
+        if self.data[class_name].primary_key != slot or v.is_index_generated():
+            self.update_progress(class_name, 1)
+
+        if not _is_id_ready(v):
+            raise ValueError(
+                f"ID is not ready for returning when calculating ID for {class_name}.{slot}:{row_index}."
+            )
 
         return v
 
