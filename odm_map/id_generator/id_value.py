@@ -38,7 +38,7 @@ from typing import Optional, Union
 
 class IDValue(object):
     def __init__(
-        self, root_id: Optional[str], index: int = 0, index_in_progress: bool = False
+        self, root_id: Optional[str], index: int = None, index_in_progress: bool = False
     ):
         """Constructor for IDValue
 
@@ -50,7 +50,7 @@ class IDValue(object):
                 the ID. To get the full string of the ID with the index pass the IDValue object to the str() function
                 (ie. str(idvalue_obj)). Defaults to 0.
             index_in_progress (bool, optional): Set to True if the caller is currently calculating the index for
-                this object, False if the caller isn't calculating the index.
+                this object, False if the caller isn't calculating the index. Defaults to False.
         """
         self._root_id: Optional[str] = root_id
         self._index: int = index
@@ -99,6 +99,17 @@ class IDValue(object):
     def __getitem__(self, key: Union[slice, int]) -> str:
         return self._root_id[key]
 
+    def is_index_generated(self) -> bool:
+        """Determine if the index for this IDValue has been generated or not. The index is generated
+        if it has been set to a non-None value, either by specifying it in the constructor (which by
+        default is None) or setting it with self.index. Typically we only need to set the index
+        for an IDValue that is for a primary key.
+
+        Returns:
+            bool: True if the index has been set, False otherwise.
+        """
+        return self._index is not None
+
     @property
     def unindexed_value(self) -> Optional[str]:
         """Get the unindexed ID value (ie. the value passed as root_id to the constructor)
@@ -109,11 +120,12 @@ class IDValue(object):
         return self._root_id
 
     @property
-    def index(self) -> int:
+    def index(self) -> Optional[int]:
         """Get the index of the ID (ie. the value passed as index to the constructor).
 
         Returns:
-            int: The integer index of the ID.
+            Optional[int]: The integer index of the ID, or None if the index has not been
+                generated.
         """
         return self._index
 
