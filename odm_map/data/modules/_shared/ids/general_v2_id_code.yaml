@@ -12,5 +12,6 @@ primary_keys:
   protocols: protocolID
   protocolSteps: stepID
   qualityReports: qualityReportID
+  sampleRelationships: sampleRelationshipsID
   samples: sampleID
   sites: siteID
