@@ -27,8 +27,10 @@ steps:
       output_name: "{class_name}[preid].csv"
   - action: generate_ids
     params:
-      id_code: ids/odm_v1_to_v2_id_code.xlsx
-      id_config: ids/odm_v1_to_v2_id_config.yaml
+      id_code: 
+        - "{shared}/ids/general_v2_id_code.xlsx"
+      id_config: 
+        - "{shared}/ids/general_v2_id_code.yaml"
   - action: save
     params:
       output_dir: "{output_dir}"
