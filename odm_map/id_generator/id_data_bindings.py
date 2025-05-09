@@ -9,11 +9,15 @@ They provide access to linked values within all the known target tables. Follow 
 from typing import Optional, List, Union, Dict, Any
 import traceback
 
+from odm_map.utils.logger import get_logger
 from odm_map.id_generator.id_na import isna
 from odm_map.id_generator.generator_config_keys import ConfigKeys
+from odm_map.id_generator.id_value import IDValue
 
 # Value to use if a value from one of the classes/tables is empty.
 EMPTY_VALUE = "empty"
+
+logger = get_logger(__name__)
 
 
 class DataBindings:
@@ -24,6 +28,7 @@ class DataBindings:
         generator,
         root_class: Optional[str],
         sub_class_names: Optional[List[str]],
+        prefix: Optional[str] = None,
         replace_empty_values: bool = True,
     ):
         """Constructor for DataBindings.
@@ -43,11 +48,15 @@ class DataBindings:
                 of all the recognized classes (ie. tables). To retrieve the bindings for one of these classes, we
                 would retrieve the attribute (using the name of the class) on this binding. For example,
                 bindingsObj.column. The actual row that is retrieved depends on the current_row_index of the generator.
+            prefix (Optional[str], Optional): The prefix used to access this data binding. This is for informational
+                and debugging purposes, and represents how the data binding is accessed from custom ID code. eg. "dat",
+                "datEmpty".
             replace_empty_values (bool, Optional): If True, then replace any empty values returned by this binding
                 with the value EMPTY_VALUE.
         """
         self.generator = generator
         self.root_class = root_class
+        self.prefix = prefix
         self.replace_empty_values = replace_empty_values
         if sub_class_names:
             self.sub_classes = {
@@ -119,13 +128,26 @@ class DataBindings:
         if isinstance(linkage_path, str):
             linkage_path = self.get_named_linkage_path(source_class, linkage_path)
 
+        # prev_group_primary_keys = self.generator.group_primary_keys
+        # self.generator.group_primary_keys = not self.replace_empty_values
         v = self.generator.get_first_linked_value(
             source_class,
             source_index,
             self.root_class,
             target_slot,
             linkage_path=linkage_path,
+            generate_index_if_primary_key=not self.replace_empty_values,
         )
+        if (
+            not self.replace_empty_values
+            and isinstance(v, IDValue)
+            and self.generator.data[self.root_class].primary_key == target_slot
+            and not v.is_index_generated()
+        ):
+            logger.error(
+                f"Retrieved IDValue from primary key {self.prefix}.{self.root_class}.{target_slot} (source row: {source_class}:{source_index}) that has not yet had its index generated"
+            )
+        # self.generator.group_primary_keys = prev_group_primary_keys
 
         # Convert float to integer if it has no decimals
         if isinstance(v, float) and not isna(v):
