@@ -122,9 +122,9 @@ if __name__ == "__main__":
             # PHA4GE to ODM v2
             "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/temp/mapped_data"],
             "output_dir": "../../gen/pha4ge-to-v2/mapped_data_ids",
-            "id_code_files": ["../data/modules/_shared/ids/general_v2_id_code.xlsx"],
+            "id_code_files": ["../data/modules/_shared/ids/general_v2_id_code.xlsx", "../data/modules/pha4ge-to-v2/ids/pha4ge_to_v2_id_code.xlsx"],
             "id_code_sheets": ["id_code"],
-            "config_file": ["../data/modules/_shared/ids/general_v2_id_code.yaml"], #, "../data/modules/pha4ge-to-v2/ids/pha4ge_to_v2_id_code.yaml"],
+            "config_file": ["../data/modules/_shared/ids/general_v2_id_code.yaml", "../data/modules/pha4ge-to-v2/ids/pha4ge_to_v2_id_code.yaml"],
             "schema": "../data/modules/pha4ge-to-v2/schemas/odm_v2.yaml",
 
             "debug": True,
