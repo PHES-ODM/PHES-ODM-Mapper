@@ -564,7 +564,9 @@ class IDGenerator(object):
                         # generated and we can continue to the next loop.
                         v = self.data[class_name].get_data_value(slot, idx)
                         if not self.is_id_empty(v) and (
-                            not self.requires_primary_key_grouping(class_name, slot, v)
+                            not self.requires_primary_key_index_generation(
+                                class_name, slot, v
+                            )
                         ):  # or v.index_in_progress):
                             continue
 
@@ -674,6 +676,8 @@ class IDGenerator(object):
         linkage path found in the config file (under the ConfigKeys.CLASS_LINKAGES key). Typically, rows in different classes
         are linked by foreign keys and primary keys.
 
+        Note that the returned rows may have IDs that have not yet been calculated.
+
         Args:
             source_class (str): The source class that we are linking from.
             source_index (Union[int, List[int]]): The row index(es) in the source class to link from.
@@ -780,6 +784,8 @@ class IDGenerator(object):
     ) -> Union[np.ndarray, Tuple[np.ndarray, int]]:
         """Get the first row in target_class that is linked to the row at index source_index in the class source_class.
 
+        Note that the returned row may have IDs that have not yet been calculated.
+
         Args:
             source_class (str): The source class.
             source_index (int): The row index in the source class that we want to get the linked rows for.
@@ -824,17 +830,25 @@ class IDGenerator(object):
         linkage_path: Optional[Union[Dict, List[Dict]]] = None,
         generate_index_if_primary_key: bool = True,
     ) -> Any:
-        """Get the first value in target_class and slot target_slot that is linked to the row in source_class at row index source_index, using
-        the linkage_path to determine how to link from source_class to target_class. If linkage_path is None then we use the
-        linkage path found in the config file (self.config[ConfigKeys.CLASS_LINKAGES])
+        """Get the first value in target_class and slot target_slot that is linked to the row in source_class at row index
+        source_index, using the linkage_path to determine how to link from source_class to target_class. If linkage_path
+        is None then we use the linkage path found in the config file (self.config[ConfigKeys.CLASS_LINKAGES]).
+
+        If the value is for an ID that needs to be generated then it will be generated and the IDValue returned. If
+        generate_index_if_primary_key is True and the value is for a primary key, then the returned IDValue will
+        have its index calculated.
 
         Args:
             source_class (str): The source class we are linking from.
             source_index (int): The row index in the source class to link from.
             target_class (str): The target class that we want to get the linked value from.
             target_slot (str): The slot in the target class to get the value from.
-            linkage_path (Optional[Union[Dict, List[Dict]]], Optional): Configuration of how to link from source_class to target_class. If None then
-                the default linkage in the config file is used. Defaults to None.
+            linkage_path (Optional[Union[Dict, List[Dict]]], Optional): Configuration of how to link from source_class to
+                target_class. If None then the default linkage in the config file is used. Defaults to None.
+            generate_index_if_primary_key (bool): If True and the target class and slot are for a primary key, then
+                generate the index of the first linked value before returning it if the index has not yet been generated.
+                In a lot of cases we do not need the index, and calculating the index can result in circular dependencies
+                that cause an error.
 
         Returns:
             Any: The first linked value in the target class and slot. If no linked value is found then None is returned.
@@ -849,9 +863,12 @@ class IDGenerator(object):
         if target_slot in self.data[target_class].generated_slots:
             cur_value = self.data[target_class].get_value_from_row(row, target_slot)
             # The value needs to be generated if it is empty (ie. None, EMPTY_OBJ, or root_id is None) or
-            # if the root ID has been generated but its index has not (ie. group_primary_key() hasn't been called yet)
-            if self.is_id_empty(cur_value) or self.requires_primary_key_grouping(
-                target_class, target_slot, cur_value
+            # if the root ID has been generated but its index has not (ie. generate_primary_key_index() hasn't been called yet)
+            if self.is_id_empty(cur_value) or (
+                generate_index_if_primary_key
+                and self.requires_primary_key_index_generation(
+                    target_class, target_slot, cur_value
+                )
             ):
                 return self.calculate_id(
                     target_class,
@@ -863,9 +880,23 @@ class IDGenerator(object):
         # return row[self.get_column_index(target_class, target_slot)]
         return self.data[target_class].get_value_from_row(row, target_slot)
 
-    def requires_primary_key_grouping(
+    def requires_primary_key_index_generation(
         self, class_name: str, slot: str, id_value: Any
     ) -> bool:
+        """Test if the value (possibly an IDValue) needs to have its index generated, due to it being
+        a primary key that has not yet been grouped/indexed.
+
+        If id_value is not an IDValue (eg. it might be a string or float), then False is always returned.
+
+        Args:
+            class_name (str): The class the id_value belongs to.
+            slot (str): The slot in the class that the id_value belongs to.
+            id_value (Any): The value to test.
+
+        Returns:
+            bool: True if the value's index needs to be generated by calling generate_primary_key_index(), False
+                otherwise.
+        """
         if not isinstance(id_value, IDValue):
             return False
         return (
@@ -955,7 +986,9 @@ class IDGenerator(object):
         def _is_id_ready(v: Any) -> bool:
             """Check if the IDValue is ready to return. The value is ready when it is of type IDValue
             and either we do not need the IDValue's index or the IDValue's index has been generated.
-            The index gets generated by calling group_primary_key().
+            The index gets generated by calling generate_primary_key_index(). We call this function
+            multiple times, since there are many steps where a call to another function might result
+            in the IDValue having its index generated.
 
             Args:
                 v (Any): The IDValue to test.
@@ -963,10 +996,9 @@ class IDGenerator(object):
             Returns:
                 bool: True if the IDValue is ready to return, False otherwise.
             """
-            # return isinstance(v, IDValue) and (not self.group_primary_keys or v.is_index_generated())
             return isinstance(v, IDValue) and (
                 not generate_index_if_primary_key
-                or not self.requires_primary_key_grouping(class_name, slot, v)
+                or not self.requires_primary_key_index_generation(class_name, slot, v)
             )
 
         if class_name not in self.data:
@@ -1058,12 +1090,9 @@ class IDGenerator(object):
         # row is a duplicate or not of all other rows generated so far that have the same primary key value.
         # If it is a duplicate, we reuse an existing primary key ID from the duplicates. If it is not
         # a duplicate we make sure the primary key value is unique.
-        # if self.data[class_name].primary_key == slot and self.group_primary_keys:
-        if generate_index_if_primary_key and self.requires_primary_key_grouping(
+        if generate_index_if_primary_key and self.requires_primary_key_index_generation(
             class_name, slot, v
-        ):  # and not v.index_in_progress:
-            # if v.index_in_progress:
-            #     raise ValueError(f"Primary key grouping is required for value at {class_name}.{slot}:{row_index} but grouping is already in progress. This is due to circular dependencies for ID generation in the code file.")
+        ):
             v.index_in_progress = True
             self.make_all_ids(class_name, row_index, skip_slots=[slot])
 
@@ -1075,13 +1104,13 @@ class IDGenerator(object):
             # ID where the rows are identical, or will add an index to the end of the new ID
             # if there are no identical rows but the new ID is already in use (ie. we will
             # make the new ID unique)
-            v = self.data[class_name].group_primary_key(row_index)
+            v = self.data[class_name].generate_primary_key_index(row_index)
 
         if self.data[class_name].primary_key != slot or v.is_index_generated():
             self.update_progress(class_name, 1)
 
         if not _is_id_ready(v):
-            raise ValueError(
+            raise RuntimeError(
                 f"ID is not ready for returning when calculating ID for {class_name}.{slot}:{row_index}."
             )
 
