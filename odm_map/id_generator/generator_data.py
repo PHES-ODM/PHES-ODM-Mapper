@@ -11,9 +11,9 @@ data = GeneratorData(
     class_name="measures",
     input_data=["measures.csv"],
     primary_key="measureRepID",
-    lookup_slots=["measureRepID", "(__source_file_and_row__)"],
     generated_slots=["measureRepID", "siteID", "organizationID"],
 )
+data.init_lookup_table(["measureRepID", "(__source_file_and_row__)"])
 
 # ... process the data, generate IDs, etc ...
 
