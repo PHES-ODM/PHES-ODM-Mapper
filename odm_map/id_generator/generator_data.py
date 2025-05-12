@@ -225,7 +225,7 @@ class GeneratorData:
             lookup_slots = []
 
         # We always include UNINDEXED_PK_SLOT and self.primary_key, they are both used frequently
-        # by group_primary_key so we include them for performance reasons.
+        # by generate_primary_key_index so we include them for performance reasons.
         if not USE_PRIMARY_KEY_LIST and self.primary_key not in lookup_slots:
             lookup_slots = lookup_slots + [self.primary_key]
         if HASH_COLUMN not in lookup_slots:
@@ -467,7 +467,7 @@ class GeneratorData:
         hash_value = hash(val)
         return hash_value
 
-    def group_primary_key(self, row_index: int) -> Any:
+    def generate_primary_key_index(self, row_index: int) -> Any:
         """For the (unindexed) primary key value currently found at the row index,
         either group it with other rows generated so far that are identical to the row at row_index
         (by using the same primary key index as found in the duplicate rows), or if there are no other
