@@ -70,7 +70,6 @@ class GeneratorData:
         class_name: str,
         input_data: List[Union[str, Path, Dict, pd.DataFrame]],
         primary_key: str,
-        lookup_slots: Optional[List[str]] = None,
         generated_slots: Optional[List[str]] = None,
     ):
         # If True, then for determining if two rows are identical matches, include the columns that contain
@@ -159,8 +158,6 @@ class GeneratorData:
         self.data = self.orig_df.to_numpy()
         # Set all NA values to EMPTY_OBJ
         self.data[pd.isna(self.data)] = EMPTY_OBJ
-
-        self.init_lookup_table(lookup_slots)
 
     def __len__(self):
         return len(self.data)

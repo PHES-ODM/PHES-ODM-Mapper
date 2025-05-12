@@ -108,9 +108,6 @@ class IDGenerator(object):
         # Load all data from disk
         self.load_all(data_files=data_files, data_frames=data_frames)
 
-        # Prepare the config linkage paths (by cleaning them)
-        self.prepare_config_linkage_paths()
-
         # Create the bindings (function and data bindings)
         self.create_bindings()
 
@@ -146,7 +143,7 @@ class IDGenerator(object):
             with open(cur_config_file, "r") as f:
                 cur_config = yaml.safe_load(f)
 
-            # Do primary keys
+            # Merge primary keys
             if ConfigKeys.PRIMARY_KEYS in cur_config:
                 if ConfigKeys.PRIMARY_KEYS not in self.config:
                     self.config[ConfigKeys.PRIMARY_KEYS] = {}
@@ -154,7 +151,7 @@ class IDGenerator(object):
                     cur_config[ConfigKeys.PRIMARY_KEYS]
                 )
 
-            # Do class linkages
+            # Merge class linkages
             if ConfigKeys.CLASS_LINKAGES in cur_config:
                 if ConfigKeys.CLASS_LINKAGES not in self.config:
                     self.config[ConfigKeys.CLASS_LINKAGES] = {}
@@ -163,13 +160,75 @@ class IDGenerator(object):
                         self.config[ConfigKeys.CLASS_LINKAGES][key] = {}
                     self.config[ConfigKeys.CLASS_LINKAGES][key].update(val)
 
-            # Do named class linkages
+            # Merge named class linkages
             if ConfigKeys.NAMED_CLASS_LINKAGES in cur_config:
                 if ConfigKeys.NAMED_CLASS_LINKAGES not in self.config:
                     self.config[ConfigKeys.NAMED_CLASS_LINKAGES] = {}
                 self.config[ConfigKeys.NAMED_CLASS_LINKAGES].update(
                     cur_config[ConfigKeys.NAMED_CLASS_LINKAGES]
                 )
+
+    def get_class_lookup_slots(self, class_name: str) -> List[str]:
+        def _get_slots_for_class(linkages: Union[Dict, List[Dict]]) -> List[str]:
+            """Get all the slots for class_name that are referenced in the linkages.
+
+            Args:
+                linkages (Union[Dict, List[Dict]]): The linkages to retrieve the referenced slots
+                    from. Dictionaries should have all the LinkageKeys set.
+
+            Raises:
+                ValueError: The linkages are not in the correct format.
+
+            Returns:
+                List[str]: List of all slots for class_name referenced in the linkages.
+            """
+            slots = []
+            if isinstance(linkages, dict):
+                # First get the source_class/source_slot values, then the target_class/target_slot values.
+                for class_key, slot_key in [
+                    [LinkageKeys.SOURCE_CLASS, LinkageKeys.SOURCE_SLOT],
+                    [LinkageKeys.TARGET_CLASS, LinkageKeys.TARGET_SLOT],
+                ]:
+                    cur_class = linkages[class_key]
+                    if cur_class == class_name:
+                        # The class in the linkages matches class_name, so get all the referenced slots.
+                        cur_slots = linkages[slot_key]
+                        if isinstance(cur_slots, str):
+                            cur_slots = [cur_slots]
+                        for cur_slot in cur_slots:
+                            if cur_slot not in slots:
+                                slots += [cur_slot]
+            elif isinstance(linkages, list):
+                # The linkages is a list of dictionaries, so get the referenced slots
+                # from each of the dictionaries.
+                for cur_linkage in linkages:
+                    slots += _get_slots_for_class(cur_linkage)
+            else:
+                raise ValueError(
+                    f"Linkages must be a dict or list, but is of type {type(linkages)}: {linkages}"
+                )
+            return slots
+
+        # Get the hardcoded lookup slots for the class
+        lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get(class_name, [])
+
+        # Use all slots referenced in the class linkages as lookup slots
+        if self.config.get(ConfigKeys.CLASS_LINKAGES, None):
+            for target_linkages in self.config[ConfigKeys.CLASS_LINKAGES].values():
+                for linkages in target_linkages.values():
+                    lookup_slots += _get_slots_for_class(linkages)
+
+        # Use all slots referenced in the named class linkages as lookup slots
+        if self.config.get(ConfigKeys.NAMED_CLASS_LINKAGES, None):
+            for named_linkage in self.config[ConfigKeys.NAMED_CLASS_LINKAGES].values():
+                for target_linkages in named_linkage.values():
+                    for linkages in target_linkages.values():
+                        lookup_slots += _get_slots_for_class(linkages)
+
+        # Remove duplicates (but retain order, since it makes it easier for debugging)
+        lookup_slots = list(dict.fromkeys(lookup_slots))
+
+        return lookup_slots
 
     def load_all(
         self,
@@ -189,21 +248,32 @@ class IDGenerator(object):
         generated_slots = self.get_all_generated_slots_from_id_code()
         star_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get("*", [])
         all_data = merge_dicts_of_lists([data_files, data_frames])
+
         progress = ProgressCounter(
             {PREPARING_BARID: len(all_data)}, multiple_bars=False
         )
         with progress:
             for class_name, cur_data in all_data.items():
-                class_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get(class_name, [])
-                lookup_slots = list(set(class_lookup_slots + star_lookup_slots))
                 self.data[class_name] = GeneratorData(
                     class_name,
                     cur_data,
-                    lookup_slots=lookup_slots,
                     generated_slots=generated_slots.get(class_name, []),
                     primary_key=self.get_primary_key_from_config(class_name),
                 )
                 progress.update(PREPARING_BARID, 1)
+
+        # Prepare the config linkage paths (by cleaning them). This function
+        # requires that all the self.data objects have been generated (see above)
+        self.prepare_config_linkage_paths()
+
+        # Initialize the lookup tables (for fast searching) of all the data.
+        # We need to do this here (instead of above) because self.get_class_lookup_slots
+        # requires that the linkage paths in the config file have been prepared and
+        # cleaned by calling self.prepare_config_linkage_paths()
+        for class_name, data in self.data.items():
+            class_lookup_slots = self.get_class_lookup_slots(class_name)
+            lookup_slots = list(set(class_lookup_slots + star_lookup_slots))
+            data.init_lookup_table(lookup_slots)
 
     def create_bindings(self):
         """Create the function and data bindings. Should be called once all data has been loaded
@@ -257,6 +327,13 @@ class IDGenerator(object):
                 for target_class, linkages in target_linkages.items():
                     self.cleanup_linkage_path(source_class, target_class, linkages)
 
+        # Clean up named_class_linkages
+        if self.config.get(ConfigKeys.NAMED_CLASS_LINKAGES, None):
+            for named_linkage in self.config[ConfigKeys.NAMED_CLASS_LINKAGES].values():
+                for source_class, target_linkages in named_linkage.items():
+                    for target_class, linkages in target_linkages.items():
+                        self.cleanup_linkage_path(source_class, target_class, linkages)
+
     def cleanup_linkage_path(
         self, source_class: str, target_class: str, linkages: Union[Dict, List[Dict]]
     ):
@@ -273,6 +350,18 @@ class IDGenerator(object):
 
         Linkage paths can be a list of dictionaries instead of a single dictionary, in which case we link from
         the first item in the list to the last item in the list by following each successive linkage path.
+        For example, the following will link the measures table to the sites table: Notice too that in the
+        second dictionary in the list, we already know that the source_class is samples, since it is the
+        target_class in the previous step, and so "source_class: samples" can be removed.
+
+            - source_class: measures
+              source_slot: sampleID
+              target_class: samples
+              target_slot: sampleID
+            - source_class: samples
+              source_slot: siteID
+              target_class: sites
+              target_slot: siteID
 
         We infer that the first item in the linkage path starts at source_class and the last item in the
         path ends at target_class. Along the path, the source class of the current path item is the target
