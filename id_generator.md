@@ -83,34 +83,193 @@ according to the code in `code0` and `code1`.
 
 There are many cases where linking between rows in different output tables is
 required. For example, a row in the `measures` table, where a value is recorded
-(eg. quantity of covN1), would need a `sampleID` to associate it with a
-specific sample. These `sampleID`s may have been generated in the `samples`
-table, and we need to know which `sampleID` in particular to use in our row in
-the `measures` table. This pairing of rows is called linking. Once rows are
-linked between tables, we can extract other associated data from the linked
-rows, such as the sample's collection date and time.
+(eg. the population density of a site), would need a `contactID` for who
+recorded the population density. In the below example tables, we want to figure
+out which `contactID` to use for each row in the `measures` table:
 
-In the simplest case, we might have mapped a single source table such as NWSS
-to multiple target tables corresponding to the multiple tables found in ODM v2.
-In order to determine which `sampleID` to use, we simply need to identify which
-row in NWSS was used to populate the current row in `measures` and identify
-which row in `samples` was populated from the same NWSS row. This will give us
-our linked row which we can extract the `sampleID` from. We can also extract
-other values from the linked row, such as `collDT` for the collection date and
-time of the sample. The source row from NWSS that populated the target row is
-temporarily stored in the mapped tables for linking purposes (eg. see
-[fn.sourceclass](#fnsourceclass) and [fn.sourcerow](#fnsourcerow) below).
+measures table:
+| measureRepID         | measure    | value | unit        | contactID | (\_\_source_file_and_row\_\_) |
+|----------------------|------------|-------|-------------|-----------|---------------------------|
+| measurePopDensity001 | popDensity | 200   | personPerKm | ???       | source.csv/00             |
+| measureAmpSize001    | samVol     | 250   | ml          | ???       | source.csv/00             |
+| measurePopDensity002 | popDensity | 80    | personPerKm | ???       | source.csv/01             |
+| measureAmpSize002    | samVol     | 250   | ml          | ???       | source.csv/01             |
 
-By default, linking is performed by matching the source class and row number.
-However, this doesn't always work, especially if the source database has
-multiple tables such as with ODM v1. We can link by matching any column between
-rows (often we match a foreign key in one table with a primary key in another
-table, but the matching does not have to involve key values). We can also link
-via multiple tables, for example, from the source `measures` table, we can link
-to the `samples` table by matching the `sampleID` column, then from the
-`samples` table we can link to the `organizations` table by matching the
-`organizationID`. To specify this custom linking, one can use a function such
-as `fn.get_first_linked_value()` (see below).
+contacts table:
+| contactID   | firstName | lastName | (\_\_source_file_and_row\_\_) |
+|-------------|-----------|----------|---------------------------|
+| kojiYasuda  | Koji      | Yasuda   | source.csv/00             |
+| sukiBannayi | Suki      | Bannayi  | source.csv/01             |
+| doeLab      | Jane      | Doe      | source.csv/02             |
+
+In the tables above, the column `(__source_file_and_row__)` is added
+automatically by the mapper and specifies which source file and row (from the
+source dataset) was used to populate each of the rows in the target/output
+dataset. The source file would correspond to a table in the source dataset.
+
+The default behaviour when linking tables is to match the
+`(__source_file_and_row__)` values. So the first row in the `measures` table
+would receive the `contactID` "kojiYasuda" (since the source file and row is
+`source.csv/00`). The second row in `measures` would also receive "kojiYasuda",
+and the third and fourth rows would receive "sukiBannayi" (since the source
+file and row is `source.csv/01`):
+
+measures table:
+| measureRepID         | measure    | value | unit        | contactID   | (\_\_source_file_and_row\_\_) |
+|----------------------|------------|-------|-------------|-------------|---------------------------|
+| measurePopDensity001 | popDensity | 200   | personPerKm | kojiYasuda  | source.csv/00             |
+| measureAmpSize001    | samVol     | 250   | ml          | kojiYasuda  | source.csv/00             |
+| measurePopDensity002 | popDensity | 80    | personPerKm | sukiBannayi | source.csv/01             |
+| measureAmpSize002    | samVol     | 250   | ml          | sukiBannayi | source.csv/01             |
+
+Note that it's possible that there are multiple rows in the `contacts` table
+that have the same value in the `(__source_file_and_row__)` column (as with the
+`measures` table). Using the default behavior, the first matching row will be
+used, but it is possible to configure the ID generator to retrieve one of the
+later matching rows. This is discussed more below.
+
+### Custom Linking
+
+The default linking behaviour, as described previously, is to match the value
+in the column `(__source_file_and_row__)` between the source and target tables.
+It's possible, however, to match by any column, as well as to match by multiple
+columns. This is specified in the ID Generator config file, using either the
+`class_linkages` top-level key or the `named_class_linkages` top-level key.
+
+#### class_linkages
+
+By specifying values under the `class_linkages` configuration key, you can
+override the default linking behaviour of matching the
+`(__source_file_and_row__)` column. The general format of this key is:
+
+```yaml
+class_linkages:
+  source_table:
+    target_table:
+      source_slot: slot(s) to match (string or list of strings)
+      target_slot: slot(s) to match (string or list of strings)
+  source_table2:
+    target_table2:
+      source_slot: ...
+      target_slot: ...
+  # etc
+```
+
+For example, we can replicate the default behaviour of matching the
+`(__source_file_and_row__)` columns when linking from the `measures` table to
+the `contacts` table using the following:
+
+```yaml
+class_linkages:
+  measures:
+    contacts:
+      source_slot: "(__source_file_and_row__)"
+      target_slot: "(__source_file_and_row__)"
+```
+
+If we wanted to link by matching multiple columns, we could use:
+
+```yaml
+class_linkages:
+  measures:
+    contacts:
+      source_slot: ["(__source_file_and_row__)", "_extra_measures_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_contacts_tag"]
+```
+
+With the above example, we would link from `measures` to `samples` by matching
+`(__source_file_and_row__)` in both tables along with matching
+`_extra_measures_tag` in the `measures` table with `_extra_contacts_tag` in the
+`contacts` table. Below is an example:
+
+measures table:
+| measureRepID         | measure    | value | unit        | contactID | _extra_measures_tag | (__source_file_and_row__) |
+|----------------------|------------|-------|-------------|-----------|---------------------|---------------------------|
+| measurePopDensity001 | popDensity | 200   | personPerKm | ???       | collector           | source.csv/00             |
+| measureAmpSize001    | samVol     | 250   | ml          | ???       | lab                 | source.csv/00             |
+| measurePopDensity002 | popDensity | 80    | personPerKm | ???       | collector           | source.csv/01             |
+| measureAmpSize002    | samVol     | 250   | ml          | ???       | lab                 | source.csv/01             |
+
+contacts table:
+| contactID   | firstName | lastName | _extra_contacts_tag | (__source_file_and_row__) |
+|-------------|-----------|----------|---------------------|---------------------------|
+| kojiYasuda  | Koji      | Yasuda   | lab                 | source.csv/00             |
+| sukiBannayi | Suki      | Bannayi  | collector           | source.csv/00             |
+| johnSmith   | John      | Smith    | lab                 | source.csv/01             |
+| janeDoe     | Jane      | Doe      | collector           | source.csv/01             |
+
+For the first row in the `measures` table, the value for
+`(__source_file_and_row__)` is `source.csv/00` and the value for
+`_extra_measures_tag` is `collector`. In the `contacts` table there are two
+rows that match `source.csv/00`, but after also matching `_extra_measures_tag`
+in the `measures` table with `_extra_contacts_tag` in the `contacts` table (ie.
+`collector`), we now end up with only one matching `contacts` row: the one
+where `contactID` is `sukiBannayi`.
+
+##### Linking via Multiple Tables
+
+While uncommon and a bit convoluted, we may want to link from one table to
+another via one or more other tables. For example, to link from `measures` to
+`contacts` we may first link to `organizations`, ie. using the path `measures`
+-> `organizations` -> `contacts`. Below is an example of how this would be
+specified in the configuration file:
+
+```yaml
+class_linkages:
+  measures:
+    contacts:
+        -  source_class: measures
+           source_slot: _extra_measures_tag
+           target_class: organizations
+           target_slot: _extra_organizations_tag
+        -  source_class: organizations
+           source_slot: _extra_organizations2_tag
+           target_class: contacts
+           target_slot: _extra_contacts_tag
+```
+
+In the above example, any number of linkages can be specified. We first link
+from `measures` to `organizations` by matching `_extra_measures_tag` to
+`_extra_organizations_tag`. Note that this might result in multiple rows being
+matched. From these matched rows from `organizations`, we then match the column
+`_extra_organizations2_tag` with `_extra_contacts_tag` in the `contacts` table.
+Any of the values from the possibly multiple `organizations` rows can act as a
+match.
+
+#### named_class_linkages
+
+Specifying `class_linkages` will override the default behavior for linking from
+a source to a target table, providing a new default linkage. We can also used
+named linkages in a similar fashion. These linkages do not override the default
+behaviour, but in the ID code generation file they can be used by explicitly
+providing the name of the linkage path to use instead of the default behaviour.
+
+The example configuration below will create a linkage named
+`custom_measures_to_contact`. If this linkage is explicitly provided, then all
+of the linkage paths specified will be used. In this case, there's a custom
+linkage from `measures` to `contacts`.
+
+```yaml
+named_class_linkages:
+  custom_measures_to_contact:
+    measures:
+      contacts:
+        source_slot: ["(__source_file_and_row__)", "_extra_measures_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_contacts_tag"]
+```
+
+The name is usually provided when accessing data in the ID configuration file
+using any of the `dat` or `datEmpty` variables, which are described below. An
+example would be:
+
+```python
+dat.contacts.get_first_linked_value("contactID", linkage_path="custom_measures_to_contact")
+```
+
+The above example will retrieve the `contactID` from the `contacts` table, from
+whatever the current class is (eg. it might be the `measures` class), and would
+use the named class linkage `custom_measures_to_contact`. More on `dat` and
+`datEmpty` are provided below.
 
 ## Code Namespaces
 
@@ -123,46 +282,98 @@ There are several namespaces that can be used in the ID generation code:
 
 The *dat* and *datEmpty* namespaces provide access to all the target database
 tables and slots. Accessing these namespaces will return values from linked
-rows. The format is `dat.className.slotName`, for example,
-`dat.samples.sampleID` will return the `sampleID` of the linked row in the
-`samples` table. Linking is performed by matching the class and row number in
-the source database used to populate the current row. If linking via different
-slots or tables is required, use `get_first_linked_value` (see below for
-details).
+rows. The format is `dat.className.slotName`. For example,
+`dat.samples.sampleID` will return the `sampleID` of the *first* linked row in
+the `samples` table. In this case, the source class is the class name for the
+current row (under the `class` column of the ID code config file) and the
+target class is the `className` in `dat.className.slotName`. It will use the
+default linkage path specified in the config file under the
+[class_linkages](#class_linkages) key, from the source to the target class.
 
-If a slot is accessed using either `dat` or `datEmpty` (including accessing
-intermediary slots used for linking between rows), and the slot is configured
-to have a generated ID according to the ID config file, then the value of that
-slot will be calculated before returning the value.
+There are two very important differences between *dat* and *datEmpty*:
 
-If `dat` is used to access a value, then the value will be returned. If
-`datEmpty` is used, then the value will also be returned, but if the value is
-blank or does not exist, then the string "empty" will be returned. The
-`datEmpty` namespace is useful when creating IDs with the `fn.makeid()`
-function, in which we would like the different parts of the ID to be non-empty.
+1. If *dat* is used and the slot is a primary key (eg.
+   `dat.contacts.contactID`), then the returned value will also have an index
+   associated with it. This index is added to the primary keys in case more
+   than one row as the same primary key value, but those rows are not
+   identical. It ensures that the primary keys are unique. For example, in the
+   following table `contactID` is the primary key. Each row has the same root
+   ID for `contactID` (ie. `myContact`). To ensure that the primary keys are
+   unique, an index is added to the second and third rows:
+
+    | contactID    | firstName | lastName |
+    |--------------|-----------|----------|
+    | myContact    | Koji      | Yasuda   |
+    | myContact001 | Suki      | Bannayi  |
+    | myContact002 | Jane      | Doe      |
+
+    So `dat.contact.contactID` would return the ID with the index (ie.
+    `myContact`, `myContact001`, or `myContact002`). On the other hand,
+    `datEmpty` will not return the index. In all cases,
+    `datEmpty.contacts.contactID` will return `myContact`, even if we link to
+    the second or third row.
+
+2. If *datEmpty* is used to access a slot and the value in that slot is blank,
+   then the string `empty` will be returned, whereas using `dat` will return an
+   empty string.
+
+#### When to use dat vs datEmpty
+
+Whenever you require the exact value of an ID, for example if you're trying to
+populate a foreign key to point to a primary key, use the `dat` namespace. In
+all other cases, `datEmpty` should be used. For example, if you're trying to
+construct an ID based on other IDs, then `datEmpty` should be used. Below is an
+example:
+
+| contactID                 | organizationID    | siteID         |
+|---------------------------|-------------------|----------------|
+| ottawaHospitalCivicCampus | ottawaHospital001 | civicCampus002 |
+
+`contactID` was calculated by combining the `organizationID` and the `siteID`
+into a single string. In this case, *datEmpty* should be used (if `dat` were
+used instead, then the `contactID` would become
+`ottawaHospital001CivicCampus002`). The reason for limiting the use of `dat`
+and only using `dat` for foreign keys is that using it will always result in
+the index of the primary key to be calculated. In order to calculate the index,
+it must determine if the row is unique or not. If it is unique, a new index
+must be created. If it is not unique, an existing index from another
+already-existing identical row is used. To determine if rows are unique, all
+values in that row must be calculated, and within those values if `dat` is used
+then it will also trigger other indices to be calculated in other tables. This
+triggering of index calculations can propogate and can easily lead to circular
+dependencies. Since `datEmpty` does not require the index, it is much less
+likely that it would lead to circular dependencies. The `datEmpty` namespace is
+especially useful when creating IDs with the `fn.makeid()` function (see
+below).
 
 In order to access the value that a slot had BEFORE it was generated, precede
 the slot name with two underscores (`__`). For example, if `sampleID` in table
 `samples` is generated through the ID config file, then `dat.samples.sampleID`
 will return the generated ID, whereas `dat.samples.__sampleID` will return the
-original `sampleID` before it was generated (ie. what `sampleID` was initially
-populated with).
+original unmodified `sampleID` before it was generated (ie. what `sampleID` was
+initially populated with).
 
 #### dat.targetClass.get_first_linked_value(target_slot, linkage_path=None)
 
-Extract the value in `target_slot` for the first linked row in the target
-table. The following two operations are equivalent and will extract the
-`sampleID` for the linked row in the target table `samples`:
+This function will extract the value in `target_slot` for the first linked row
+in the target table. The following two operations are equivalent and will
+extract the `sampleID` for the linked row in the target table `samples`:
 
 ```python
 dat.samples.get_first_linked_value("sampleID")
 dat.samples.sampleID
 ```
 
-If `linkage_path` is None, then linking is performed by matching the source
-database table and row used to populate the current row being generated.
+If `linkage_path` is None, then linking is performed by matching the
+`(__source_file_and_row__)` column, or if this behaviour is overridden in the
+config file, then the linkage path found under the
+[class_linkages](#class_linkages) key will be used.
 
-`linkage_path` can also be a dictionary of the form:
+`linkage_path` can also be a named linkage path (a string). The name refers to
+a linkage path specified in the configuration file under the
+[named_class_linkages](#named_class_linkages) key.
+
+The `linkage_path` parameter can also be a dictionary of the form:
 
 ```python
 linkage_path = {
@@ -171,13 +382,14 @@ linkage_path = {
 }
 ```
 
-The above linkage path would extract the linked row in the target table (ie.
-the table named `tableName` when calling
-`dat.tableName.get_first_linked_value()`) where the value in `targetSlotName`
-is equal to the value in `sourceSlotName` of the current row.
+The `source_slot` and `target_slot` specify which slot(s) to match between the
+source and target tables to perform linking, as specified in the
+[class_linkages](#class_linkages) section ("sourceSlotName" and
+"targetSlotName" can also be arrays of strings, if matching between multiple
+columns/slots is desired). The default behaviour is to use
+`(__source_file_and_row__)` for both the source and target slots.
 
-It is also possible to link via multiple tables using an array of linkage
-paths:
+It is also possible to link via multiple tables using an array of linkage paths:
 
 ```python
 linkage_path = [
@@ -202,20 +414,8 @@ linkage_path = [
 ]
 ```
 
-In the above example, we first link to table `class_b` by matching the value in
-`slot_a` of the current row with values in `slot_b` of the target table. Once
-the linked row is found, we use that new row to link to table `class_c` by
-matching the value in `slot_b2` of the new current row with values in `slot_c`
-of the target table `class_c`. Once the linked row is found, we repeat the step
-to get the final linked value in slot `slot_d` of table `class_d`.
-
-Note that `source_class` can be excluded from the first dictionary, as it is
-already implied by the current class that IDs are being generated for (ie. the
-`class` column in the ID config file that the code belongs to). `source_class`
-can also be excluded in any of the other dictionaries as it is implied by the
-`target_class` of the previous dictionary. Finally, `target_class` can be
-omitted from the final dictionary as it is implied in the call to
-`dat.targetClass.get_first_linked_value()`.
+This is again the same as found in the ID generator config file, as described
+in the [class_linkages](#class_linkages) section above.
 
 ### fn Namespace
 
