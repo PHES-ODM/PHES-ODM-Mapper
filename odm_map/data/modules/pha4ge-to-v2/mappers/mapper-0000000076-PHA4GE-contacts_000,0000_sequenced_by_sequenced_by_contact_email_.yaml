@@ -15,9 +15,6 @@ class_derivations:
       email:
         name: email
         populated_from: sequenced_by_contact_email
-      notes:
-        name: notes
-        expr: '''sequenced by'''
       firstName:
         name: firstName
         expr: "def get_name(full_name, get_first):\n    if not full_name:\n      \

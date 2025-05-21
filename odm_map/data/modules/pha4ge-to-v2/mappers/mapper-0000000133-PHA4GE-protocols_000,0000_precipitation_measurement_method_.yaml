@@ -1,6 +1,6 @@
 class_derivations:
-  protocols[000,0000=experimental_protocol_field-precipitation_measurement_method]:
-    name: protocols[000,0000=experimental_protocol_field-precipitation_measurement_method]
+  protocols[000,0000=precipitation_measurement_method]:
+    name: protocols[000,0000=precipitation_measurement_method]
     populated_from: PHA4GE
     slot_derivations:
       _extra_datasetID_tag:
@@ -12,18 +12,25 @@ class_derivations:
       _extra_contactID_tag:
         name: _extra_contactID_tag
         expr: '''sample collected by'''
-      name:
-        name: name
-        populated_from: experimental_protocol_field
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''precipitation measurement method'''
       protocolID:
         name: protocolID
+        expr: '''precipitation measurement method'''
+      _extra_protocol_filter:
+        name: _extra_protocol_filter
         populated_from: precipitation_measurement_method
       notes:
         name: notes
         expr: '''precipitation measurement method'''
+      name:
+        name: name
+        expr: '"precipitation measurement method (" + str(experimental_protocol_field)
+          + "): " + str(precipitation_measurement_method)'
   Container:
     name: Container
     slot_derivations:
-      protocols[000,0000=experimental_protocol_field-precipitation_measurement_method]:
+      protocols[000,0000=precipitation_measurement_method]:
         populated_from: PHA4GE
 enum_derivations: {}

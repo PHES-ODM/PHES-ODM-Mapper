@@ -14,7 +14,7 @@ class_derivations:
         expr: '''raw sequence data processing method'''
       _extra_protocolRelationships_containerProtocolID:
         name: _extra_protocolRelationships_containerProtocolID
-        expr: '''artificial_SequencingProtocol'''
+        expr: '''artificial_sequencingProtocol'''
       method:
         name: method
         expr: '''rawSeqProc'''

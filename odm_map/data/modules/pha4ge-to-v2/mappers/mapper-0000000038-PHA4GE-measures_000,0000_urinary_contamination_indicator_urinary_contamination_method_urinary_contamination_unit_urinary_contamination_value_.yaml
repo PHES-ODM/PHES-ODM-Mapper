@@ -24,15 +24,18 @@ class_derivations:
       _extra_measureRepID_tag:
         name: _extra_measureRepID_tag
         expr: '""'
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''urinary contamination method'''
+      protocolID:
+        name: protocolID
+        populated_from: urinary_contamination_method
       _extra_contactID_tag:
         name: _extra_contactID_tag
         expr: '''sample collected by'''
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
         expr: '''sample collected by'''
-      protocolID:
-        name: protocolID
-        populated_from: urinary_contamination_method
       specimen:
         name: specimen
         expr: '''sa'''

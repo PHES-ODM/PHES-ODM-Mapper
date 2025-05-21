@@ -5,7 +5,7 @@ class_derivations:
     slot_derivations:
       _extra_protocolIDContainer_tag:
         name: _extra_protocolIDContainer_tag
-        expr: '''artificial_SequencingProtocol'''
+        expr: '''artificial_sequencingProtocol'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
         expr: '''deduplication method'''
@@ -14,7 +14,7 @@ class_derivations:
         expr: '''relNR'''
       _extra_stepIDSub_tag:
         name: _extra_stepIDSub_tag
-        expr: '''dehosting method'''
+        expr: '''<blank>'''
   Container:
     name: Container
     slot_derivations:

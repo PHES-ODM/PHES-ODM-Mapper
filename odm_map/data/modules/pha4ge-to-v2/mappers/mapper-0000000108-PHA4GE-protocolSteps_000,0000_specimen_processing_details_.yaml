@@ -14,7 +14,7 @@ class_derivations:
         expr: '''specimen processing'''
       _extra_protocolRelationships_containerProtocolID:
         name: _extra_protocolRelationships_containerProtocolID
-        expr: '''artificial_SequencingProtocol'''
+        expr: '''artificial_sequencingProtocol'''
       summ:
         name: summ
         populated_from: specimen_processing_details

@@ -1,6 +1,6 @@
 class_derivations:
-  protocols[000,0000=experimental_protocol_field-fecal_coliform_count_method]:
-    name: protocols[000,0000=experimental_protocol_field-fecal_coliform_count_method]
+  protocols[000,0000=fecal_coliform_count_method]:
+    name: protocols[000,0000=fecal_coliform_count_method]
     populated_from: PHA4GE
     slot_derivations:
       _extra_datasetID_tag:
@@ -12,18 +12,25 @@ class_derivations:
       _extra_contactID_tag:
         name: _extra_contactID_tag
         expr: '''sample collected by'''
-      name:
-        name: name
-        populated_from: experimental_protocol_field
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''fecal coliform count method'''
       protocolID:
         name: protocolID
+        expr: '''fecal coliform count method'''
+      _extra_protocol_filter:
+        name: _extra_protocol_filter
         populated_from: fecal_coliform_count_method
       notes:
         name: notes
         expr: '''fecal coliform count method'''
+      name:
+        name: name
+        expr: '"fecal coliform count method (" + str(experimental_protocol_field)
+          + "): " + str(fecal_coliform_count_method)'
   Container:
     name: Container
     slot_derivations:
-      protocols[000,0000=experimental_protocol_field-fecal_coliform_count_method]:
+      protocols[000,0000=fecal_coliform_count_method]:
         populated_from: PHA4GE
 enum_derivations: {}

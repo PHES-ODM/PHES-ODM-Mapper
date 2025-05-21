@@ -8,13 +8,16 @@ class_derivations:
         expr: '"specimen collector project ID"'
       _extra_protocolID_tag:
         name: _extra_protocolID_tag
-        expr: '''artificial_SequencingProtocol'''
+        expr: '''artificial_serotypeProtocol'''
       name:
         name: name
-        expr: '''Sequencing protocol (includes sample processing)'''
+        expr: '''Serotyping protocol'''
       protocolID:
         name: protocolID
-        expr: '''artificial_SequencingProtocol'''
+        expr: '''artificial_serotypeProtocol'''
+      _extra_protocol_filter:
+        name: _extra_protocol_filter
+        expr: '''keep'''
       notes:
         name: notes
         expr: '''articifical protocol container for capturing protocolSteps that link

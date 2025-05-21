@@ -24,6 +24,12 @@ class_derivations:
       _extra_measureRepID_tag:
         name: _extra_measureRepID_tag
         expr: '""'
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''<blank>'''
+      protocolID:
+        name: protocolID
+        populated_from: sequencing_protocol
       _extra_measureSetRepID_tag:
         name: _extra_measureSetRepID_tag
         expr: '''bioinformatics and qc metrics'''
@@ -33,9 +39,6 @@ class_derivations:
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
         expr: '''sequenced by'''
-      protocolID:
-        name: protocolID
-        populated_from: sequencing_protocol
       specimen:
         name: specimen
         expr: '''sa'''

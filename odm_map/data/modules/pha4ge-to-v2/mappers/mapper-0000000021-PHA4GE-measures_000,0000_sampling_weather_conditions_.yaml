@@ -24,6 +24,9 @@ class_derivations:
       _extra_measureRepID_tag:
         name: _extra_measureRepID_tag
         expr: '""'
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''<blank>'''
       _extra_contactID_tag:
         name: _extra_contactID_tag
         expr: '''sample collected by'''

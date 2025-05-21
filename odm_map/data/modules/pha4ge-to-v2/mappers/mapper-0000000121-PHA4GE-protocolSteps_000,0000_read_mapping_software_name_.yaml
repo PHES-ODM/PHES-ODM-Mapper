@@ -14,7 +14,7 @@ class_derivations:
         expr: '''read mapping software name'''
       _extra_protocolRelationships_containerProtocolID:
         name: _extra_protocolRelationships_containerProtocolID
-        expr: '''artificial_SequencingProtocol'''
+        expr: '''artificial_sequencingProtocol'''
       measure:
         name: measure
         expr: '''readMapper'''

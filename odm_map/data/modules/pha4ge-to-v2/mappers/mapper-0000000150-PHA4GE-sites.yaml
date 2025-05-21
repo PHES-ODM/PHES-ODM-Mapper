@@ -23,10 +23,10 @@ class_derivations:
         populated_from: wastewater_system_type
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
-        expr: '"blank"'
+        expr: '"<blank>"'
       _extra_contactID_tag:
         name: _extra_contactID_tag
-        expr: '"blank"'
+        expr: '"<blank>"'
   Container:
     name: Container
     slot_derivations:

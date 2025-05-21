@@ -14,7 +14,7 @@ class_derivations:
         expr: '''relNR'''
       _extra_stepIDSub_tag:
         name: _extra_stepIDSub_tag
-        expr: '''blank'''
+        expr: '''<blank>'''
   Container:
     name: Container
     slot_derivations:

@@ -17,7 +17,7 @@ class_derivations:
         expr: '''sequencing assay type'''
       _extra_protocolRelationships_containerProtocolID:
         name: _extra_protocolRelationships_containerProtocolID
-        expr: '''artificial_SequencingProtocol'''
+        expr: '''artificial_sequencingProtocol'''
       method:
         name: method
         expr: '''seqStrat'''

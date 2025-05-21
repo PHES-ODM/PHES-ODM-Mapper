@@ -8,7 +8,7 @@ class_derivations:
         expr: '''diagnostic measurement method 1'''
       _extra_protocolRelationships_containerProtocolID:
         name: _extra_protocolRelationships_containerProtocolID
-        expr: '''artificial_SequencingProtocol'''
+        expr: '''artificial_sequencingProtocol'''
       method:
         name: method
         expr: '''pcrmeth'''

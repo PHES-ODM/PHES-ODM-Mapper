@@ -1,6 +1,6 @@
 class_derivations:
-  protocols[000,0000=]:
-    name: protocols[000,0000=]
+  protocols[000,0000=water_catchment_area_human_population_measurement_method]:
+    name: protocols[000,0000=water_catchment_area_human_population_measurement_method]
     populated_from: PHA4GE
     slot_derivations:
       _extra_datasetID_tag:
@@ -11,10 +11,13 @@ class_derivations:
         expr: '''artificial_humanPopProtocol'''
       name:
         name: name
-        expr: '''Human population measurement protocol'''
+        expr: '"water catchment area human population measurement method: " + str(water_catchment_area_human_population_measurement_method)'
       protocolID:
         name: protocolID
         expr: '''artificial_humanPopProtocol'''
+      _extra_protocol_filter:
+        name: _extra_protocol_filter
+        populated_from: water_catchment_area_human_population_measurement_method
       notes:
         name: notes
         expr: '''articifical protocol container for capturing protocolSteps that link
@@ -22,6 +25,6 @@ class_derivations:
   Container:
     name: Container
     slot_derivations:
-      protocols[000,0000=]:
+      protocols[000,0000=water_catchment_area_human_population_measurement_method]:
         populated_from: PHA4GE
 enum_derivations: {}

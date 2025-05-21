@@ -12,18 +12,24 @@ class_derivations:
       _extra_contactID_tag:
         name: _extra_contactID_tag
         expr: '''sequenced by'''
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''quality control method name'''
       summ:
         name: summ
         populated_from: bioinformatics_protocol
-      name:
-        name: name
-        populated_from: quality_control_method_name
       protocolID:
         name: protocolID
+        populated_from: quality_control_method_name
+      _extra_protocol_filter:
+        name: _extra_protocol_filter
         populated_from: quality_control_method_name
       protocolVersion:
         name: protocolVersion
         populated_from: quality_control_method_version
+      name:
+        name: name
+        expr: '"quality control method name: " + str(quality_control_method_name)'
   Container:
     name: Container
     slot_derivations:
