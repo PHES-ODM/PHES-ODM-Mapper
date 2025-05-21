@@ -16,6 +16,9 @@ inputFilter,outputFilter,class,slot,operation,value
 2,,protocolSteps,,apply_filter,protocolSteps
 ,,,,,
 ,3,sampleRelationships,,create_filter,TRUE
-3,3,sampleRelationships,sampleIDSubject,exclude_equals,
 3,3,sampleRelationships,sampleIDObject,exclude_equals,
 3,,sampleRelationships,,apply_filter,sampleRelationships
+,,,,,
+,4,protocols,,create_filter,TRUE
+4,4,protocols,_extra_protocol_filter,exclude_equals,
+4,,protocols,,apply_filter,protocols
