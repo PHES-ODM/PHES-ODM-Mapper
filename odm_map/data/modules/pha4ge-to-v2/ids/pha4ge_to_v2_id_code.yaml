@@ -16,6 +16,9 @@ class_linkages:
     measureSets:
       source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
       target_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+    protocols:
+      source_slot: ["(__source_file_and_row__)", "_extra_protocolID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_protocolID_tag"]
   protocols:
     # datasets:
     #   source_slot: ["(__source_file_and_row__)", "_extra_datasetID_tag"]
