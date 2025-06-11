@@ -219,15 +219,19 @@ installed conversion modules can be seen by running:
 odm-map --help
 ```
 
-If you have created a custom module, use the `--module-dir` argument to point
+If you have created a custom module, use the `--module-path` argument to point
 to the full path of the module directory instead of `--module`:
 
 ```console
 odm-map \
-    --module-dir "path/to/module" \
+    --module-path "path/to/module" \
     --output-dir "path/to/outputdata" \
     "path/to/inputdata"
 ```
+
+`--module-path` can also point to a ZIP file containing the module. This is
+designed to make it easier to distribute modules in single ZIP files. To create
+a ZIP module simply compress the root directory of a module into a ZIP file.
 
 ### CLI Arguments
 
@@ -243,8 +247,8 @@ The following command-line options can be specified with odm-map:
 
 | Parameter            | Description |
 |:---------------------|:----------- |
-| `--module`           | The conversion module to use. The module specifies the source (eg. NWSS) and target (eg. ODM v2) database formats. Only one of `--module` or `--module-dir` must be specified. A list of available modules can be seen by running the script with the `--help` flag. |
-| `--module-dir`       | The directory to the module to use. This is often used for custom modules. Only one of `--module` or `--module-dir` must be specified. |
+| `--module`           | The conversion module to use. The module specifies the source (eg. NWSS) and target (eg. ODM v2) database formats. Only one of `--module` or `--module-path` must be specified. A list of available modules can be seen by running the script with the `--help` flag. |
+| `--module-path`      | The path of the directory of the module to use, or the path to a module stored in a ZIP file to use. This is used for custom modules. Only one of `--module` or `--module-path` must be specified. |
 | `--output-dir`       | The directory to save the mapped data to. The file names will be the output table names, and are in CSV format. This command-line parameter is required. |
 | `--max-processes`    | Number of processors to use while mapping. For large datasets this can help improve performance. By default only one process is used. |
 | `--max-rows`         | *(For debugging purposes)* Maximum number of rows to map from each source table. If not specified, or 0, then all rows are mapped. |
