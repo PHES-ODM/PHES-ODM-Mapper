@@ -6,3 +6,4 @@ linkml-map==0.3.8
 openpyxl==3.1.5
 sortedcontainers==2.4.0
 typer==0.12.3
+click==8.1.8
