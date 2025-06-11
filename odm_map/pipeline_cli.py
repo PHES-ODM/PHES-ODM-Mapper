@@ -9,8 +9,8 @@ ODM v2 (replacing values where appropriate):
 cd src
 python3 pipeline_cli.py \
     --module odm-v1-to-v2 \
-    --input-dir "path/to/input/data" \
-    --output-dir "../gen/odm-v1-to-v2"
+    --output-dir "../gen/odm-v1-to-v2" \
+    "path/to/input/data"
 ```
 """
 
@@ -19,7 +19,7 @@ from datetime import datetime
 import typer
 from click.exceptions import UsageError, ClickException
 
-from odm_map.utils.modules import get_all_modules
+from odm_map.utils.pipeline_module import get_all_modules
 from odm_map.utils.logger import get_logger, make_logger_bullet_list
 from odm_map.utils.clean_exit_error import CleanExitError
 
@@ -63,16 +63,17 @@ table "WWMeasure". If no match is found then the file or sheet is ignored."""
 
 
 MODULE_HELP = f"""The installed module name for the conversion. Allowable
-               values: {_module_names}. Either the --module or --module-dir
+               values: {_module_names}. Either the --module or --module-path
                command-line arguments must be provided (but not both). A module
                specifies the source dataset type, the target dataset type, and
                all required configuration for the conversion."""
 
-MODULE_DIR_HELP = """The module directory for the conversion. Either the
-                  --module or --module-dir command-line arguments must be
-                  provided (but not both). A module specifies the source
-                  dataset type, the target dataset type, and all required
-                  configuration for the conversion."""
+MODULE_PATH_HELP = """The module directory or zip file that defines the full
+                  configuration for the conversion (eg. a module for mapping
+                  from PHA4GE to ODM v3). Either the --module or --module-path
+                  command-line arguments must be provided (but not both). A
+                  module specifies the source dataset type, the target dataset
+                  type, and all required configuration for the conversion."""
 
 OUTPUT_DIR_HELP = """Directory to save all the mapped data to."""
 
@@ -103,7 +104,7 @@ def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     module: Annotated[str, typer.Option(help=MODULE_HELP)] = None,
-    module_dir: Annotated[str, typer.Option(help=MODULE_DIR_HELP)] = None,
+    module_path: Annotated[str, typer.Option(help=MODULE_PATH_HELP)] = None,
     temp_dir: Annotated[str, typer.Option(help=TEMP_DIR_HELP)] = None,
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
     max_processes: Annotated[int, typer.Option(help=MAX_PROCESSES_HELP)] = 1,
@@ -111,11 +112,11 @@ def main(
 ):
     try:
         # Do some checks on the CLI options
-        if not module and not module_dir:
-            raise UsageError("Either '--module' or '--module-dir' must be specified.")
-        if module and module_dir:
+        if not module and not module_path:
+            raise UsageError("Either '--module' or '--module-path' must be specified.")
+        if module and module_path:
             raise UsageError(
-                "Only one of '--module' or '--module-dir' can be specified."
+                "Only one of '--module' or '--module-path' can be specified."
             )
         if module and module not in get_all_modules(include_titles=False):
             raise UsageError(
@@ -127,15 +128,16 @@ def main(
         # These imports are placed here entirely for performance reasons. The imports can
         # take some time, so we make sure all cli error checking is done first. It will also
         # avoid these imports when the user runs with the --help cli flag.
-        from linkml_runtime import SchemaView
         from odm_map.pipeline import Pipeline
-        from odm_map.utils.modules import get_source_schema
+        from odm_map.utils.pipeline_module import PipelineModule
         from odm_map.utils.cli_utils import get_input_data_files
         from odm_map.utils.schema_utils import all_classes_without_tree_root
 
-        source_schema = get_source_schema(module, module_dir)
-        if source_schema and not isinstance(source_schema, SchemaView):
-            source_schema = SchemaView(source_schema)
+        # Load the module
+        module = PipelineModule(module, module_path)
+
+        # Get and load the source schema
+        source_schema = module.get_source_schema_view()
 
         data_files = get_input_data_files(inputs, schema=source_schema)
 
@@ -150,7 +152,7 @@ def main(
         # Run the Pipeline (ie. do the full mapping)
         pipeline = Pipeline(
             module=module,
-            module_dir=module_dir,
+            module_path=None,
         )
         pipeline.run(
             data_files=data_files,
@@ -178,39 +180,39 @@ if __name__ == "__main__":
             # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/"],
             # # "inputs": ["a.xlsx"],
             # "module": "odm-v1-to-v2",
-            # "module_dir": None,
+            # "module_path": None,
             # # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"],
             # # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
             # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"],
-            # "output_dir": "../gen/odm-v1-to-v2-test-new",
-            # "temp_dir": None, #"../gen/odm-v1-to-v2-test-excel/temp",
+            # "output_dir": "../gen/odm-v1-to-v2",
+            # "temp_dir": "../gen/odm-v1-to-v2/temp",
 
             # NWSS to v2,
             # "module": "nwss-reporting-to-v2",
-            # "module_dir": None,
+            # "module_path": None,
             # # "inputs": ["../../../PHES-ODM-Data/nwss/private_renamed_test/"],
             # # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/"],
             # # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/nwss[cdc-nwss-restricted-dataset-wastewater-20240730].csv"],
             # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_small/"],
             # # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"],
             # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"],
-            # "output_dir": "../gen/nwss-reporting-to-v2-clean",
-            # "temp_dir": "../gen/nwss-reporting-to-v2-clean/temp",
+            # "output_dir": "../gen/nwss-reporting-to-v2",
+            # "temp_dir": "../gen/nwss-reporting-to-v2/temp",
 
             # PHA4GE to ODM v2
-            "module": "pha4ge-to-v2",
-            "module_dir": None,
-            # "inputs": ["../../../PHES-ODM-Data/nwss/private_renamed_test/"],
-            # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/"],
-            # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/nwss[cdc-nwss-restricted-dataset-wastewater-20240730].csv"],
-            "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108.xlsx"],
-            # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"],
+            "module": None, #"pha4ge-to-v2",
+            # "module_path": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/pha4ge-to-v2.zip", #None,
+            "module_path": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/pha4ge-to-v2b.zip",
+            "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-large.xlsx"],
+            # "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-enums-test.xlsx"],
+            # "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-protocols-test.xlsx"],
+            # "inputs": ["../../../PHES-ODM-Data/PHA4GE/bad.xlsx"],
             # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"],
             "output_dir": "../gen/pha4ge-to-v2",
             "temp_dir": "../gen/pha4ge-to-v2/temp",
 
             "max_processes": 1,
-            "max_rows": 1000,
+            "max_rows": 10,
             "debug": True,
         }
         # fmt: on

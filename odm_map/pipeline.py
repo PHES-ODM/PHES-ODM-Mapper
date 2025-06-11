@@ -6,7 +6,7 @@ from pipeline import Pipeline
 
 pipeline = Pipeline(
     module="odm-v1-to-v2",
-    module_dir=None,
+    module_path=None,
 )
 
 pipeline.run(
@@ -25,23 +25,18 @@ from datetime import datetime
 import tempfile
 import pandas as pd
 
-from linkml_runtime import SchemaView
-
 from odm_map.actions.action_clean_data import action_clean_data
 from odm_map.actions.action_save_data import action_save_data
 from odm_map.actions.action_map_data import action_map_data
 from odm_map.actions.action_generate_ids import action_generate_ids
 from odm_map.actions.action_filter_data import action_filter_data
 from odm_map.actions.action_expand_data import action_expand_data
-from odm_map.utils.modules import (
-    get_module_config,
-    get_module_dir,
-    MODULE_SOURCE_SCHEMA_KEY,
+from odm_map.utils.pipeline_module import (
+    PipelineModule,
     MODULE_STEPS_KEY,
     MODULE_IF_KEY,
     MODULE_ACTION_KEY,
     MODULE_PARAMS_KEY,
-    SHARED_MODULE,
 )
 from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
@@ -55,57 +50,36 @@ logger = get_logger(__name__)
 # For loading data progress bar
 LOADING_BARID = "Loading Data"
 
-# Shared tag in all file paths of a module config file.
-# eg. "{shared}/ids/general_v2_id_code.xlsx" in config.yaml will point to "ids/general_v2_id_code.xlsx"
-# in the shared module.
-SHARED_DIR_TAG = "{shared}"
-
 
 class Pipeline(object):
     def __init__(
         self,
-        module: Optional[str],
-        module_dir: Optional[Union[str, Path]],
+        module: Optional[Union[str, PipelineModule]],
+        module_path: Optional[Union[str, Path]],
     ):
         """Class to perform a full mapping, including filtering and ID generation.
 
         Args:
-            module (Optional[str]): The built-in module for the mapping, eg. "odm-v1-to-v2" or "nwss-reporting-to-v2".
-                If None then module_dir must be specified.
-            module_dir (Optional[Union[str, Path]]): The directory for the mapping module. If None then module must be specified.
+            module (Optional[Union[str, PipelineModule]]): Either the name of the built-in module for the mapping
+                (eg. "odm-v1-to-v2" or "nwss-reporting-to-v2") or an already loaded PipelineModule. If None then
+                module_path must be specified.
+            module_path (Optional[Union[str, Path]]): The path to the directory or zip file for the mapping module.
+                If None then module  must be specified.
         """
-        # Tell the user which module we're using
-        if module:
-            logger.info(f"Running with module '{module}'")
+        if isinstance(module, PipelineModule):
+            self.module = module
         else:
-            logger.info(f"Running with module directory {module_dir}")
+            self.module = PipelineModule(module=module, module_path=module_path)
 
-        # Load the data mapping module
-        self.config_file, self.config = get_module_config(
-            module=module, module_dir=module_dir
-        )
-        self.module_dir = get_module_dir(module=module, module_dir=module_dir)
+        # Tell the user which module we're using
+        logger.info(f"Running with module '{module}'")
 
         # Load the source schema
-        self.source_schema = self.get_module_path(self.config[MODULE_SOURCE_SCHEMA_KEY])
-        self.source_schema = SchemaView(self.source_schema)
+        self.source_schema = self.module.get_source_schema_view()
 
         all_classes = all_classes_without_tree_root(self.source_schema)
         all_classes = ", ".join(all_classes)
         logger.info(f"Recognized input tables are: {all_classes}")
-
-    def get_module_path(self, path: Union[str, List[str]]) -> Optional[Path]:
-        if not path:
-            return None
-        if isinstance(path, list):
-            return [self.get_module_path(p) for p in path]
-
-        if path.startswith(SHARED_DIR_TAG):
-            shared_dir = get_module_dir(module=SHARED_MODULE, module_dir=None)
-            path = path[len(SHARED_DIR_TAG) + 1 :]
-            return shared_dir / path
-
-        return self.module_dir / path
 
     def run(
         self,
@@ -176,7 +150,7 @@ class Pipeline(object):
             "debug_mode": debug_mode,
         }
         # Go through each step of the module and perform each action
-        for step in self.config[MODULE_STEPS_KEY]:
+        for step in self.module.config.get(MODULE_STEPS_KEY):
             action = step[MODULE_ACTION_KEY]
 
             # If there is an "if" section in the current step then only run the step if the "if" value
@@ -195,7 +169,7 @@ class Pipeline(object):
             params = step.get(MODULE_PARAMS_KEY, {})
 
             if action == "clean":
-                schema = self.get_module_path(params.get("schema"))
+                schema = self.module.get_module_path(params.get("schema"))
                 clean_operations = params.get("operations", [])
                 data_frames = action_clean_data(
                     data_frames=data_frames,
@@ -203,7 +177,7 @@ class Pipeline(object):
                     clean_operations=clean_operations,
                 )
             elif action == "expand":
-                config = self.get_module_path(params.get("config"))
+                config = self.module.get_module_path(params.get("config"))
                 data_frames = action_expand_data(
                     data_frames=data_frames,
                     config=config,
@@ -221,9 +195,9 @@ class Pipeline(object):
                     keep_tracking_slots=debug_mode,
                 )
             elif action == "map":
-                source_schema = self.get_module_path(params.get("source_schema"))
-                target_schema = self.get_module_path(params.get("target_schema"))
-                mappers_dir = self.get_module_path(params.get("mappers_dir"))
+                source_schema = self.module.get_module_path(params.get("source_schema"))
+                target_schema = self.module.get_module_path(params.get("target_schema"))
+                mappers_dir = self.module.get_module_path(params.get("mappers_dir"))
                 prepare_bar_title = params.get("prepare_bar_title", "Preparing IDs")
                 map_bar_title = params.get("map_bar_title", "Initial Mapping")
                 data_frames = action_map_data(
@@ -246,7 +220,9 @@ class Pipeline(object):
                         # Single ID code file
                         id_code_files = [
                             {
-                                "id_code_file": self.get_module_path(top_id_code_file),
+                                "id_code_file": self.module.get_module_path(
+                                    top_id_code_file
+                                ),
                                 "id_code_sheet": top_id_code_sheet,
                             }
                         ]
@@ -257,7 +233,7 @@ class Pipeline(object):
                                 # Current entry is a single ID code file string, with no sheet specified
                                 id_code_files.append(
                                     {
-                                        "id_code_file": self.get_module_path(
+                                        "id_code_file": self.module.get_module_path(
                                             cur_id_code
                                         ),
                                         "id_code_sheet": None,
@@ -267,7 +243,7 @@ class Pipeline(object):
                                 # Current entry is a dictionary with an id_code and id_code_sheet
                                 id_code_files.append(
                                     {
-                                        "id_code_file": self.get_module_path(
+                                        "id_code_file": self.module.get_module_path(
                                             cur_id_code.get("id_code")
                                         ),
                                         "id_code_sheet": cur_id_code.get(
@@ -280,7 +256,7 @@ class Pipeline(object):
                         "Parameters for generate_ids must have at least one id_code entry"
                     )
 
-                id_config_file = self.get_module_path(params.get("id_config"))
+                id_config_file = self.module.get_module_path(params.get("id_config"))
                 data_frames = action_generate_ids(
                     data_frames=data_frames,
                     id_config_file=id_config_file,
@@ -289,13 +265,13 @@ class Pipeline(object):
                     debug_mode=debug_mode,
                 )
             elif action == "filter":
-                filter_config_file = self.get_module_path(params.get("filters"))
+                filter_config_file = self.module.get_module_path(params.get("filters"))
                 data_frames = action_filter_data(
                     data_frames=data_frames, filter_config_file=filter_config_file
                 )
             else:
                 raise CleanExitError(
-                    f"Unrecognized action '{action}' in module configuration file {self.config_file}"
+                    f"Unrecognized action '{action}' in module configuration file {self.module.get_module_config_path()}"
                 )
 
         # Delete temporary directory
