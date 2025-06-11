@@ -63,6 +63,15 @@ PK_INDEX_SLOT = f"{INITIAL_ID_PREFIX * 2}pk_index"
 
 USE_PRIMARY_KEY_LIST = True
 
+# If True, then for determining if two rows are identical matches, include the columns that contain
+# the initial ID values (ie. if an ID needs to be generated, the initial value is what is loaded
+# from disk for that ID before it gets generated). This may be helpful in cases where two initial
+# IDs are different but after parsing becomes the same. For example "Public Health Ontario (PHO)"
+# and "Public Health Ontario (PHO)!" will both become "public_Health_Ontario_PHO", but we may
+# want them to be treated as different, in which case including the original values as match columns
+# will ensure the two rows are treated as being different.
+INCLUDE_INITIAL_VALUE_SLOTS_IN_MATCH_COLUMNS = True
+
 
 class GeneratorData:
     def __init__(
@@ -72,14 +81,6 @@ class GeneratorData:
         primary_key: str,
         generated_slots: Optional[List[str]] = None,
     ):
-        # If True, then for determining if two rows are identical matches, include the columns that contain
-        # the initial ID values (ie. if an ID needs to be generated, the initial value is what is loaded
-        # from disk for that ID before it gets generated). This may be helpful in cases where two initial
-        # IDs are different but after parsing becomes the same. For example "Public Health Ontario (PHO)"
-        # and "Public Health Ontario (PHO)!" will both become "public_Health_Ontario_PHO", but we may
-        # want them to be treated as different, in which case including the original values as match columns
-        # will ensure the two rows are treated as being different.
-        self.include_initial_value_slots_in_match_columns = True
         self.class_name = class_name
         self.primary_key = primary_key
         self.generated_slots = generated_slots if generated_slots else []
@@ -148,7 +149,7 @@ class GeneratorData:
         self.match_columns = [
             self.get_column_index(c) for c in self.orig_columns if c != self.primary_key
         ]
-        if self.include_initial_value_slots_in_match_columns:
+        if INCLUDE_INITIAL_VALUE_SLOTS_IN_MATCH_COLUMNS:
             self.match_columns.extend(
                 [self.get_column_index(c) for c in self.initial_value_columns]
             )
