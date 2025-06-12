@@ -6,8 +6,7 @@ class_derivations:
       collType:
         name: collType
         expr: "if len([d for d in emap.collection_device if len(d) > 0]):\n    target\
-          \ = emap.collection_device\nelse:\n    target = emap.collection_method\n\
-          # case((collection_device != \"\", collection_device), (True, collection_method))"
+          \ = emap.collection_device\nelse:\n    target = emap.collection_method"
       saMaterial:
         name: saMaterial
         populated_from: environmental_material

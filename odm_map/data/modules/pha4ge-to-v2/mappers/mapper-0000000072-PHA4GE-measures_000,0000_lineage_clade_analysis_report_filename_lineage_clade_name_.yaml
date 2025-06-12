@@ -35,19 +35,22 @@ class_derivations:
         expr: '''sa'''
       measure:
         name: measure
-        populated_from: lineage_clade_name
+        expr: '''detLinClade'''
+      group:
+        name: group
+        expr: '''miscMeas'''
       notes:
         name: notes
         populated_from: lineage_clade_analysis_report_filename
       value:
         name: value
-        expr: '''True'''
+        populated_from: lineage_clade_name
       unit:
         name: unit
-        expr: '''det'''
+        expr: '''unitless'''
       aggregation:
         name: aggregation
-        expr: '''me'''
+        expr: '''naAggr'''
   Container:
     name: Container
     slot_derivations:
