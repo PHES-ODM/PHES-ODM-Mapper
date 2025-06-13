@@ -233,12 +233,34 @@ class GeneratorData:
         # Populate all slots in the lookup table
         for idx in range(len(self.data)):
             for slot in self.lookup.all_lookup_slots():
+                if not self.has_column(slot):
+                    continue
                 row = self.data[idx, :]
                 val = row[self.get_column_index(slot)]
                 self.lookup.add_index(slot, val, idx)
 
-    def get_row_at_index(self, idx):
+    def get_row_at_index(self, idx: int) -> np.ndarray:
+        """Get the row at the specified 0-based index.
+
+        Args:
+            idx (int): The index of the row to retrieve.
+
+        Returns:
+            np.ndarray: The row at index idx.
+        """
         return self.data[idx, :]
+
+    def has_column(self, col: str) -> bool:
+        """Test to see if the data has the specified column
+
+
+        Args:
+            col (str): The column name to test.
+
+        Returns:
+            bool: True if the column exists, False otherwise
+        """
+        return col in self.columns
 
     def get_column_index(self, col: Union[str, List[str]]) -> Union[int, List[int]]:
         """Get the index/indices of the specified column name(s).
