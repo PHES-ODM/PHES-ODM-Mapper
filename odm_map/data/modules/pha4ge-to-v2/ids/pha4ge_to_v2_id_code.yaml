@@ -1,5 +1,12 @@
 
 class_linkages:
+  accessions:
+    measureSets:
+      source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
   measures:
     samples:
       source_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
