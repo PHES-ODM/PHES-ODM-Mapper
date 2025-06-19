@@ -20,11 +20,12 @@ pipeline.run(
 """
 
 from pathlib import Path
-from typing import Union, Optional, List, Dict
+from typing import Union, Optional, List, Dict, Any
 from datetime import datetime
 import tempfile
 import pandas as pd
 
+from odm_map.actions.action_drop_columns import action_drop_columns
 from odm_map.actions.action_clean_data import action_clean_data
 from odm_map.actions.action_save_data import action_save_data
 from odm_map.actions.action_map_data import action_map_data
@@ -80,6 +81,22 @@ class Pipeline(object):
         all_classes = all_classes_without_tree_root(self.source_schema)
         all_classes = ", ".join(all_classes)
         logger.info(f"Recognized input tables are: {all_classes}")
+
+    def get_formatted_bool_key(self, d: Dict, key: str, default: Any = None) -> bool:
+        val = self.get_formatted_string_key(d, key, default)
+        if isinstance(val, str):
+            return str(val).lower() == "true"
+        return bool(int(val))
+
+    def get_formatted_string_key(
+        self, d: Dict, key: str, default: Any = None
+    ) -> Optional[str]:
+        val = d.get(key, default)
+        if isinstance(val, str):
+            val = val.format(**self.top_level_kwargs)
+        if pd.isna(val):
+            return None
+        return str(val)
 
     def run(
         self,
@@ -144,10 +161,11 @@ class Pipeline(object):
 
         # Values used for string interpolation (eg. for output paths). Some actions will
         # add additional values to this.
-        top_level_kwargs = {
+        self.top_level_kwargs = {
             "temp_dir": str(self.temp_dir),
             "output_dir": str(Path(output_dir)),
             "debug_mode": debug_mode,
+            "not_debug_mode": not debug_mode,
         }
         # Go through each step of the module and perform each action
         for step in self.module.config.get(MODULE_STEPS_KEY):
@@ -155,15 +173,7 @@ class Pipeline(object):
 
             # If there is an "if" section in the current step then only run the step if the "if" value
             # equates to either a non-zero integer, boolean True, or string "True" (case-insensitive).
-            stepif = step.get(MODULE_IF_KEY, True)
-            if isinstance(stepif, str):
-                stepif = stepif.format(**top_level_kwargs)
-            try:
-                if not bool(int(stepif)):
-                    continue
-            except Exception:
-                pass
-            if str(stepif).lower() != "true":
+            if not self.get_formatted_bool_key(step, MODULE_IF_KEY, True):
                 continue
 
             params = step.get(MODULE_PARAMS_KEY, {})
@@ -176,6 +186,24 @@ class Pipeline(object):
                     schema=schema,
                     clean_operations=clean_operations,
                 )
+            elif action == "drop_columns":
+                drop_extra_columns = self.get_formatted_bool_key(
+                    params, "drop_extra_columns", False
+                )
+                drop_tracking_columns = self.get_formatted_bool_key(
+                    params, "drop_tracking_columns", False
+                )
+                keep_columns_in_schema_only = self.get_formatted_bool_key(
+                    params, "keep_columns_in_schema_only", False
+                )
+                schema = self.module.get_module_path(params.get("schema"))
+                data_frames = action_drop_columns(
+                    data_frames=data_frames,
+                    drop_extra_columns=drop_extra_columns,
+                    drop_tracking_columns=drop_tracking_columns,
+                    keep_columns_in_schema_only=keep_columns_in_schema_only,
+                    schema=schema,
+                )
             elif action == "expand":
                 config = self.module.get_module_path(params.get("config"))
                 data_frames = action_expand_data(
@@ -183,23 +211,29 @@ class Pipeline(object):
                     config=config,
                 )
             elif action == "save":
-                progress_bar_title = params.get("progress_bar_title", None)
-                output_dir = params.get("output_dir").format(**top_level_kwargs)
+                progress_bar_title = self.get_formatted_string_key(
+                    params, "progress_bar_title", None
+                )
+                output_dir = self.get_formatted_string_key(params, "output_dir")
+                # Do not format output_name, it will be format for tags like {class_name} in action_save_data.
                 output_name = params.get("output_name")
                 _ = action_save_data(
                     data_frames=data_frames,
                     output_dir=output_dir,
                     progress_barid=progress_bar_title,
                     name_format=output_name,
-                    name_format_kwargs=top_level_kwargs,
-                    keep_tracking_slots=debug_mode,
+                    name_format_kwargs=self.top_level_kwargs,
                 )
             elif action == "map":
                 source_schema = self.module.get_module_path(params.get("source_schema"))
                 target_schema = self.module.get_module_path(params.get("target_schema"))
                 mappers_dir = self.module.get_module_path(params.get("mappers_dir"))
-                prepare_bar_title = params.get("prepare_bar_title", "Preparing IDs")
-                map_bar_title = params.get("map_bar_title", "Initial Mapping")
+                prepare_bar_title = self.get_formatted_string_key(
+                    params, "prepare_bar_title", "Preparing IDs"
+                )
+                map_bar_title = self.get_formatted_string_key(
+                    params, "map_bar_title", "Initial Mapping"
+                )
                 data_frames = action_map_data(
                     source_schema_file=source_schema,
                     target_schema_file=target_schema,
@@ -208,6 +242,8 @@ class Pipeline(object):
                     max_processes=max_processes,
                     prepare_barid=prepare_bar_title,
                     map_barid=map_bar_title,
+                    keep_extra_columns=True,
+                    keep_tracking_columns=True,
                 )
             elif action == "generate_ids":
                 # id_code can be a list. Each item of the list can be a single string (code_file)
@@ -262,6 +298,8 @@ class Pipeline(object):
                     id_config_file=id_config_file,
                     id_code_files=id_code_files,
                     multi_bar_progress=multi_bar_progress,
+                    keep_extra_columns=True,
+                    keep_tracking_columns=True,
                     debug_mode=debug_mode,
                 )
             elif action == "filter":
