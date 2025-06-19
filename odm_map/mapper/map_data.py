@@ -24,13 +24,14 @@ from odm_map.utils.extra_and_tracking_slots import (
     is_extra_or_tracking_slot,
     add_extra_and_tracking_slot_derivations,
     load_data_with_source_tracking_columns,
-    drop_extra_and_tracking_slots,
+    drop_extra_slots,
+    drop_tracking_slots,
     TrackingSlots,
 )
 from odm_map.utils.general_utils import (
     merge_dicts_of_lists,
     order_columns,
-    save_data_frame,
+    save_data_frames_for_classes,
 )
 
 logger = get_logger(__name__)
@@ -452,7 +453,8 @@ class DataMapper(object):
         prepare_barid: str = "Preparing Data",
         map_barid: str = "Mapping",
         convert_barid: str = "Processing Data",
-        keep_tracking_columns: bool = False,
+        keep_extra_columns: bool = True,
+        keep_tracking_columns: bool = True,
     ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List[Path]]]:
         """Map all the data specified in data_frames using all mapper files found in the specified mapper directory.
 
@@ -482,9 +484,14 @@ class DataMapper(object):
                 Defaults to "Mapping"
             convert_barid (str, optional): The ID/title to give to the progress bar for converting the mapped data
                 to DataFrames. Defaults to "Processing Data".
-            keep_tracking_columns (bool):  If True then keep all tracking slots in the output. These are slots
-                that identify which file and row in the source data an output row was populated from. If False
-                then the tracking slots are dropped.
+            keep_extra_columns (bool, optional): If True, then keep the extra columns in the final DataFrame. These
+                are columns that start with the string extra_and_tracking_slots.EXTRA_SLOT_PREFIX and end with the
+                string extra_and_tracking_slots.EXTRA_SLOT_SUFFIX. If False then they are removed. Defaults to True.
+            keep_tracking_columns (bool, optional): If True, then keep the tracking columns in the final DataFrame.
+                These are columns that specify from which row and file/table each of the output rows was populated
+                from. Tracking columns start with the string extra_and_tracking_slots.TRACKING_SLOT_PREFIX and end
+                with the string extra_and_tracking_slots.TRACKING_SLOT_SUFFIX. If False then these columns are
+                dropped. Defaults to True.
 
         Returns:
             Tuple[Dict[str, pd.DataFrame], Dict[str, Path]]: Tuple in the form (data_frames, output_files).
@@ -651,22 +658,15 @@ class DataMapper(object):
             df = pd.concat(all_df, ignore_index=True, axis=0)
             # Retain the original order by sorting by the TrackingSlots.
             df = self.sort_mapped_data(df)
+            if not keep_extra_columns:
+                df = drop_extra_slots(df)
             if not keep_tracking_columns:
-                df = drop_extra_and_tracking_slots(df)
+                df = drop_tracking_slots(df)
             all_mapped_data[class_name] = [df]
             total_rows += len(df)
 
         # Save data to disk
-        output_files = {}
-        if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
-            for class_name, all_df in all_mapped_data.items():
-                df = pd.concat(all_df, ignore_index=True, axis=0)
-                output_file = os.path.join(output_dir, f"{class_name}.csv")
-                save_data_frame(df, output_file, index=False)
-                if class_name not in output_files:
-                    output_files[class_name] = []
-                output_files[class_name].append(Path(output_file))
+        output_files = save_data_frames_for_classes(all_mapped_data, output_dir)
 
         logger.info(f"Total output rows: {total_rows}")
         logger.info(f"Finished initial mapping in {datetime.now() - map_tic}")
