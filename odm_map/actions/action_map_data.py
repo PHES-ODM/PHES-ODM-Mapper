@@ -14,6 +14,8 @@ def action_map_data(
     prepare_barid: str = "Preparing Data",
     map_barid: str = "Mapping",
     convert_barid: str = "Processing Data",
+    keep_extra_columns: bool = True,
+    keep_tracking_columns: bool = True,
 ) -> Dict[str, List[pd.DataFrame]]:
     """Map all the data specified in data_frames using all mapper files found in the specified mapper directory.
 
@@ -34,6 +36,14 @@ def action_map_data(
             Defaults to "Mapping"
         convert_barid (str, optional) The ID/title to give to the progress bar for converting the mapped data
             to DataFrames. Defaults to "Processing Data".
+        keep_extra_columns (bool, optional): If True, then keep the extra columns in the final DataFrame. These
+            are columns that start with the string extra_and_tracking_slots.EXTRA_SLOT_PREFIX and end with the
+            string extra_and_tracking_slots.EXTRA_SLOT_SUFFIX. If False then they are removed. Defaults to True.
+        keep_tracking_columns (bool, optional): If True, then keep the tracking columns in the final DataFrame.
+            These are columns that specify from which row and file/table each of the output rows was populated
+            from. Tracking columns start with the string extra_and_tracking_slots.TRACKING_SLOT_PREFIX and end
+            with the string extra_and_tracking_slots.TRACKING_SLOT_SUFFIX. If False then these columns are
+            dropped. Defaults to True.
 
     Returns:
         Dict[str, List[pd.DataFrame]]: Keys are the target class names and the values are the mapped data for
@@ -51,6 +61,7 @@ def action_map_data(
         prepare_barid=prepare_barid,
         map_barid=map_barid,
         convert_barid=convert_barid,
-        keep_tracking_columns=True,
+        keep_extra_columns=keep_extra_columns,
+        keep_tracking_columns=keep_tracking_columns,
     )
     return data

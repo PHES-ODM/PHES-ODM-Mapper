@@ -7,7 +7,6 @@ from pathlib import Path
 from odm_map.progress import ProgressCounter, EmptyCounter
 from odm_map.utils.logger import get_logger
 from odm_map.utils.general_utils import save_data_frame
-from odm_map.utils.extra_and_tracking_slots import drop_extra_and_tracking_slots
 
 logger = get_logger(__name__)
 
@@ -18,7 +17,8 @@ def action_save_data(
     progress_barid: Optional[str] = None,
     name_format: str = "{class_name}.csv",
     name_format_kwargs: Dict = {},
-    keep_tracking_slots: bool = False,
+    keep_extra_columns: bool = False,
+    keep_tracking_columns: bool = False,
     exception_if_exists: bool = False,
 ) -> Dict[str, List[str]]:
     """Save the specified DataFrames to disk.
@@ -36,8 +36,6 @@ def action_save_data(
             string interpolation of name_format. This could include arguments such as "temp_dir" that can be
             used in formating name_format (eg. "{temp_dir}/file.csv"). These arguments are used in addition
             to arguments that this function calculates such as "class_name". Defaults to {}.
-        keep_tracking_slots (bool, optional): If True then keep all tracking slots in the saved data. If False then
-            all tracking slots are removed. Defaults to False.
         exception_if_exists (bool, optional): If True then raise an exception if a file already exists with the same
             name as a file we are trying to save. If False then overwrite the file. Defaults to False.
 
@@ -63,10 +61,6 @@ def action_save_data(
         for class_name, dfs in data_frames.items():
             # Combine the DataFrames into one
             df = pd.concat(dfs, ignore_index=True, axis=0)
-
-            # Drop the tracking slots if requested
-            if not keep_tracking_slots:
-                df = drop_extra_and_tracking_slots(df)
 
             # Determine the output file name, based on name_format and name_format_kwargs
             kwargs = name_format_kwargs.copy()
