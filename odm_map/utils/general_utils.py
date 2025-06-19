@@ -322,3 +322,97 @@ def merge_dicts_of_lists(
                 d[k] = []
             d[k].extend(v)
     return d
+
+
+def save_data_frames_for_classes(
+    data_frames: Dict[str, List[pd.DataFrame]],
+    output_dir: Union[str, Path],
+    file_name_format="{class_name}.csv",
+    save_to_data_files: Optional[Dict[str, List[Union[str, Path]]]] = None,
+) -> Dict[str, List[Path]]:
+    """Save the DataFrames to disk, combining the DataFrames for each class into one
+    DataFrame per class.
+
+    Args:
+        data_frames (Dict[str, List[pd.DataFrame]]): The dictionary of DataFrames to save to disk.
+            The keys are the class names and the values are lists of DataFrames for the class. The lists
+            are merged into a single DataFrame then saved to disk.
+        output_dir (Union[str, Path]): The directory to save the data to.
+        file_name_format (str, optional): The file name to use for saving to disk. Can include the
+            {class_name} string interpolation value to include the class name in the file name. Defaults
+            to "{class_name}.csv".
+        save_to_data_files (Optional[Dict[str, List[Union[str, Path]]]], optional): If set, then this
+            dictionary receives the paths of the saved files. The keys are the class names and the values
+            are lists of file names. This function will only add one file name per class to the
+            list. Defaults to None.
+
+    Returns:
+        Dict[str, List[Path]]: The list of files saved to disk. The keys are the class names and
+            the values are lists of paths to saved files. If save_to_data_files was set then the files
+            are added to save_to_data_files and returned.
+    """
+    if not save_to_data_files:
+        save_to_data_files = {}
+    else:
+        # Make sure all existing data files are Path objects (instead of str)
+        for class_name, files in save_to_data_files.items():
+            for idx in range(len(files)):
+                files[idx] = Path(files[idx])
+
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        for class_name, all_df in data_frames.items():
+            # Concatenate all DataFrames so we save to a single output file per class
+            df = pd.concat(all_df, ignore_index=True, axis=0)
+            output_file = os.path.join(
+                output_dir, file_name_format.format(class_name=class_name)
+            )
+            save_data_frame(df, output_file, index=False)
+            if class_name not in save_to_data_files:
+                save_to_data_files[class_name] = []
+            save_to_data_files[class_name].append(Path(output_file))
+    return save_to_data_files
+
+
+def load_data_frames_for_classes(
+    data_files: Optional[Dict[str, List[Union[str, Path, Dict]]]],
+    save_to_data_frames: Optional[Dict[str, List[pd.DataFrame]]] = None,
+    max_rows: Optional[int] = None,
+) -> Dict[str, List[pd.DataFrame]]:
+    """Load lists of data files associated with various classes.
+
+    The returned dictionary contains the class names (the keys of the dictionary) and the list of DataFrames for that class
+    (the values of the dictionary).
+
+    Args:
+        data_files (Optional[Dict[str, List[Union[str, Path, Dict]]]]): List of data files to load. The keys are the class
+            names for the data files, and the values are lists of files to load for that class.
+        save_to_data_frames (Optional[Dict[str, List[pd.DataFrame]]], optional): If set, then add the loaded DataFrames to
+            this dictionary, where the keys are the class names and the values are lists of DataFrames for the class. Each
+            DataFrame loaded from data_files gets appended to the end of the list for the class. Defaults to None.
+        max_rows (Optional[int], optional): Maximum number of rows to load from each data file. If 0 or None then all rows
+            are loaded. Defaults to None.
+
+    Returns:
+        Dict[str, List[pd.DataFrame]]: Dictionary of loaded DataFrames, where the keys are the class names and the values
+            are the DataFrames for that class. If save_to_data_frames was specified, then save_to_data_frames gets modified
+            by appending the newly loaded DataFrames from data_files, and save_to_data_frames is also returned.
+    """
+    if save_to_data_frames is None:
+        save_to_data_frames = {}
+    if not data_files:
+        return save_to_data_frames
+
+    for class_name, class_files in data_files.items():
+        if class_name not in save_to_data_frames:
+            save_to_data_frames[class_name] = []
+        for class_file in class_files:
+            df = read_data_frame(
+                class_file,
+                nrows=max_rows if max_rows and max_rows > 0 else None,
+                keep_default_na=False,
+                na_values=None,
+            )
+            save_to_data_frames[class_name].append(df)
+
+    return save_to_data_frames

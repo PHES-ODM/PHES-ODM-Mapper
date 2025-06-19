@@ -46,14 +46,16 @@ Each key in the `expand_columns` dictionary is a table name. The values are arra
 
 """
 
-import os
 from typing import Union, List, Dict, Any, Optional, Tuple
 from pathlib import Path
 import yaml
 import pandas as pd
 
 from odm_map.utils.logger import get_logger
-from odm_map.utils.general_utils import read_data_frame, save_data_frame
+from odm_map.utils.general_utils import (
+    load_data_frames_for_classes,
+    save_data_frames_for_classes,
+)
 from odm_map.progress import ProgressCounter
 
 # Config file keys
@@ -109,18 +111,7 @@ class ArrayExpander(object):
             data_frames = {}
 
         # Load files from disk
-        if data_files:
-            for class_name, class_files in data_files.items():
-                if class_name not in data_frames:
-                    data_frames[class_name] = []
-                for class_file in class_files:
-                    df = read_data_frame(
-                        class_file,
-                        nrows=max_rows if max_rows and max_rows > 0 else None,
-                        keep_default_na=False,
-                        na_values=None,
-                    )
-                    data_frames[class_name].append(df)
+        load_data_frames_for_classes(data_files, data_frames, max_rows=max_rows)
 
         # If config has no columns to expand then return the data_frames unchanged
         if EXPAND_COLUMNS_KEY not in self.config:
@@ -159,15 +150,9 @@ class ArrayExpander(object):
         # Save to disk if output_dir is specified
         data_files = None
         if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
-            data_files = {}
-            for class_name, dfs in data_frames.items():
-                if class_name not in data_files:
-                    data_files[class_name] = []
-                df = pd.concat(dfs)
-                output_file = Path(output_dir) / f"{class_name}(expanded).csv"
-                data_files[class_name].append(output_file)
-                save_data_frame(df, output_file, index=False)
+            data_files = save_data_frames_for_classes(
+                data_frames, output_dir, "{class_name}(expanded).csv"
+            )
 
         return data_files, data_frames
 
