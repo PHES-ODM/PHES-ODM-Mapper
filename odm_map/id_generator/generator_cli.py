@@ -84,7 +84,8 @@ def main(
         multi_bar_progress="get_ipython" not in globals(),
     )
     gen.run_generator(
-        keep_extra_and_tracking_columns=debug,
+        keep_extra_columns=debug,
+        keep_tracking_columns=debug,
         keep_debug_columns=debug,
         remove_duplicates=not debug,
     )
