@@ -104,6 +104,12 @@ class GeneratorData:
                     f"Unrecognized type for input to GeneratorData: type={type(cur_data)}"
                 )
 
+            missing_generated_slots = [
+                s for s in self.generated_slots if s not in df.columns
+            ]
+            if missing_generated_slots:
+                df[missing_generated_slots] = None
+
             # Make sure the columns in df match what we have loaded previously
             if len(all_dfs) > 0:
                 first_df = all_dfs[0]
@@ -604,7 +610,8 @@ class GeneratorData:
 
     def finalize_data(
         self,
-        keep_extra_and_tracking_columns: bool,
+        keep_extra_columns: bool,
+        keep_tracking_columns: bool,
         keep_debug_columns: bool,
         remove_duplicates: bool,
     ) -> Tuple[Dict[str, List[pd.DataFrame]], int, int, int]:
@@ -612,8 +619,14 @@ class GeneratorData:
         primary key.
 
         Args:
-            keep_extra_and_tracking_columns (bool): If True then keep the tracking columns in the final output.
-                The tracking columns indicate which file and row a given output row was populated from.
+            keep_extra_columns (bool): If True, then keep the extra columns in the final DataFrame. These
+                are columns that start with the string extra_and_tracking_slots.EXTRA_SLOT_PREFIX and end with the
+                string extra_and_tracking_slots.EXTRA_SLOT_SUFFIX. If False then they are removed.
+            keep_tracking_columns (bool): If True, then keep the tracking columns in the final DataFrame.
+                These are columns that specify from which row and file/table each of the output rows was populated
+                from. Tracking columns start with the string extra_and_tracking_slots.TRACKING_SLOT_PREFIX and end
+                with the string extra_and_tracking_slots.TRACKING_SLOT_SUFFIX. If False then these columns are
+                dropped.
             keep_debug_columns (bool): If True then keep additional columns for debugging. These are
                 temporary columns that are used for running, such as columns containing the old IDs
                 before generation was run, the hash column, etc.
@@ -635,9 +648,10 @@ class GeneratorData:
 
         # Keep only requested columns, based on keep_extra_and_tracking_columns and keep_debug_columns
         keep_columns = self.orig_columns.copy()
-        if keep_extra_and_tracking_columns:
-            # Put the extra slots first, followed by the tracking slots
+        # Put the extra slots first, followed by the tracking slots
+        if keep_extra_columns:
             keep_columns.extend([c for c in self.df.columns if is_extra_slot(c)])
+        if keep_tracking_columns:
             keep_columns.extend([c for c in self.df.columns if is_tracking_slot(c)])
         if keep_debug_columns:
             keep_columns.extend(
