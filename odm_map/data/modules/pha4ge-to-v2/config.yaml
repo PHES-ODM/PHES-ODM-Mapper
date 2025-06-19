@@ -20,7 +20,7 @@ steps:
   - action: map
     params:
       source_schema: schemas/pha4ge.yaml
-      target_schema: schemas/odm_v2.yaml
+      target_schema: schemas/odm_v3.yaml
       mappers_dir: mappers
   - action: expand
     params:
@@ -29,9 +29,9 @@ steps:
   - action: filter
     params:
       filters: filters/pha4ge_to_v2_filters_empty_samples.csv
-  # - action: filter
-  #   params:
-  #     filters: filters/pha4ge_to_v2_filters_before_id.csv
+  - action: filter
+    params:
+      filters: filters/pha4ge_to_v2_filters_before_id.csv
   - action: save
     if: "{debug_mode}"
     params:
@@ -45,9 +45,14 @@ steps:
       id_config:
         - "{shared}/ids/general_v2_id_code.yaml"
         - ids/pha4ge_to_v2_id_code.yaml
-  # - action: filter
-  #   params:
-  #     filters: filters/pha4ge_to_v2_filters_after_id.csv
+  - action: filter
+    params:
+      filters: filters/pha4ge_to_v2_filters_after_id.csv
+  - action: drop_columns
+    if: "{not_debug_mode}"
+    params:
+      keep_columns_in_schema_only: True
+      schema: schemas/odm_v3.yaml
   - action: save
     params:
       output_dir: "{output_dir}"
