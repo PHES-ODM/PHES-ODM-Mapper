@@ -67,6 +67,13 @@ steps:
     params:
       id_code: ids/nwss_reporting_to_v2_id_code.xlsx
       id_config: ids/nwss_reporting_to_v2_id_config.yaml
+  - action: drop_columns
+    if: "{not_debug_mode}"
+    params:
+      drop_tracking_columns: True
+      drop_extra_columns: True
+      keep_columns_in_schema_only: False
+      schema: schemas/odm_v3.yaml
   - action: save
     params:
       output_dir: "{output_dir}"
@@ -99,12 +106,13 @@ Below is an example step that performs the `save` action:
 ```
 
 In some of the values above, string interpolation variables can be specified,
-such as `{debug_mode}`, `{temp_dir}`, and `{class_name}`. Which variables are
-available in the `params` field depends on the action. The `debug_mode`
-variable is `True` if debug mode is enabled (which can be specified from the
-command-line) and is `False` during a normal run where debug mode is not
-enabled. The actions, required `params` values, and the available variables
-from string interpolation are listed in the following sections.
+such as `{debug_mode}`, `{not_debug_mode}`, `{temp_dir}`, and `{class_name}`.
+Which variables are available in the `params` field depends on the action. The
+`debug_mode` variable is `True` if debug mode is enabled (which can be
+specified from the command-line) and is `False` during a normal run where debug
+mode is not enabled, whereas `no_debug_mode` is the opposite. The actions,
+required `params` values, and the available variables from string interpolation
+are listed in the following sections.
 
 ### Action: clean
 
@@ -198,6 +206,38 @@ capitalization is ignored, and sequences of multiple spaces are replaced with
 single spaces when trying to match (but the resulting enum value has the same
 capitalization and spacing as the schema enum value).
 
+### Action: drop_columns
+
+Example:
+
+```yaml
+- action: drop_columns
+  if: "{not_debug_mode}"
+  params:
+    drop_tracking_columns: True
+    drop_extra_columns: True
+    keep_columns_in_schema_only: False
+    schema: schemas/odm_v3.yaml
+```
+
+| Parameter                   | Required/Optional | Description |
+| :-------------------------- | :---------------- | :---------- |
+| drop_extra_columns          | Optional          | If True then drop all extra columns from the DataFrames. Extra columns are the columns that begin with the string '\_extra\_'. Defaults to False. |
+| drop_tracking_columns       | Optional          | If True then drop all tracking columns from the DataFrames. Tracking columns are the columns that specify which source row number and class/table the row in the DataFrame was populated from. These are added during an upstream mapping operation. Defaults to False. |
+| keep_columns_in_schema_only | Optional          | If True then only keep the columns that are recognized as valid columns for the class according to the LinkML schema (specified by the schema parameter). Defaults to False. |
+| schema                      | Optional          | The schema to use if keep_columns_in_schema_only is True. If keep_columns_in_schema_only is False then this can be None. Defaults to None. |
+
+Drop columns from the DataFrames, either loaded from disk or already in memory.
+The columns that get dropped can include:
+
+1) Extra columns. These are columns that begin with the string \_extra\_. They
+are typically added in an upstream mapping operation.
+2) Tracking columns. These are columns that specify which row number and
+class/table that a row in a DataFrame was populated from. They are typically
+added in an upstream mapping operation.
+3) Any column that is not a recognized column according to a LinkML schema.
+
+
 ### Action: generate_ids
 
 Example:
@@ -210,11 +250,11 @@ Example:
     id_config: ids/nwss_reporting_to_v2_id_config.yaml
 ```
 
-| Parameter      | Required/Optional | Description |
-| :--------------| :---------------- | :---------- |
-| id_code        | Required          | The path to the file containing all the ID generation rules/code. This can be an Excel spreadsheet or a CSV file. If it is an Excel spreadsheet that has more than one sheet/tab, then the sheet to use within the spreadsheet can be specified by `id_code_sheet`. |
-| id_code_sheet  | Optional          | If `id_code` is an Excel file, then `id_code_sheet` can optionally be specified to indicate which sheet within the spreadsheet should be used. If `id_code_sheet` is empty then the first sheet within the Excel file is used. |
-| id_config      | Required          | The configuration file for ID code generation. This config file specifies configurations such as the primary key for each of the input tables. |
+| Parameter             | Required/Optional | Description |
+| :---------------------| :---------------- | :---------- |
+| id_code               | Required          | The path to the file containing all the ID generation rules/code. This can be an Excel spreadsheet or a CSV file. If it is an Excel spreadsheet that has more than one sheet/tab, then the sheet to use within the spreadsheet can be specified by `id_code_sheet`. |
+| id_code_sheet         | Optional          | If `id_code` is an Excel file, then `id_code_sheet` can optionally be specified to indicate which sheet within the spreadsheet should be used. If `id_code_sheet` is empty then the first sheet within the Excel file is used. |
+| id_config             | Required          | The configuration file for ID code generation. This config file specifies configurations such as the primary key for each of the input tables. |
 
 Generate all the IDs within the DataFrame tables, using the specified
 configuration and rules. Primary and foreign keys will be created, allowing
@@ -241,13 +281,13 @@ Example:
     mapper_dir: mappers
 ```
 
-| Parameter          | Required/Optional | Description |
-| :----------------- | :---------------- | :---------- |
-| source_schema      | Required          | The LinkML schema for the source dataset, that we are mapping from. This is a path relative to the root directory of the module. |
-| target_schema      | Required          | The LinkML schema for the target dataset, that we are mapping to. This is a path relative to the root directory of the module. |
-| mappers_dir        | Required          | The directory containing all the LinkML-Map schemas that specify how to perform the mapping. This is a path relative to the root directory of the module. See the [LinkML-Map Mappers](#linkml-map-mappers) section below for additional information on the map schemas found in the `mappers_dir` directory. |
-| prepare_bar_title  | Optional          | The title to use for the progress bar displayed when preparing the data before the mapping occurs (eg. "Preparing Data"). If not specified a default string is used. |
-| map_bar_title      | Optional          | The title to use for the progress bar displayed when doing the actual mapping (eg. "Mapping Data"). If not specified a default string is used. |
+| Parameter             | Required/Optional | Description |
+| :-------------------- | :---------------- | :---------- |
+| source_schema         | Required          | The LinkML schema for the source dataset, that we are mapping from. This is a path relative to the root directory of the module. |
+| target_schema         | Required          | The LinkML schema for the target dataset, that we are mapping to. This is a path relative to the root directory of the module. |
+| mappers_dir           | Required          | The directory containing all the LinkML-Map schemas that specify how to perform the mapping. This is a path relative to the root directory of the module. See the [LinkML-Map Mappers](#linkml-map-mappers) section below for additional information on the map schemas found in the `mappers_dir` directory. |
+| prepare_bar_title     | Optional          | The title to use for the progress bar displayed when preparing the data before the mapping occurs (eg. "Preparing Data"). If not specified a default string is used. |
+| map_bar_title         | Optional          | The title to use for the progress bar displayed when doing the actual mapping (eg. "Mapping Data"). If not specified a default string is used. |
 
 The `map` action performs the actual mapping, transforming the data from a
 source dataset to a target dataset. A LinkML schema for both the source and
@@ -302,13 +342,13 @@ Example:
 
 | Parameter          | Required/Optional | Description |
 | :----------------- | :---------------- | :---------- |
-| output_dir         | Required          | The directory to save the output to. Can include the `{output_dir}` (output directory, usually specified on the command-line), `{temp_dir}` (temporary directory, either specified on the command line or optionally within the system's temporary directory), and `{debug_mode}` string interpolation values. |
+| output_dir         | Required          | The directory to save the output to. Can include the `{output_dir}` (output directory, usually specified on the command-line), `{temp_dir}` (temporary directory, either specified on the command line or optionally within the system's temporary directory), and `{debug_mode}` plus `{not_debug_mode}` string interpolation values. |
 | output_name        | Required          | The name to give each file that is saved within the output directory. These names can include all the string interpolation variables for `output_dir`, plus the additional value `{class_name}`, which is the class or table name that the data represents. |
 | progress_bar_title | Optional          | The title to give the progress bar when saving the data to disk. If empty then no progress bar is shown. |
 
 Save all DataFrames to disk, in the directory specified by `output_dir` using
 the file names specified with `output_name`. `output_dir` can include the
-`{temp_dir}`, `{output_dir}`, and `{debug_mode}` string interpolation
+`{temp_dir}`, `{output_dir}`, `{debug_mode}`, and `{not_debug_mode}` string interpolation
 variables. `output_name` can include these variables plus the `{class_name}`
 variable, which indicates the class or table name that the DataFrame
 represents.
@@ -319,8 +359,8 @@ debugging purposes the `save` action is used in between earlier steps so that
 the contents of the DataFrames can be viewed to ensure they are correct. If you
 would like to only perform a specific `save` action while in debug mode (which
 can be specified as a flag from the command-line), you can use "{debug_mode}"
-in the `if` key of the step. To always perform the `save` action, whether in
-debug mode or not, remove the `if` key in the step.
+and "{not_debug_mode}" in the `if` key of the step. To always perform the
+`save` action, whether in debug mode or not, remove the `if` key in the step.
 
 ## LinkML-Map Mappers
 
