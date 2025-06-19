@@ -104,16 +104,37 @@ def is_tracking_slot(c: str) -> bool:
     return c.startswith(TRACKING_SLOT_PREFIX) and c.endswith(TRACKING_SLOT_SUFFIX)
 
 
-def drop_extra_and_tracking_slots(df: pd.DataFrame) -> pd.DataFrame:
-    """Drop all the extra/tracking columns in the specified DataFrame.
+def drop_extra_slots(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop all the extra columns in the specified DataFrame.
+
+    These are columns that start with the string extra_and_tracking_slots.EXTRA_SLOT_PREFIX and end with the
+    string extra_and_tracking_slots.EXTRA_SLOT_SUFFIX.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to drop the extra columns from.
+
+    Returns:
+        pd.DataFrame: The copy of df with all the extra columns dropped.
+    """
+    drop_cols = [c for c in df.columns if is_extra_slot(c)]
+    df = df.drop(drop_cols, axis=1)
+    return df
+
+
+def drop_tracking_slots(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop all the tracking columns in the specified DataFrame.
+
+    These are columns that specify from which row and file/table each of the output rows was populated
+    from. Tracking columns start with the string extra_and_tracking_slots.TRACKING_SLOT_PREFIX and end
+    with the string extra_and_tracking_slots.TRACKING_SLOT_SUFFIX.
 
     Args:
         df (pd.DataFrame): The DataFrame to drop the tracking columns from.
 
     Returns:
-        pd.DataFrame: A copy of df with all tracking columns removed.
+        pd.DataFrame: The copy of df with all the tracking columns dropped.
     """
-    drop_cols = [c for c in df.columns if is_extra_or_tracking_slot(c)]
+    drop_cols = [c for c in df.columns if is_tracking_slot(c)]
     df = df.drop(drop_cols, axis=1)
     return df
 
