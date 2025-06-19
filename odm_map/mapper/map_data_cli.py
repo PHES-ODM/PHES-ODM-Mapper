@@ -42,10 +42,15 @@ MAX_PROCESSES_HELP = """Maximum number of processes to use for mapping. For larg
                      datasets setting this to a number greater than 1 can improve
                      performance. For small datasets it may degrade performance."""
 
-KEEP_TRACKING_COLUMNS_HELP = """If set keep the tracking columns in the output.
+KEEP_TRACKING_COLUMNS_HELP = """If set then keep the tracking columns in the output.
                              The tracking columns are used for identifying
                              which source data file and row each output row was
                              populated from."""
+
+KEEP_EXTRA_COLUMNS_HELP = """If set then keep the extra columns in the output.
+                          The extra columns are additional columns starting with
+                          `_extra_` that contain extra information, and are
+                          columns that do not exist in the target database."""
 
 
 @app.command()
@@ -63,6 +68,9 @@ def main(
     ],
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
     max_processes: Annotated[int, typer.Option(help=MAX_PROCESSES_HELP)] = 1,
+    keep_extra_columns: Annotated[
+        bool, typer.Option(help=KEEP_EXTRA_COLUMNS_HELP)
+    ] = False,
     keep_tracking_columns: Annotated[
         bool, typer.Option(help=KEEP_TRACKING_COLUMNS_HELP)
     ] = False,
@@ -79,6 +87,7 @@ def main(
         mappers_dir=mappers_dir,
         max_rows=max_rows,
         max_processes=max_processes,
+        keep_extra_columns=keep_extra_columns,
         keep_tracking_columns=keep_tracking_columns,
     )
 
@@ -88,13 +97,14 @@ if __name__ == "__main__":
         # fmt: off
         opts = {
             "inputs": ["../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv"],
-            "output_dir": "../../gen/odm-v1-to-v2-test",
-            "source_schema": "../data/modules/odm-v1-to-v2/schemas/odm_v1.yaml",
-            "target_schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",
-            "mappers_dir": "../data/modules/odm-v1-to-v2/mappers",
-            "max_rows": 50,
+            "output_dir": "../../gen/pha4ge-to-v2",
+            "source_schema": "../data/modules/pha4ge-to-v2/schemas/pha4ge.yaml",
+            "target_schema": "../data/modules/pha4ge-to-v2/schemas/odm_v2.yaml",
+            "mappers_dir": "../data/modules/pha4ge-to-v2/mappers",
+            "max_rows": 100,
             "max_processes": 1,
-            "keep_tracking_columns": False,
+            "keep_extra_columns": True,
+            "keep_tracking_columns": True,
         }
         # fmt: on
         main(**opts)
