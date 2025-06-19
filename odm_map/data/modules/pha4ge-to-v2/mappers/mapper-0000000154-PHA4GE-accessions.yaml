@@ -9,6 +9,12 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: sequence_submitted_by
+      _extra_measureSetRepID_tag:
+        name: _extra_measureSetRepID_tag
+        expr: '"bioinformatics and qc metrics"'
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '"sequenced by"'
   Container:
     name: Container
     slot_derivations:
