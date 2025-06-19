@@ -479,16 +479,22 @@ class IDGenerator(object):
 
     def run_generator(
         self,
-        keep_extra_and_tracking_columns: bool,
+        keep_extra_columns: bool,
+        keep_tracking_columns: bool,
         keep_debug_columns: bool,
         remove_duplicates: bool,
     ) -> Dict[str, List[pd.DataFrame]]:
         """Run the generator and retrieve the final DataFrames.
 
         Args:
-            keep_extra_and_tracking_columns (bool): If True then keep the extra and tracking columns in the final output.
-                The tracking columns indicate which file and row a given output row was populated from, extra columns
-                are neither tracking columns or any columns that are part of the target dataset.
+            keep_extra_columns (bool): If True, then keep the extra columns in the final DataFrame. These
+                are columns that start with the string extra_and_tracking_slots.EXTRA_SLOT_PREFIX and end with the
+                string extra_and_tracking_slots.EXTRA_SLOT_SUFFIX. If False then they are removed.
+            keep_tracking_columns (bool): If True, then keep the tracking columns in the final DataFrame.
+                These are columns that specify from which row and file/table each of the output rows was populated
+                from. Tracking columns start with the string extra_and_tracking_slots.TRACKING_SLOT_PREFIX and end
+                with the string extra_and_tracking_slots.TRACKING_SLOT_SUFFIX. If False then these columns are
+                dropped.
             keep_debug_columns (bool): If True then keep additional columns for debugging. These are
                 temporary columns that are used for running, such as columns containing the old IDs
                 before generation was run, the hash column, etc.
@@ -516,7 +522,8 @@ class IDGenerator(object):
                     cur_total_rows_minus_dropped_rows,
                     cur_total_dropped_rows,
                 ) = data.finalize_data(
-                    keep_extra_and_tracking_columns=keep_extra_and_tracking_columns,
+                    keep_extra_columns=keep_extra_columns,
+                    keep_tracking_columns=keep_tracking_columns,
                     keep_debug_columns=keep_debug_columns,
                     remove_duplicates=remove_duplicates,
                 )
