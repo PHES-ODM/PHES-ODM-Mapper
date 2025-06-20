@@ -595,6 +595,10 @@ class GeneratorData:
                 # If indexed_pk_value is unique in column self.primary_key then use it.
                 # Note that we have previously set the value in column self.primary_key for the current row to None
                 if USE_PRIMARY_KEY_LIST:
+                    # @TODO: Need to test this! This "if not indexed_pk_value" case was added to handle cases where we
+                    # have a blank ID (ie IDValue._root_id is "")
+                    if not indexed_pk_value:
+                        break
                     if indexed_pk_value not in self.used_primary_keys:
                         break
                 else:

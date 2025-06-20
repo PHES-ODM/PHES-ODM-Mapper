@@ -67,9 +67,17 @@ class IDValue(object):
         return self._str_value
 
     @classmethod
-    def make_id_str(self, unindexed_value: str, index: str) -> str:
+    def make_id_str(self, unindexed_value: Union["IDValue", str], index: str) -> str:
+        # if not unindexed_value or (isinstance(unindexed_value, IDValue) and not unindexed_value.unindexed_value):
+        #     return ""
+        unindexed_str = f"{unindexed_value}"
+        # @TODO: Need to test this! This was added to handle cases where we
+        # have a blank ID (ie IDValue._root_id is ""). With blank _root_id we ignore
+        # the index
+        # if not unindexed_str:
+        #     return ""
         index_str = f"{index:03d}" if index else ""
-        return f"{unindexed_value}{index_str}"
+        return f"{unindexed_str}{index_str}"
 
     def __repr__(self) -> str:
         if self._repr_value is None:
@@ -77,6 +85,9 @@ class IDValue(object):
                 f"<{type(self).__name__}:{str(self)} object at {hex(id(self))}>"
             )
         return self._repr_value
+
+    def __int__(self):
+        return int(str(self))
 
     def __eq__(self, value: object) -> bool:
         return str(self) == value
@@ -97,6 +108,7 @@ class IDValue(object):
         return self._root_id is None
 
     def __getitem__(self, key: Union[slice, int]) -> str:
+        # For retrieving a single index (character) or slice of the _root_id
         return self._root_id[key]
 
     def is_index_generated(self) -> bool:
