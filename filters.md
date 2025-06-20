@@ -98,6 +98,8 @@ The following filter operations are available:
 - [include_equals](#include_equals)
 - [invert_filter](#invert_filter)
 - [or_filters](#or_filters)
+- [requires_all](#requires_all)
+- [requires_any](#requires_any)
 
 ### and_filters
 
@@ -229,3 +231,21 @@ used it should still be specified for clarity.
 OR all the filters listed in the array specified in `value`. The resulting
 filter will be saved as `outputFilter`. While the class is not used it should
 still be specified for clarity.
+
+### requires_all
+
+| inputFilter | outputFilter | class          | slot        | operation      | value               |
+| :---------- | :----------- | :------------- | :---------- | :------------- | :------------------ |
+| 0           | 0            | measures       |             | requires_any   | [slot1, slot2, ...] |
+
+Only include rows where all of the slots specified in the `value` field are
+non-empty. `value` can be an array or a single value.
+
+### requires_any
+
+| inputFilter | outputFilter | class          | slot        | operation      | value               |
+| :---------- | :----------- | :------------- | :---------- | :------------- | :------------------ |
+| 0           | 0            | measures       |             | requires_any   | [slot1, slot2, ...] |
+
+Only include rows where at least one of the slots specified in the `value`
+field is non-empty. `value` can be an array or a single value.
