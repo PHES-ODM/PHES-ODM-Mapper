@@ -155,7 +155,7 @@ def do_exclude_equals(
     filt = filt & ~cur_filt
     num_rows = filt.sum()
     logger.debug(
-        f"Excluded rows, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows}). Filter matched {exclude_rows} row(s)"
+        f"Ran exclude_equals, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows}). Filter matched {exclude_rows} row(s)"
     )
 
     set_named_filter(filt, output_name, filters)
@@ -199,11 +199,11 @@ def do_include_equals(
 
     # Apply the filter
     init_num_rows = filt.sum()
-    exclude_rows = cur_filt.sum()
+    include_rows = cur_filt.sum()
     filt = filt | cur_filt
     num_rows = filt.sum()
     logger.debug(
-        f"Included rows, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows}). Filter matched {exclude_rows} row(s)"
+        f"Ran include_equals, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows}). Filter matched {include_rows} row(s)"
     )
 
     set_named_filter(filt, output_name, filters)
@@ -377,6 +377,96 @@ def do_create_filter(
     filters[output_name] = pd.Series([value] * len(data[cls].index))
 
 
+def do_requires_any(
+    filters: Dict[str, pd.Series],
+    data: Dict[str, pd.DataFrame],
+    input_name: str,
+    output_name: str,
+    cls: str,
+    value: Any,
+    **kwargs,
+):
+    """Include rows where at least one of the slots in value is set (value is either a single slot or an array of slots)
+
+    Args:
+        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        input_name (str): The input name. We use this as the initial filter.
+        output_name (str): The name to give the new filter.
+        cls (str): The class the filter applies to.
+        value (Any): Either a single slot name to apply the operation to, or a list of slot names.
+    """
+    filt = get_named_filter(input_name, filters)
+    df = data[cls]
+
+    # Convert the value into a list of slots if it isn't already
+    slots = value
+    if not isinstance(slots, list):
+        slots = [slots]
+
+    # Calculate requires any filter
+    any_filt = pd.Series([False] * len(data[cls].index))
+    for slot in slots:
+        cur_filt = ~(pd.isna(df[slot]) | (df[slot] == ""))
+        any_filt = any_filt | cur_filt
+
+    # Apply the requires any filter
+    init_num_rows = filt.sum()
+    removed_rows = (~any_filt).sum()
+    filt = filt & any_filt
+    num_rows = filt.sum()
+    logger.debug(
+        f"Ran requires_any, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows}). Filter removed {removed_rows} row(s)"
+    )
+
+    set_named_filter(filt, output_name, filters)
+
+
+def do_requires_all(
+    filters: Dict[str, pd.Series],
+    data: Dict[str, pd.DataFrame],
+    input_name: str,
+    output_name: str,
+    cls: str,
+    value: Any,
+    **kwargs,
+):
+    """Include rows where at all of the slots in value is set (value is either a single slot or an array of slots)
+
+    Args:
+        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        input_name (str): The input name. We use this as the initial filter.
+        output_name (str): The name to give the new filter.
+        cls (str): The class the filter applies to.
+        value (Any): Either a single slot name to apply the operation to, or a list of slot names.
+    """
+    filt = get_named_filter(input_name, filters)
+    df = data[cls]
+
+    # Convert the value into a list of slots if it isn't already
+    slots = value
+    if not isinstance(slots, list):
+        slots = [slots]
+
+    # Calculate requires any filter
+    all_filt = pd.Series([True] * len(data[cls].index))
+    for slot in slots:
+        cur_filt = pd.isna(df[slot]) | (df[slot] == "")
+        all_filt = all_filt & ~cur_filt
+
+    # Apply the requires any filter
+    init_num_rows = filt.sum()
+    removed_rows = (~all_filt).sum()
+    filt = filt & all_filt
+    num_rows = filt.sum()
+    logger.debug(
+        f"Ran requires_all, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows}). Filter removed {removed_rows} row(s)"
+    )
+
+    set_named_filter(filt, output_name, filters)
+
+
 # Map specifying which function to call for each operation.
 FILTER_FUNCS = {
     "and_filters": do_and_filters,
@@ -391,4 +481,6 @@ FILTER_FUNCS = {
     "include_equals": do_include_equals,
     "invert_filter": do_invert_filter,
     "or_filters": do_or_filters,
+    "requires_any": do_requires_any,
+    "requires_all": do_requires_all,
 }
