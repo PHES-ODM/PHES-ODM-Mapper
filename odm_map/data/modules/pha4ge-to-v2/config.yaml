@@ -47,7 +47,7 @@ steps:
         - ids/pha4ge_to_v2_id_code.yaml
   - action: filter
     params:
-      filters: filters/pha4ge_to_v2_filters_after_id.csv
+      filters: "{shared}/filters/odm_vx_filter_required_values.csv"
   - action: drop_columns
     if: "{not_debug_mode}"
     params:
