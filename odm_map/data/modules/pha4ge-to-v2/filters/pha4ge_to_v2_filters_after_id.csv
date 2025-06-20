@@ -1,4 +1,0 @@
-inputFilter,outputFilter,class,slot,operation,value
-,0,protocolRelationships,,create_filter,TRUE
-0,0,protocolRelationships,stepIDObj,exclude_equals,
-0,,protocolRelationships,,apply_filter,protocolRelationships
