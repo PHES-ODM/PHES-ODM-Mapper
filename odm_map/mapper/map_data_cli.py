@@ -8,10 +8,13 @@ from odm_map.utils.logger import get_logger
 
 app = typer.Typer(
     pretty_exceptions_show_locals=False,
-    # pretty_exceptions_enable=False,
+    rich_markup_mode="rich",
 )
 
 logger = get_logger(__name__)
+
+MAIN_HELP = """Apply a list of LinkML-Map mapping schemas to data. The results 
+are concatenated and saved to disk."""
 
 INPUTS_HELP = """List of files and directories to map. The files should be
 tables of the source dataset. If an input is an Excel file, then all sheets in
@@ -53,7 +56,7 @@ KEEP_EXTRA_COLUMNS_HELP = """If set then keep the extra columns in the output.
                           columns that do not exist in the target database."""
 
 
-@app.command()
+@app.command(help=MAIN_HELP)
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
