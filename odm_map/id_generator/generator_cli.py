@@ -8,8 +8,10 @@ from odm_map.utils.cli_utils import get_input_data_files
 
 app = typer.Typer(
     pretty_exceptions_show_locals=False,
-    # pretty_exceptions_enable=False,
+    rich_markup_mode="rich",
 )
+
+MAIN_HELP = """Generate IDs for DataFrames."""
 
 INPUTS_HELP = """List of files and directories to generate IDs for. The files
 should be tables of the dataset specified by '--schema'. If an input is an
@@ -51,7 +53,7 @@ DEBUG_HELP = f"""If set then run in debug mode, which only affects what is
              case the row would be dropped when not in debug mode."""
 
 
-@app.command()
+@app.command(help=MAIN_HELP)
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
