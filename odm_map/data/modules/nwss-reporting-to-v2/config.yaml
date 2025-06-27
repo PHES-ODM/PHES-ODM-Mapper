@@ -18,7 +18,7 @@ steps:
   - action: map
     params:
       source_schema: schemas/nwss_reporting.yaml
-      target_schema: schemas/odm_v2.yaml
+      target_schema: "{shared}/schemas/odm_v2.yaml"
       mappers_dir: mappers
   - action: filter
     params:

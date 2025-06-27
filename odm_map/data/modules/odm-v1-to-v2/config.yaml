@@ -1,11 +1,11 @@
 title: ODM v1 to ODM v2
 
-source_schema: schemas/odm_v1.yaml
+source_schema: "{shared}/schemas/odm_v1.yaml"
 
 steps:
   - action: clean
     params:
-      schema: schemas/odm_v1.yaml
+      schema: "{shared}/schemas/odm_v1.yaml"
       operations:
         - correct_enums: True
         - remove_unknown_columns: True
@@ -17,8 +17,8 @@ steps:
       progress_bar_title: Saving Cleaned Data
   - action: map
     params:
-      source_schema: schemas/odm_v1.yaml
-      target_schema: schemas/odm_v2.yaml
+      source_schema: "{shared}/schemas/odm_v1.yaml"
+      target_schema: "{shared}/schemas/odm_v2.yaml"
       mappers_dir: mappers
   - action: save
     if: "{debug_mode}"
