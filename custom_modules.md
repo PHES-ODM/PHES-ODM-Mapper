@@ -50,6 +50,9 @@ steps:
       output_dir: "{temp_dir}/cleaned_data/"
       output_name: "{class_name}[cleaned].csv"
       progress_bar_title: Saving Cleaned Data
+  - action: select_enum_hierarchy
+    params:
+      schema: schemas/nwss_reporting.yaml
   - action: map
     params:
       source_schema: schemas/nwss_reporting.yaml
@@ -361,6 +364,78 @@ would like to only perform a specific `save` action while in debug mode (which
 can be specified as a flag from the command-line), you can use "{debug_mode}"
 and "{not_debug_mode}" in the `if` key of the step. To always perform the
 `save` action, whether in debug mode or not, remove the `if` key in the step.
+
+### Action: select_enum_hierarchy
+
+```yaml
+- action: select_enum_hierarchy
+  params:
+    schema: schemas/nwss_reporting.yaml
+```
+
+| Parameter      | Required/Optional | Description |
+| :--------------| :---------------- | :---------- |
+| schema         | Required          | The path to the LinkML schema that the enum selection is based on. This path is relative to the root directory of the module. |
+
+The `select_enum_hierarchy` action will go through all the slots in the data
+that are multivalued and that have at least one enumeration in its range. For
+these slots, when multiple values are provided, the selector will remove any of
+the values in the array that is a parent (in the enumeration hierarchy) of any
+of the other values. The hierarchy is determined by the `is_a` attribute in the
+permissible values for the enumeration in the LinkML schema (where `is_a` is
+equivalent to specifying a child in the relationship). For example, given the
+following enumeration defining various types of transportation devices:
+
+```yaml
+enums:
+  transportation:
+    permissible_values:
+      wheeled:
+      one_wheeled:
+        is_a: wheeled
+      unicycle:
+        is_a: one_wheeled
+      monowheel:
+        is_a: one_wheeled
+      two_wheeled:
+        is_a: wheeled
+      bicycle:
+        is_a: two_wheeled
+      mountain_bike:
+        is_a: bicycle
+      road_bike:
+        is_a: bicycle
+      gravel_bike:
+        is_a: bicycle
+      motorbike:
+        is_a: two_wheeled
+```
+
+We can construct the following hierarchy:
+
+```text
+- wheeled
+  - one_wheeled
+    - unicycle
+    - monowheel
+  - two_wheeled
+    - bicycle
+      - mountain_bike
+      - road_bike
+      - gravel_bike
+    - motorbike
+```
+
+For a multivalued slot that uses the `transportation` enumeration, we can
+perform the following selection:
+
+```text
+['wheeled', 'monowheel', 'two_wheeled', 'mountain_bike']
+      -> ['monowheel', 'mountain_bike']
+
+['two_wheeled', 'mountain_bike', 'road_bike', 'motorbike'] 
+      -> ['mountain_bike', 'road_bike', 'motorbike']
+```
 
 ## LinkML-Map Mappers
 

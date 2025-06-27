@@ -32,6 +32,7 @@ from odm_map.actions.action_map_data import action_map_data
 from odm_map.actions.action_generate_ids import action_generate_ids
 from odm_map.actions.action_filter_data import action_filter_data
 from odm_map.actions.action_expand_data import action_expand_data
+from odm_map.actions.action_select_enum_hierarchy import action_select_enum_hierarchy
 from odm_map.utils.pipeline_module import (
     PipelineModule,
     MODULE_STEPS_KEY,
@@ -306,6 +307,11 @@ class Pipeline(object):
                 filter_config_file = self.module.get_module_path(params.get("filters"))
                 data_frames = action_filter_data(
                     data_frames=data_frames, filter_config_file=filter_config_file
+                )
+            elif action == "select_enum_hierarchy":
+                schema = self.module.get_module_path(params.get("schema"))
+                data_frames = action_select_enum_hierarchy(
+                    data_frames=data_frames, schema=schema
                 )
             else:
                 raise CleanExitError(
