@@ -11,11 +11,11 @@ app = typer.Typer(pretty_exceptions_show_locals=False, rich_markup_mode="rich")
 MAIN_HELP = """Expand rows in data by looking for arrays in specified columns,
 and duplicating the rows for each item in the array."""
 
-CONFIG_HELP = """Path to the configuration file."""
-
 INPUTS_HELP = """One or more inputs. Either paths to CSV, TSV, TXT, YAML, YML,
-              or XLSX files, or directories that contain these types of files
-              to use for input."""
+or XLSX files, or directories that contain these types of files
+to use for input."""
+
+CONFIG_HELP = """Path to the configuration file."""
 
 MAX_ROWS_HELP = """Maximum number of rows to load from each input file. If 0
                 then all rows are loaded."""
