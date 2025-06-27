@@ -545,7 +545,10 @@ class GeneratorData:
         unindexed_pk_value = self.get_data_value(self.primary_key, row_index)
         # When the unindexed value for the primary key is an empty string ("", but not None) then this row will always
         # have an index of 0. These are rows that should get removed downstream of the mapper (by running a filter).
-        if (isinstance(unindexed_pk_value, str) and unindexed_pk_value == "") or (isinstance(unindexed_pk_value, IDValue) and unindexed_pk_value.unindexed_value == ""):
+        if (isinstance(unindexed_pk_value, str) and unindexed_pk_value == "") or (
+            isinstance(unindexed_pk_value, IDValue)
+            and unindexed_pk_value.unindexed_value == ""
+        ):
             _set_current_row_values("", 0)
             return self.get_data_value(self.primary_key, row_index)
         self.set_data_value(self.primary_key, row_index, None)
