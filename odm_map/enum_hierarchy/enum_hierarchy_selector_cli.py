@@ -17,29 +17,26 @@ specified in a LinkML schema. That is, if the slot has multiple
 values, then remove any of the values that is a parent (via the
 is_a attribute in the LinkML schema) of any of the other values."""
 
+INPUTS_HELP = """The files and/or directories to select from. If a directory is
+specified then all recognized file types in that directory are
+loaded. File names determine which class the file belongs to."""
+
 SCHEMA_HELP = """The path to the LinkML schema that the data belong to."""
 
-INPUTS_HELP = """The files and/or directories to select from. If a directory is
-              specified then all recognized file types in that directory are
-              loaded. File names determine which class the file belongs to."""
+OUTPUT_DIR_HELP = """Directory to save the results to."""
 
-OUTPUT_DIR_HELP = """If specified then all data, after the selection is
-                  performed, is saved to this directory."""
-
-OUTPUT_FMT_HELP = """When --output-dir is specified, the names of the output
-                  files are based on this string, where the string
-                  interpolation tag {class_name} is used for specifying the
-                  class name. For example, '{class_name}-sel.csv' will result
-                  in 'measures-sel.csv' for the measures class."""
+OUTPUT_FMT_HELP = """The names of the output files are based on this string,
+                  where the string interpolation tag {class_name} is used for
+                  specifying the class name. For example,
+                  '{class_name}-sel.csv' will result in 'measures-sel.csv' for
+                  the measures class."""
 
 
 @app.command(help=MAIN_HELP)
 def main(
-    schema: Annotated[Path, typer.Argument(show_default=False, help=SCHEMA_HELP)],
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
-    output_dir: Annotated[
-        Path, typer.Argument(show_default=False, help=OUTPUT_DIR_HELP)
-    ],
+    schema: Annotated[Path, typer.Option(show_default=False, help=SCHEMA_HELP)],
+    output_dir: Annotated[Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     output_fmt: Annotated[
         str, typer.Option(show_default=False, help=OUTPUT_FMT_HELP)
     ] = "{class_name}.csv",
