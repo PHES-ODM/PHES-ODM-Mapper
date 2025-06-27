@@ -543,6 +543,11 @@ class GeneratorData:
         # The unindex PK value is currently at self.primary_key. Copy the value over to the UNINDEXED_PK_SLOT
         # then clear self.primary_key (since we will recalculate it)
         unindexed_pk_value = self.get_data_value(self.primary_key, row_index)
+        # When the unindexed value for the primary key is an empty string ("", but not None) then this row will always
+        # have an index of 0. These are rows that should get removed downstream of the mapper (by running a filter).
+        if (isinstance(unindexed_pk_value, str) and unindexed_pk_value == "") or (isinstance(unindexed_pk_value, IDValue) and unindexed_pk_value.unindexed_value == ""):
+            _set_current_row_values("", 0)
+            return self.get_data_value(self.primary_key, row_index)
         self.set_data_value(self.primary_key, row_index, None)
         self.set_data_value(PK_INDEX_SLOT, row_index, None)
         self.set_data_value(UNINDEXED_PK_SLOT, row_index, unindexed_pk_value)
@@ -595,10 +600,6 @@ class GeneratorData:
                 # If indexed_pk_value is unique in column self.primary_key then use it.
                 # Note that we have previously set the value in column self.primary_key for the current row to None
                 if USE_PRIMARY_KEY_LIST:
-                    # @TODO: Need to test this! This "if not indexed_pk_value" case was added to handle cases where we
-                    # have a blank ID (ie IDValue._root_id is "")
-                    if not indexed_pk_value:
-                        break
                     if indexed_pk_value not in self.used_primary_keys:
                         break
                 else:
