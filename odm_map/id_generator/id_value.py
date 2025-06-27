@@ -68,14 +68,7 @@ class IDValue(object):
 
     @classmethod
     def make_id_str(self, unindexed_value: Union["IDValue", str], index: str) -> str:
-        # if not unindexed_value or (isinstance(unindexed_value, IDValue) and not unindexed_value.unindexed_value):
-        #     return ""
         unindexed_str = f"{unindexed_value}"
-        # @TODO: Need to test this! This was added to handle cases where we
-        # have a blank ID (ie IDValue._root_id is ""). With blank _root_id we ignore
-        # the index
-        # if not unindexed_str:
-        #     return ""
         index_str = f"{index:03d}" if index else ""
         return f"{unindexed_str}{index_str}"
 
