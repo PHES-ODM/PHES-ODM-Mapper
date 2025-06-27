@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import pandas as pd
 import yaml
+import json
 import inspect
 from typing import Union, List, Optional, Any, Dict, Callable
 import re
@@ -416,3 +417,42 @@ def load_data_frames_for_classes(
             save_to_data_frames[class_name].append(df)
 
     return save_to_data_frames
+
+
+def make_multivalued(v: Any) -> List[Any]:
+    """Make a string (typically from a DataFrame) multivalued. This means converting it to a list of values.
+
+    We try to load the value as as JSON or YAML. If that doesn't work we split on the character "," or ";".
+
+    Args:
+        v (Any): The value to convert to multivalued.
+
+    Returns:
+        List[Any]: The multivalued version of v. If v is a single value then it will be an array of size 1.
+    """
+    if isinstance(v, str):
+        try:
+            vs = json.loads(v)
+            if isinstance(vs, list):
+                return vs
+        except Exception:
+            pass
+        try:
+            vs = yaml.safe_load(v)
+            if isinstance(vs, list):
+                return vs
+        except Exception:
+            pass
+
+        # @TODO: This doesn't properly deal with commas and semi-colons nested within
+        # quotes, which we would typically not want to split on. This is how LinkML does it,
+        # but it may not be good in all situations.
+        for delimiter in ",;":
+            if delimiter in v:
+                vs = v.split(delimiter)
+                vs = [v.strip() if isinstance(v, str) else v for v in vs]
+                return vs
+    elif isinstance(v, (list, tuple)):
+        return list(v)
+
+    return [v]

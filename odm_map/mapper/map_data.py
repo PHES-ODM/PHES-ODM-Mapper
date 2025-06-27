@@ -2,7 +2,6 @@ from typing import Any, Dict, List, Tuple, Optional, Union, Callable
 import os
 from pathlib import Path
 import yaml
-import json
 from functools import partial
 import pandas as pd
 import math
@@ -32,6 +31,7 @@ from odm_map.utils.general_utils import (
     merge_dicts_of_lists,
     order_columns,
     save_data_frames_for_classes,
+    make_multivalued,
 )
 
 logger = get_logger(__name__)
@@ -102,7 +102,7 @@ class DataMapper(object):
             return v
 
         if multivalued:
-            v = self.make_multivalued(v)
+            v = make_multivalued(v)
 
         for cast_type in cast_types:
             # The default cast function is str, this will deal with enums and other types
@@ -118,42 +118,6 @@ class DataMapper(object):
             except Exception:
                 pass
         return v
-
-    def make_multivalued(self, v: Any) -> List[Any]:
-        """Make a value (typically from a DataFrame) multivalued. This means converting it to a list of values.
-
-        We try to load the value as as JSON or YAML. If that doesn't work we split on the character "," or ";".
-
-        Args:
-            v (Any): _description_
-
-        Returns:
-            List[Any]: _description_
-        """
-        if isinstance(v, str):
-            try:
-                vs = json.loads(v)
-                if isinstance(vs, list):
-                    return vs
-            except Exception:
-                pass
-            try:
-                vs = yaml.safe_load(v)
-                if isinstance(vs, list):
-                    return vs
-            except Exception:
-                pass
-
-            # @TODO: This doesn't properly deal with commas and semi-colons nested within
-            # quotes, which we would typically not want to split on. This is how LinkML does it,
-            # but it may not be good in all situations.
-            for delimiter in ",;":
-                if delimiter in v:
-                    vs = v.split(delimiter)
-                    vs = [v.strip() if isinstance(v, str) else v for v in vs]
-                    return vs
-
-        return [v]
 
     def get_cast_functions(self, schema: SchemaView) -> Dict[str, Dict[str, Callable]]:
         """Get a dictionary specifying how all slots/attributes in all classes of the schema should
