@@ -18,9 +18,8 @@ tracking columns (columns that specify which row and file/table the row was popu
 and dropping columns that are not part of the class according to a LinkML schema."""
 
 INPUTS_HELP = """All the data files to drop columns from. The class the data file
-              belongs to is determined by the file's name. eg. measures.csv belongs
-              to the measures class, and samples[2025-07-01].csv belongs to the
-              samples class."""
+belongs to is determined by the file's name. eg. measures.csv belongs to the
+measures class, and samples[2025-07-01].csv belongs to the samples class."""
 
 DROP_EXTRA_COLUMNS_HELP = """If set then drop the extra columns. These are columns that
                           begin with the string '_extra_'."""
@@ -46,9 +45,7 @@ MAX_ROWS_HELP = """Maximum number of rows to load from each input data file. If 
 @app.command(help=MAIN_HELP)
 def main(
     inputs: Annotated[List[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
-    output_dir: Annotated[
-        Path, typer.Argument(show_default=False, help=OUTPUT_DIR_HELP)
-    ],
+    output_dir: Annotated[Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     drop_extra_columns: Annotated[
         bool, typer.Option(help=DROP_EXTRA_COLUMNS_HELP)
     ] = False,
