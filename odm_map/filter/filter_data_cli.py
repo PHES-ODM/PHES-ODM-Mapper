@@ -10,6 +10,9 @@ app = typer.Typer(
     # pretty_exceptions_enable=False,
 )
 
+MAIN_HELP = """Filter DataFrames by removing rows according to rules in a
+config file."""
+
 INPUTS_HELP = """List of files and directories to filter. The files
 should be tables of the dataset specified by '--schema'. If an input is an
 Excel file, then all sheets in the file with a recognized table name in the
@@ -34,7 +37,7 @@ SCHEMA_HELP = """Schema file that the data conforms to. This will only be used
               after the first square or round bracket."""
 
 
-@app.command()
+@app.command(help=MAIN_HELP)
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     filter_config_file: Annotated[
@@ -55,11 +58,11 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         opts = {
-            # "inputs": ["../../gen/nwss-reporting-to-v2/temp/mapped_data"],
-            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"],
-            "filter_config_file": "../data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.csv",
-            "output_dir": "../../gen/nwss-reporting-to-v2-test/filtered_mapped_data",
-            "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",
+            "inputs": ["../../gen/pha4ge-to-v2/"],
+            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"],
+            "filter_config_file": "../data/modules/_shared/filters/odm_vx_filter_required_values.csv",
+            "output_dir": "../../gen/pha4ge-to-v2/filtered_mapped_data",
+            "schema": "../data/modules/pha4ge-to-v2/schemas/odm_v3.yaml",
         }
         # fmt: on
         main(**opts)
