@@ -165,33 +165,23 @@ class EnumHierarchySelector:
         """
         ranges = self.get_enum_ranges(slot_defn)
         for row_idx, row in df.iterrows():
-            # Get the values for the current row in the slot
-            vals = make_multivalued(row[slot_defn.name])
-            orig_vals = vals.copy()
-            # Iterate over all the values, remove any of the values that appear as an
-            # ancestor of any of the other values.
-            for val_idx in range(len(vals)):
-                val = vals[val_idx]
-                if val is None:
-                    continue
+            # Get the values for the current row in the slot (orig_vals), we will replace them with new_vals
+            orig_vals = make_multivalued(row[slot_defn.name])
+            new_vals = orig_vals.copy()
+            # Iterate over all the values in the current row for the slot, remove any of the values that appear as
+            # an ancestor of any of the other values
+            for val in orig_vals:
                 for rng in ranges:
-                    # Get the ancestors
-                    ancestors = [
-                        str(a)
-                        for a in self.schema.permissible_value_ancestors(val, rng)
-                    ]
-                    # If any of the other vals are in the ancestors, then make that val None
-                    for check_idx, check_val in enumerate(vals):
-                        if check_val == val:
-                            continue
-                        if check_val in ancestors:
-                            vals[check_idx] = None
-            vals = [v for v in vals if v is not None]
-            if vals != orig_vals:
+                    # Remove all values in new_vals that is an ancestor for the current val. Note that
+                    # permissible_value_ancestors will return val as well, which is why we need to not 
+                    # include val in ancestors
+                    ancestors = [str(a) for a in self.schema.permissible_value_ancestors(val, rng) if str(a) != val]
+                    new_vals = [v for v in new_vals if v not in ancestors]
+            if new_vals != orig_vals:
                 logger.info(
-                    f"Selected deepest enum values from {class_name}.{slot_defn.name}:{row_idx}: Original={orig_vals} New={vals}"
+                    f"Selected deepest enum values from {class_name}.{slot_defn.name}:{row_idx}: Original={orig_vals} New={new_vals}"
                 )
                 # @TODO: Is this the best way to convert to a multi-valued string? LinkML treats multivalued values
                 # as comma-separated strings, without outer square brackets, and without applying any escaping of
                 # commas within the values.
-                df.loc[row_idx, slot_defn.name] = ",".join(vals)
+                df.loc[row_idx, slot_defn.name] = ",".join(new_vals)
