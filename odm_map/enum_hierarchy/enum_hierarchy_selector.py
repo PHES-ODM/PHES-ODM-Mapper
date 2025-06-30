@@ -173,9 +173,13 @@ class EnumHierarchySelector:
             for val in orig_vals:
                 for rng in ranges:
                     # Remove all values in new_vals that is an ancestor for the current val. Note that
-                    # permissible_value_ancestors will return val as well, which is why we need to not 
+                    # permissible_value_ancestors will return val as well, which is why we need to not
                     # include val in ancestors
-                    ancestors = [str(a) for a in self.schema.permissible_value_ancestors(val, rng) if str(a) != val]
+                    ancestors = [
+                        str(a)
+                        for a in self.schema.permissible_value_ancestors(val, rng)
+                        if str(a) != val
+                    ]
                     new_vals = [v for v in new_vals if v not in ancestors]
             if new_vals != orig_vals:
                 logger.info(
