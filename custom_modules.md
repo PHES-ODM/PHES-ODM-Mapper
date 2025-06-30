@@ -53,6 +53,7 @@ steps:
   - action: select_enum_hierarchy
     params:
       schema: schemas/nwss_reporting.yaml
+      config: enum_hierarchy/config.yaml
   - action: map
     params:
       source_schema: schemas/nwss_reporting.yaml
@@ -371,11 +372,13 @@ and "{not_debug_mode}" in the `if` key of the step. To always perform the
 - action: select_enum_hierarchy
   params:
     schema: schemas/nwss_reporting.yaml
+    config: enum_hierarchy/config.yaml
 ```
 
 | Parameter      | Required/Optional | Description |
 | :--------------| :---------------- | :---------- |
 | schema         | Required          | The path to the LinkML schema that the enum selection is based on. This path is relative to the root directory of the module. |
+| config         | Optional          | The path to the YAML config file to use for selecting the enum values. The config file specifies which classes/slots to select the enum values from. |
 
 The `select_enum_hierarchy` action will go through all the slots in the data
 that are multivalued and that have at least one enumeration in its range. For
@@ -436,6 +439,28 @@ perform the following selection:
 ['two_wheeled', 'mountain_bike', 'road_bike', 'motorbike'] 
       -> ['mountain_bike', 'road_bike', 'motorbike']
 ```
+
+The config file, specified by the `config` parameter, specifies which
+classes/slots to apply the enum selector to. If `config` is missing or empty
+then all slots (in all classes) that have a multi-valued enum range are
+processed. If `config` is specified, then the config file has the following
+format:
+
+```yaml
+classes:
+  class1:
+    slots:
+      - slot1_a
+      - slot1_b
+      - slot1_c
+  class2:
+    slots:
+      - slot2_a
+```
+
+In the above configuration, `slot1_a`, `slot_1b`, and `slot1_c` in the class
+named `class1` will be processed, and `slot2_a` in the class named `class2`
+will also be processed.
 
 ## LinkML-Map Mappers
 

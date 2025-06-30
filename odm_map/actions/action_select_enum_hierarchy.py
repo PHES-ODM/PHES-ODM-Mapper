@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 from pathlib import Path
 import pandas as pd
 
@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 def action_select_enum_hierarchy(
     data_frames: Dict[str, List[pd.DataFrame]],
     schema: Union[str, Path, SchemaView],
+    config: Optional[Union[str, Path]],
 ) -> Dict[str, List[pd.DataFrame]]:
     """For multivalued enum slots keep only the enumeration values that have the deepest enum value in
     the hierarchy for the enumeration as specified in a LinkML schema. That is, if the slot has multiple
@@ -24,14 +25,17 @@ def action_select_enum_hierarchy(
             keys are the class names and the values are lists of DataFrames belonging to the class.
             All DataFrames from the same class are merged then filtered. Note that the DataFrames get
             modified in place.
-        schema: Union[str, Path, SchemaView]: The LinkML schema that the DataFrames belong to. The keys
+        schema (Union[str, Path, SchemaView]): The LinkML schema that the DataFrames belong to. The keys
             of data_frames should be classes within this schema.
+        config (Optional[Union[str, Path]]): Path to the config file to use for EnumHierarchySelector.
+            If specified then it lists all the classes/slots to select enum values from. If not specified
+            then all classes/slots that have multivalued enum ranges are selected from.
 
     Returns:
         Dict[str, List[pd.DataFrame]]: The selected DataFrames. Keys are the class names and values
             are lists of filtered DataFrames for that class.
     """
-    selector = EnumHierarchySelector(schema)
+    selector = EnumHierarchySelector(schema, config=config)
     data_frames = selector.select(data_frames=data_frames)
 
     return data_frames

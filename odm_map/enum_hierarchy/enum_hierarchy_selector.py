@@ -37,12 +37,25 @@ from odm_map.utils.general_utils import (
 logger = get_logger(__name__)
 
 
+class ConfigKeys:
+    CLASSES = "classes"
+    SLOTS = "slots"
+
+
 class EnumHierarchySelector:
-    def __init__(self, schema: Union[str, Path, SchemaView]):
+    def __init__(
+        self, schema: Union[str, Path, SchemaView], config: Union[str, Path] = None
+    ):
         if isinstance(schema, SchemaView):
             self.schema = schema
         else:
             self.schema = SchemaView(schema)
+
+        if config:
+            with open(config, "r") as f:
+                self.config = yaml.safe_load(f)
+        else:
+            self.config = None
 
     def select(
         self,
@@ -92,24 +105,39 @@ class EnumHierarchySelector:
             logger.info(f"Selecting from enum hierarchy for class {class_name}")
             class_defn = self.schema.induced_class(class_name)
 
-            # Collect all the slots to process. These are multivalued slots that have at least one enumeration
-            # in its range
             slots = []
-            for slot_defn in class_defn.attributes.values():
-                if not slot_defn.multivalued:
-                    continue
+            if self.config is None:
+                # Collect all the slots to process. These are multivalued slots that have at least one enumeration
+                # in its range
+                for slot_defn in class_defn.attributes.values():
+                    if not slot_defn.multivalued:
+                        continue
 
-                # Get the range of the slot
-                ranges = self.get_enum_ranges(slot_defn)
+                    # Get the range of the slot
+                    ranges = self.get_enum_ranges(slot_defn)
 
-                for rng in ranges:
-                    if rng in self.schema.all_enums():
+                    for rng in ranges:
+                        if rng in self.schema.all_enums():
+                            slots.append(slot_defn)
+                            break
+            else:
+                # The slots to process for the current class is specified in the config file.
+                class_config = self.config.get(ConfigKeys.CLASSES, {}).get(
+                    class_name, None
+                )
+                if class_config:
+                    slots_config = class_config.get(ConfigKeys.SLOTS, [])
+                    for cur_slot in slots_config:
+                        slot_defn = class_defn.attributes[cur_slot]
                         slots.append(slot_defn)
-                        break
+
             if not slots:
                 continue
 
             # Go through the DataFrames and process all the slots
+            logger.info(
+                f"Selecting from slots in class '{class_name}': {', '.join([s.name for s in slots])}"
+            )
             for df in dfs:
                 for slot_defn in slots:
                     self.select_from_df(df, class_name, slot_defn)

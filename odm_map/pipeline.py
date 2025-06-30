@@ -310,8 +310,9 @@ class Pipeline(object):
                 )
             elif action == "select_enum_hierarchy":
                 schema = self.module.get_module_path(params.get("schema"))
+                config = self.module.get_module_path(params.get("config"))
                 data_frames = action_select_enum_hierarchy(
-                    data_frames=data_frames, schema=schema
+                    data_frames=data_frames, schema=schema, config=config
                 )
             else:
                 raise CleanExitError(

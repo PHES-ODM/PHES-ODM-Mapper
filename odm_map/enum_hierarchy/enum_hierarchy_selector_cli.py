@@ -31,6 +31,11 @@ OUTPUT_FMT_HELP = """The names of the output files are based on this string,
                   '{class_name}-sel.csv' will result in 'measures-sel.csv' for
                   the measures class."""
 
+CONFIG_HELP = """Optional path to the config to use. The config specifies which
+              classes and slots to select enum values from. If no config is
+              provided then all classes and slots that are multi-valued enums
+              are selected."""
+
 
 @app.command(help=MAIN_HELP)
 def main(
@@ -40,9 +45,10 @@ def main(
     output_fmt: Annotated[
         str, typer.Option(show_default=False, help=OUTPUT_FMT_HELP)
     ] = "{class_name}.csv",
+    config: Annotated[Path, typer.Option(show_default=False, help=CONFIG_HELP)] = None,
 ):
     data_files = get_input_data_files(inputs, schema=schema)
-    selector = EnumHierarchySelector(schema)
+    selector = EnumHierarchySelector(schema, config=config)
     selector.select(data_files=data_files, output_dir=output_dir, output_fmt=output_fmt)
 
 
@@ -55,6 +61,7 @@ if __name__ == "__main__":
             ],
             "output_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/temp/cleaned_data/hierarchy",
             "output_fmt": "{class_name}.csv",
+            "config": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/odm_map/data/modules/pha4ge-to-v2/enum_hierarchy/config.yaml",
         }
 
         main(**opts)
