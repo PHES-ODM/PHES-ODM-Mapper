@@ -120,3 +120,8 @@ named_class_linkages:
       protocols:
         source_slot: ["(__source_file_and_row__)", "_extra_protocolIDContainer_tag"]
         target_slot: ["(__source_file_and_row__)", "_extra_protocolID_tag"]
+  accessions_to_measures_measureRepID:
+    accessions:
+      measures:
+        source_slot: ["(__source_file_and_row__)", "_extra_measureRepID_tag"]
+        target_slot: ["(__source_file_and_row__)", "measure"]
