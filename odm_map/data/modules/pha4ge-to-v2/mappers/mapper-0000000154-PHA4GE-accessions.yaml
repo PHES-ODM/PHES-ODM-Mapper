@@ -15,6 +15,9 @@ class_derivations:
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
         expr: '"sequenced by"'
+      _extra_measureRepID_tag:
+        name: _extra_measureRepID_tag
+        expr: '"detLinClade"'
   Container:
     name: Container
     slot_derivations:
