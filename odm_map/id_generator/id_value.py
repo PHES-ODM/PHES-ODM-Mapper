@@ -95,7 +95,7 @@ class IDValue(object):
         return hash(str(self))
 
     def __bool__(self) -> bool:
-        return not self.is_empty()
+        return True if str(self) else False
 
     def is_empty(self) -> bool:
         return self._root_id is None
