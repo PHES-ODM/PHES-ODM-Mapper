@@ -200,9 +200,9 @@ if __name__ == "__main__":
             # "temp_dir": "../gen/nwss-reporting-to-v2/temp",
 
             # PHA4GE to ODM v2
-            "module": None, #"pha4ge-to-v2",
+            "module": "pha4ge-to-v2",
             # "module_path": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/pha4ge-to-v2.zip", #None,
-            "module_path": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/pha4ge-to-v2b.zip",
+            # "module_path": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/pha4ge-to-v2b.zip",
             "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-large.xlsx"],
             # "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-enums-test.xlsx"],
             # "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-protocols-test.xlsx"],
@@ -212,7 +212,7 @@ if __name__ == "__main__":
             "temp_dir": "../gen/pha4ge-to-v2/temp",
 
             "max_processes": 1,
-            "max_rows": 10,
+            "max_rows": 5,
             "debug": True,
         }
         # fmt: on
