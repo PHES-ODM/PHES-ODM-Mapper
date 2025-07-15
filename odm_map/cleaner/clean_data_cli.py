@@ -53,6 +53,26 @@ def main(
         data_frames=None,
         output_dir=output_dir,
         max_rows=max_rows,
+        # @TODO: Do not hardcode these!
+        clean_operations=[
+            {
+                "format_columns": [
+                    "lowercase",
+                    {"remove_chars": "-"},
+                    "alpha_numeric_underscore",
+                    "single_underscores",
+                    "trim_trailing_underscores",
+                ]
+            },
+            {
+                "add_ontology_ids_to_enums": {
+                    "match_ontology_id": r"\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\]$",
+                }
+            },
+            {"correct_enums": True},
+            {"report_unknown_enum_values": True},
+            {"remove_unknown_columns": True},
+        ],
     )
 
 
@@ -66,12 +86,17 @@ if __name__ == "__main__":
             # "max_rows": 100,
             # "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v1.yaml",
 
-            # "inputs": ["../../../../../PHES-ODM-Data/nwss/nwss_renamed/"],
-            "inputs": ["../../gen/nwss-reporting-to-v2-test/mapped_data_ids"],
-            "output_dir": "../../gen/nwss-reporting-to-v2-test/cleaned_data-final",
+            # "inputs": ["../../gen/nwss-reporting-to-v2-test/mapped_data_ids"],
+            # "output_dir": "../../gen/nwss-reporting-to-v2-test/cleaned_data-final",
+            # "max_rows": None, #100,
+            # # "schema": "../data/modules/nwss-reporting-to-v2/schemas/nwss_reporting.yaml",
+            # "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
+
+            "inputs": ["../../gen/pha4ge-to-v2/temp/cleaned_data-custom"],
+            "output_dir": "../../gen/pha4ge-to-v2/temp/cleaned_data-final",
             "max_rows": None, #100,
             # "schema": "../data/modules/nwss-reporting-to-v2/schemas/nwss_reporting.yaml",
-            "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
+            "schema": "../data/modules/pha4ge-to-v2/schemas/pha4ge.yaml",
         }
         # fmt: on
         main(**opts)
