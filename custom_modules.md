@@ -232,6 +232,10 @@ operations:
   - report_unknown_enum_values: True
 ```
 
+Each slot that has at least one enumeration as its range will be tested.
+However, if a slot has at least one non-enumeration range (such as a string),
+then any value is allowed.
+
 ### Action: drop_columns
 
 Example:
