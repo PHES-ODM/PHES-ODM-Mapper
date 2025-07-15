@@ -98,7 +98,7 @@ class DataMapper(object):
         Returns:
             Any: The cast value, or the value unchanged if it could not be cast.
         """
-        if pd.isna(v):
+        if not isinstance(v, (list, tuple)) and pd.isna(v):
             return v
 
         if multivalued:
@@ -113,6 +113,7 @@ class DataMapper(object):
             }.get(cast_type, str)
             try:
                 if multivalued and isinstance(v, list):
+                    # @TODO: Should we keep uncastable elements?
                     return [cast_func(i) for i in v]
                 return cast_func(v)
             except Exception:
