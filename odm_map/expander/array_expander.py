@@ -1,7 +1,8 @@
 # %%
 """
-The ArrayExpander expands array values in a DataFrame, so that each item in the array gets its own row. The array values
-can either be a YAML string (eg. "['a','b','c']") that gets converted to an array, or an actual array.
+The ArrayExpander expands array values in a DataFrame, so that each item in the
+array gets its own row. The array values can either be a YAML string (eg.
+"['a','b','c']") that gets converted to an array, or an actual array.
 
 For example, using the following table:
 
@@ -21,11 +22,12 @@ When expanded based on the "value" column, we get the following table:
 | Green   | 5        |
 | Green   | 6        |
 
-The first two rows (Orange) were expanded from [1, "b"], while the last two (Green) were expanded from [5, 6]. All values
-in the other columns are copied over without modification (ie. the measure column).
+The first two rows (Orange) were expanded from [1, "b"], while the last two
+(Green) were expanded from [5, 6]. All values in the other columns are copied
+over without modification (ie. the measure column).
 
-Which table and which columns in those tables that are expanded are determined by the configuration file, which is
-in the following format:
+Which table and which columns in those tables that are expanded are determined
+by the configuration file, which is in the following format:
 
 ```yaml
 expand_columns:
@@ -42,10 +44,12 @@ expand_columns:
     # ...
 ```
 
-Each key in the `expand_columns` dictionary is a table name. The values are arrays of columns within that table to expand.
+Each key in the `expand_columns` dictionary is a table name. The values are
+arrays of columns within that table to expand.
 
-Alternatively, an index or list of indices can be specified in the configuration to specify which
-array elements to select. The following will select the first item in `sampleShed`:
+Additionally, an index or list of indices can be specified in the configuration
+to specify which array elements to selected and expanded (the other elements
+get dropped). The following will select the first item in `sampleShed`:
 
 ```yaml
 expand_columns:
@@ -72,9 +76,12 @@ expand_columns:
             select_item: -1
 ```
 
-If an index specified under `select_item` is out of range (either at or above the array length, or below 
-the negative array length) then that index is removed. If an index is specified more than once (either
-as a negative or positive index) then the duplicate indices are removed.
+After selection with `select_item`, the row then gets expanded.
+
+If an index specified under `select_item` is out of range (either at or above
+the array length, or below the negative array length) then that index is
+removed. If an index is specified more than once (either as a negative or
+positive index) then the duplicate indices are removed.
 
 """
 

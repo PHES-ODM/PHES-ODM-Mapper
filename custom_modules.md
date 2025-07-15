@@ -252,24 +252,44 @@ operations:
       config: expander/expander_config.yaml
 ```
 
-There are two different modes of expanding:
+When expanding a row that has multiple values in a slot, it expands into
+multiple rows with one value in the array per row, with every other slot being
+identical between the rows. For example, the following has multiple values in
+the first and last rows in the `value` slot:
 
-1. Expand a row with multiple values in a slot to multiple rows, one row for
-   each value in the slot
-2. Select only certain items from a slot with multiple values
+| measure | value         |
+|---------|---------------|
+| Orange  | [1, "b", "c"] |
+| Blue    | 3             |
+| Green   | [5, 6]        |
 
-For case 1: Expanding into multiple rows, there is one row for each value in
-the slot, with every other slot being identical between the rows. For example,
-the following has multiple values in the first and last rows in the `value`
-slot:
+When expanded based on the `value` slot, we get the following table:
 
 | measure | value    |
 |---------|----------|
-| Orange  | [1, "b"] |
+| Orange  | 1        |
+| Orange  | b        |
+| Orange  | c        |
+| Blue    | 3        |
+| Green   | 5        |
+| Green   | 6        |
+
+The first two rows (Orange) were expanded from [1, "b", "c"], while the last
+two (Green) were expanded from [5, 6]. All values in the other slots are copied
+over without modification (ie. the measure column).
+
+It is also possible to first select items within the array (and drop the other
+items) before expanding. For example, we can select only the first and last
+items, resulting in the following table before expanding:
+
+| measure | value    |
+|---------|----------|
+| Orange  | [1, "c"] |
 | Blue    | 3        |
 | Green   | [5, 6]   |
 
-When expanded based on the `value` slot, we get the following table:
+Notice that the middle item "b" is now missing from the "Orange" row. After this,
+the table gets expanded to:
 
 | measure | value    |
 |---------|----------|
@@ -279,51 +299,10 @@ When expanded based on the `value` slot, we get the following table:
 | Green   | 5        |
 | Green   | 6        |
 
-The first two rows (Orange) were expanded from [1, "b"], while the last two
-(Green) were expanded from [5, 6]. All values in the other slots are copied
-over without modification (ie. the measure column).
-
-For case 2: Selecting items from a slot, the number of rows stay the same, but
-only certain items from the multi-valued slot are retained (with all other
-values being dropped). For example, with the following table:
-
-| measure | value         |
-|---------|---------------|
-| Orange  | [1, "b", "c"] |
-| Blue    | 3             |
-| Green   | [5]           |
-
-If we select the first item from each array in the `value` slot, we get:
-
-| measure | value    |
-|---------|----------|
-| Orange  | [1]      |
-| Blue    | 3        |
-| Green   | [5]      |
-
-Or if we select the first and last item for each array in the `value` slot, we get:
-
-| measure | value    |
-|---------|----------|
-| Orange  | [1, "c"] |
-| Blue    | 3        |
-| Green   | [5]      |
-
 The config file for the `expand` operation has a top-level key named
 `expand_columns`. The keys within `expand_columns` are the class names and the
-values are lists (arrays) of slots within the class to expand.
-
-If the slot in the config file is specified as a string (specifying the slot
-name), then the rows in that slot are expanded to multiple rows, one for each
-item in the multivalued slot. If the slot in the config file is specified as a
-key-dictionary pair, then the key is the slot name and the dictionary is
-additional configuration options, where the only option is `select_item` which
-specifies which array index/indices to select.
-
-The example below will expand the `purpose` slot of the `samples` table into
-multiple rows, will select the first item in the `saMaterial` slot, and select
-the first and last item in the `collType` slot. It will also expand the
-`sampleShed` slot of the `sites` table into multiple rows:
+values are lists (arrays) of slots within the class to expand. Below is an
+example configuration:
 
 ```yaml
 expand_columns:
@@ -337,11 +316,20 @@ expand_columns:
         - sampleShed
 ```
 
-Note that if an array index specified under `select_item` is out of range
-(either at or above the array length, or below the negative array length), then
-it is dropped, and if an array index is specified more than once, then the
-duplicate indices are removed (this includes negative indices that map to a
-positive index that is already specified).
+If the slot in the config file is specified as a string (as in the `purpose`
+slot of the `samples` table above, or the `sampleShed` slot in the `sites`
+table), then the rows in that slot are expanded. If instead it is a
+key-dictionary pair (as in the `saMaterial` and `collType` slots in the
+`samples` table above), then the array index values to select before expanding
+can be specified with the `select_item` key. In the above example, the first
+item (0) is selected from the `saMaterial` slot and the first and last items (0
+and -1) are selected from the `collType` slot, and then the rows get expanded.
+
+If any of the indices in `select_item` are out of range (either at or above an
+array length, or below the negative array length) then that index is removed
+from `select_item`. If an index refers to the same array item in the slot, then
+that index is only selected only once (this includes negative indices that map
+to a positive index that is already specified).
 
 ### Action: drop_columns
 
