@@ -1,11 +1,15 @@
 expand_columns:
-    # instruments:
-    #     - name
-    #     - manufacturer
+    instruments:
+        - name
+        - manufacturer
     measures:
         - value
-    # samples:
-    #     - repType
-    #     - saMaterial
+    qualityReports:
+        - qualityFlag
+    samples:
+        - purpose
+        - saMaterial
+        - repType
+        - collType
     # sites:
     #     - sampleShed
