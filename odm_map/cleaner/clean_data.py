@@ -10,16 +10,17 @@ from pathlib import Path
 import pandas as pd
 import os
 import re
-from typing import Tuple, List, Union, Optional, Dict, Any
+from typing import Tuple, List, Union, Optional, Dict, Any, Callable
 import yaml
 
 from linkml_runtime import SchemaView
+from linkml_runtime.linkml_model.meta import EnumDefinition
 
 from odm_map.utils.general_utils import (
     read_data_frame,
     save_data_frame,
-    choose_ignore_case_value,
     get_unique_output_file,
+    make_multivalued,
     EXCEL_FILE_KEY,
 )
 from odm_map.utils.logger import get_logger, make_logger_bullet_list
@@ -61,19 +62,6 @@ class DataCleaner(object):
                 getattr(logger, level)(msg)
         if clear:
             self.log = {}
-
-    def remove_ontology_id(self, val: str) -> str:
-        """Remove an ontology ID from the end of a value. For example, "degree Celsius (C) [UO:0000027]" would
-            become "degree Celsius (C)"
-
-        Args:
-            val (str): The value to remove the ontology ID from.
-
-        Returns:
-            str: The value with the ontology ID removed. If there was no ontology ID it is returned unchanged.
-        """
-        val = re.sub(r"\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\]$", "", val.strip()).strip()
-        return val
 
     def clean_remove_unknown_columns(
         self, df: pd.DataFrame, class_name: str
@@ -198,225 +186,266 @@ class DataCleaner(object):
 
         return df
 
-    def clean_add_ontology_ids_to_enums(
-        self, df: pd.DataFrame, class_name: str
-    ) -> pd.DataFrame:
-        """Add ontology IDs, if they exist, to all the enumeration values in the DataFrame.
+    def add_to_change_history(
+        self,
+        change_history: Dict,
+        class_name: str,
+        slot_name: str,
+        old_value: str,
+        new_value: str,
+    ):
+        if class_name not in change_history:
+            change_history[class_name] = {}
+        if slot_name not in change_history[class_name]:
+            change_history[class_name][slot_name] = {}
+        if old_value not in change_history[class_name][slot_name]:
+            change_history[class_name][slot_name][old_value] = {}
+        if new_value not in change_history[class_name][slot_name][old_value]:
+            change_history[class_name][slot_name][old_value][new_value] = 0
+        change_history[class_name][slot_name][old_value][new_value] += 1
 
-        The ontology IDs are determined by the schema. They are the IDs in square brackets concatenated to
-        the end of the enumeration value. For example, the enum value "degree Celsius (C) [UO:0000027]" has
-        the ontology ID "UO:0000027". If we find the value "degree Celsius (C)" in the DataFrame, and the
-        corresponding enumeration in the schema has a permissible value of "degree Celsius (C) [UO:0000027]",
-        then the value in the DataFrame will be replaced with "degree Celsius (C) [UO:0000027]".
+    def report_change_history(self, change_history: Dict, clean_title: str):
+        # Report changes history
+        for class_name, class_data in change_history.items():
+            for slot_name, slot_data in class_data.items():
+                changes_items = []
+                for old_val, old_val_data in slot_data.items():
+                    for new_val, num_changes in old_val_data.items():
+                        if new_val is not None:
+                            cur_changes = f"{old_val} -> {new_val} ({num_changes} time{'' if num_changes == 1 else 's'})"
+                        else:
+                            cur_changes = f"{old_val if old_val else '<empty>'} ({num_changes} time{'' if num_changes == 1 else 's'})"
+                        changes_items.append(cur_changes)
+                changes_items = sorted(changes_items, key=lambda x: str(x).lower())
+                changes_str = make_logger_bullet_list(changes_items)
+                changes_str = f"{clean_title}: class '{class_name}', slot '{slot_name}':\n{changes_str}"
+                self.add_to_log("warning", changes_str)
 
-        Note that when trying to match a DataFrame enum value with a schema enum value that capitalization is
-        ignored, and sequences of multiple spaces are replaced with single spaces when trying to match (but the
-        resulting enum value has the same capitalization and spacing as the schema enum value).
+    def general_map_slot(
+        self,
+        clean_title: str,
+        change_history: Dict,
+        unknown_enums_history: Dict,
+        df_column: pd.Series,
+        class_name: str,
+        slot_name: str,
+        source_values: List[str],
+        target_values: List[str],
+        can_be_anything: bool,
+        source_value_formatter: Callable[[str], str] = None,
+    ) -> pd.Series:
+        """A general cleaning function for cleaning a single slot in a class. This is called by self.general_map_class.
+
+        It works by performing a simple mapping from source_values[idx] to target_values[idx]. In general, given a value
+        v in the slot, the value gets mapped to target_values[source_values.index(source_valu_formatter(v))].
+
+        A history of mapped values is retained in change_history, and a history of values that are not valid enum
+        values is retained in unknown_enums_history. Both of these are used to report which changes/errors have
+        been made to the user.
 
         Args:
-            df (pd.DataFrame): The DataFrame to add ontology IDs to. A copy of this DataFrame is made and
-                the original left unchanged.
-            class_name (str): The class name that the DataFrame belongs to. We will iterate over all columns
-                in the schema that belong to this class.
+            clean_title (str): A descriptive title of the cleaning operation, such as "Added ontology IDs". This is used to
+                report the results to the user.
+            change_history (Dict): Receives a history of which changes/mappings were made. The integer value at
+                change_history[class_name][slot_name][old_value][new_value] is the number of times we mapped from
+                old_value to new_value for the given class and slot.
+            unknown_enums_history (Dict): Receives a history of which enum values that were encountered that are not
+                allowable enum values. This will only be populated if the parameter can_be_anything is False.
+                Typically, can_be_anything will be set to True if the slot has at least one range that is not
+                an enumeration (eg. a string or number). If the slot has ranges that are only enumerations
+                then can_be_anything should be False and unknown_enums_history will receive the unknown enum
+                values. This dictionary has a count of the number of unknown values at
+                unknown_enums_history[class_name][slot_name][value][None]
+            df_column (pd.Series): The column that we are cleaning. This is the column taken from the class named
+                class_name and the slot named slot_name. A copy will be made and modified, with the original left
+                unchanged.
+            class_name (str): The name of the class that df_column belongs to.
+            slot_name (str): The slot (in class class_name) that df_column represents.
+            source_values (List[str]): The mapping source values. The mapping performed is target_values[source_values.index(v)]
+            target_values (List[str]): The mapping target values. The mapping performed is target_values[source_values.index(v)]
+            can_be_anything (bool): If True, then the values in the slot can take on any value, so
+                unknown_enums_history will remain unchanged. It is usually set to True if the slot has at
+                least one range that is not an enumeration. If False then if a value in the slot is not
+                found in source_values, then it is counted as an invalid value and stored in unknown_enums_history.
+            source_value_formatter (Callable[[str], str], optional): _description_. Defaults to None.
 
         Returns:
-            pd.DataFrame: The DataFrame with ontology IDs added.
+            pd.Series: A copy of the column df_column with all the cleaning/mapping performed according to
+                the parameters.
         """
         if class_name not in all_classes_without_tree_root(self.schema):
             logger.debug(
-                f"Not adding ontology IDs to enums for class {class_name} since class is not recognized"
+                f"Skipping '{clean_title}' for class {class_name} since class is not recognized"
             )
-            return df
+            return df_column
 
-        logger.debug(f"Correcting capitalization for class {class_name}")
-        df = df.copy()
+        logger.debug(f"{clean_title} for class {class_name}")
 
-        class_definition = self.schema.induced_class(class_name)
+        df_column = df_column.copy()
+        slot_defn = self.schema.induced_slot(slot_name, class_name)
 
-        def _get_onto_value(
-            v, permissible_values: List[str], permissible_values_simplified: List[str]
-        ) -> str:
-            try:
-                idx = permissible_values_simplified.index(re.sub("  +", " ", v.lower()))
-                return permissible_values[idx]
-            except Exception:
+        if source_value_formatter is None:
+
+            def _mirror_value(v):
                 return v
 
-        # Go through all the columns in the DataFrame and add ontology IDs when appropriate
+            source_value_formatter = _mirror_value
+
+        def _get_mapped_value(v) -> str:
+            if slot_defn.multivalued:
+                v = make_multivalued(v)
+            else:
+                v = [v]
+            for v_idx in range(len(v)):
+                old_v = v[v_idx]
+                try:
+                    source_v = source_value_formatter(old_v)
+                    idx = source_values.index(source_v)
+                    new_v = target_values[idx]
+                    v[v_idx] = new_v
+                    if new_v != old_v:
+                        # Add the class name, slot name, original value, new value to the changes history
+                        # We report this to the user
+                        self.add_to_change_history(
+                            change_history, class_name, slot_name, old_v, new_v
+                        )
+                except Exception:
+                    if not can_be_anything:
+                        # Add the class name, slot name, original value to the history of unknown enum
+                        # values. We report this to the user
+                        self.add_to_change_history(
+                            unknown_enums_history, class_name, slot_name, old_v, None
+                        )
+                    pass
+            if slot_defn.multivalued:
+                return v
+            return v[0]
+
+        # Perform the cleaning, by mapping from source_values[idx] to target_values[idx]
+        df_column = df_column.map(_get_mapped_value)
+
+        return df_column
+
+    def general_map_class(
+        self,
+        clean_title: str,
+        df: pd.DataFrame,
+        class_name: str,
+        report_unknown_values_only: bool,
+        get_source_values: Callable[[EnumDefinition], str],
+        get_target_values: Callable[[EnumDefinition], str],
+        source_value_formatter: Callable[[str], str],
+    ) -> pd.DataFrame:
+        """A general cleaning operation to be called for each class that we want to clean. It works by formatting all values
+        (using the function source_value_formatter) in the class's DataFrame for all slots that are enumerations, then mapping
+        these values to new values. The lists returned by get_source_values and get_target_values will define which
+        formatted source values get mapped to which target values. For example, if a formatted value matches
+        get_source_values(enum)[idx], then it gets mapped to get_target_values(enum)[idx].
+
+        Note that this function works by calling self.general_map_slot(...) on all enum slots in the class.
+
+        Args:
+            clean_title (str): A descriptive title of the cleaning operation, such as "Added ontology IDs". This is used to
+                report the results to the user.
+            df (pd.DataFrame): The DataFrame for the class. A copy is made and modified (and returned), with the original
+                value left unchanged.
+            class_name (str): The name of the class that the DataFrame belongs to.
+            report_unknown_values_only (bool): If True, then the clean operation will only report unknown enumeration
+                values found in each enum slot of the DataFrame. In this case, get_source_values, get_target_values,
+                and source_value_formatter should all be None
+            get_source_values (Callable[[EnumDefinition], str]): Function that takes an EnumDefinition as a parameter and
+                returns a list of source values for mapping for the enum. For a given enum, get_source_values(enum)[idx]
+                maps to get_target_values(enum)[idx]. If get_source_values is None, then the default will be to return
+                all permissible values of the enum (ie. list(enum.permissible_values.keys()))
+            get_target_values (Callable[[EnumDefinition], str]): Function that takes an EnumDefinition as a parameter and
+                returns a list of target values for mapping for the enum. For a given enum, get_source_values(enum)[idx]
+                maps to get_target_values(enum)[idx]. If get_target_values is None, then the default will be to return
+                all permissible values of the enum (ie. list(enum.permissible_values.keys()))
+            source_value_formatter (Callable[[str], str]): Function that formats all the source values within the slots
+                of the DataFrame before trying to map (from get_source_values(enum)[idx] to get_target_values(enum)[idx]).
+                If None then the default behavior is to use the source values unchanged when mapping.
+
+        Returns:
+            pd.DataFrame: A copy of df with all the slots that are enumerations cleaned according to the parameters.
+        """
+        if report_unknown_values_only and (
+            get_source_values is not None
+            or get_target_values is not None
+            or source_value_formatter is not None
+        ):
+
+            def _is_none(v):
+                return "None" if v is None else "Not None"
+
+            raise ValueError(
+                f"report_unknown_values_only is True but the following values must all be None: get_source_values ({_is_none(get_source_values)}), get_target_values ({_is_none(get_target_values)}), source_value_formatter ({_is_none(source_value_formatter)})"
+            )
+
+        logger.debug(f"{clean_title}: class '{class_name}'")
+        df = df.copy()
+
+        def _get_enum_permissible_values(enum: EnumDefinition) -> List[Optional[str]]:
+            # By default, the get_source_values and get_target_values functions simply returns the EnumDefinition's permissible values
+            # unchanged
+            return list(enum.permissible_values.keys())
+
+        if get_source_values is None:
+            get_source_values = _get_enum_permissible_values
+        if get_target_values is None:
+            get_target_values = _get_enum_permissible_values
+
+        class_defn = self.schema.induced_class(class_name)
+
+        change_history = {}
+        unknown_enums_history = {}
+
+        # Go through all the columns in the DataFrame and apply the mapping from
+        # get_source_values(enum)[idx] to get_target_values(enum)[idx]
         for slot_name in df.columns:
-            if slot_name not in class_definition.attributes:
+            if slot_name not in class_defn.attributes:
                 continue
 
             slot_ranges = get_ranges_of_slot(class_name, slot_name, self.schema)
+            source_values = []
+            target_values = []
+            can_be_anything = False
             if slot_ranges:
+                # For all of the ranges for the slot, get the enum types. Based on the enum values,
+                # determine which source values get mapped to which target values.
                 for slot_range in slot_ranges:
                     # Get enumeration for the slot range, if there is one.
                     enum = self.schema.all_enums().get(str(slot_range), None)
                     if enum is not None:
-                        permissible_values = list(enum.permissible_values.keys())
-                        # The "simplified" values are the permissible values with the ontology ID
-                        # removed, the values in lowercase, and sequences of multiple spaces replaced
-                        # with single spaces. This is used to match the enum values in the
-                        # DataFrame, that are in lowercase and have multiple spaces removed (but
-                        # the ontology ID, if there is one, is not removed)
-                        permissible_values_simplified = [
-                            re.sub("  +", " ", self.remove_ontology_id(v).lower())
-                            for v in permissible_values
-                        ]
-                        df[slot_name] = df[slot_name].map(
-                            lambda x: _get_onto_value(
-                                x, permissible_values, permissible_values_simplified
-                            )
-                        )
+                        # Get the source and target values. We map from cur_source_values[idx] to cur_target_values[idx]
+                        cur_source_values = get_source_values(enum)
+                        cur_target_values = get_target_values(enum)
 
-        return df
-
-    def clean_correct_enums(self, df: pd.DataFrame, class_name: str) -> pd.DataFrame:
-        """Using the schema, correct the capitalization and whitespace of all enumeration values so that they
-        match the capitalization and whitespace in the schema. If it is not a recognized enumeration value it is
-        left unchanged.
-
-        Args:
-            df (pd.DataFrame): The DataFrame to correct. The original is left unchanged (a copy is returned).
-            class_name (str): The class name of the table.
-
-        Returns:
-            pd.DataFrame: A copy of the DataFrame, with the enumeration value capitalization corrected.
-        """
-        if class_name not in all_classes_without_tree_root(self.schema):
-            logger.debug(
-                f"Not correcting enum capitalization for class {class_name} since class is not recognized"
-            )
-            return df
-
-        logger.debug(f"Correcting capitalization for class {class_name}")
-        df = df.copy()
-
-        class_definition = self.schema.induced_class(class_name)
-
-        # changes_history stores a count of the changes made to enumeration values to correct for capitalization.
-        # The keys are the slot name, and the values are a sub dictionary. The keys of the sub dictionary
-        # are the change string (in the form "origEnumValue -> fixedEnumValue") and the values are the
-        # counts of how many times that change was made.
-        changes_history = {}
-        # unrecognized_history stores unrecognized enumeration values. The keys are the slot names, the values are
-        # sub-dictionaries where the keys are the actual unrecognized enum values and the keys are the counts of how
-        # many times that unrecognzied enum value occurs
-        unrecognized_history = {}
-
-        # Fix enumerations (Use correct capitalization), and only keep recognized slots
-        for slot_name in df.columns:
-            if is_extra_or_tracking_slot(slot_name):
-                continue
-            if slot_name not in class_definition.attributes:
-                continue
-            slot_ranges = get_ranges_of_slot(class_name, slot_name, self.schema)
-
-            if slot_ranges:
-                permissible_values = []
-
-                can_be_anything = False
-                for slot_range in slot_ranges:
-                    # Get enumeration for the slot range, if there is one, and fix up the capitalization of all slot values.
-                    enum = self.schema.all_enums().get(str(slot_range), None)
-                    if enum is not None:
-                        cur_permissible_values = list(enum.permissible_values.keys())
-                        if len(cur_permissible_values) == 0:
-                            can_be_anything = True
-                        permissible_values += cur_permissible_values
+                        # Save the current source and target values, retaining their order
+                        # We will map from source_values[idx] to target_values[idx]
+                        source_values.extend(cur_source_values)
+                        target_values.extend(cur_target_values)
                     else:
                         can_be_anything = True
 
-                lowercase_permissible_values = [
-                    re.sub("  +", " ", v.lower()) for v in permissible_values
-                ]
-                df_orig = df[slot_name].copy()
-                replacements_df = df[slot_name].apply(
-                    lambda x: choose_ignore_case_value(
-                        re.sub("  +", " ", x) if isinstance(x, str) else x,
-                        permissible_values,
-                        lowercase_permissible_values,
-                        return_same_if_missing=can_be_anything,
-                    )
+            if source_values and target_values:
+                # There are source and target values, so perform the mapping of each row
+                # for slot_name from source_values[idx] to target_values[idx] when possible
+                df[slot_name] = self.general_map_slot(
+                    clean_title,
+                    change_history,
+                    unknown_enums_history,
+                    df[slot_name],
+                    class_name,
+                    slot_name,
+                    source_values,
+                    target_values,
+                    can_be_anything,
+                    source_value_formatter,
                 )
 
-                # Keep a history of which enum values are invalid. These are values where replacements_df
-                # is None but the corresponding value in df[slot_name] was not empty.
-                unrecognized_enums_filt = pd.isna(replacements_df) & (
-                    ~pd.isna(df[slot_name]) | df[slot_name] != ""
-                )
-                if unrecognized_enums_filt.any():
-                    if slot_name not in unrecognized_history:
-                        unrecognized_history[slot_name] = {}
-                    unrecognized_str = df[slot_name][unrecognized_enums_filt]
-                    # Go through each unrecognized enum value and update the count of how many times it is found
-                    for enum_value in unrecognized_str.unique():
-                        if enum_value not in unrecognized_history[slot_name]:
-                            unrecognized_history[slot_name][enum_value] = 0
-                        unrecognized_history[slot_name][enum_value] += (
-                            (unrecognized_str == enum_value)
-                            | (pd.isna(enum_value) & pd.isna(unrecognized_str))
-                        ).sum()
-                    # Set the blank unrecognized values in replacements_df to the original enum value.
-                    replacements_df[unrecognized_enums_filt] = df[slot_name][
-                        unrecognized_enums_filt
-                    ]
-
-                df[slot_name] = replacements_df
-
-                # Keep a history of which enum values were changed
-                changes_filt = df_orig.map(lambda x: "" if pd.isna(x) else x) != df[
-                    slot_name
-                ].map(lambda x: "" if pd.isna(x) else x)
-                if changes_filt.any():
-                    # changes_str is "origEnumValue -> fixedEnumValue"
-                    changes_str = (
-                        df_orig[changes_filt].astype(
-                            str
-                        )  # .map(lambda x: str(type(x)))
-                        + " -> "
-                        + df[slot_name][changes_filt].astype(
-                            str
-                        )  # .map(lambda x: str(type(x)))
-                    )
-                    if slot_name not in changes_history:
-                        changes_history[slot_name] = {}
-                    slot_changes_history = changes_history[slot_name]
-                    # Loop through all changes_str values, and increase the count for each
-                    for change_key in changes_str:
-                        if change_key not in slot_changes_history:
-                            slot_changes_history[change_key] = 0
-                        slot_changes_history[change_key] += 1
-
-        # Report the capitalization changes to the user
-        def _show_history(history: Dict[str, Dict[str, int]], msg: str):
-            for slot_name, slot_history in history.items():
-                for change_str, count in slot_history.items():
-                    slot_history[change_str] = (
-                        f"{count} time{'s' if count != 1 else ''}"
-                    )
-                slot_history = sorted(
-                    [
-                        f"{k if not pd.isna(k) and k != '' else '<empty>'} ({c})"
-                        for k, c in slot_history.items()
-                    ],
-                    key=lambda x: str(x).lower(),
-                )
-                changes_str = make_logger_bullet_list(slot_history)
-                cur_msg = msg.format(slot_name=slot_name, class_name=class_name)
-                if changes_str:
-                    self.add_to_log(
-                        "warning",
-                        f"{cur_msg}\n{changes_str}",
-                    )
-
-        _show_history(
-            unrecognized_history,
-            msg="The following invalid enumeration values were found in column '{slot_name}' of table '{class_name}', please consider correcting them:",
-        )
-        _show_history(
-            changes_history,
-            msg="The following enumeration values were automatically corrected for capitalization and spacing in column '{slot_name}' of table '{class_name}':",
+        self.report_change_history(
+            unknown_enums_history if report_unknown_values_only else change_history,
+            clean_title,
         )
 
         return df
@@ -479,6 +508,11 @@ class DataCleaner(object):
         else:
             df = data_frame
 
+        def _lowercase_minimize_spacing(v: str) -> str:
+            # Make a value lowercase and remove consecutive spaces. This can be used for the
+            # source_value_formatter parameter of self.general_map_class
+            return re.sub("  +", " ", v.lower())
+
         # Clean the data
         for cur_operation in clean_operations:
             if len(cur_operation) == 0:
@@ -489,9 +523,60 @@ class DataCleaner(object):
                 )
             for clean_name, clean_params in cur_operation.items():
                 if clean_name == "correct_enums" and clean_params:
-                    df = self.clean_correct_enums(df, class_name)
+
+                    def _get_source_values(enum: EnumDefinition) -> List[Any]:
+                        return [
+                            re.sub("  +", " ", v.lower())
+                            for v in list(enum.permissible_values.keys())
+                        ]
+
+                    df = self.general_map_class(
+                        "Corrected capitalization and spacing",
+                        df,
+                        class_name,
+                        False,
+                        _get_source_values,
+                        None,
+                        _lowercase_minimize_spacing,
+                    )
                 elif clean_name == "add_ontology_ids_to_enums" and clean_params:
-                    df = self.clean_add_ontology_ids_to_enums(df, class_name)
+
+                    def _get_source_values(enum: EnumDefinition) -> List[Any]:
+                        # Remove the ontology ID from the permissible values
+                        vals = [
+                            re.sub(clean_params["match_ontology_id"], "", v.strip())
+                            for v in list(enum.permissible_values.keys())
+                        ]
+                        # Remove consecutive spaces, strip spaces from start/end, and make lowercase
+                        vals = [re.sub("  +", " ", v).strip().lower() for v in vals]
+                        return vals
+
+                    if not isinstance(clean_params, Dict) or not isinstance(
+                        clean_params.get("match_ontology_id", None), str
+                    ):
+                        raise ValueError(
+                            "Parameter 'match_ontology_id' for action 'add_ontology_ids_to_enums' in config file must exist and be a string."
+                        )
+
+                    df = self.general_map_class(
+                        "Added ontology IDs",
+                        df,
+                        class_name,
+                        False,
+                        _get_source_values,
+                        None,
+                        _lowercase_minimize_spacing,
+                    )
+                elif clean_name == "report_unknown_enum_values" and clean_params:
+                    self.general_map_class(
+                        "Unrecognized enum value(s)",
+                        df,
+                        class_name,
+                        True,
+                        None,
+                        None,
+                        None,
+                    )
                 elif clean_name == "format_columns":
                     df = self.clean_format_columns(
                         df, class_name, format_columns_options=clean_params
