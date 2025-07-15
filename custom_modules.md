@@ -43,7 +43,12 @@ steps:
     params:
       schema: schemas/nwss_reporting.yaml
       operations:
+        - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
+        - add_ontology_ids_to_enums:
+            match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
         - correct_enums: True
+        - report_unknown_enum_values: True
+        - remove_unknown_columns: True
   - action: save
     if: "{debug_mode}"
     params:
@@ -128,8 +133,10 @@ Example:
     schema: schemas/nwss_reporting.yaml
     operations:
       - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
-      - add_ontology_ids_to_enums: True
+      - add_ontology_ids_to_enums:
+          match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
       - correct_enums: True
+      - report_unknown_enum_values: True
       - remove_unknown_columns: True
 ```
 
@@ -194,21 +201,36 @@ Add ontology IDs (when they exist) to all enum values in the data.
 
 ```yaml
 operations:
-  - add_ontology_ids_to_enums: True
+  - add_ontology_ids_to_enums:
+      match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
 ```
 
-The ontology IDs are determined by the schema. They are the IDs in square
-brackets concatenated to the end of the enumeration values. For example, the
-enum value "degree Celsius (C) [UO:0000027]" has the ontology ID "UO:0000027".
-If we find the value "degree Celsius (C)" in the data, and the corresponding
-enumeration in the schema has a permissible value of "degree Celsius (C)
-[UO:0000027]", then the value in the data will be replaced with "degree Celsius
-(C) [UO:0000027]".
+The ontology IDs should be included in the permissible values for an
+enumeration in the schema. An example of an enumeration value with an ontology
+ID is "degree Celsius (C) [UO:0000027]", where "[UO:0000027]" is the ontology
+ID. In this case, if the value "degree Celsius (C)" is found in the data, it
+will be converted to "degree Celsius (C) [UO:0000027]". Note that spacing and
+capitalization are ignored when matching a data value to an enum value
+specified in the LinkML schema.
+
+In order to extract the ontology ID from a string, the regular expression
+specified by the parameter `match_ontology_id` is used.
 
 Note that when trying to match a data enum value with a schema enum value that
 capitalization is ignored, and sequences of multiple spaces are replaced with
 single spaces when trying to match (but the resulting enum value has the same
-capitalization and spacing as the schema enum value).
+capitalization and spacing as found in the LinkML schema).
+
+#### Clean Operation: report_unknown_enum_values
+
+This operation does not make any changes to the data, but it does report any
+enumeration value that is not recognized to the user. The purpose is to allow
+the user to go in and manually fix the data.
+
+```yaml
+operations:
+  - report_unknown_enum_values: True
+```
 
 ### Action: drop_columns
 
