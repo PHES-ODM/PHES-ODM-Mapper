@@ -44,6 +44,38 @@ expand_columns:
 
 Each key in the `expand_columns` dictionary is a table name. The values are arrays of columns within that table to expand.
 
+Alternatively, an index or list of indices can be specified in the configuration to specify which
+array elements to select. The following will select the first item in `sampleShed`:
+
+```yaml
+expand_columns:
+    sites:
+        - sampleShed:
+            select_item: 0
+```
+
+The following will select the first and second items:
+
+```yaml
+expand_columns:
+    sites:
+        - sampleShed:
+            select_item: [0, 1]
+```
+
+The following will select the last item:
+
+```yaml
+expand_columns:
+    sites:
+        - sampleShed:
+            select_item: -1
+```
+
+If an index specified under `select_item` is out of range (either at or above the array length, or below 
+the negative array length) then that index is removed. If an index is specified more than once (either
+as a negative or positive index) then the duplicate indices are removed.
+
 """
 
 from typing import Union, List, Dict, Any, Optional, Tuple
@@ -202,6 +234,14 @@ class ArrayExpander(object):
                 select_item = config[SELECT_ITEM_KEY]
                 if not isinstance(select_item, list):
                     select_item = [select_item]
+                # Drop indices that are out of range (above the upper limit)
+                select_item = [i for i in select_item if i < len(expanded_values)]
+                # Drop indices that are out of range (below the lower limit)
+                select_item = [i for i in select_item if i >= -len(expanded_values)]
+                # Convert negative indices to positive
+                select_item = [i % len(expanded_values) for i in select_item]
+                # Drop duplicate indices
+                select_item = list(dict.fromkeys(select_item))
                 expanded_values = [
                     expanded_values[i] for i in select_item if i < len(expanded_values)
                 ]
