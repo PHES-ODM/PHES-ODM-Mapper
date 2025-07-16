@@ -3,6 +3,9 @@ class_derivations:
     name: polygons
     populated_from: PHA4GE
     slot_derivations:
+      poLic:
+        name: poLic
+        populated_from: watershed_shapefile_availability
       fileLocation:
         name: fileLocation
         populated_from: watershed_shapefile_filename
@@ -17,4 +20,19 @@ class_derivations:
     slot_derivations:
       polygons:
         populated_from: PHA4GE
-enum_derivations: {}
+enum_derivations:
+  poLic_from_WatershedShapefileAvailabilityMenu:
+    name: poLic_from_WatershedShapefileAvailabilityMenu
+    mirror_source: false
+    populated_from: WatershedShapefileAvailabilityMenu
+    permissible_value_derivations:
+      open:
+        name: open
+        populated_from: Available [GENEPIO:0100993]
+      NR:
+        name: NR
+        populated_from: Unknown [GENEPIO:0100995]
+  NullValueMenu[=mirrored=]:
+    name: NullValueMenu[=mirrored=]
+    mirror_source: true
+    populated_from: NullValueMenu
