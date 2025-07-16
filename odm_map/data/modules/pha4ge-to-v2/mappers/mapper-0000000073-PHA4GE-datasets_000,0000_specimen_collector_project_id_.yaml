@@ -3,6 +3,9 @@ class_derivations:
     name: datasets[000,0000=specimen_collector_project_id]
     populated_from: PHA4GE
     slot_derivations:
+      originalFormat:
+        name: originalFormat
+        expr: '"pha4geForm"'
       _extra_datasetID_tag:
         name: _extra_datasetID_tag
         expr: '''specimen collector project ID'''
