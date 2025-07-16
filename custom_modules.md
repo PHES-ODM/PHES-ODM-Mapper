@@ -241,9 +241,13 @@ then any value is allowed.
 
 #### Clean Operation: expand
 
-This operation will expand or select items from slots that are multivalued. The
-only parameter for the expand operation is a configuration file for the
-operation:
+This operation will expand arrays from slots that are multivalued. In other
+words, if an array is in a slot for a row, the expander will make a new row for
+each item in the array, with all other slots in the new rows being identical.
+It can also optionally only select one or more of the items in the array, and
+ignore the other ones. In this way, it can also reduce a multi-valued array
+into a single value. The only parameter for the expand operation is a
+configuration file for the operation:
 
 ```yaml
 operations:
@@ -252,10 +256,8 @@ operations:
       config: expander/expander_config.yaml
 ```
 
-When expanding a row that has multiple values in a slot, it expands into
-multiple rows with one value in the array per row, with every other slot being
-identical between the rows. For example, the following has multiple values in
-the first and last rows in the `value` slot:
+For example, the following has multiple values in the first and last rows in
+the `value` slot:
 
 | measure | value         |
 |---------|---------------|
@@ -274,7 +276,7 @@ When expanded based on the `value` slot, we get the following table:
 | Green   | 5        |
 | Green   | 6        |
 
-The first two rows (Orange) were expanded from [1, "b", "c"], while the last
+The first three rows (Orange) were expanded from [1, "b", "c"], while the last
 two (Green) were expanded from [5, 6]. All values in the other slots are copied
 over without modification (ie. the measure column).
 
@@ -318,18 +320,19 @@ expand_columns:
 
 If the slot in the config file is specified as a string (as in the `purpose`
 slot of the `samples` table above, or the `sampleShed` slot in the `sites`
-table), then the rows in that slot are expanded. If instead it is a
-key-dictionary pair (as in the `saMaterial` and `collType` slots in the
-`samples` table above), then the array index values to select before expanding
-can be specified with the `select_item` key. In the above example, the first
-item (0) is selected from the `saMaterial` slot and the first and last items (0
-and -1) are selected from the `collType` slot, and then the rows get expanded.
+table), then the rows in that slot are expanded using all values in the arrays.
+If instead it is a key-dictionary pair (as in the `saMaterial` and `collType`
+slots in the `samples` table above), then the array index values to select
+before expanding can be specified with the `select_item` key. In the above
+example, the first item (at index 0) is selected from the `saMaterial` slot and
+the first and last items (0 and -1) are selected from the `collType` slot, and
+then the rows get expanded.
 
 If any of the indices in `select_item` are out of range (either at or above an
 array length, or below the negative array length) then that index is removed
 from `select_item`. If an index refers to the same array item in the slot, then
-that index is only selected only once (this includes negative indices that map
-to a positive index that is already specified).
+that index is selected only once (this includes negative indices that map to a
+positive index that is already specified).
 
 ### Action: drop_columns
 
