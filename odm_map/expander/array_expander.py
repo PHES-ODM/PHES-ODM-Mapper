@@ -55,7 +55,7 @@ get dropped). The following will select the first item in `sampleShed`:
 expand_columns:
     sites:
         - sampleShed:
-            select_item: 0
+            select_items: 0
 ```
 
 The following will select the first and second items:
@@ -64,7 +64,7 @@ The following will select the first and second items:
 expand_columns:
     sites:
         - sampleShed:
-            select_item: [0, 1]
+            select_items: [0, 1]
 ```
 
 The following will select the last item:
@@ -73,12 +73,12 @@ The following will select the last item:
 expand_columns:
     sites:
         - sampleShed:
-            select_item: -1
+            select_items: -1
 ```
 
-After selection with `select_item`, the row then gets expanded.
+After selection with `select_items`, the row then gets expanded.
 
-If an index specified under `select_item` is out of range (either at or above
+If an index specified under `select_items` is out of range (either at or above
 the array length, or below the negative array length) then that index is
 removed. If an index is specified more than once (either as a negative or
 positive index) then the duplicate indices are removed.
@@ -99,7 +99,7 @@ from odm_map.progress import ProgressCounter
 
 # Config file keys
 EXPAND_COLUMNS_KEY = "expand_columns"
-SELECT_ITEM_KEY = "select_item"
+SELECT_ITEMS_KEY = "select_items"
 
 EXPAND_BARID = "Expanding"
 
@@ -207,10 +207,10 @@ class ArrayExpander(object):
             config (Optional[Dict[str, Any]]): Optional configuration for the expand operation. If None or empty,
                 then we the output will have one row per value in the array. Otherwise expanding is done using
                 the following config options:
-                    SELECT_ITEM_KEY: Only select the item(s) at the specified index/indices in the resulting array for
-                        expanding. For example: { SELECT_ITEM_KEY: 0 } will only select the first item in the array,
+                    SELECT_ITEMS_KEY: Only select the item(s) at the specified index/indices in the resulting array for
+                        expanding. For example: { SELECT_ITEMS_KEY: 0 } will only select the first item in the array,
                         and so the expanding will not add any additional rows. If an array, then additional rows will
-                        be added. For example: { SELECT_ITEM_KEY: [0, 3] } will only select the first (0) and fourth (3)
+                        be added. For example: { SELECT_ITEMS_KEY: [0, 3] } will only select the first (0) and fourth (3)
                         items in the array. If any of the indices are out of range then it is ignored. If none of the
                         indices are in range then the current row gets dropped.
 
@@ -236,21 +236,21 @@ class ArrayExpander(object):
             else:
                 continue
 
-            if config and SELECT_ITEM_KEY in config:
+            if config and SELECT_ITEMS_KEY in config:
                 # Only expand selected items
-                select_item = config[SELECT_ITEM_KEY]
-                if not isinstance(select_item, list):
-                    select_item = [select_item]
+                select_items = config[SELECT_ITEMS_KEY]
+                if not isinstance(select_items, list):
+                    select_items = [select_items]
                 # Drop indices that are out of range (above the upper limit)
-                select_item = [i for i in select_item if i < len(expanded_values)]
+                select_items = [i for i in select_items if i < len(expanded_values)]
                 # Drop indices that are out of range (below the lower limit)
-                select_item = [i for i in select_item if i >= -len(expanded_values)]
+                select_items = [i for i in select_items if i >= -len(expanded_values)]
                 # Convert negative indices to positive
-                select_item = [i % len(expanded_values) for i in select_item]
+                select_items = [i % len(expanded_values) for i in select_items]
                 # Drop duplicate indices
-                select_item = list(dict.fromkeys(select_item))
+                select_items = list(dict.fromkeys(select_items))
                 expanded_values = [
-                    expanded_values[i] for i in select_item if i < len(expanded_values)
+                    expanded_values[i] for i in select_items if i < len(expanded_values)
                 ]
 
             # If there are no expanded values then we will drop the current row

@@ -317,9 +317,9 @@ expand_columns:
     samples:
         - purpose
         - saMaterial:
-            select_item: 0
+            select_items: 0
         - collType:
-            select_item: [0, -1]
+            select_items: [0, -1]
     sites:
         - sampleShed
 ```
@@ -329,37 +329,38 @@ slot of the `samples` table, or the `sampleShed` slot in the `sites` table
 above), then the rows in that slot are expanded using all values in the arrays.
 If instead it is a key-dictionary pair (as in the `saMaterial` and `collType`
 slots in the `samples` table above), then the array index values to select
-before expanding can be specified with the `select_item` key. In the above
+before expanding can be specified with the `select_items` key. In the above
 example, the first item (at index 0) is selected from the `saMaterial` slot and
 the first and last items (0 and -1) are selected from the `collType` slot, and
 then the rows get expanded. Negative indices are treated the same way they are
 treated in Python; -1 corresponds to the last item, -2 the second last, and so
 on.
 
-If any of the indices in `select_item` are out of range (either at or above an
+If any of the indices in `select_items` are out of range (either at or above an
 array length, or below the negative array length) then that index is removed
-from `select_item`. If an index refers to the same array item as another index,
-then that index is selected only once (this includes negative indices that map
-to a positive index that is already specified). For example, if we're selecting
-from an array of length 3, and the following is specified for `select_item`:
+from `select_items`. If an index refers to the same array item as another
+index, then that index is selected only once (this includes negative indices
+that map to a positive index that is already specified). For example, if we're
+selecting from an array of length 3, and the following is specified for
+`select_items`:
 
 ```yaml
-select_item: [0, 1, 3, -1, -2, -4]
+select_items: [0, 1, 3, -1, -2, -4]
 ```
 
 Then any index at or above 3 will be dropped, and any index at or below -4 will
 be dropped (due to being out of range). We would then get the following:
 
 ```yaml
-select_item: [0, 1, -1, -2]
+select_items: [0, 1, -1, -2]
 ```
 
 Additionally, -1 refers to the last item which is at index 2. -2 refers to the
-second last index which is at 1, but 1 is already present in the `select_item`
-array so it is dropped. The final value for `select_item` becomes:
+second last index which is at 1, but 1 is already present in the `select_items`
+array so it is dropped. The final value for `select_items` becomes:
 
 ```yaml
-select_item: [0, 1, 2]
+select_items: [0, 1, 2]
 ```
 
 This is done on a per-row basis; since each row might have a different number
