@@ -12,7 +12,8 @@ data_files = {
 }
 filter = DataFilter("filter_config_file.csv")
 filtered_data, filtered_files = filter.run_filter(data_files=data_files,
-                                                  output_dir="data/output")
+                                                  output_dir="data/output",
+                                                  debug=False)
 
 # Filter DataFrames (don't save to disk).
 data = {
@@ -132,6 +133,7 @@ class DataFilter(object):
         data: Dict[str, pd.DataFrame] = None,
         data_files: Dict[str, List[Union[str, Path, Dict[str, str]]]] = None,
         output_dir: Union[Path, str] = None,
+        debug_mode: bool = False,
     ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List[Path]]]:
         """Run the filters specified in the configuration file on all the data, and optionally save the data to disk.
 
@@ -145,6 +147,10 @@ class DataFilter(object):
                 Defaults to None.
             output_dir (Union[Path, str], optional): If specified then the directory to save all data after filtering has been
                 performed. Defaults to None.
+            debug_mode (bool, optional): If True then run the filter in debug mode. In debug mode instead of
+                dropping rows, we set the value for the column filter_funcs.DROP_COLUMN to True. There may be other
+                differences depending on which filters are applied. See the docstrings for the functions
+                in filter_funcs.py for details.
 
         Returns:
             Tuple[Dict[str, pd.DataFrame], Dict[str, Path]]: Tuple in the form (data, output_files).
@@ -196,6 +202,7 @@ class DataFilter(object):
                     cls=cls,
                     slot=slot,
                     value=value,
+                    debug_mode=debug_mode,
                 )
                 progress.update(FILTER_BARID, 1)
 

@@ -3,6 +3,7 @@ from typing import List, Annotated
 import typer
 
 from odm_map.filter.filter_data import DataFilter
+from odm_map.filter.filter_funcs import DROP_COLUMN
 from odm_map.utils.cli_utils import get_input_data_files
 
 app = typer.Typer(
@@ -36,6 +37,10 @@ SCHEMA_HELP = """Schema file that the data conforms to. This will only be used
               be treated as the table name, ignoring the extension and anything
               after the first square or round bracket."""
 
+DEBUG_HELP = f"""If set, then run in debug mode. In debug mode instead of
+             dropping rows, we set the value for the column '{DROP_COLUMN}' to
+             True."""
+
 
 @app.command(help=MAIN_HELP)
 def main(
@@ -45,12 +50,14 @@ def main(
     ],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
+    debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
 ):
     data_files = get_input_data_files(inputs, schema=schema)
     filterer = DataFilter(filter_config_file)
     filterer.run_filter(
         data_files=data_files,
         output_dir=output_dir,
+        debug_mode=debug,
     )
 
 
@@ -63,6 +70,7 @@ if __name__ == "__main__":
             "filter_config_file": "../data/modules/_shared/filters/odm_vx_filter_required_values.csv",
             "output_dir": "../../gen/pha4ge-to-v2/filtered_mapped_data",
             "schema": "../data/modules/pha4ge-to-v2/schemas/odm_v3.yaml",
+            "debug": False,
         }
         # fmt: on
         main(**opts)

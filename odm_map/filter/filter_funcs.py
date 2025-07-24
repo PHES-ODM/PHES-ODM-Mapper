@@ -30,6 +30,10 @@ from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+# In debug mode, we add the DROP_COLUMN and instead of dropping rows for the do_apply_filter
+# operation we set the DROP_COLUMN value to True
+DROP_COLUMN = "____drop"
+
 
 def call_filter_func(op: str, **kwargs):
     """Call the filtering function corresponding to the specified operation.
@@ -227,6 +231,7 @@ def do_apply_filter(
     input_name: str,
     cls: str,
     value: Any,
+    debug_mode: bool,
     **kwargs,
 ):
     """Apply the filter from the input name to the DataFrame for class cls, and save the resulting DataFrame to the class
@@ -238,11 +243,16 @@ def do_apply_filter(
         input_name (str): The filter to apply to the input DataFrame.
         cls (str): The class to apply the filter to (in data)
         value (Any): The class to save the filtered DataFrame to (in data).
+        debug_mode (bool): In True, then instead of dropping rows, we set the value for the column DROP_COLUMN to
+            True.
     """
     # Save the data by applying the current name's filter to the data for class cls
     filt = get_named_filter(input_name, filters)
     init_num_rows = len(data[cls])
-    data[value] = data[cls][filt]
+    if debug_mode:
+        data[cls].loc[~filt, DROP_COLUMN] = True
+    else:
+        data[value] = data[cls][filt]
     num_rows = len(data[value])
     logger.debug(
         f"Saved data from filter {input_name} to class {cls}, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows})"

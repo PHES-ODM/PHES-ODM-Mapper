@@ -306,7 +306,9 @@ class Pipeline(object):
             elif action == "filter":
                 filter_config_file = self.module.get_module_path(params.get("filters"))
                 data_frames = action_filter_data(
-                    data_frames=data_frames, filter_config_file=filter_config_file
+                    data_frames=data_frames,
+                    filter_config_file=filter_config_file,
+                    debug_mode=debug_mode,
                 )
             elif action == "select_enum_hierarchy":
                 schema = self.module.get_module_path(params.get("schema"))
