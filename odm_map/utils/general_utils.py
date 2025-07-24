@@ -447,6 +447,8 @@ def make_multivalued(v: Any) -> List[Any]:
         # @TODO: This doesn't properly deal with commas and semi-colons nested within
         # quotes, which we would typically not want to split on. This is how LinkML does it,
         # but it may not be good in all situations.
+        # Deal with comma or semi-colon separated multi-values. eg. "a,b,c" or "a;b;c" map
+        # to the array ['a', 'b', 'c']
         for delimiter in ",;":
             if delimiter in v:
                 vs = v.split(delimiter)
