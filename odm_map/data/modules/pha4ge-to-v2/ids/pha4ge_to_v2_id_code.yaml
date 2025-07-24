@@ -36,6 +36,12 @@ class_linkages:
     contacts:
       source_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
       target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+    measures:
+      source_slot: ["(__source_file_and_row__)", "_extra_protocolID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_protocolID_tag"]
+    protocolSteps:
+      source_slot: ["(__source_file_and_row__)", "_extra_protocolID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_protocolID_tag"]
   measureSets:
     measures:
       source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
