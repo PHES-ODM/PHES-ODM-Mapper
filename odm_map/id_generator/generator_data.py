@@ -690,7 +690,9 @@ class GeneratorData:
                 if dupes_filt.any():
                     self.df.loc[dupes_filt, DROP_COLUMN] = True
                 else:
-                    self.df[DROP_COLUMN] = None
+                    if DROP_COLUMN not in self.df.columns:
+                        self.df[DROP_COLUMN] = None
+                # Put the DROP_COLUMN first
                 self.df = self.df[[DROP_COLUMN] + columns]
                 new_len = orig_len - self.df[DROP_COLUMN].sum()
 
