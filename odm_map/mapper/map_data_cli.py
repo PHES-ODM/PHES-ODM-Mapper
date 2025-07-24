@@ -99,10 +99,11 @@ if __name__ == "__main__":
     if "get_ipython" in globals():
         # fmt: off
         opts = {
-            "inputs": ["../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv"],
+            # "inputs": ["../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv"],
+            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/temp/cleaned_data"],
             "output_dir": "../../gen/pha4ge-to-v2",
             "source_schema": "../data/modules/pha4ge-to-v2/schemas/pha4ge.yaml",
-            "target_schema": "../data/modules/pha4ge-to-v2/schemas/odm_v2.yaml",
+            "target_schema": "../data/modules/_shared/schemas/odm_v2.yaml",
             "mappers_dir": "../data/modules/pha4ge-to-v2/mappers",
             "max_rows": 100,
             "max_processes": 1,
