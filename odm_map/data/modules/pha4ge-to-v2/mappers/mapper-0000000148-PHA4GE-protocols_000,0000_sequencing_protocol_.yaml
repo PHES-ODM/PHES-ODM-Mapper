@@ -1,0 +1,35 @@
+class_derivations:
+  protocols[000,0000=sequencing_protocol]:
+    name: protocols[000,0000=sequencing_protocol]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sequenced by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sequenced by'''
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''sequencing protocol'''
+      name:
+        name: name
+        expr: '"sequencing protocol: " + str(sequencing_protocol)'
+      protocolID:
+        name: protocolID
+        expr: '''sequencing protocol'''
+      _extra_protocol_filter:
+        name: _extra_protocol_filter
+        populated_from: sequencing_protocol
+      notes:
+        name: notes
+        expr: '''sequencing protocol'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocols[000,0000=sequencing_protocol]:
+        populated_from: PHA4GE
+enum_derivations: {}

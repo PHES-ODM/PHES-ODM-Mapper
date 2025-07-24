@@ -8,13 +8,13 @@ class_derivations:
         expr: '"specimen collector project ID"'
       _extra_protocolID_tag:
         name: _extra_protocolID_tag
-        expr: '''artificial_serotypeProtocol'''
+        expr: '''amr ascertainment protocol'''
       name:
         name: name
-        expr: '''Serotyping protocol'''
+        expr: '"amr ascertainment protocol"'
       protocolID:
         name: protocolID
-        expr: '''artificial_serotypeProtocol'''
+        expr: '''amr ascertainment protocol'''
       _extra_protocol_filter:
         name: _extra_protocol_filter
         expr: '''keep'''

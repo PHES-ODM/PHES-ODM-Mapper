@@ -1,0 +1,72 @@
+class_derivations:
+  protocolSteps[000,0000=sequencing_assay_type]:
+    name: protocolSteps[000,0000=sequencing_assay_type]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_instrumentID_tag:
+        name: _extra_instrumentID_tag
+        expr: '''sequencing instrument'''
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sequenced by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sequenced by'''
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''sequencing assay type'''
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''sequencing protocol'''
+      method:
+        name: method
+        expr: '''seqStrat'''
+      value:
+        name: value
+        populated_from: sequencing_assay_type
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=sequencing_assay_type]:
+        populated_from: PHA4GE
+enum_derivations:
+  ODMv2_enum_from_SequencingAssayTypeMenu:
+    name: ODMv2_enum_from_SequencingAssayTypeMenu
+    mirror_source: false
+    populated_from: SequencingAssayTypeMenu
+    permissible_value_derivations:
+      amp:
+        name: amp
+        populated_from: Amplicon sequencing assay [OBI:0002767]
+      16rgs:
+        name: 16rgs
+        populated_from: 16S ribosomal gene sequencing assay [OBI:0002763]
+      wgs:
+        name: wgs
+        populated_from: Whole genome sequencing assay [OBI:0002117]
+      wms:
+        name: wms
+        populated_from: Whole metagenome sequencing assay [OBI:0002623]
+      wvs:
+        name: wvs
+        populated_from: Whole virome sequencing assay [OBI:0002768]
+  ODMv2_enum_from_NullValueMenu:
+    name: ODMv2_enum_from_NullValueMenu
+    mirror_source: false
+    populated_from: NullValueMenu
+    permissible_value_derivations:
+      NA:
+        name: NA
+        populated_from: Not Applicable [GENEPIO:0001619]
+      miss:
+        name: miss
+        populated_from: Missing [GENEPIO:0001618]
+      dnc:
+        name: dnc
+        populated_from: Not Collected [GENEPIO:0001620]
+      undisc:
+        name: undisc
+        populated_from: Not Provided [GENEPIO:0001668]
+      restrict:
+        name: restrict
+        populated_from: Restricted Access [GENEPIO:0001810]

@@ -1,0 +1,29 @@
+class_derivations:
+  protocolSteps[000,0000=sample_storage_medium]:
+    name: protocolSteps[000,0000=sample_storage_medium]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sample collected by'''
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''sample storage medium'''
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''sequencing protocol'''
+      method:
+        name: method
+        expr: '''stoMed'''
+      value:
+        name: value
+        populated_from: sample_storage_medium
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=sample_storage_medium]:
+        populated_from: PHA4GE
+enum_derivations: {}

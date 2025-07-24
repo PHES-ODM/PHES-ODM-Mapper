@@ -1,0 +1,117 @@
+class_derivations:
+  measures[000,0000=sample_processing_date-sample_storage_duration_unit-sample_storage_duration_value]:
+    name: measures[000,0000=sample_processing_date-sample_storage_duration_unit-sample_storage_duration_value]
+    populated_from: PHA4GE
+    slot_derivations:
+      reportable:
+        name: reportable
+        populated_from: quality_control_determination
+      siteID:
+        name: siteID
+        populated_from: sampling_site_id
+      aDateStart:
+        name: aDateStart
+        populated_from: sample_processing_date
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sample_processing_date
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_sampleID_tag:
+        name: _extra_sampleID_tag
+        expr: '"specimen collector sample ID"'
+      _extra_measureRepID_tag:
+        name: _extra_measureRepID_tag
+        expr: '""'
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sample collected by'''
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''stoTim'''
+      value:
+        name: value
+        populated_from: sample_storage_duration_value
+      unit:
+        name: unit
+        populated_from: sample_storage_duration_unit
+      aggregation:
+        name: aggregation
+        expr: '''sin'''
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=sample_processing_date-sample_storage_duration_unit-sample_storage_duration_value]:
+        populated_from: PHA4GE
+enum_derivations:
+  booleanSet:
+    name: booleanSet
+    mirror_source: false
+    populated_from: QualityControlDeterminationMenu
+    permissible_value_derivations:
+      'True':
+        name: 'True'
+        sources:
+        - No quality control issues identified [GENEPIO:0100562]
+        - Sequence passed quality control [GENEPIO:0100563]
+        - Minor quality control issues identified [GENEPIO:0100565]
+        - Sequence flagged for potential quality control issues [GENEPIO:0100566]
+      'False':
+        name: 'False'
+        populated_from: Sequence failed quality control [GENEPIO:0100564]
+      nr:
+        name: nr
+        populated_from: Quality control not performed [GENEPIO:0100567]
+  ODMv2_enum_from_NullValueMenu:
+    name: ODMv2_enum_from_NullValueMenu
+    mirror_source: false
+    populated_from: NullValueMenu
+    permissible_value_derivations:
+      NA:
+        name: NA
+        populated_from: Not Applicable [GENEPIO:0001619]
+      miss:
+        name: miss
+        populated_from: Missing [GENEPIO:0001618]
+      dnc:
+        name: dnc
+        populated_from: Not Collected [GENEPIO:0001620]
+      undisc:
+        name: undisc
+        populated_from: Not Provided [GENEPIO:0001668]
+      restrict:
+        name: restrict
+        populated_from: Restricted Access [GENEPIO:0001810]
+  ODMv2_enum_from_SampleStorageDurationUnitMenu:
+    name: ODMv2_enum_from_SampleStorageDurationUnitMenu
+    mirror_source: false
+    populated_from: SampleStorageDurationUnitMenu
+    permissible_value_derivations:
+      seconds:
+        name: seconds
+        populated_from: Second [UO:0000010]
+      minutes:
+        name: minutes
+        populated_from: Minute [UO:0000031]
+      hours:
+        name: hours
+        populated_from: Hour [UO:0000032]
+      days:
+        name: days
+        populated_from: Day [UO:0000033]
+      weeks:
+        name: weeks
+        populated_from: Week [UO:0000034]
+      months:
+        name: months
+        populated_from: Month [UO:0000035]
+      years:
+        name: years
+        populated_from: Year [UO:0000036]

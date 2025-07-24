@@ -1,0 +1,81 @@
+class_derivations:
+  protocolSteps[000,0000=specimen_processing-specimen_processing_details]:
+    name: protocolSteps[000,0000=specimen_processing-specimen_processing_details]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sample collected by'''
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''specimen processing'''
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''sequencing protocol'''
+      summ:
+        name: summ
+        populated_from: specimen_processing_details
+      method:
+        name: method
+        populated_from: specimen_processing
+      value:
+        name: value
+        expr: "value_map = {\n    \"Concentration\": \"NR\",\n    \"Centrifugation\"\
+          : \"cent\",\n    \"Filtration\": \"filt\",\n    \"Flocculation\": \"floc\"\
+          ,\n    \"Magnetic nanobead binding\": \"magBead\",\n    \"Precipitation\"\
+          : \"prec\",\n    \"Gravity separation\": \"graSet\",\n    \"Growth in enrichment\
+          \ broth\": \"growBroth\",\n    \"Pasteurization\": \"TRUE\",\n}\ntarget\
+          \ = [value_map.get(str(v).split(\"[\")[0].strip(), \"\") for v in src.specimen_processing]"
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=specimen_processing-specimen_processing_details]:
+        populated_from: PHA4GE
+enum_derivations:
+  ODMv2_enum_from_SpecimenProcessingMenu:
+    name: ODMv2_enum_from_SpecimenProcessingMenu
+    mirror_source: false
+    populated_from: SpecimenProcessingMenu
+    permissible_value_derivations:
+      methodConc:
+        name: methodConc
+        sources:
+        - Concentration [OBI:0600041]
+        - Flocculation [NCIT:C154798]
+        - Magnetic nanobead binding [GENEPIO:0100886]
+        - Precipitation [OBI:0600034]
+      solidSep:
+        name: solidSep
+        sources:
+        - Centrifugation [OBI:0302886]
+        - Filtration [OBI:0302885]
+        - Gravity separation [GENEPIO:0101011]
+      bactMeth:
+        name: bactMeth
+        populated_from: Growth in enrichment broth [GENEPIO:0101012]
+      pasteur:
+        name: pasteur
+        populated_from: Pasteurization [IDO:0100170]
+  ODMv2_enum_from_NullValueMenu:
+    name: ODMv2_enum_from_NullValueMenu
+    mirror_source: false
+    populated_from: NullValueMenu
+    permissible_value_derivations:
+      NA:
+        name: NA
+        populated_from: Not Applicable [GENEPIO:0001619]
+      miss:
+        name: miss
+        populated_from: Missing [GENEPIO:0001618]
+      dnc:
+        name: dnc
+        populated_from: Not Collected [GENEPIO:0001620]
+      undisc:
+        name: undisc
+        populated_from: Not Provided [GENEPIO:0001668]
+      restrict:
+        name: restrict
+        populated_from: Restricted Access [GENEPIO:0001810]

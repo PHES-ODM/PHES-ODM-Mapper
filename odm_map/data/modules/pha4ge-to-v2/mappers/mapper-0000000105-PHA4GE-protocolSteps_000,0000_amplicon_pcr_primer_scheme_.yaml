@@ -1,0 +1,120 @@
+class_derivations:
+  protocolSteps[000,0000=amplicon_pcr_primer_scheme]:
+    name: protocolSteps[000,0000=amplicon_pcr_primer_scheme]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sequenced by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sequenced by'''
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''amplicon pcr primer scheme'''
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''sequencing protocol'''
+      method:
+        name: method
+        expr: '''primer'''
+      value:
+        name: value
+        populated_from: amplicon_pcr_primer_scheme
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=amplicon_pcr_primer_scheme]:
+        populated_from: PHA4GE
+enum_derivations:
+  ODMv2_enum_from_AmpliconPcrPrimerSchemeMenu:
+    name: ODMv2_enum_from_AmpliconPcrPrimerSchemeMenu
+    mirror_source: false
+    populated_from: AmpliconPcrPrimerSchemeMenu
+    permissible_value_derivations:
+      articV1:
+        name: articV1
+        populated_from: artic-v1 [GENEPIO:0100847]
+      articV2:
+        name: articV2
+        populated_from: artic-v2 [GENEPIO:0100848]
+      articV3:
+        name: articV3
+        populated_from: artic-v3 [GENEPIO:0100849]
+      articV4:
+        name: articV4
+        populated_from: artic-v4 [GENEPIO:0100850]
+      articV41:
+        name: articV41
+        populated_from: artic-v4.1 [GENEPIO:0100851]
+      articV500:
+        name: articV500
+        populated_from: artic-v5.0.0_400 [GENEPIO:0100852]
+      articV510:
+        name: articV510
+        populated_from: artic-v5.1.0_400 [GENEPIO:0100853]
+      articV520bp1200:
+        name: articV520bp1200
+        populated_from: artic-v5.2.0_1200 [GENEPIO:0100854]
+      articV520bp400:
+        name: articV520bp400
+        populated_from: artic-v5.2.0_400 [GENEPIO:0100855]
+      articV532:
+        name: articV532
+        populated_from: artic-v5.3.2_400 [GENEPIO:0100856]
+      edenV1:
+        name: edenV1
+        populated_from: eden-v1 [GENEPIO:0100857]
+      midnightBCCDCv1:
+        name: midnightBCCDCv1
+        populated_from: midnight-bccdc-v1 [GENEPIO:0100858]
+      midnightBCCDCv2:
+        name: midnightBCCDCv2
+        populated_from: midnight-bccdc-v2 [GENEPIO:0100859]
+      midnightBCCDCv3:
+        name: midnightBCCDCv3
+        populated_from: midnight-bccdc-v3 [GENEPIO:0100860]
+      midnightBCCDCv4:
+        name: midnightBCCDCv4
+        populated_from: midnight-bccdc-v4 [GENEPIO:0100861]
+      midnightV3:
+        name: midnightV3
+        populated_from: midnight-ont-v3 [GENEPIO:0100862]
+      midnightV1:
+        name: midnightV1
+        populated_from: midnight-v1 [GENEPIO:0100863]
+      midnightV2:
+        name: midnightV2
+        populated_from: midnight-v2 [GENEPIO:0100864]
+      nebVarSkipV1aLong:
+        name: nebVarSkipV1aLong
+        populated_from: varskip-vsl1a [GENEPIO:0100865]
+      nebVarSkipV1aShort:
+        name: nebVarSkipV1aShort
+        populated_from: varskip-vss1a [GENEPIO:0100866]
+      nebVarSkipV2a:
+        name: nebVarSkipV2a
+        populated_from: varskip-vss2a [GENEPIO:0100867]
+      nebVarSkipV2b:
+        name: nebVarSkipV2b
+        populated_from: varskip-vss2b [GENEPIO:0100868]
+  ODMv2_enum_from_NullValueMenu:
+    name: ODMv2_enum_from_NullValueMenu
+    mirror_source: false
+    populated_from: NullValueMenu
+    permissible_value_derivations:
+      NA:
+        name: NA
+        populated_from: Not Applicable [GENEPIO:0001619]
+      miss:
+        name: miss
+        populated_from: Missing [GENEPIO:0001618]
+      dnc:
+        name: dnc
+        populated_from: Not Collected [GENEPIO:0001620]
+      undisc:
+        name: undisc
+        populated_from: Not Provided [GENEPIO:0001668]
+      restrict:
+        name: restrict
+        populated_from: Restricted Access [GENEPIO:0001810]

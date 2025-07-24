@@ -5,10 +5,10 @@ class_derivations:
     slot_derivations:
       _extra_protocolIDContainer_tag:
         name: _extra_protocolIDContainer_tag
-        expr: '''artificial_sequencingProtocol'''
+        expr: '''sequencing protocol'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
-        expr: '''nucleic acid extraction kit'''
+        expr: '''sequence assembly software name'''
       relationshipID:
         name: relationshipID
         expr: '''relNR'''
