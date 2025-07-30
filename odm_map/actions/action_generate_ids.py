@@ -2,6 +2,8 @@ from typing import Dict, List, Union
 import pandas as pd
 from pathlib import Path
 
+from linkml_runtime import SchemaView
+
 from odm_map.id_generator import IDGenerator
 
 
@@ -9,6 +11,7 @@ def action_generate_ids(
     data_frames: Dict[str, List[pd.DataFrame]],
     id_config_file: Union[str, Path],
     id_code_files: List[Dict],
+    schema: Union[str, Path, SchemaView],
     multi_bar_progress: bool,
     keep_extra_columns: bool = True,
     keep_tracking_columns: bool = True,
@@ -23,6 +26,7 @@ def action_generate_ids(
             dictionaries are of the form {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
             can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which sheet in
             the Excel file to use. If "id_code_sheet" is None or missing then the first sheet is used.
+        schema (Union[str, Path, SchemaView]): The path to the LinkML schema that we are generating IDs for.
         multi_bar_progress (bool): If True, then show a progress bar for each class to generate the IDs
             for at the same time. If False then only show one progress bar at a time. False should be
             used in a Jupyter notebook.
@@ -49,6 +53,7 @@ def action_generate_ids(
         data_frames=data_frames,
         config_file=id_config_file,
         id_code_files=id_code_files,
+        schema=schema,
         multi_bar_progress=multi_bar_progress,
     )
     return gen.run_generator(
