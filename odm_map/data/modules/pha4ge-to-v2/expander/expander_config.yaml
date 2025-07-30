@@ -1,15 +1,26 @@
 expand_columns:
     instruments:
-        - name
-        - manufacturer
+        - name:
+            select_items: 0
+        - manufacturer:
+            select_items: 0
     measures:
-        - value
+        - value:
+            select_items: 0
+        - reportable:
+            select_items: 0
     qualityReports:
-        - qualityFlag
+        - qualityFlag:
+            select_items: 0
     samples:
-        - purpose
-        - saMaterial
-        - repType
-        - collType
-    # sites:
-    #     - sampleShed
+        - purpose:
+            select_items: 0
+        - saMaterial:
+            select_items: 0
+        - repType:
+            select_items: 0
+        - collType:
+            select_items: 0
+    sites:
+        - sampleShed:
+            select_items: 0
