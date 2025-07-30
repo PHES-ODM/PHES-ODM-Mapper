@@ -1,20 +1,3 @@
-# The slots for each class that are the primary keys
-primary_keys:
-  addresses: addressID
-  contacts: contactID
-  datasets: datasetID
-  instruments: instrumentID
-  measures: measureRepID
-  measureSets: measureSetRepID
-  organizations: organizationID
-  polygons: polygonID
-  protocolRelationships: protocolRelationshipsID
-  protocols: protocolID
-  protocolSteps: stepID
-  qualityReports: qualityReportID
-  samples: sampleID
-  sites: siteID
-
 # Class linkages determines how to link a row in one table to a row in another table. We match the value
 # in the source slot of the source row to the target slot in the target row.
 # These are the default slots to use, when no linkage slots are explicitly specified.
