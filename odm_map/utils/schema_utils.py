@@ -20,6 +20,41 @@ from odm_map.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def all_primary_keys(schema: SchemaView) -> Dict[str, str]:
+    """Get a dictionary containing the primary key for all non-treeroot classes in the schema.
+
+    Args:
+        schema (SchemaView): The schema that we want the primary keys of.
+
+    Returns:
+        Dict[str, str]: A dictionary where the keys are the class names and the values are the
+            single primary key of the class.
+    """
+    all_classes = all_classes_without_tree_root(schema)
+    primary_keys = {}
+    for cur_class in all_classes:
+        class_defn = schema.induced_class(cur_class)
+        class_primary_keys = []
+        for attr, attr_defn in class_defn.attributes.items():
+            if attr_defn.identifier:
+                class_primary_keys.append(attr)
+
+        if len(class_primary_keys) > 1:
+            logger.warning(
+                f"Class '{cur_class}' can only have one primary key, instead found {len(class_primary_keys)}: {class_primary_keys}"
+            )
+        if len(class_primary_keys) == 0:
+            raise ValueError(
+                f"Class '{cur_class}' must have at least one primary key, none were found."
+            )
+        primary_keys[cur_class] = class_primary_keys[0]
+
+    # Sort the keys
+    primary_keys = dict(sorted(primary_keys.items()))
+
+    return primary_keys
+
+
 def all_classes_without_tree_root(schema: SchemaView) -> List[str]:
     """Get a list of all classes in the schema, excluding the tree root class that contains
     all the classes.
