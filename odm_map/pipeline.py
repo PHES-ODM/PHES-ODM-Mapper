@@ -52,6 +52,10 @@ logger = get_logger(__name__)
 # For loading data progress bar
 LOADING_BARID = "Loading Data"
 
+# Key for mark_instead_of_drop for filter operation. If this is True then instead of dropping items
+# we set the ____drop column to TRUE
+MARK_INSTEAD_OF_DROP_KEY = "mark_instead_of_drop"
+
 
 class Pipeline(object):
     def __init__(
@@ -251,6 +255,7 @@ class Pipeline(object):
                 # or a dictionary with keys id_code and id_code_sheet
                 top_id_code_file = params.get("id_code")
                 top_id_code_sheet = params.get("id_code_sheet")
+                schema = self.module.get_module_path(params.get("schema"))
                 id_code_files = []
                 if top_id_code_file:
                     if isinstance(top_id_code_file, str):
@@ -298,6 +303,7 @@ class Pipeline(object):
                     data_frames=data_frames,
                     id_config_file=id_config_file,
                     id_code_files=id_code_files,
+                    schema=schema,
                     multi_bar_progress=multi_bar_progress,
                     keep_extra_columns=True,
                     keep_tracking_columns=True,
@@ -305,10 +311,13 @@ class Pipeline(object):
                 )
             elif action == "filter":
                 filter_config_file = self.module.get_module_path(params.get("filters"))
+                mark_instead_of_drop = self.get_formatted_bool_key(
+                    params, MARK_INSTEAD_OF_DROP_KEY, False
+                )
                 data_frames = action_filter_data(
                     data_frames=data_frames,
                     filter_config_file=filter_config_file,
-                    debug_mode=debug_mode,
+                    debug_mode=mark_instead_of_drop,
                 )
             elif action == "select_enum_hierarchy":
                 schema = self.module.get_module_path(params.get("schema"))
