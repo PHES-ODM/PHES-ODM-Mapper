@@ -77,6 +77,7 @@ steps:
       output_name: "{class_name}[preid].csv"
   - action: generate_ids
     params:
+      schema: "schemas/odm_v2.yaml"
       id_code: ids/nwss_reporting_to_v2_id_code.xlsx
       id_config: ids/nwss_reporting_to_v2_id_config.yaml
   - action: drop_columns
@@ -405,6 +406,7 @@ Example:
 ```yaml
 - action: generate_ids
   params:
+    schema: "schemas/odm_v2.yaml"
     id_code: ids/nwss_reporting_to_v2_id_code.xlsx
     id_code_sheet: id_code
     id_config: ids/nwss_reporting_to_v2_id_config.yaml
@@ -412,6 +414,7 @@ Example:
 
 | Parameter             | Required/Optional | Description |
 | :---------------------| :---------------- | :---------- |
+| schema                | Required          | The path to the LinkML schema that the data belongs to. |
 | id_code               | Required          | The path to the file containing all the ID generation rules/code. This can be an Excel spreadsheet or a CSV file. If it is an Excel spreadsheet that has more than one sheet/tab, then the sheet to use within the spreadsheet can be specified by `id_code_sheet`. |
 | id_code_sheet         | Optional          | If `id_code` is an Excel file, then `id_code_sheet` can optionally be specified to indicate which sheet within the spreadsheet should be used. If `id_code_sheet` is empty then the first sheet within the Excel file is used. |
 | id_config             | Required          | The configuration file for ID code generation. This config file specifies configurations such as the primary key for each of the input tables. |
@@ -473,11 +476,13 @@ Example:
 - action: filter
   params:
     filters: filters/nwss_reporting_to_v2_filters.csv
+    mark_instead_of_drop: "{debug_mode}"
 ```
 
-| Parameter      | Required/Optional | Description |
-| :--------------| :---------------- | :---------- |
-| filters        | Required          | A CSV or Excel file specifying all the filtering rules. If an Excel file then the first sheet is used. See [Filtering Data](filters.md) for instructions on how to create the filtering configuration file. |
+| Parameter            | Required/Optional | Description |
+| :--------------------| :---------------- | :---------- |
+| filters              | Required          | A CSV or Excel file specifying all the filtering rules. If an Excel file then the first sheet is used. See [Filtering Data](filters.md) for instructions on how to create the filtering configuration file. |
+| mark_instead_of_drop | Required          | If True then instead of dropping rows when filtering, the "____drop" column will be set to True. This is typically set to True for debugging. Defaults to False. |
 
 The `filter` action allows the removal of rows in the data that are not
 desired. For example, rows with a missing but required `value` field, or rows
