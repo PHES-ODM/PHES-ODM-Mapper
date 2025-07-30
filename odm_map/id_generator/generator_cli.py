@@ -81,6 +81,7 @@ def main(
     gen = IDGenerator(
         data_files=data_files,
         data_frames=None,
+        schema=schema,
         config_file=config_file,
         id_code_files=id_code_files,
         multi_bar_progress="get_ipython" not in globals(),
@@ -104,7 +105,7 @@ if __name__ == "__main__":
             # "id_code_file": "../data/modules/test/ids.xlsx",
             # "id_code_sheet": "id_code",
             # "config_file": "../data/modules/test/ids.yaml",
-            
+
             # NWSS to ODM v2
             # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel"],
             # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/nwss-reporting-to-v2/temp/mapped_data"],
@@ -112,7 +113,7 @@ if __name__ == "__main__":
             # "id_code_files": ["../data/modules/_shared/ids/general_v2_id_code.xlsx", "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_code.xlsx"],
             # "id_code_sheets": ["id_code", "id_code"],
             # "config_file": ["../data/modules/_shared/ids/general_v2_id_code.yaml"],
-            # "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
+            # "schema": "../data/modules/_shared/odm_v2.yaml",
 
             # ODM v1 to ODM v2,
             # "inputs": ["../../gen/odm-v1-to-v2/temp/mapped_data"],
@@ -120,15 +121,15 @@ if __name__ == "__main__":
             # "id_code_files": ["../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_code.xlsx"],
             # "id_code_sheets": ["id_code"],
             # "config_file": "../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_config.yaml",
-            # "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v2.yaml",
+            # "schema": "../data/modules/_shared/schemas/odm_v2.yaml",
 
             # PHA4GE to ODM v2
             "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/temp/mapped_data"],
-            "output_dir": "../../gen/pha4ge-to-v2/mapped_data_ids",
+            "output_dir": "../../gen/pha4ge-to-v2/temp/mapped_data_ids",
             "id_code_files": ["../data/modules/_shared/ids/general_v2_id_code.xlsx", "../data/modules/pha4ge-to-v2/ids/pha4ge_to_v2_id_code.xlsx"],
             "id_code_sheets": ["id_code"],
             "config_file": ["../data/modules/_shared/ids/general_v2_id_code.yaml", "../data/modules/pha4ge-to-v2/ids/pha4ge_to_v2_id_code.yaml"],
-            "schema": "../data/modules/pha4ge-to-v2/schemas/odm_v2.yaml",
+            "schema": "../data/modules/_shared/schemas/odm_v2.yaml",
 
             "debug": True,
         }

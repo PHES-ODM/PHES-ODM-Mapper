@@ -28,6 +28,8 @@ from typing import Union, List, Any, Optional, Tuple, Dict
 from collections.abc import Iterable
 from pathlib import Path
 
+from linkml_runtime import SchemaView
+
 from odm_map.id_generator.row_index_lookup import RowIndexLookup
 from odm_map.id_generator.id_value import IDValue
 from odm_map.id_generator.id_na import EMPTY_OBJ, isna
@@ -70,7 +72,7 @@ USE_PRIMARY_KEY_LIST = True
 # and "Public Health Ontario (PHO)!" will both become "public_Health_Ontario_PHO", but we may
 # want them to be treated as different, in which case including the original values as match columns
 # will ensure the two rows are treated as being different.
-INCLUDE_INITIAL_VALUE_SLOTS_IN_MATCH_COLUMNS = True
+INCLUDE_INITIAL_VALUE_SLOTS_IN_MATCH_COLUMNS = False
 
 
 class GeneratorData:
@@ -79,8 +81,13 @@ class GeneratorData:
         class_name: str,
         input_data: List[Union[str, Path, Dict, pd.DataFrame]],
         primary_key: str,
+        schema: Union[str, Path, SchemaView],
         generated_slots: Optional[List[str]] = None,
     ):
+        if isinstance(schema, (str, Path)):
+            schema = SchemaView(schema)
+        self.schema = schema
+
         self.class_name = class_name
         self.primary_key = primary_key
         self.generated_slots = generated_slots if generated_slots else []
@@ -132,6 +139,17 @@ class GeneratorData:
 
         # Concatenate all loaded DataFrames into a single DataFrame
         self.orig_df = pd.concat(all_dfs, ignore_index=True, axis=0)
+        # Convert DROP_COLUMN to boolean
+        if DROP_COLUMN in self.orig_df.columns:
+
+            def _make_bool(v: Any) -> Any:
+                if isinstance(v, str):
+                    return v.lower() == str(True).lower()
+                if not v:
+                    return None
+                return v
+
+            self.orig_df[DROP_COLUMN] = self.orig_df[DROP_COLUMN].map(_make_bool)
 
         # Create a list of all original columns found in the dataset (excluding the tracking columns)
         columns = list(df.columns)
@@ -152,8 +170,13 @@ class GeneratorData:
 
         # Create list of columns used for identifying identical rows. Excludes the primary key column
         # but includes the column at UNINDEXED_PK_SLOT (ie the unindexed primary key).
+        # Get the slots that belong to the class
+        class_defn = self.schema.induced_class(class_name)
+        class_slots = [c for c in class_defn.attributes.keys()]
         self.match_columns = [
-            self.get_column_index(c) for c in self.orig_columns if c != self.primary_key
+            self.get_column_index(c)
+            for c in self.orig_columns
+            if c in class_slots and c != self.primary_key
         ]
         if INCLUDE_INITIAL_VALUE_SLOTS_IN_MATCH_COLUMNS:
             self.match_columns.extend(
@@ -656,7 +679,7 @@ class GeneratorData:
 
         # Keep only requested columns, based on keep_extra_and_tracking_columns and keep_debug_columns
         keep_columns = self.orig_columns.copy()
-        # Put the extra slots first, followed by the tracking slots
+        # Put the extra slots first (starting with _extra_), followed by the tracking slots
         if keep_extra_columns:
             keep_columns.extend([c for c in self.df.columns if is_extra_slot(c)])
         if keep_tracking_columns:
@@ -685,7 +708,7 @@ class GeneratorData:
                 new_len = len(self.df)
             else:
                 # Add "drop" column for testing
-                columns = list(self.df.columns)
+                columns = [c for c in list(self.df.columns) if c != DROP_COLUMN]
                 dupes_filt = self.df.duplicated(self.primary_key, keep="first")
                 if dupes_filt.any():
                     self.df.loc[dupes_filt, DROP_COLUMN] = True
