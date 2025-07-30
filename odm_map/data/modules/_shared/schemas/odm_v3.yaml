@@ -9348,7 +9348,6 @@ classes:
     - name
     - descr
     - addressID
-    - datasetID
     - orgType
     - orgLevel
     - orgSector
@@ -9389,16 +9388,6 @@ classes:
         title: Address ID
         range: addresses
         required: true
-        pattern: ^.{0,30}$
-      datasetID:
-        description: The name of the dataset that stores information for MeasureReport,
-          SampleReport and other reporting tables.
-        title: Dataset ID
-        notes:
-        - Where possible, datasetID name should correspond the orignial data custodian
-          responsible for generating environmental data. (suggestion for a default
-          name convention.)
-        range: datasets
         pattern: ^.{0,30}$
       orgType:
         description: Specifies the type or purpose of a given organization.
@@ -12659,11 +12648,9 @@ classes:
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
     - instrumentID
-    - datasetID
     - name
     - model
     - manufacturer
-    - contactID
     - organizationID
     - descr
     - refLink
@@ -12678,17 +12665,6 @@ classes:
         title: Instrument ID
         identifier: true
         range: string
-        required: true
-        pattern: ^.{0,30}$
-      datasetID:
-        description: The name of the dataset that stores information for MeasureReport,
-          SampleReport and other reporting tables.
-        title: Dataset ID
-        notes:
-        - Where possible, datasetID name should correspond the orignial data custodian
-          responsible for generating environmental data. (suggestion for a default
-          name convention.)
-        range: datasets
         required: true
         pattern: ^.{0,30}$
       name:
@@ -12712,11 +12688,6 @@ classes:
         title: Manufacturer
         range: string
         pattern: ^.{0,100}$
-      contactID:
-        description: A unique identifier for a given contact person.
-        title: Contact ID
-        range: contacts
-        pattern: ^.{0,30}$
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
