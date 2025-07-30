@@ -17,6 +17,8 @@ from asteval import Interpreter
 import numpy as np
 import traceback
 
+from linkml_runtime import SchemaView
+
 from odm_map.utils.logger import get_logger
 from odm_map.utils.general_utils import (
     read_data_frame,
@@ -29,6 +31,7 @@ from odm_map.id_generator.id_data_bindings import DataBindings
 from odm_map.id_generator.generator_data import GeneratorData, IDValue
 from odm_map.id_generator.id_na import isna, EMPTY_OBJ
 from odm_map.id_generator.generator_config_keys import ConfigKeys
+from odm_map.utils.schema_utils import all_primary_keys
 
 PREPARING_BARID = "Preparing IDS"
 TOTAL_IDS_TITLE = "TOTAL IDs"
@@ -69,6 +72,7 @@ class IDGenerator(object):
         self,
         data_files: Dict[str, List[Union[str, Path]]],
         data_frames: Dict[str, List[pd.DataFrame]],
+        schema: Union[str, Path, SchemaView],
         config_file: Union[str, List[str]],
         id_code_files: List[Dict],
         multi_bar_progress: bool = True,
@@ -81,6 +85,7 @@ class IDGenerator(object):
                 TXT, YAML, or YML files.
             data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
                 and the values are lists of DataFrames belonging to the class.
+            schema (Union[str, Path, SchemaView]): The path to the LinkML schema that we are generating IDs for.
             config_file (Union[str, List[str]]): The configuration file(s). If multiple files are specified then
                 they are merged together.
             id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code. The
@@ -92,6 +97,12 @@ class IDGenerator(object):
                 generating IDs for).
         """
         self.tic = datetime.now()
+
+        if isinstance(schema, (str, Path)):
+            schema = SchemaView(schema)
+        self.schema = schema
+
+        self.primary_keys = all_primary_keys(self.schema)
 
         # Sort data_files by key (class name), and sort all the values (file names)
         # data_files = { k: sorted(v) for k, v in sorted(data_files.items())}
@@ -120,8 +131,6 @@ class IDGenerator(object):
 
         The following rules are applied when merging for each key in the config file:
 
-            ConfigKeys.PRIMARY_KEYS: The top-level dictionary (config[ConfigKeys.PRIMARY_KEYS]) gets updated
-                (by calling dict.update) in order of the config files.
             ConfigKeys.CLASS_LINKAGES: Each dictionary at config[ConfigKeys.CLASS_LINKAGES][class_name]
                 gets updated (by calling dict.update) in order of the config files.
             ConfigKeys.NAMED_CLASS_LINKAGES: The top-level dictionary (config[ConfigKeys.NAMED_CLASS_LINKAGES]) gets
@@ -142,14 +151,8 @@ class IDGenerator(object):
         for cur_config_file in config_files:
             with open(cur_config_file, "r") as f:
                 cur_config = yaml.safe_load(f)
-
-            # Merge primary keys
-            if ConfigKeys.PRIMARY_KEYS in cur_config:
-                if ConfigKeys.PRIMARY_KEYS not in self.config:
-                    self.config[ConfigKeys.PRIMARY_KEYS] = {}
-                self.config[ConfigKeys.PRIMARY_KEYS].update(
-                    cur_config[ConfigKeys.PRIMARY_KEYS]
-                )
+            if not cur_config:
+                cur_config = {}
 
             # Merge class linkages
             if ConfigKeys.CLASS_LINKAGES in cur_config:
@@ -257,8 +260,9 @@ class IDGenerator(object):
                 self.data[class_name] = GeneratorData(
                     class_name,
                     cur_data,
+                    schema=self.schema,
                     generated_slots=generated_slots.get(class_name, []),
-                    primary_key=self.get_primary_key_from_config(class_name),
+                    primary_key=self.primary_keys.get(class_name),
                 )
                 progress.update(PREPARING_BARID, 1)
 
@@ -281,12 +285,11 @@ class IDGenerator(object):
         """
         # Get all recognized classes
         class_linkages = self.config.get(ConfigKeys.CLASS_LINKAGES, {})
-        primary_keys = self.config.get(ConfigKeys.PRIMARY_KEYS, {})
         all_classes = list(class_linkages.keys())
         all_classes += [
             class_name for lnk in class_linkages.values() for class_name in lnk.keys()
         ]
-        all_classes += list(primary_keys.keys())
+        all_classes += list(self.primary_keys.keys())
         all_classes = list(dict.fromkeys(all_classes))
 
         self.bindings = {
@@ -729,23 +732,6 @@ class IDGenerator(object):
 
         code = code[code_column].iloc[0]
         return code
-
-    def get_primary_key_from_config(self, class_name: str) -> Optional[str]:
-        """Get the primary key for the specified class from the YAML config file.
-
-        Args:
-            class_name (str): The class (table) name to get the primary key of.
-
-        Returns:
-            Optional[str]: The name of the slot that is the primary key for the class. If there is no primary key
-                specified in the config file then None is returned.
-        """
-        if ConfigKeys.PRIMARY_KEYS not in self.config:
-            logger.warning(
-                f"Key {ConfigKeys.PRIMARY_KEYS} does not exist in config file, assuming no primary keys."
-            )
-            return None
-        return self.config[ConfigKeys.PRIMARY_KEYS].get(class_name, None)
 
     def update_progress(self, class_name: str, inc: int):
         """Update the progress of the specified class with the progress bars.
