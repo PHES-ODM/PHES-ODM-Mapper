@@ -5,8 +5,9 @@ class_derivations:
     slot_derivations:
       collType:
         name: collType
-        expr: "if len([d for d in emap.collection_device if len(d) > 0]):\n    target\
-          \ = emap.collection_device\nelse:\n    target = emap.collection_method"
+        expr: "if len([d for d in emap.collection_device if isinstance(d, str) and\
+          \ len(d) > 0]):\n    target = emap.collection_device\nelse:\n    target\
+          \ = emap.collection_method"
       saMaterial:
         name: saMaterial
         populated_from: environmental_material
@@ -27,6 +28,9 @@ class_derivations:
         name: collDTStart
         expr: sample_collection_start_date + '/!/' + sample_collection_start_time
           + '/!/'
+      collAppxT:
+        name: collAppxT
+        populated_from: sample_collection_time_of_day
       recDate:
         name: recDate
         populated_from: sample_received_date
@@ -94,7 +98,7 @@ enum_derivations:
         populated_from: Bag filtration device [GENEPIO:0102027]
   ODMv2_enum_from_NullValueMenu:
     name: ODMv2_enum_from_NullValueMenu
-    mirror_source: false
+    mirror_source: true
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:
@@ -184,3 +188,20 @@ enum_derivations:
       bioRep:
         name: bioRep
         populated_from: Biological replicate [EFO:0002091]
+  collAppxT_from_SampleCollectionTimeOfDayMenu:
+    name: collAppxT_from_SampleCollectionTimeOfDayMenu
+    mirror_source: false
+    populated_from: SampleCollectionTimeOfDayMenu
+    permissible_value_derivations:
+      morn:
+        name: morn
+        populated_from: Morning [NCIT:C64934]
+      aft:
+        name: aft
+        populated_from: Afternoon [NCIT:C64935]
+      eve:
+        name: eve
+        populated_from: Evening [NCIT:C64936]
+      night:
+        name: night
+        populated_from: Night [NCIT:C65001]

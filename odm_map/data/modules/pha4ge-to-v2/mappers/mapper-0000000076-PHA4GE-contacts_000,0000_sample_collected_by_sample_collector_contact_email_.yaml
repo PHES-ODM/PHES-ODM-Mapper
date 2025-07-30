@@ -35,7 +35,7 @@ class_derivations:
 enum_derivations:
   ODMv2_enum_from_NullValueMenu:
     name: ODMv2_enum_from_NullValueMenu
-    mirror_source: false
+    mirror_source: true
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:

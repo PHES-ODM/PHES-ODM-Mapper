@@ -1,12 +1,13 @@
 class_derivations:
-  ? samples[000,0000=environmental_material-experimental_specimen_role_type-purpose_of_sampling-sample_collected_by-sample_collection_time_of_day-sample_received_date-specimen_collector_sample_id]
-  : name: samples[000,0000=environmental_material-experimental_specimen_role_type-purpose_of_sampling-sample_collected_by-sample_collection_time_of_day-sample_received_date-specimen_collector_sample_id]
+  ? samples[000,0000=environmental_material-experimental_specimen_role_type-purpose_of_sampling-sample_received_date-specimen_collector_sample_id]
+  : name: samples[000,0000=environmental_material-experimental_specimen_role_type-purpose_of_sampling-sample_received_date-specimen_collector_sample_id]
     populated_from: PHA4GE
     slot_derivations:
       collType:
         name: collType
-        expr: "if len([d for d in emap.collection_device if len(d) > 0]):\n    target\
-          \ = emap.collection_device\nelse:\n    target = emap.collection_method"
+        expr: "if len([d for d in emap.collection_device if isinstance(d, str) and\
+          \ len(d) > 0]):\n    target = emap.collection_device\nelse:\n    target\
+          \ = emap.collection_method"
       saMaterial:
         name: saMaterial
         populated_from: environmental_material
@@ -19,12 +20,17 @@ class_derivations:
       collDT:
         name: collDT
         expr: sample_collection_start_date + '/!/' + sample_collection_start_time
+          + '/!/'
       collDTEnd:
         name: collDTEnd
-        expr: sample_collection_end_date + '/!/' + sample_collection_end_time
+        expr: sample_collection_end_date + '/!/' + sample_collection_end_time + '/!/'
       collDTStart:
         name: collDTStart
-        expr: '''/!/'' + sample_collection_start_time'
+        expr: sample_collection_start_date + '/!/' + sample_collection_start_time
+          + '/!/'
+      collAppxT:
+        name: collAppxT
+        populated_from: sample_collection_time_of_day
       recDate:
         name: recDate
         populated_from: sample_received_date
@@ -43,9 +49,6 @@ class_derivations:
       purpose:
         name: purpose
         populated_from: purpose_of_sampling
-      collAppxT:
-        name: collAppxT
-        populated_from: sample_collection_time_of_day
       collPer:
         name: collPer
         expr: "# Convert _value to hours\ntry:\n    _value = float(src.sample_collection_time_duration_value)\n\
@@ -62,7 +65,7 @@ class_derivations:
   Container:
     name: Container
     slot_derivations:
-      ? samples[000,0000=environmental_material-experimental_specimen_role_type-purpose_of_sampling-sample_collected_by-sample_collection_time_of_day-sample_received_date-specimen_collector_sample_id]
+      ? samples[000,0000=environmental_material-experimental_specimen_role_type-purpose_of_sampling-sample_received_date-specimen_collector_sample_id]
       : populated_from: PHA4GE
 enum_derivations:
   ODMv2_enum_from_CollectionDeviceMenu:
@@ -111,7 +114,7 @@ enum_derivations:
         populated_from: Bag filtration device [GENEPIO:0102027]
   ODMv2_enum_from_NullValueMenu:
     name: ODMv2_enum_from_NullValueMenu
-    mirror_source: false
+    mirror_source: true
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:
@@ -201,6 +204,23 @@ enum_derivations:
       bioRep:
         name: bioRep
         populated_from: Biological replicate [EFO:0002091]
+  collAppxT_from_SampleCollectionTimeOfDayMenu:
+    name: collAppxT_from_SampleCollectionTimeOfDayMenu
+    mirror_source: false
+    populated_from: SampleCollectionTimeOfDayMenu
+    permissible_value_derivations:
+      morn:
+        name: morn
+        populated_from: Morning [NCIT:C64934]
+      aft:
+        name: aft
+        populated_from: Afternoon [NCIT:C64935]
+      eve:
+        name: eve
+        populated_from: Evening [NCIT:C64936]
+      night:
+        name: night
+        populated_from: Night [NCIT:C65001]
   ODMv2_enum_from_PurposeOfSamplingMenu:
     name: ODMv2_enum_from_PurposeOfSamplingMenu
     mirror_source: false
@@ -227,20 +247,3 @@ enum_derivations:
       testing:
         name: testing
         populated_from: Protocol testing [GENEPIO:0100024]
-  ODMv2_enum_from_SampleCollectionTimeOfDayMenu:
-    name: ODMv2_enum_from_SampleCollectionTimeOfDayMenu
-    mirror_source: false
-    populated_from: SampleCollectionTimeOfDayMenu
-    permissible_value_derivations:
-      morn:
-        name: morn
-        populated_from: Morning [NCIT:C64934]
-      aft:
-        name: aft
-        populated_from: Afternoon [NCIT:C64935]
-      eve:
-        name: eve
-        populated_from: Evening [NCIT:C64936]
-      night:
-        name: night
-        populated_from: Night [NCIT:C65001]
