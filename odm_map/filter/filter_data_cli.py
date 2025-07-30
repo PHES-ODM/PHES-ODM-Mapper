@@ -67,9 +67,9 @@ if __name__ == "__main__":
         opts = {
             "inputs": ["../../gen/pha4ge-to-v2/"],
             # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"],
-            "filter_config_file": "../data/modules/_shared/filters/odm_vx_filter_required_values.csv",
-            "output_dir": "../../gen/pha4ge-to-v2/filtered_mapped_data",
-            "schema": "../data/modules/pha4ge-to-v2/schemas/odm_v3.yaml",
+            "filter_config_file": "../data/modules/pha4ge-to-v2/filters/pha4ge_to_v2_filters_before_id.csv",
+            "output_dir": "../../gen/pha4ge-to-v2/temp/filtered_mapped_data",
+            "schema": "../data/modules/_shared/schemas/odm_v2.yaml",
             "debug": False,
         }
         # fmt: on
