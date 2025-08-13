@@ -7,6 +7,10 @@ class_linkages:
     organizations:
       source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
       target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+  datasets:
+    organizations:
+      source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
+      target_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
   measures:
     samples:
       source_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
@@ -46,16 +50,16 @@ class_linkages:
     measures:
       source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
       target_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
-  qualityReports:
-    measures:
-      source_slot: ["(__source_file_and_row__)", "_extra_measureRepID_tag"]
-      target_slot: ["(__source_file_and_row__)", "_extra_measureRepID_tag"]
-    measureSets:
-      source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
-      target_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
-    samples:
-      source_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
-      target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+  # qualityReports:
+  #   measures:
+  #     source_slot: ["(__source_file_and_row__)", "_extra_measureRepID_tag"]
+  #     target_slot: ["(__source_file_and_row__)", "_extra_measureRepID_tag"]
+  #   measureSets:
+  #     source_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+  #     target_slot: ["(__source_file_and_row__)", "_extra_measureSetRepID_tag"]
+  #   samples:
+  #     source_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+  #     target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
   contacts:
     organizations:
       source_slot: ["(__source_file_and_row__)", "_extra_organizationID_tag"]
@@ -130,4 +134,19 @@ named_class_linkages:
     accessions:
       measures:
         source_slot: ["(__source_file_and_row__)", "_extra_measureRepID_tag"]
+        target_slot: ["(__source_file_and_row__)", "measure"]
+  datasets_to_contacts_custodyCont_contactID:
+    datasets:
+      contacts:
+        source_slot: ["(__source_file_and_row__)", "_extra_custodyCont_contactID_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+  datasets_to_contacts_funderCont_contactID:
+    datasets:
+      contacts:
+        source_slot: ["(__source_file_and_row__)", "_extra_funderCont_contactID_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_contactID_tag"]
+  qualityReports_to_measures_measure:
+    qualityReports:
+      measures:
+        source_slot: ["(__source_file_and_row__)", "_extra_measures_measure_tag"]
         target_slot: ["(__source_file_and_row__)", "measure"]
