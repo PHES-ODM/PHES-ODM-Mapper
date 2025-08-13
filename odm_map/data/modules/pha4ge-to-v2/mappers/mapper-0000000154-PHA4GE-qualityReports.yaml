@@ -9,15 +9,9 @@ class_derivations:
       qualityFlag:
         name: qualityFlag
         populated_from: quality_control_issues
-      _extra_measureSetRepID_tag:
-        name: _extra_measureSetRepID_tag
-        expr: '"bioinformatics and qc metrics"'
-      _extra_measureRepID_tag:
-        name: _extra_measureRepID_tag
-        expr: '"<blank>"'
-      _extra_sampleID_tag:
-        name: _extra_sampleID_tag
-        expr: '"<blank>"'
+      _extra_measures_measure_tag:
+        name: _extra_measures_measure_tag
+        expr: '"detLinClade"'
   Container:
     name: Container
     slot_derivations:

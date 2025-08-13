@@ -9,6 +9,15 @@ class_derivations:
       _extra_datasetID_tag:
         name: _extra_datasetID_tag
         expr: '''specimen collector project ID'''
+      _extra_custodyCont_contactID_tag:
+        name: _extra_custodyCont_contactID_tag
+        expr: '''sample collected by'''
+      _extra_funderCont_contactID_tag:
+        name: _extra_funderCont_contactID_tag
+        expr: '''<blank>'''
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
       datasetID:
         name: datasetID
         populated_from: specimen_collector_project_id
