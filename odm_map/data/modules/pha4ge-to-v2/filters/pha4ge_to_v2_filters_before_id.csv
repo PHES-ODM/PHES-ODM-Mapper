@@ -6,6 +6,7 @@ inputFilter,outputFilter,class,slot,operation,value
 0,,measures,,apply_filter,measures
 ,,,,,
 ,1,qualityReports,,create_filter,TRUE
+1,1,qualityReports,,requires_all,[qualityFlag]
 1,1,qualityReports,qualityFlag,exclude_equals,<ignore>
 1,,qualityReports,,apply_filter,qualityReports
 ,,,,,
