@@ -9,6 +9,8 @@ steps:
       operations:
         - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
         - add_ontology_ids_to_enums:
+            # Format of an enum is "myEnumValue [AB1:A12345]" where [AB1:A12345] is the ontology ID (with any number of alphanumeric characters)
+            # The ontology ID is matched by the regular expression match_ontology_id
             match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
         - correct_enums: True
         - remove_unknown_columns: True
