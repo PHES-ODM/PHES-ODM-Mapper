@@ -6,7 +6,7 @@ indices for the values.
 A single lookup table represents the data for a single 2D table. Only the slots
 specified in the constructor will have lookup tables.
 
-Note that all NA values that return True by pd.isna (eg. float("NaN") and None) are treated
+Note that all NA values that return True by isna (eg. float("NaN") and None) are treated
 the same.
 
 ## Usage
@@ -75,8 +75,8 @@ class RowIndexLookup:
 
     def _get_value_key(self, value: Any) -> Any:
         """Get the key in a lookup table corresponding to the value. This will map all NA
-        values to None, and return other values unchanged. (NA values are all treated the same
-        in a looup table).
+        values to None, and return other values unchanged casted to a string. (NA values are
+        all treated the same in a looup table).
 
         Args:
             value (Any): The value to convert to a key.
