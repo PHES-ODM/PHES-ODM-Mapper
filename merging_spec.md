@@ -2,15 +2,15 @@
 
 ## Introduction
 
-Once data gets mapped (eg. from PHA4GE to ODM v3), the resulting data is
-typically stored, such as on disk or in a MySQL database. During this mapping,
-IDs get generated according to ID generation rules. These IDs become both
-primary keys and foreign keys. If a generated primary key is already in use,
-but the rows using that primary key are different, then an index (number) gets
-appended to the primary key to ensure that it is unique. If instead there are
-multiple idential rows with the same primary key, then all the identical rows
-receive the same index, and in the end these duplicate rows get dropped,
-retaining only one of the duplicates.
+The PHES-ODM Mapper maps data from a source database format (eg. PHA4GE) to a
+target database format (eg. ODM v3). During this mapping, IDs get generated
+according to ID generation rules. These IDs become both primary keys and
+foreign keys. If a generated primary key is already in use, but the rows using
+that primary key are different, then an index (number) gets appended to the
+primary key to ensure that it is unique. If instead there are multiple
+identical rows with the same primary key, then all the identical rows receive
+the same index, and in the end these duplicate rows get dropped, retaining only
+one of the duplicates.
 
 The above behaviour is currently implemented and fully functional with the ID
 generator of the PHES-ODM Mapper. However, a problem occurs when a user maps a
