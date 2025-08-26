@@ -311,8 +311,10 @@ keys get modified to use the new primary keys. Dataset 1 will remain unchanged.
    to resource issues depending on the user's setup.
 2. Each time we merge datasets, the stored dataset gets larger. While there are
    a lot of optimizations in the ID generator, the time to execute should still
-   be expected to increase as more data gets merged. Related to point 1, memory
-   requirements will also inrease.
+   be expected to increase as more data gets merged. Since Dataset 1 is the
+   dataset that will grow, and Dataset 1 does not require recalculation of
+   primary keys, it is hoped that the increased runtime will be limited.
+   Related to point 1, memory requirements will also inrease.
 3. Primary keys sometimes get indexed with an integer in order to make them
    unique. For example, `sample001` has the index `001`. When running the ID
    generator to merge datasets, we might end up having to add an additional
