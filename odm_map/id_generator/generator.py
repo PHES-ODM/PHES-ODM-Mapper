@@ -73,7 +73,7 @@ class IDGenerator(object):
         data_files: Dict[str, List[Union[str, Path]]],
         data_frames: Dict[str, List[pd.DataFrame]],
         schema: Union[str, Path, SchemaView],
-        config_file: Union[str, List[str]],
+        config_file: Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]],
         id_code_files: List[Dict],
         multi_bar_progress: bool = True,
     ):
@@ -86,12 +86,17 @@ class IDGenerator(object):
             data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
                 and the values are lists of DataFrames belonging to the class.
             schema (Union[str, Path, SchemaView]): The path to the LinkML schema that we are generating IDs for.
-            config_file (Union[str, List[str]]): The configuration file(s). If multiple files are specified then
-                they are merged together.
+            config_file (Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]]): The configuration file(s) and/or dictionaries. If
+                multiple values are specified then they are merged together. Dictionaries are treated as
+                config files that have already been loaded into memory.
             id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code. The
-                dictionaries are of the form {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
-                can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which sheet in
-                the Excel file to use. If "id_code_sheet" is None or missing then the first sheet is used.
+                dictionaries are in one of the following forms:
+                    1) {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
+                       can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which
+                       sheet in the Excel file to use. If "id_code_sheet" is None or missing then the first
+                       sheet is used.
+                    2) {"id_code_df: df}. df is a pd.DataFrame of the ID code. It is treated the same as a
+                       code file that has already been loaded into memory.
             multi_bar_progress (bool, optional): If True then output multiple progress bars at the same time showing all classes we will be
                 generating IDs for. If False then only one progress bar is shown at a time (for the class name we are currently
                 generating IDs for).
@@ -126,8 +131,10 @@ class IDGenerator(object):
         self.interpreter = Interpreter(usersyms=self.bindings)
         self.interpreter_clean_symtable = self.interpreter.symtable.copy()
 
-    def load_configs(self, config_files: Union[str, List[str]]):
-        """Load and merge all the specified configuration file(s).
+    def load_configs(
+        self, config_files: Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]]
+    ):
+        """Load and merge all the specified configuration file(s) and/or dictionaries.
 
         The following rules are applied when merging for each key in the config file:
 
@@ -138,19 +145,24 @@ class IDGenerator(object):
                 with the same name get replaced.
 
         Args:
-            config_files (Union[str, List[str]]): Either the path to a single YAML configuration file or
-                a list of paths of configuration files to merge together.
+            config_files (Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]]): Path(s) to YAML
+                configuration files and/or dictionaries. If dictionaries then they are treated
+                as files that have already been loaded into memory. If a list of configurations is
+                provided then they are merged together.
         """
         self.config = {}
         if not config_files:
             return
 
-        if not isinstance(config_files, list):
+        if not isinstance(config_files, (list, tuple)):
             config_files = [config_files]
         self.config = {}
         for cur_config_file in config_files:
-            with open(cur_config_file, "r") as f:
-                cur_config = yaml.safe_load(f)
+            if isinstance(cur_config_file, dict):
+                cur_config = cur_config_file
+            else:
+                with open(cur_config_file, "r") as f:
+                    cur_config = yaml.safe_load(f)
             if not cur_config:
                 cur_config = {}
 
@@ -416,10 +428,16 @@ class IDGenerator(object):
         columns found in IDCodeColumns.
 
         Args:
-            id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code. The
-                dictionaries are of the form {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
-                can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which sheet in
-                the Excel file to use. If "id_code_sheet" is None or missing then the first sheet is used.
+            id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code, or
+                DataFrames containing the ID code. If DataFrames then they are treated as regular files that
+                have already been loaded into memory. The
+                dictionaries are in any of the following forms:
+                    1) {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
+                       can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which
+                       sheet in the Excel file to use. If "id_code_sheet" is None or missing then the first
+                       sheet is used.
+                    2) {"id_code_df: df}. df is a pd.DataFrame of the ID code. It is treated the same as a
+                       code file that has already been loaded into memory.
         """
         self.id_code_df = pd.DataFrame()
         if not id_code_files:
@@ -428,14 +446,17 @@ class IDGenerator(object):
         # Load all code files and concatenate them into one DataFrame
         id_code_df = []
         for cur_id_code_file in id_code_files:
-            id_code_file = cur_id_code_file.get("id_code_file")
-            id_code_sheet = cur_id_code_file.get("id_code_sheet", None)
-            if os.path.splitext(id_code_file)[1].lower() == ".xlsx":
-                cur_id_code_df = pd.read_excel(
-                    id_code_file, id_code_sheet if id_code_sheet else 0
-                )
+            if "id_code_df" in cur_id_code_file:
+                cur_id_code_df = cur_id_code_file.get("id_code_df")
             else:
-                cur_id_code_df = read_data_frame(id_code_file)
+                id_code_file = cur_id_code_file.get("id_code_file")
+                id_code_sheet = cur_id_code_file.get("id_code_sheet", None)
+                if os.path.splitext(id_code_file)[1].lower() == ".xlsx":
+                    cur_id_code_df = pd.read_excel(
+                        id_code_file, id_code_sheet if id_code_sheet else 0
+                    )
+                else:
+                    cur_id_code_df = read_data_frame(id_code_file)
             id_code_df.append(cur_id_code_df)
 
         if len(id_code_df) == 0:
