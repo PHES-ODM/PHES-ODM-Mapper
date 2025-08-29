@@ -77,7 +77,8 @@ class FunctionBindings:
         Args:
             *args: The list of values to convert to an ID. We will convert them to strings and concatenate
                 them. The leading character is lower case, and the first character of each item in the list
-                becomes uppercase.
+                becomes uppercase. If any of the arguments refer to an IDValue, then the unindexed value is
+                used (eg. instead of "mySample001", we use "mySample").
 
         Returns:
             str: The ID generated from the list of values.
