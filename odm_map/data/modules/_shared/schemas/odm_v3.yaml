@@ -13264,7 +13264,6 @@ classes:
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
     - instrumentID
-    - datasetID
     - name
     - model
     - manufacturer
