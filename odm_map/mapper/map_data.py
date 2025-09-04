@@ -390,7 +390,10 @@ class DataMapper(object):
                     if s not in all_slots and not is_extra_or_tracking_slot(s)
                 ]
                 if len(unrecognized) > 0:
-                    raise ValueError(
+                    # raise ValueError(
+                    #     f"Found unrecognized slot(s) in mapped data for class '{class_name}': {unrecognized}"
+                    # )
+                    logger.warning(
                         f"Found unrecognized slot(s) in mapped data for class '{class_name}': {unrecognized}"
                     )
                 missing = [s for s in all_slots if s not in df.columns]
