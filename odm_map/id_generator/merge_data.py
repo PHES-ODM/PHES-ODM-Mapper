@@ -1,5 +1,7 @@
 """
 The class MergeData merges multiple files belonging to the same dataset together.
+This should be performed on output data that have already had their IDs generated
+using the ID generator.
 
 During merging the primary keys are updated (by adding indices) to make sure there
 are no conflicts in primary key names. Foreign keys are also updated to account
@@ -50,7 +52,9 @@ class CodeColumns:
 
 class MergeData:
     def __init__(self, inputs: Union[str, Path], schema: Union[str, Path, SchemaView]):
-        """Constructor for MergeData.
+        """Constructor for MergeData. This class merges multiple datasets that have previously had
+        their IDs generated with the ID generator. It ensures that there are no primary key naming
+        conflicts by adding indices to primary keys when necessary.
 
         Args:
             inputs (Union[str, Path]): List of directories to merge. The files should be data files
