@@ -1,5 +1,5 @@
 # %%
-from typing import Annotated
+from typing import Annotated, List
 from pathlib import Path
 import typer
 
@@ -33,10 +33,10 @@ app = typer.Typer(
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[Path, typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     schema: Annotated[Path, typer.Option(show_default=False, help=SCHEMA_HELP)],
     output_dir: Annotated[Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
-    debug: Annotated[Path, typer.Option(show_default=True, help=DEBUG_HELP)] = False,
+    debug: Annotated[bool, typer.Option(show_default=True, help=DEBUG_HELP)] = False,
 ):
     merge = MergeData(inputs=inputs, schema=schema)
     merge.merge(
