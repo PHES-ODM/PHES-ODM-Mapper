@@ -687,7 +687,7 @@ class IDGenerator(object):
                             not self.requires_primary_key_index_generation(
                                 class_name, slot, v
                             )
-                        ):  # or v.index_in_progress):
+                        ):
                             continue
 
                         # Calculate the ID
