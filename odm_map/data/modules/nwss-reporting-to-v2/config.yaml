@@ -18,7 +18,7 @@ steps:
   - action: map
     params:
       source_schema: schemas/nwss_reporting.yaml
-      target_schema: "{shared}/schemas/odm_v2.yaml"
+      target_schema: "{shared}/schemas/odm_v3.yaml"
       mappers_dir: mappers
   - action: filter
     params:
@@ -30,6 +30,7 @@ steps:
       output_name: "{class_name}[preid].csv"
   - action: generate_ids
     params:
+      schema: "{shared}/schemas/odm_v3.yaml"
       id_code: 
         - "{shared}/ids/general_v2_id_code.xlsx"
         - ids/nwss_reporting_to_v2_id_code.xlsx
