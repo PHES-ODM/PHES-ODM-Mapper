@@ -192,7 +192,7 @@ class MergeData:
         return f"_extra_{linkage_path_name}_tag"
 
     def make_pk_id_code(self):
-        """Generate the custom ID code that specified how all primary keys get generated.
+        """Generate the custom ID code that specifies how all primary keys get generated.
 
         The resulting code gets saved in memory in self.pk_id_code_df and can be used by
         the IDGenerator.
@@ -208,6 +208,7 @@ class MergeData:
         # Add custom code for all primary keys
         for class_name, slot_name in self.primary_keys:
             # Is a primary key, add the custom code
+            # The ID code for slot class_name.slot_name is dat.class_name.__slot_name
             code = f"dat.{class_name}.__{slot_name}"
             row = pd.DataFrame(
                 {
@@ -221,7 +222,7 @@ class MergeData:
         self.pk_id_code_df = df
 
     def make_fk_id_code(self):
-        """Generate the custom ID code that specified how all foreign keys get generated.
+        """Generate the custom ID code that specifies how all foreign keys get generated.
 
         The resulting code gets saved in memory in self.fk_id_code_df and can be used by
         the IDGenerator.
@@ -237,6 +238,13 @@ class MergeData:
         # Add custom code for all foreign keys
         for class_name, slot_name in self.foreign_keys:
             # Add the custom code for the slot
+            # For a foreign key class_name.slot_name that points to the primary key
+            # target_class_name.target_slot_name is:
+            #     dat.target_class_name.get_first_linked_value(
+            #         "target_slot_name",
+            #         linkage_path="linkage_path_name"
+            #     )
+            # Where linkage_path_name is the name retrieved by self.get_linkage_path_name.
             target_class_name, target_slot_name = self.get_fk_target(
                 class_name, slot_name
             )
