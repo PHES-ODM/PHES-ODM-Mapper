@@ -1111,6 +1111,22 @@ class IDGenerator(object):
         if _is_id_ready(orig_v):
             return orig_v
 
+        # Generate previous primary keys (in previous rows) if required. We do this so that when
+        # we calculate the indices for the primary keys, the primary keys in earlier rows receive
+        # the smaller index. In order for this to happen, the earlier primary keys must be calculated
+        # first.
+        if self.data[class_name].primary_key == slot and row_index > 0:
+            # Keep on going up a row until we reach past the top or we reach a row
+            # where the primary key has already started calculation
+            prev_index = row_index - 1
+            while prev_index >= 0:
+                prev_v = self.data[class_name].get_data_value(slot, prev_index)
+                if self.is_id_empty(prev_v):
+                    self.calculate_id(class_name, slot, prev_index)
+                else:
+                    break
+                prev_index -= 1
+
         # Generate the IDValue if it is currently empty
         if self.is_id_empty(orig_v):  # not isinstance(orig_v, IDValue):
             # We loop through all code columns for the slot. Once executing the code generates a
@@ -1199,6 +1215,8 @@ class IDGenerator(object):
             v.index_in_progress = True
             self.make_all_ids(class_name, row_index, skip_slots=[slot])
 
+            # While generating other IDs with self.make_all_ids above, it's possible that we generated the
+            # primary key index. We check that here.
             new_v = self.data[class_name].get_data_value(slot, row_index)
             if _is_id_ready(new_v):
                 return new_v
@@ -1209,7 +1227,11 @@ class IDGenerator(object):
             # make the new ID unique)
             v = self.data[class_name].generate_primary_key_index(row_index)
 
-        if self.data[class_name].primary_key != slot or v.is_index_generated():
+        # Update progress for each ID that gets generated. Note that for primary keys the
+        # index must be generated for the ID generation to be complete
+        if self.data[class_name].primary_key != slot or (
+            self.data[class_name].primary_key == slot and v.is_index_generated()
+        ):
             self.update_progress(class_name, 1)
 
         if not _is_id_ready(v):
