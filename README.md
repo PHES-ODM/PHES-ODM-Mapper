@@ -1,5 +1,14 @@
 # <img src="img/ODM-logo.png" align="right" alt="" width="180"/> PHES-ODM Mapper
 
+## Important Notice
+
+This repository currently uses custom features in
+[LinkML-Map](https://github.com/linkml/linkml-map) that have not yet been added
+to a branch of the LinkML-Map repository. These new features will be added and
+merged soon. As such, the PHES-ODM-Mapper will not work unless you have access
+to these changes. Please contact [mwellman@ohri.ca](mailto:mwellman@ohri.ca)
+for questions.
+
 ## Introduction
 
 This repository provides all tools required for mapping between various
