@@ -691,8 +691,6 @@ class IDGenerator(object):
                             continue
 
                         # Calculate the ID
-                        self.current_class = class_name
-                        self.current_row_index = idx
                         self.calculate_id(class_name, slot, idx)
                 _log(
                     "debug",
