@@ -1,4 +1,3 @@
-# %%
 """
 # Command-Line
 
@@ -63,40 +62,36 @@ table "WWMeasure". If no match is found then the file or sheet is ignored."""
 
 
 MODULE_HELP = f"""The installed module name for the conversion. Allowable
-               values: {_module_names}. Either the --module or --module-path
-               command-line arguments must be provided (but not both). A module
-               specifies the source dataset type, the target dataset type, and
-               all required configuration for the conversion."""
+values: {_module_names}. Either the --module or --module-path command-line
+arguments must be provided (but not both). A module specifies the source
+dataset type, the target dataset type, and all required configuration for the
+conversion."""
 
 MODULE_PATH_HELP = """The module directory or zip file that defines the full
-                  configuration for the conversion (eg. a module for mapping
-                  from PHA4GE to ODM v3). Either the --module or --module-path
-                  command-line arguments must be provided (but not both). A
-                  module specifies the source dataset type, the target dataset
-                  type, and all required configuration for the conversion."""
+configuration for the conversion (eg. a module for mapping from PHA4GE to ODM
+v3). Either the --module or --module-path command-line arguments must be
+provided (but not both). A module specifies the source dataset type, the target
+dataset type, and all required configuration for the conversion."""
 
 OUTPUT_DIR_HELP = """Directory to save all the mapped data to."""
 
 TEMP_DIR_HELP = """Directory to save all temporary files to. If specified then
-                the temporary directory is not deleted after processing. If not
-                specified then a system-specified temporary directory is used
-                and deleted after processing. Primarily used for debugging."""
+the temporary directory is not deleted after processing. If not specified then
+a system-specified temporary directory is used and deleted after processing.
+Primarily used for debugging."""
 
 MAX_ROWS_HELP = """The maximum number of rows to map from each input data file.
-                If 0 then map all rows."""
+If 0 then map all rows."""
 
 MAX_PROCESSES_HELP = """Maximum number of processes to run at a time for
-                     mapping the data. If non-positive then the max available
-                     processes are used."""
+mapping the data. If non-positive then the max available processes are used."""
 
 DEBUG_HELP = """If set then run ID generation in debug mode, which only affects
-             what is included in the output data files. Debug data
-             includes some additional columns (eg. original ID values, row
-             number column for linking, primary key index and values,
-             etc.). Debug output will also include any duplicated primary
-             keys, with an additional 'drop' column specifying if it is a
-             duplicate, in which case the row would be dropped when not in
-             debug mode."""
+what is included in the output data files. Debug data includes some additional
+columns (eg. original ID values, row number column for linking, primary key
+index and values, etc.). Debug output will also include any duplicated primary
+keys, with an additional 'drop' column specifying if it is a duplicate, in
+which case the row would be dropped when not in debug mode."""
 
 
 @app.command(help=MAIN_HELP)
@@ -172,50 +167,4 @@ def main(
 
 
 if __name__ == "__main__":
-    if "get_ipython" in globals():
-        # fmt: off
-        opts = {
-            # ODM v1 to v2,
-            # # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
-            # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated/"],
-            # # "inputs": ["a.xlsx"],
-            # "module": "odm-v1-to-v2",
-            # "module_path": None,
-            # # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated"],
-            # # "inputs": ["../../../PHES-ODM-Data/odm_v1_data/excel/excel"],
-            # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/sars-cov-2-data/CSV/Ottawa"],
-            # "output_dir": "../gen/odm-v1-to-v2",
-            # "temp_dir": "../gen/odm-v1-to-v2/temp",
-
-            # NWSS to v2,
-            # "module": "nwss-reporting-to-v2",
-            # "module_path": None,
-            # # "inputs": ["../../../PHES-ODM-Data/nwss/private_renamed_test/"],
-            # # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/"],
-            # # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed/nwss[cdc-nwss-restricted-dataset-wastewater-20240730].csv"],
-            # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_small/"],
-            # # "inputs": ["../../../PHES-ODM-Data/nwss/nwss_renamed_excel/"],
-            # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"],
-            # "output_dir": "../gen/nwss-reporting-to-v2",
-            # "temp_dir": "../gen/nwss-reporting-to-v2/temp",
-
-            # PHA4GE to ODM v2
-            "module": "pha4ge-to-v2",
-            # "module_path": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/pha4ge-to-v2.zip", #None,
-            # "module_path": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/pha4ge-to-v2b.zip",
-            "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-large.xlsx"],
-            # "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-enums-test.xlsx"],
-            # "inputs": ["../../../PHES-ODM-Data/PHA4GE/WW-SC2_examples_20250108-protocols-test.xlsx"],
-            # "inputs": ["../../../PHES-ODM-Data/PHA4GE/bad.xlsx"],
-            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_renamed_excel"],
-            "output_dir": "../gen/pha4ge-to-v2",
-            "temp_dir": "../gen/pha4ge-to-v2/temp",
-
-            "max_processes": 1,
-            "max_rows": 5,
-            "debug": True,
-        }
-        # fmt: on
-        main(**opts)
-    else:
-        app()
+    app()

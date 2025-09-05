@@ -1,4 +1,3 @@
-# %%
 from typing import List, Annotated
 import typer
 
@@ -27,13 +26,13 @@ ignored."""
 OUTPUT_DIR_HELP = """Directory to save all the cleaned data to."""
 
 MAX_ROWS_HELP = """The maximum number of rows to clean from each input data
-                file. If 0 then map all rows."""
+file. If 0 then map all rows."""
 
 SCHEMA_HELP = """Schema file that the data conforms to. We will do some basic
-              cleanup to the data based on this schema (eg. correcting
-              capitalization of classes and enums). We assume the file name of
-              the file being cleaned is the class name for the data. If no
-              schema provided then only basic cleanup is performed"""
+cleanup to the data based on this schema (eg. correcting capitalization of
+classes and enums). We assume the file name of the file being cleaned is the
+class name for the data. If no schema provided then only basic cleanup is
+performed"""
 
 
 @app.command()
@@ -77,28 +76,4 @@ def main(
 
 
 if __name__ == "__main__":
-    if "get_ipython" in globals():
-        # fmt: off
-        opts = {
-            # "inputs": ["../../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/updated copy"],
-            # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v1_data/joakim/excel/"],
-            # "output_dir": "../../gen/odm-v1-to-v2-test/cleaned_data",
-            # "max_rows": 100,
-            # "schema": "../data/modules/odm-v1-to-v2/schemas/odm_v1.yaml",
-
-            # "inputs": ["../../gen/nwss-reporting-to-v2-test/mapped_data_ids"],
-            # "output_dir": "../../gen/nwss-reporting-to-v2-test/cleaned_data-final",
-            # "max_rows": None, #100,
-            # # "schema": "../data/modules/nwss-reporting-to-v2/schemas/nwss_reporting.yaml",
-            # "schema": "../data/modules/nwss-reporting-to-v2/schemas/odm_v2.yaml",
-
-            "inputs": ["../../gen/pha4ge-to-v2/temp/cleaned_data-custom"],
-            "output_dir": "../../gen/pha4ge-to-v2/temp/cleaned_data-final",
-            "max_rows": None, #100,
-            # "schema": "../data/modules/nwss-reporting-to-v2/schemas/nwss_reporting.yaml",
-            "schema": "../data/modules/pha4ge-to-v2/schemas/pha4ge.yaml",
-        }
-        # fmt: on
-        main(**opts)
-    else:
-        app()
+    app()

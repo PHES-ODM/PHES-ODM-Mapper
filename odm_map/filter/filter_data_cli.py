@@ -1,4 +1,3 @@
-# %%
 from typing import List, Annotated
 import typer
 
@@ -27,19 +26,17 @@ or sheet names), any text after the first opening square or round bracket is
 ignored."""
 
 FILTER_CONFIG_FILE_HELP = """Location of the CSV or TSV filtering configuration
-                          file."""
+file."""
 
 OUTPUT_DIR_HELP = """Directory to save all the filtered data to."""
 
 SCHEMA_HELP = """Schema file that the data conforms to. This will only be used
-              to determine which table each input file belongs to. If not
-              specified then the file name (or sheet name for Excel files) will
-              be treated as the table name, ignoring the extension and anything
-              after the first square or round bracket."""
+to determine which table each input file belongs to. If not specified then the
+file name (or sheet name for Excel files) will be treated as the table name,
+ignoring the extension and anything after the first square or round bracket."""
 
 DEBUG_HELP = f"""If set, then run in debug mode. In debug mode instead of
-             dropping rows, we set the value for the column '{DROP_COLUMN}' to
-             True."""
+dropping rows, we set the value for the column '{DROP_COLUMN}' to True."""
 
 
 @app.command(help=MAIN_HELP)
@@ -62,17 +59,4 @@ def main(
 
 
 if __name__ == "__main__":
-    if "get_ipython" in globals():
-        # fmt: off
-        opts = {
-            "inputs": ["../../gen/pha4ge-to-v2/"],
-            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/odm_v2_data/mapped_from_nwss"],
-            "filter_config_file": "../data/modules/pha4ge-to-v2/filters/pha4ge_to_v2_filters_before_id.csv",
-            "output_dir": "../../gen/pha4ge-to-v2/temp/filtered_mapped_data",
-            "schema": "../data/modules/_shared/schemas/odm_v2.yaml",
-            "debug": False,
-        }
-        # fmt: on
-        main(**opts)
-    else:
-        app()
+    app()

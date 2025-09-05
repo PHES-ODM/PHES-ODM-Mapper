@@ -1,4 +1,3 @@
-# %%
 from typing import Annotated, List
 from pathlib import Path
 import typer
@@ -9,21 +8,19 @@ MAIN_HELP = """Merge two or more datasets (that conform to a LinkML schema) by
 ensuring there are no primary key conflicts."""
 
 INPUTS_HELP = """Directories containing all data files to merge. Each directory
-              should contain data files named after the class name. Merging is
-              performed in order of how the directories are specified. The first
-              dataset will also remain unchanged, while all additional datasets
-              might have their primary and foreign keys changed to avoid
-              conflicts."""
+should contain data files named after the class name. Merging is performed in
+order of how the directories are specified. The first dataset will also remain
+unchanged, while all additional datasets might have their primary and foreign
+keys changed to avoid conflicts."""
 
 SCHEMA_HELP = """Path to the LinkML schema for the datasets."""
 
 OUTPUT_DIR_HELP = """Directory to save all the merged data to."""
 
 DEBUG_HELP = """If set then run in debug mode. In debug mode the outputs will
-             have extra columns with debug information, and rows will not be
-             dropped based on duplicate primary keys, instead a new column
-             named __drop will be added and set to True if that row would be
-             dropped if not run in debug mode."""
+have extra columns with debug information, and rows will not be dropped based
+on duplicate primary keys, instead a new column named __drop will be added and
+set to True if that row would be dropped if not run in debug mode."""
 
 app = typer.Typer(
     pretty_exceptions_show_locals=False,
@@ -45,20 +42,4 @@ def main(
 
 
 if __name__ == "__main__":
-    if "get_ipython" in globals():
-        opts = {
-            # "inputs": [
-            #     "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2-cut1/",
-            #     "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2-cut2/",
-            # ],
-            "inputs": [
-                "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2",
-                "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2",
-            ],
-            "schema": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/odm_map/data/modules/_shared/schemas/odm_v3.yaml",
-            "output_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2-merged",
-            "debug": False,
-        }
-        main(**opts)
-    else:
-        app()
+    app()

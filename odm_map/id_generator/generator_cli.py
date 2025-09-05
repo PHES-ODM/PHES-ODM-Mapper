@@ -1,4 +1,3 @@
-# %%
 from typing import List, Annotated
 import typer
 
@@ -26,31 +25,29 @@ or sheet names), any text after the first opening square or round bracket is
 ignored."""
 
 CONFIG_FILE_HELP = """The YAML config files. If multiple files are specified
-                   then they are merged together."""
+then they are merged together."""
 
-ID_CODE_FILES_HELP = """The XLSX, CSV, TSV, TXT, YAML, or YML configuration files
-                    that contains the ID generation code. If an XLSX file then
-                    the sheet named by --id-code-sheet, at the same index, is loaded."""
+ID_CODE_FILES_HELP = """The XLSX, CSV, TSV, TXT, YAML, or YML configuration
+files that contains the ID generation code. If an XLSX file then the sheet
+named by --id-code-sheet, at the same index, is loaded."""
 
-ID_CODE_SHEETS_HELP = """If --id-code-file at the same index is an Excel file, then
-                     load the code from the sheet with this name."""
+ID_CODE_SHEETS_HELP = """If --id-code-file at the same index is an Excel file,
+then load the code from the sheet with this name."""
 
 OUTPUT_DIR_HELP = """Directory to save the final data to, in which all IDs have
-                  been generated."""
+been generated."""
 
 SCHEMA_HELP = """Schema file that the data conforms to. This will only be used
-              to determine which table each input file belongs to. If not
-              specified then the file name (or sheet name for Excel files) will
-              be treated as the table name, ignoring the extension and anything
-              after the first square or round bracket."""
+to determine which table each input file belongs to. If not specified then the
+file name (or sheet name for Excel files) will be treated as the table name,
+ignoring the extension and anything after the first square or round bracket."""
 
 DEBUG_HELP = f"""If set then run in debug mode, which only affects what is
-             included in the output data files. Debug data includes some
-             additional columns (eg. original ID values, row number column for
-             linking, primary key index and values, etc.). Debug output will
-             also include any duplicated primary keys, with an additional
-             '{DROP_COLUMN}' column specifying if it is a duplicate, in which
-             case the row would be dropped when not in debug mode."""
+included in the output data files. Debug data includes some additional columns
+(eg. original ID values, row number column for linking, primary key index and
+values, etc.). Debug output will also include any duplicated primary keys, with
+an additional '{DROP_COLUMN}' column specifying if it is a duplicate, in which
+case the row would be dropped when not in debug mode."""
 
 
 @app.command(help=MAIN_HELP)
@@ -96,44 +93,4 @@ def main(
 
 
 if __name__ == "__main__":
-    if "get_ipython" in globals():
-        # fmt: off
-        opts = {
-            # Test
-            # "inputs": ["../../gen/test/source_data"],
-            # "output_dir": "../../gen/test/mapped_data_ids",
-            # "id_code_file": "../data/modules/test/ids.xlsx",
-            # "id_code_sheet": "id_code",
-            # "config_file": "../data/modules/test/ids.yaml",
-
-            # NWSS to ODM v2
-            # # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Data/nwss/nwss_preid_excel"],
-            # "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/nwss-reporting-to-v2/temp/mapped_data"],
-            # "output_dir": "../../gen/nwss-reporting-to-v2/mapped_data_ids",
-            # "id_code_files": ["../data/modules/_shared/ids/general_v2_id_code.xlsx", "../data/modules/nwss-reporting-to-v2/ids/nwss_reporting_to_v2_id_code.xlsx"],
-            # "id_code_sheets": ["id_code", "id_code"],
-            # "config_file": ["../data/modules/_shared/ids/general_v2_id_code.yaml"],
-            # "schema": "../data/modules/_shared/odm_v2.yaml",
-
-            # ODM v1 to ODM v2,
-            # "inputs": ["../../gen/odm-v1-to-v2/temp/mapped_data"],
-            # "output_dir": "../../gen/odm-v1-to-v2/mapped_data_ids",
-            # "id_code_files": ["../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_code.xlsx"],
-            # "id_code_sheets": ["id_code"],
-            # "config_file": "../data/modules/odm-v1-to-v2/ids/odm_v1_to_v2_id_config.yaml",
-            # "schema": "../data/modules/_shared/schemas/odm_v2.yaml",
-
-            # PHA4GE to ODM v2
-            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/temp/mapped_data"],
-            "output_dir": "../../gen/pha4ge-to-v2/temp/mapped_data_ids",
-            "id_code_files": ["../data/modules/_shared/ids/general_v2_id_code.xlsx", "../data/modules/pha4ge-to-v2/ids/pha4ge_to_v2_id_code.xlsx"],
-            "id_code_sheets": ["id_code"],
-            "config_file": ["../data/modules/_shared/ids/general_v2_id_code.yaml", "../data/modules/pha4ge-to-v2/ids/pha4ge_to_v2_id_code.yaml"],
-            "schema": "../data/modules/_shared/schemas/odm_v2.yaml",
-
-            "debug": True,
-        }
-        # fmt: on
-        main(**opts)
-    else:
-        app()
+    app()

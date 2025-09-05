@@ -1,5 +1,3 @@
-# %%
-
 from typing import Annotated, List, Optional
 from pathlib import Path
 import typer
@@ -12,34 +10,37 @@ app = typer.Typer(
     rich_markup_mode="rich",
 )
 
-MAIN_HELP = """Drop columns from tabular data. The dropped columns can be configured from
-the command line. Options include dropping extra columns (columns starting with _extra_), dropping
-tracking columns (columns that specify which row and file/table the row was populated from),
-and dropping columns that are not part of the class according to a LinkML schema."""
+MAIN_HELP = """Drop columns from tabular data. The dropped columns
+can be configured from the command line. Options include dropping extra columns
+(columns starting with _extra_), dropping tracking columns (columns that
+specify which row and file/table the row was populated from), and dropping
+columns that are not part of the class according to a LinkML schema."""
 
-INPUTS_HELP = """All the data files to drop columns from. The class the data file
-belongs to is determined by the file's name. eg. measures.csv belongs to the
-measures class, and samples[2025-07-01].csv belongs to the samples class."""
+INPUTS_HELP = """All the data files to drop columns from. The class the data
+file belongs to is determined by the file's name. eg. measures.csv belongs to
+the measures class, and samples[2025-07-01].csv belongs to the samples
+class."""
 
-DROP_EXTRA_COLUMNS_HELP = """If set then drop the extra columns. These are columns that
-                          begin with the string '_extra_'."""
+DROP_EXTRA_COLUMNS_HELP = """If set then drop the extra columns. These are
+columns that begin with the string '_extra_'."""
 
-DROP_TRACKING_COLUMNS_HELP = """If set then drop the tracking columns. These are columns
-                             that specify from which row number and class/table the current
-                             row was populated from during a mapping operation."""
+DROP_TRACKING_COLUMNS_HELP = """If set then drop the tracking columns.
+These are columns that specify from which row number and class/table the
+current row was populated from during a mapping operation."""
 
-KEEP_COLUMNS_IN_SCHEMA_ONLY_HELP = """If set then only keep the columns that are recognized
-                                   for the class according to the schema specified by the
-                                   --schema option."""
+KEEP_COLUMNS_IN_SCHEMA_ONLY_HELP = """If set then only keep the columns that
+are recognized for the class according to the schema specified by the --schema
+option."""
 
 OUTPUT_DIR_HELP = """Directory to save the results to."""
 
-SCHEMA_HELP = """If --keep-columns-in-schema-only is specified, then this is the LinkML schema
-              used to determine which columns to keep. If --keep-columns-in-schema-only is not
-              specified then --schema is not required."""
+SCHEMA_HELP = """If --keep-columns-in-schema-only is specified, then this is
+the LinkML schema used to determine which columns to keep. If
+--keep-columns-in-schema-only is not specified then --schema is not
+required."""
 
-MAX_ROWS_HELP = """Maximum number of rows to load from each input data file. If not set
-                or 0 then all rows are loaded."""
+MAX_ROWS_HELP = """Maximum number of rows to load from each input data file.
+If not set or 0 then all rows are loaded."""
 
 
 @app.command(help=MAIN_HELP)
@@ -74,19 +75,4 @@ def main(
 
 
 if __name__ == "__main__":
-    if "get_ipython" in globals():
-        opts = {
-            "inputs": [
-                "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/measures.csv",
-                "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/measureSets.csv",
-            ],
-            "drop_extra_columns": False,
-            "drop_tracking_columns": False,
-            "keep_columns_in_schema_only": True,
-            "output_dir": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/dropped",
-            "max_rows": None,
-            "schema": "/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/odm_map/data/modules/pha4ge-to-v2/schemas/odm_v3.yaml",
-        }
-        main(**opts)
-    else:
-        app()
+    app()
