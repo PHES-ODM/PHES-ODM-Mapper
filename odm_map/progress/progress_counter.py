@@ -358,6 +358,7 @@ class ProgressCounter(BaseCounter):
 
 
 if __name__ == "__main__":
+    # Create a test progress bar
     import time
 
     bar_totals = {
