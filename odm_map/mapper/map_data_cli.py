@@ -1,4 +1,3 @@
-# %%
 from typing import List, Annotated
 import typer
 
@@ -30,30 +29,28 @@ first opening square or round bracket is ignored."""
 OUTPUT_DIR_HELP = """Directory to save all the mapped data to."""
 
 SOURCE_SCHEMA_HELP = """LinkML schema for the source dataset, that all the
-                     input files belong to."""
+input files belong to."""
 
 TARGET_SCHEMA_HELP = """LinkML schema for the target dataset, that all the
-                     input files are mapped to."""
+input files are mapped to."""
 
 MAPPERS_DIR_HELP = """Directory containing all LinkML-Map schemas to use for
-                   mapping."""
+mapping."""
 
 MAX_ROWS_HELP = """The maximum number of rows to load from each input file. If
-                0 then load all rows."""
+0 then load all rows."""
 
-MAX_PROCESSES_HELP = """Maximum number of processes to use for mapping. For large
-                     datasets setting this to a number greater than 1 can improve
-                     performance. For small datasets it may degrade performance."""
+MAX_PROCESSES_HELP = """Maximum number of processes to use for mapping. For
+large datasets setting this to a number greater than 1 can improve performance.
+For small datasets it may degrade performance."""
 
-KEEP_TRACKING_COLUMNS_HELP = """If set then keep the tracking columns in the output.
-                             The tracking columns are used for identifying
-                             which source data file and row each output row was
-                             populated from."""
+KEEP_TRACKING_COLUMNS_HELP = """If set then keep the tracking columns in the
+output. The tracking columns are used for identifying which source data file
+and row each output row was populated from."""
 
 KEEP_EXTRA_COLUMNS_HELP = """If set then keep the extra columns in the output.
-                          The extra columns are additional columns starting with
-                          `_extra_` that contain extra information, and are
-                          columns that do not exist in the target database."""
+The extra columns are additional columns starting with `_extra_` that contain
+extra information, and are columns that do not exist in the target database."""
 
 
 @app.command(help=MAIN_HELP)
@@ -96,21 +93,4 @@ def main(
 
 
 if __name__ == "__main__":
-    if "get_ipython" in globals():
-        # fmt: off
-        opts = {
-            # "inputs": ["../../../../PHES-ODM-Data/odm_v1_data/centreau_qc/csv"],
-            "inputs": ["/Users/martinwellman/Documents/Health/Wastewater/PHES-ODM-Mapper/PHES-ODM-Mapper/gen/pha4ge-to-v2/temp/cleaned_data"],
-            "output_dir": "../../gen/pha4ge-to-v2",
-            "source_schema": "../data/modules/pha4ge-to-v2/schemas/pha4ge.yaml",
-            "target_schema": "../data/modules/_shared/schemas/odm_v2.yaml",
-            "mappers_dir": "../data/modules/pha4ge-to-v2/mappers",
-            "max_rows": 100,
-            "max_processes": 1,
-            "keep_extra_columns": True,
-            "keep_tracking_columns": True,
-        }
-        # fmt: on
-        main(**opts)
-    else:
-        app()
+    app()
