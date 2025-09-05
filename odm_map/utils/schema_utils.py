@@ -1,4 +1,3 @@
-# %%
 """
 Utility functions for LinkML schemas.
 """
@@ -41,7 +40,7 @@ def all_primary_keys(schema: SchemaView) -> Dict[str, str]:
 
         if len(class_primary_keys) > 1:
             logger.warning(
-                f"Class '{cur_class}' can only have one primary key, instead found {len(class_primary_keys)}: {class_primary_keys}"
+                f"Class '{cur_class}' can only have one primary key, instead found {len(class_primary_keys)} (using first primary key {class_primary_keys[0]}): {class_primary_keys}"
             )
         if len(class_primary_keys) == 0:
             raise ValueError(
