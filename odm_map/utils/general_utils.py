@@ -1,4 +1,3 @@
-# %%
 """
 General utility functions.
 """

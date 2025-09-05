@@ -1,4 +1,3 @@
-# %%
 """
 For multivalued enum slots keep only the enumeration values that have the deepest enum value in
 the hierarchy for the enumeration as specified in a LinkML schema. That is, if the slot has multiple

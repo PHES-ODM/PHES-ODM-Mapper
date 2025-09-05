@@ -1,4 +1,3 @@
-# %%
 """
 The ArrayExpander expands array values in a DataFrame, so that each item in the
 array gets its own row. The array values can either be a YAML string (eg.

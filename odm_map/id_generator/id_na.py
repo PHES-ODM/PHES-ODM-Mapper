@@ -1,4 +1,3 @@
-# %%
 """
 Provide a global object (EMPTY_OBJ) that can be used in a Numpy array (or Pandas DataFrame) to represent a NA value (eg. float("NaN"), None, etc).
 Typically, we would replace all NA values in a Numpy array with EMPTY_OBJ, which would then make comparisons

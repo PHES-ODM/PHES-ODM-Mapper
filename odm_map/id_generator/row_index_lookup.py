@@ -1,4 +1,3 @@
-# %%
 """
 A lookup table, mapping values (for a given slot) to row indices, so we can quickly get the
 indices for the values.

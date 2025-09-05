@@ -1,4 +1,3 @@
-# %%
 """
 Holds a custom-generated ID. Has an option to add an index to the ID, which allows to generate primary keys that are
 unique, in case there are conflicting primary key values.

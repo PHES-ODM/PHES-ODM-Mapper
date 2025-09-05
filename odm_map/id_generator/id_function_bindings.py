@@ -1,4 +1,3 @@
-# %%
 """
 All members of class FunctionBindings are accessible from ID code files (in Python code) via the namespace "fn".
 

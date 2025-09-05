@@ -1,4 +1,3 @@
-# %%
 """
 Drop columns from DataFrames, either loaded from disk or already in memory. The columns that
 get dropped can include:
