@@ -291,7 +291,8 @@ named_class_linkages:
         target_slot: ["_extra_measures_protocolID_protocols_protocolID_tag"]
 ```
 
-As discussed previously, the ID generation custom code would look like the following:
+As discussed previously, the ID generation custom code would look like the
+following:
 
 ```python
 dat.protocols.get_first_linked_value("protocolID", linkage_path="measures_protocolID_protocols_protocolID")
