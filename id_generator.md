@@ -389,7 +389,8 @@ source and target tables to perform linking, as specified in the
 columns/slots is desired). The default behaviour is to use
 `(__source_file_and_row__)` for both the source and target slots.
 
-It is also possible to link via multiple tables using an array of linkage paths:
+It is also possible to link via multiple tables using an array of linkage
+paths:
 
 ```python
 linkage_path = [
@@ -421,6 +422,17 @@ in the [class_linkages](#class_linkages) section above.
 
 The *fn* namespace provides various functions and attributes commonly used in
 ID generation code.
+
+#### fn.try_float(v)
+
+Try to convert the value `v` to a float. If it cannot be cast to a float then
+`v` is returned unchanged. String values with underscores are not valid floats.
+
+#### fn.try_int(v)
+
+Try to convert the value `v` to an integer. If it cannot be cast to a integer
+then `v` is returned unchanged. String values with underscores are not valid
+integers.
 
 #### fn.makeid(*args)
 

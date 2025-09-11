@@ -327,3 +327,25 @@ class FunctionBindings:
         if not d or not isinstance(d, str):
             return d
         return self.datetimetz([d])
+
+    def try_float(self, v: Any) -> Any:
+        # Do not allow numbers with underscores (in Python _ is valid in a
+        # number, and is treated as a comma, ie. 1_000.123 == 1,000.123 ==
+        # 1000.123)
+        if isinstance(v, str) and "_" in v:
+            return v
+        try:
+            return float(v)
+        except Exception:
+            return v
+
+    def try_int(self, v: Any) -> Any:
+        # Do not allow numbers with underscores (in Python _ is valid in a
+        # number, and is treated as a comma, ie. 1_000.123 == 1,000.123 ==
+        # 1000.123)
+        if isinstance(v, str) and "_" in v:
+            return v
+        try:
+            return int(v)
+        except Exception:
+            return v
