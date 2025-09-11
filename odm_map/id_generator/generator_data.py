@@ -76,6 +76,23 @@ INCLUDE_INITIAL_VALUE_SLOTS_IN_MATCH_COLUMNS = False
 
 
 def match_len(a: str, b: str) -> int:
+    """Count the number of characters at the start of two strings that are equal in the two strings.
+
+    For example:
+        match_len("hello", "hi") -> 1
+        match_len("hello", "hello123") -> 5
+        match_len("hello", "bye") -> 0
+        match_len("hello", "heilo") -> 2
+
+    Args:
+        a (str): The first string to match.
+        b (str): The second string to match.
+
+    Returns:
+        int: The number of characters at the start of a and b that are equal (ie. the number of
+            equal characters until the first unequal character is found, or the end of one of
+            the strings is reached).
+    """
     a = str(a)
     b = str(b)
     if not a or not b:
