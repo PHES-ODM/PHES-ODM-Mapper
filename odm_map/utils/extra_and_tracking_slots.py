@@ -13,6 +13,7 @@ from odm_map.utils.schema_utils import (
     find_class,
 )
 from odm_map.progress import ProgressCounter, EmptyCounter
+from odm_map.utils.schema_caster import SchemaCaster
 from odm_map.utils.general_utils import read_data_frame, EXCEL_FILE_KEY
 from odm_map.utils.logger import get_logger
 
@@ -424,8 +425,10 @@ def load_data_with_source_tracking_columns(
 
     if schema is not None:
         recognized_classes = all_classes_without_tree_root(schema)
+        schema_caster = SchemaCaster(schema)
     else:
         recognized_classes = None
+        schema_caster = None
 
     # Check for invalid class names for the data_files (ie. check the keys of data_files dictionary)
     if validate_class_names and schema is not None:
@@ -513,6 +516,9 @@ def load_data_with_source_tracking_columns(
                             show_log=False,
                         )
                         warning_log.extend(new_log)
+
+                    if schema_caster is not None:
+                        schema_caster.cast_df(df, class_name)
 
                     # Add the predefined source tracking columns
                     add_source_tracking_columns(df, class_name, track_file)
