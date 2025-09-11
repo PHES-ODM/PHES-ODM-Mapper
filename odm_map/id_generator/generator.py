@@ -76,6 +76,7 @@ class IDGenerator(object):
         config_file: Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]],
         id_code_files: List[Dict],
         multi_bar_progress: bool = True,
+        for_merging: bool = False,
     ):
         """Constructor for IDGenerator.
 
@@ -107,6 +108,7 @@ class IDGenerator(object):
             schema = SchemaView(schema)
         self.schema = schema
 
+        self.for_merging = for_merging
         self.primary_keys = all_primary_keys(self.schema)
 
         # Sort data_files by key (class name), and sort all the values (file names)
@@ -275,6 +277,7 @@ class IDGenerator(object):
                     schema=self.schema,
                     generated_slots=generated_slots.get(class_name, []),
                     primary_key=self.primary_keys.get(class_name),
+                    for_merging=self.for_merging,
                 )
                 progress.update(PREPARING_BARID, 1)
 
@@ -1124,6 +1127,27 @@ class IDGenerator(object):
                 else:
                     break
                 prev_index -= 1
+
+        ##############################
+        # @TODO: NEW CODE
+        # if USE_NEW_MERGE_CODE:
+        #     # If the current slot is a primary key that hasn't been generated
+        #     v = self.data[class_name].get_data_value(slot, row_index)
+        #     if generate_index_if_primary_key and (slot == self.data[class_name].primary_key == slot and self.is_id_empty(v)):
+        #         v.index_in_progress = True
+        #         self.make_all_ids(class_name, row_index, skip_slots=[slot])
+
+        #         # For the current row, find all identical rows (ignoring the primary key, which might not be generated yet)
+        #         v = self.data[class_name].get_data_value(slot, row_index)
+        #         if _is_id_ready(v):
+        #             self.update_progress(class_name, 1)
+        #             return v
+
+        #         matching_pk = self.data[class_name].find_matching_primary_key(row_index)
+        #         if matching_pk is not None:
+        #             self.update_progress(class_name, 1)
+        #             return matching_pk
+        ##############################
 
         # Generate the IDValue if it is currently empty
         if self.is_id_empty(orig_v):  # not isinstance(orig_v, IDValue):

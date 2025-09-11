@@ -75,6 +75,17 @@ USE_PRIMARY_KEY_LIST = True
 INCLUDE_INITIAL_VALUE_SLOTS_IN_MATCH_COLUMNS = False
 
 
+def match_len(a: str, b: str) -> int:
+    a = str(a)
+    b = str(b)
+    if not a or not b:
+        return 0
+    for idx in range(min(len(a), len(b))):
+        if a[idx] != b[idx]:
+            return idx
+    return idx + 1
+
+
 class GeneratorData:
     def __init__(
         self,
@@ -83,10 +94,13 @@ class GeneratorData:
         primary_key: str,
         schema: Union[str, Path, SchemaView],
         generated_slots: Optional[List[str]] = None,
+        for_merging: bool = False,
     ):
         if isinstance(schema, (str, Path)):
             schema = SchemaView(schema)
         self.schema = schema
+
+        self.for_merging = for_merging
 
         self.class_name = class_name
         self.primary_key = primary_key
@@ -182,7 +196,8 @@ class GeneratorData:
             self.match_columns.extend(
                 [self.get_column_index(c) for c in self.initial_value_columns]
             )
-        self.match_columns.append(self.get_column_index(UNINDEXED_PK_SLOT))
+        if not self.for_merging:
+            self.match_columns.append(self.get_column_index(UNINDEXED_PK_SLOT))
 
         # Convert the DataFrame to a Numpy array
         self.data = self.orig_df.to_numpy()
@@ -516,6 +531,80 @@ class GeneratorData:
         hash_value = hash(val)
         return hash_value
 
+    # @TODO: Remove find_matching_primary_key (no longer used)
+    def find_matching_primary_key(self, row_index: int) -> Optional[IDValue]:
+        # Find a matching row based on the hash at row_index
+        row = self.data[row_index, self.match_columns]
+        hash_value = self.make_row_hash(row)
+        match_indices = self.lookup.get_indices(HASH_COLUMN, hash_value)
+        if len(match_indices) == 0:
+            return None
+
+        # Find an identical row from the returned matching rows. It's possible (but unlikely)
+        # that a returned row based on the hash is NOT identical to the current row, which is
+        # why we search for an explicit matching row here.
+        identical_row_idx = None
+        for i in match_indices[::-1]:
+            if i == row_index:
+                continue
+
+            cur_row = self.data[i, self.match_columns]
+            if np.equal(cur_row, row).all():
+                identical_row_idx = i
+                break
+
+        # No identical match found
+        if identical_row_idx is None:
+            return None
+
+        pk: IDValue = self.data[
+            identical_row_idx, self.get_column_index(self.primary_key)
+        ]
+
+        return self.set_row_pk_and_finalize(row_index, pk.unindexed_value, pk.index)
+
+    def set_row_pk_and_finalize(
+        self, row_index: int, unindexed_pk: str, pk_index: int
+    ) -> IDValue:
+        """Set the primary key values for the specified row (the indexed pk value in self.primary_key, the
+        unindexed pk value in UNINDEXED_PK_SLOT, and the index in PK_INDEX_SLOT), and also add the
+        row to the hash lookup table for fast searching of identical rows.
+
+        This should only be called once per row, since the row gets added to the hash table but does
+        not get removed if it was added previously.
+
+        Args:
+            row_index (int): The row index to set the PK of.
+            unindexed_pk (str): The unindexed primary key value to set for the row. This is the string part
+                of the primary key. The index (pk_index) is added to the unindexed value in order to make
+                sure the primary key does not conflict with other primary key values.
+            pk_index (int): The index of the primary key value. This is a number that gets added to the
+                unindexed_pk value to ensure there are no primary key conflicts. The number is appended
+                to the end of unindexed_pk.
+
+        Returns:
+            IDValue: The IDValue containing the new primary key value.
+        """
+        # Set all values for the row
+        self.set_data_value(PK_INDEX_SLOT, row_index, pk_index)
+        self.set_data_value(UNINDEXED_PK_SLOT, row_index, unindexed_pk)
+        id_value = IDValue(unindexed_pk, pk_index, index_in_progress=False)
+        self.set_data_value(
+            self.primary_key,
+            row_index,
+            id_value,
+        )
+
+        # Add the row to the hash table
+        new_row = self.get_row_at_index(row_index)[self.match_columns]
+        hash_value = self.make_row_hash(new_row)
+        self.set_data_value(HASH_COLUMN, row_index, hash_value)
+
+        if USE_PRIMARY_KEY_LIST:
+            self.used_primary_keys[str(id_value)] = True
+
+        return id_value
+
     def generate_primary_key_index(self, row_index: int) -> Any:
         """For the (unindexed) primary key value currently found at the row index,
         either group it with other rows generated so far that are identical to the row at row_index
@@ -543,37 +632,18 @@ class GeneratorData:
             Any: The value of the primary key at row row_index, after any grouping is performed.
         """
 
-        def _set_current_row_values(unindexed_pk: str, pk_index: int):
-            """Set the ID values for the current row (the indexed pk value in self.primary_key, the
-            unindexed pk value in UNINDEXED_PK_SLOT, and the index in PK_INDEX_SLOT).
-            """
-            self.set_data_value(PK_INDEX_SLOT, row_index, pk_index)
-            self.set_data_value(UNINDEXED_PK_SLOT, row_index, unindexed_pk)
-            id_value = IDValue(unindexed_pk, pk_index, index_in_progress=False)
-            self.set_data_value(
-                self.primary_key,
-                row_index,
-                id_value,
-            )
-
-            new_row = self.get_row_at_index(row_index)[self.match_columns]
-            hash_value = self.make_row_hash(new_row)
-            self.set_data_value(HASH_COLUMN, row_index, hash_value)
-
-            if USE_PRIMARY_KEY_LIST:
-                self.used_primary_keys[str(id_value)] = True
-
         # The unindex PK value is currently at self.primary_key. Copy the value over to the UNINDEXED_PK_SLOT
         # then clear self.primary_key (since we will recalculate it)
         unindexed_pk_value = self.get_data_value(self.primary_key, row_index)
+
         # When the unindexed value for the primary key is an empty string ("", but not None) then this row will always
         # have an index of 0. These are rows that should get removed downstream of the mapper (by running a filter).
         if (isinstance(unindexed_pk_value, str) and unindexed_pk_value == "") or (
             isinstance(unindexed_pk_value, IDValue)
             and unindexed_pk_value.unindexed_value == ""
         ):
-            _set_current_row_values("", 0)
-            return self.get_data_value(self.primary_key, row_index)
+            return self.set_row_pk_and_finalize(row_index, "", 0)
+            # return self.get_data_value(self.primary_key, row_index)
         self.set_data_value(self.primary_key, row_index, None)
         self.set_data_value(PK_INDEX_SLOT, row_index, None)
         self.set_data_value(UNINDEXED_PK_SLOT, row_index, unindexed_pk_value)
@@ -585,6 +655,17 @@ class GeneratorData:
         current_row_match = current_row[:, self.match_columns]
         current_hash = self.make_row_hash(current_row_match)
         match_indices = self.lookup.get_indices(HASH_COLUMN, current_hash)
+
+        def _is_row_equal(row_a: np.ndarray, row_b: np.ndarray, row_idx: int) -> bool:
+            if self.for_merging:
+                eq = np.equal(row_a, row_b).all(axis=1)
+                return (
+                    eq
+                    and unindexed_pk_value
+                    == self.data[row_idx, self.get_column_index(UNINDEXED_PK_SLOT)]
+                )
+            else:
+                return np.equal(row_a, row_b).all(axis=1)
 
         # Go through all rows that have the same hash, and find an identical match. We need to do the
         # identical match test because of the way that a hash is made, by concatenating the cells of a
@@ -599,13 +680,53 @@ class GeneratorData:
         # We go in reverse order of match_indices, because it's more likely that rows close to eachother
         # will be similar (and we generally generate rows from top to bottom), so we might find a match
         # sooner in reverse order.
+        if self.for_merging:
+
+            def _is_after_match_number(val: str, val_match_len: int) -> bool:
+                after = val[val_match_len:]
+                return not after or after.isdigit()
+
+            longest_pk_match = None
+            longest_pk_index = None
+            for i in match_indices:
+                if i == row_index:
+                    continue
+
+                cur_row = self.data[i, self.match_columns]
+                # if np.equal(cur_row, current_row_match).all(axis=1):
+                # if _is_row_equal(cur_row, current_row_match, i):
+                if np.equal(cur_row, current_row_match).all(axis=1):
+                    cur_pk = self.data[i, self.get_column_index(self.primary_key)]
+                    cur_match_length = match_len(cur_pk, unindexed_pk_value)
+                    if cur_match_length:
+                        if _is_after_match_number(
+                            cur_pk, cur_match_length
+                        ) and _is_after_match_number(
+                            unindexed_pk_value, cur_match_length
+                        ):
+                            if longest_pk_match is None or cur_match_length >= len(
+                                longest_pk_match
+                            ):
+                                longest_pk_match = cur_pk[:cur_match_length]
+                                longest_pk_index = cur_pk[cur_match_length:]
+                                if longest_pk_index:
+                                    longest_pk_index = int(longest_pk_index)
+                                else:
+                                    longest_pk_index = 0
+
+            if longest_pk_match is not None:
+                return self.set_row_pk_and_finalize(
+                    row_index, longest_pk_match, longest_pk_index
+                )
+
         identical_row_idx = None
         for i in match_indices[::-1]:
             if i == row_index:
                 continue
 
             cur_row = self.data[i, self.match_columns]
-            if np.equal(cur_row, current_row_match).all(axis=1):
+            # if np.equal(cur_row, current_row_match).all(axis=1):
+            if _is_row_equal(cur_row, current_row_match, i):
                 identical_row_idx = i
                 break
 
@@ -615,7 +736,7 @@ class GeneratorData:
             pk_index = self.data[
                 identical_row_idx, self.get_column_index(PK_INDEX_SLOT)
             ]
-            _set_current_row_values(unindexed_pk_value, pk_index)
+            return self.set_row_pk_and_finalize(row_index, unindexed_pk_value, pk_index)
         else:
             # There are no identical rows, so get a PK index that results in a unique indexed PK
             # pk_index = 0
@@ -635,9 +756,9 @@ class GeneratorData:
                     if len(indices) == 0:
                         break
                 pk_index += 1
-            _set_current_row_values(unindexed_pk_value, pk_index)
+            return self.set_row_pk_and_finalize(row_index, unindexed_pk_value, pk_index)
 
-        return self.get_data_value(self.primary_key, row_index)
+        # return self.get_data_value(self.primary_key, row_index)
 
     def finalize_data(
         self,
