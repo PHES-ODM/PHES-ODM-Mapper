@@ -82,10 +82,10 @@ class IDValue(object):
         return int(str(self))
 
     def __eq__(self, value: object) -> bool:
-        return str(self) == value
+        return str(self) == str(value)
 
     def __ne__(self, value: object) -> bool:
-        return str(self) != value
+        return str(self) != str(value)
 
     def __len__(self) -> int:
         return len(str(self))
@@ -100,8 +100,9 @@ class IDValue(object):
         return self._root_id is None
 
     def __getitem__(self, key: Union[slice, int]) -> str:
-        # For retrieving a single index (character) or slice of the _root_id
-        return self._root_id[key]
+        # For retrieving a single index (character) or slice of the value
+        # return self._root_id[key]
+        return str(self)[key]
 
     def is_index_generated(self) -> bool:
         """Determine if the index for this IDValue has been generated or not. The index is generated
