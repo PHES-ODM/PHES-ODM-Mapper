@@ -113,6 +113,7 @@ class MergeData:
             config_file=self.named_linkages,
             id_code_files=id_code_files,
             multi_bar_progress=multi_bar_progress,
+            for_merging=True,
         )
         data_frames = gen.run_generator(
             keep_extra_columns=debug,
@@ -389,9 +390,15 @@ class MergeData:
                     for idx, val in enumerate(df[slot_name]):
                         if val is None or val == "":
                             continue
-                        target_idx = target_df[
+                        target_matches: pd.DataFrame = target_df[
                             target_df[target_slot_name] == val
-                        ].index[0]
+                        ]
+                        if target_matches.empty:
+                            logger.warning(
+                                f"The foreign key with value '{val}' at '{class_name}.{slot_name}:{idx}' does not have a primary key at '{target_class_name}.{target_slot_name}'"
+                            )
+                            continue
+                        target_idx = target_matches.index[0]
                         match_value = f"set{dataset_idx}_{idx}"
                         target_value = target_df.loc[target_idx, linkage_slot_name]
                         if target_value:
