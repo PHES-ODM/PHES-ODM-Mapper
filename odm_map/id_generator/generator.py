@@ -1309,9 +1309,13 @@ class IDGenerator(object):
                 if the source file and row could not be retrieved.
         """
         data = self.data[class_name]
+        source_file = data.get_data_value(TrackingSlots.SOURCE_FILE, row_index)
+        source_row = data.get_data_value(TrackingSlots.SOURCE_ROW, row_index)
+        if isinstance(source_row, str) and "_" not in source_row:
+            source_row = int(source_row)
         return (
-            data.get_data_value(TrackingSlots.SOURCE_FILE, row_index),
-            data.get_data_value(TrackingSlots.SOURCE_ROW, row_index),
+            source_file,
+            source_row,
         )
 
     def get_current_source_file_and_row(self) -> Tuple[Optional[str], Optional[int]]:
