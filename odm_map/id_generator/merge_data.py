@@ -127,7 +127,7 @@ class MergeData:
         return data_frames
 
     def generate_assets(self):
-        """Generate all assets (in memory) as preprocess all input datasets. This is to prepare
+        """Generate all assets (in memory) and preprocess all input datasets. This is to prepare
         for the actual merging.
         """
         self.make_pk_id_code()
