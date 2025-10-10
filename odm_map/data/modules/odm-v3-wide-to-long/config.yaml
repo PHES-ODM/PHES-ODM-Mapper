@@ -1,0 +1,49 @@
+title: ODM v3 Wide to Long
+
+source_schema: schemas/odm_v3_wide.yaml
+
+steps:
+  - action: prepare_wide_to_long
+    params:
+      config: "{shared}/wide_to_long/wide_to_long_odm_v3.yaml"
+      target_schema: "{shared}/schemas/odm_v3.yaml"
+      output_dir: "{temp}/wide_to_long/"
+  - action: map
+    params:
+      source_schema: "{temp}/wide_to_long/schema/schema.yaml"
+      target_schema: "{shared}/schemas/odm_v3.yaml"
+      mappers_dir: "{temp}/wide_to_long/"
+  - action: clean
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      operations:
+        - correct_enums: True
+  - action: save
+    if: "{debug_mode}"
+    params:
+      output_dir: "{temp}/mapped_data/"
+      output_name: "{class_name}[preid].csv"
+  - action: filter
+    params:
+      filters: filters/odm_wide_to_long_filters_before_id.csv
+  - action: generate_ids
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      id_code:
+        - "{shared}/ids/general_v2_id_code.xlsx"
+      id_config:
+        - "{shared}/ids/general_v2_id_code.yaml"
+  - action: filter
+    params:
+      filters: "{shared}/filters/odm_vx_filter_required_values.csv"
+      mark_instead_of_drop: "{debug_mode}"
+  - action: drop_columns
+    if: "{not_debug_mode}"
+    params:
+      keep_columns_in_schema_only: True
+      schema: "{shared}/schemas/odm_v3.yaml"
+  - action: save
+    params:
+      output_dir: "{output_dir}"
+      output_name: "{class_name}.csv"
+      progress_bar_title: Saving Data
