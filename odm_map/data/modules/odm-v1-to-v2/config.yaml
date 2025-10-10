@@ -12,7 +12,7 @@ steps:
   - action: save
     if: "{debug_mode}"
     params:
-      output_dir: "{temp_dir}/cleaned_data/"
+      output_dir: "{temp}/cleaned_data/"
       output_name: "{class_name}[cleaned].csv"
       progress_bar_title: Saving Cleaned Data
   - action: map
@@ -23,7 +23,7 @@ steps:
   - action: save
     if: "{debug_mode}"
     params:
-      output_dir: "{temp_dir}/mapped_data/"
+      output_dir: "{temp}/mapped_data/"
       output_name: "{class_name}[preid].csv"
   - action: generate_ids
     params:
