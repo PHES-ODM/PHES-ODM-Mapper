@@ -1,5 +1,6 @@
 from typing import List, Annotated
 import typer
+from pathlib import Path
 
 from odm_map.mapper.map_data import DataMapper
 from odm_map.utils.cli_utils import get_input_data_files
@@ -55,16 +56,16 @@ extra information, and are columns that do not exist in the target database."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
-    output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
+    inputs: Annotated[List[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    output_dir: Annotated[Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     source_schema: Annotated[
-        str, typer.Option(show_default=False, help=SOURCE_SCHEMA_HELP)
+        Path, typer.Option(show_default=False, help=SOURCE_SCHEMA_HELP)
     ],
     target_schema: Annotated[
-        str, typer.Option(show_default=False, help=TARGET_SCHEMA_HELP)
+        Path, typer.Option(show_default=False, help=TARGET_SCHEMA_HELP)
     ],
     mappers_dir: Annotated[
-        str, typer.Option(show_default=False, help=MAPPERS_DIR_HELP)
+        Path, typer.Option(show_default=False, help=MAPPERS_DIR_HELP)
     ],
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
     max_processes: Annotated[int, typer.Option(help=MAX_PROCESSES_HELP)] = 1,
