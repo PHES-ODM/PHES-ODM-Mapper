@@ -16,6 +16,9 @@ from odm_map.utils.clean_exit_error import CleanExitError
 
 EMPTY_PERMISSIBLE_VALUE = "<empty>"
 
+# Name of the tree root Container class that contains all the tables in a LinkML schema
+TREE_ROOT_CLASS_NAME = "Container"
+
 RECOGNIZED_EXTENSIONS = [".tsv", ".txt", ".csv", ".yaml", ".yml"]
 
 # For Excel files, instead of specifying a path to the file, we create a dictionary where EXCEL_FILE_KEY corresponds
@@ -62,6 +65,8 @@ def save_data_frame(
     ext = os.path.splitext(output_file)[1]
     if ext in [".tsv", ".txt", ".csv"]:
         df.to_csv(output_file, sep="\t" if ext in [".tsv", ".txt"] else ",", **kwargs)
+    elif ext in [".xlsx"]:
+        df.to_excel(output_file, **kwargs)
     elif ext in [".yaml", ".yml"]:
         with open(output_file, "w") as f:
             data = {c: list(df[c]) for c in df.columns}
