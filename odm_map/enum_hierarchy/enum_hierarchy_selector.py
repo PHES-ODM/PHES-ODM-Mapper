@@ -26,6 +26,7 @@ from datetime import datetime
 from linkml_runtime import SchemaView
 from linkml_runtime.linkml_model import SlotDefinition
 
+from odm_map.utils.schema_utils import get_ranges_of_slot_defn
 from odm_map.utils.logger import get_logger
 from odm_map.utils.general_utils import (
     load_data_frames_for_classes,
@@ -113,7 +114,7 @@ class EnumHierarchySelector:
                         continue
 
                     # Get the range of the slot
-                    ranges = self.get_enum_ranges(slot_defn)
+                    ranges = get_ranges_of_slot_defn(slot_defn)
 
                     for rng in ranges:
                         if rng in self.schema.all_enums():
@@ -158,27 +159,6 @@ class EnumHierarchySelector:
 
         return data_frames
 
-    def get_enum_ranges(self, slot_defn: SlotDefinition) -> List[str]:
-        """Get a list of all ranges of the slot that are enumerations.
-
-        Args:
-            slot_defn (SlotDefinition): The slot definition to get the enumeration ranges
-                for.
-
-        Returns:
-            List[str]: A list of all ranges for the slot that are enumerations. If there
-                are no enumeration ranges then [] is returned.
-        """
-        ranges = yaml.safe_load(slot_defn.range)
-        if not isinstance(ranges, list):
-            ranges = [ranges]
-
-        # Get all ranges that are enumerations
-        all_enums = self.schema.all_enums()
-        ranges = [rng for rng in ranges if rng in all_enums]
-
-        return ranges
-
     def select_from_df(
         self, df: pd.DataFrame, class_name: str, slot_defn: SlotDefinition
     ):
@@ -190,7 +170,7 @@ class EnumHierarchySelector:
             class_name (str): The class name that the DataFrame belongs to.
             slot_defn (SlotDefinition): The slot definition for the slot to select from.
         """
-        ranges = self.get_enum_ranges(slot_defn)
+        ranges = get_ranges_of_slot_defn(slot_defn)
         for row_idx, row in df.iterrows():
             # Get the values for the current row in the slot (orig_vals), we will replace them with new_vals
             orig_vals = make_multivalued(row[slot_defn.name])
