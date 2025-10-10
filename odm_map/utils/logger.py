@@ -106,7 +106,13 @@ def get_logger(name: str, level: Optional[str] = logging.INFO) -> logging.Logger
     return logger
 
 
-def make_logger_bullet_list(items: List, bullet: str = "- ", indent: int = 4) -> str:
+def make_logger_bullet_list(
+    items: List,
+    bullet: str = "- ",
+    end: str = "\n",
+    last_end: str = "",
+    indent: int = 4,
+) -> str:
     """Make a bullet list string consisting of the specified items.
 
     Args:
@@ -116,6 +122,9 @@ def make_logger_bullet_list(items: List, bullet: str = "- ", indent: int = 4) ->
             each item in the output string. Can be set to "" if no bullet is desired.
             The string interpolation parameter {idx} can be used to specify the 1-based
             index of the item. Defaults to "- ".
+        end (str, optional): The string to put at the end of each item. Defaults to "\\n".
+        last_end (str, optional): The string to put at the end of the last item (instead of
+            end). Defaults to "".
         indent (int, optional): Number of blank characters to indent each item. The indent
             string will appear at the start of a line, immediately before the bullet.
             Can be set to 0 if no indent is desired. Defaults to 4.
@@ -123,8 +132,9 @@ def make_logger_bullet_list(items: List, bullet: str = "- ", indent: int = 4) ->
     Returns:
         str: A string of the bullet list.
     """
+    num_items = len(items)
     items = [
-        f"{' ' * indent}{bullet.format(idx=idx + 1)}{item}"
+        f"{' ' * indent}{bullet.format(idx=idx + 1)}{item}{end if idx < num_items - 1 else last_end}"
         for idx, item in enumerate(items)
     ]
-    return "\n".join(items)
+    return "".join(items)
