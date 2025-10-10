@@ -1,4 +1,3 @@
-# %%
 """
 Handles multiple progress bars.
 
@@ -355,67 +354,3 @@ class ProgressCounter(BaseCounter):
 
     def get_count(self, barid: str) -> int:
         return self.progress_bars[barid].count
-
-
-if __name__ == "__main__":
-    # Create a test progress bar
-    import time
-
-    bar_totals = {
-        "measures": 500,
-        "instruments": 200,
-        "organizations": 500,
-        "polygons": 100,
-        "protocolSteps": 250,
-        "protocols": 1000,
-        "qualityReports": 800,
-        "samples": 500,
-        "sites": 250,
-    }
-    for key in bar_totals.keys():
-        bar_totals[key] *= 100
-
-    logging.basicConfig(
-        handlers=[logging.StreamHandler(sys.stdout)],
-        format="%(levelname)s %(asctime)s %(filename)s:%(lineno)d: %(message)s",
-        level=logging.INFO,
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
-    is_ipython = "get_ipython" in globals()
-    loggerA = logging.getLogger(__name__)
-    progress = ProgressCounter(
-        bar_totals, multiple_bars=not is_ipython, hide_all=is_ipython
-    )
-    loggerB = logging.getLogger(__name__)
-    with progress:
-        # import random
-        # bar_counts = { barid: 0 for barid in bar_totals.keys() }
-        # i = -1
-        # while True:
-        #     i += 1
-        #     barids = [k for k, v in bar_counts.items() if v < bar_totals[k]]
-        #     if len(barids) == 0:
-        #         break
-        #     barid = random.choice(barids)
-        #     inc = 1
-        #     bar_counts[barid] += inc
-        #     progress.update(barid, inc)
-        #     if i % 1000 == 0:
-        #         print("Progress:", progress.get_progress_report())
-        #     time.sleep(0.0005)
-
-        import random
-
-        for current_bar, current_total in bar_totals.items():
-            progress.show_bar(
-                current_bar
-            )  # Only has an effect if multiple_bars is False
-            for i in range(current_total):
-                if random.randint(0, 1000) == 1:
-                    # print("Progress:", progress.get_progress_report())
-                    # print("Progress", "with", "test")
-                    print("Progress", progress.get_count(TOTAL_BARID))
-                progress.update(current_bar, 1)
-                time.sleep(0.00001)
-    print(f"Final Progress: {progress.get_progress_report()}")
