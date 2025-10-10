@@ -52,7 +52,7 @@ steps:
   - action: save
     if: "{debug_mode}"
     params:
-      output_dir: "{temp_dir}/cleaned_data/"
+      output_dir: "{temp}/cleaned_data/"
       output_name: "{class_name}[cleaned].csv"
       progress_bar_title: Saving Cleaned Data
   - action: select_enum_hierarchy
@@ -73,7 +73,7 @@ steps:
   - action: save
     if: "{debug_mode}"
     params:
-      output_dir: "{temp_dir}/mapped_data/"
+      output_dir: "{temp}/mapped_data/"
       output_name: "{class_name}[preid].csv"
   - action: generate_ids
     params:
@@ -114,18 +114,27 @@ Below is an example step that performs the `save` action:
 - action: save
   if: "{debug_mode}"
   params:
-    output_dir: "{temp_dir}/mapped_data/"
+    output_dir: "{temp}/mapped_data/"
     output_name: "{class_name}[preid].csv"
 ```
 
 In some of the values above, string interpolation variables can be specified,
-such as `{debug_mode}`, `{not_debug_mode}`, `{temp_dir}`, and `{class_name}`.
+such as `{debug_mode}`, `{not_debug_mode}`, `{temp}`, and `{class_name}`.
 Which variables are available in the `params` field depends on the action. The
 `debug_mode` variable is `True` if debug mode is enabled (which can be
 specified from the command-line) and is `False` during a normal run where debug
 mode is not enabled, whereas `no_debug_mode` is the opposite. The actions,
 required `params` values, and the available variables from string interpolation
 are listed in the following sections.
+
+For paths in the configuration, both `{shared}` and `{temp}` can be used, but
+they must both be at the start of the path. For example,
+`"{temp}/mapped_data/"` is valid, but `"data/{temp}/mapped_data/"` and
+`"/{temp}/mapped_data/"` are both invalid. `{temp}` points to a temporary
+directory (whose contents might be deleted once the pipeline is complete,
+unless the temporary directory is explicitly set using the Pipeline's CLI
+`--temp-dir` option), and `{shared}` points to the directory for the shared
+data module.
 
 ### Action: clean
 
@@ -468,6 +477,38 @@ Along with the `generate_ids` action, this is the most time-consuming action,
 and can take half a day or more to complete for exceptionally large datasets.
 Smaller datasets can be processed within a matter of minutes.
 
+### Action: prepare_wide_to_long
+
+Example:
+
+```yaml
+- action: prepare_wide_to_long
+  params:
+    config: "{shared}/wide_to_long/wide_to_long_odm_v3.yaml"
+    target_schema: "{shared}/schemas/odm_v3.yaml"
+    output_dir: "{temp}/wide_to_long/"
+- action: map
+  params:
+    source_schema: "{temp}/wide_to_long/schema/schema.yaml"
+    target_schema: "{shared}/schemas/odm_v3.yaml"
+    mappers_dir: "{temp}/wide_to_long/"
+```
+
+The `prepare_wide_to_long` action is used to prepare data that is in wide
+format (eg. ODM v3 wide) to be mapped to long format. It will modify the wide
+data to be in a universal wide format that is more easily used for mapping to
+long format. It will also save generated LinkML-Map schemas to perform the
+actual wide-to-long mapping (which can be used for a downstream `map` action)
+and will save a generated LinkML schema representing the prepared data returned
+by this action (that can also be used for a downstream `map` action).
+
+The example above shows how to use `prepare_wide_to_long` in combination with
+`map`. Using `output_dir` in the `prepare_wide_to_long` action, the resulting
+mappers are saved in `output_dir` while the resulting LinkML schema for the
+prepared data is saved to `{output_dir}/schema/schema.yaml`. These can be used
+as the `mappers_dir` and `source_schema` parameters (respectively) for the
+downstream `map` action.
+
 ### Action: filter
 
 Example:
@@ -507,13 +548,13 @@ Example:
 
 | Parameter          | Required/Optional | Description |
 | :----------------- | :---------------- | :---------- |
-| output_dir         | Required          | The directory to save the output to. Can include the `{output_dir}` (output directory, usually specified on the command-line), `{temp_dir}` (temporary directory, either specified on the command line or optionally within the system's temporary directory), and `{debug_mode}` plus `{not_debug_mode}` string interpolation values. |
+| output_dir         | Required          | The directory to save the output to. Can include the `{output_dir}` (output directory, usually specified on the command-line), `{temp}` (temporary directory, either specified on the command line or optionally within the system's temporary directory), and `{debug_mode}` plus `{not_debug_mode}` string interpolation values. |
 | output_name        | Required          | The name to give each file that is saved within the output directory. These names can include all the string interpolation variables for `output_dir`, plus the additional value `{class_name}`, which is the class or table name that the data represents. |
 | progress_bar_title | Optional          | The title to give the progress bar when saving the data to disk. If empty then no progress bar is shown. |
 
 Save all DataFrames to disk, in the directory specified by `output_dir` using
 the file names specified with `output_name`. `output_dir` can include the
-`{temp_dir}`, `{output_dir}`, `{debug_mode}`, and `{not_debug_mode}` string interpolation
+`{temp}`, `{output_dir}`, `{debug_mode}`, and `{not_debug_mode}` string interpolation
 variables. `output_name` can include these variables plus the `{class_name}`
 variable, which indicates the class or table name that the DataFrame
 represents.
