@@ -1,3 +1,4 @@
+# %%
 """
 All members of class FunctionBindings are accessible from ID code files (in Python code) via the namespace "fn".
 
@@ -6,7 +7,7 @@ For example:
     fn.datetimetz(["2024-09-13", "12:15:15 pm", "UTC-04:00"])
 """
 
-from typing import Any, List, Union, Dict
+from typing import Any, List, Union, Dict, Optional
 import datetime
 import dateutil.parser
 import pytz
@@ -39,7 +40,7 @@ DATE_TIME_TIMEZONE_FORMATS = [
         # "%I:%M %p",
     ],
     # Timezone formats
-    ["UTC%z", "%z", "pytz", "customtz"],
+    ["dateutil_tz", "%z", "pytz", "customtz"],
 ]
 
 # Output format for date, time, and time-zone for fn.datetimetz (as passed to datetime.strftime)
@@ -130,14 +131,44 @@ class FunctionBindings:
         if isinstance(val, str):
             orig_val = val
             val = val.upper()
+
+            keep_part_prefix = ["UTC-", "UTC+", "Z-", "Z+"]
+            for cur_part_prefix in keep_part_prefix:
+                if cur_part_prefix in val:
+                    val = cur_part_prefix + val.rsplit(cur_part_prefix, maxsplit=1)[-1]
+                    break
+
+            negate = False
             if val.startswith("UTC-") or val.startswith("UTC+"):
+                # If UTC is specified, then in ISO format the timezone is the negative of the UTC offset
+                negate = True
                 delta = val.split("UTC")[1]
             else:
                 delta = None
+
+            if delta:
+                # Parse the delta so it's in the format "+HHMM", "-HHMM", or "HHMM"
+                if delta.count(":") <= 1:
+                    sign = delta[0] if delta[0] in ["-", "+"] else ""
+                    delta_no_sign = delta[1 if sign else 0 :]
+                    parts = delta_no_sign.split(":")
+                    new_delta = ""
+                    for idx, part in enumerate(parts):
+                        if part.isdigit():
+                            part_num = int(part)
+                            if (idx == 0 and part_num <= 13) or (
+                                idx == 1 and part_num <= 59
+                            ):
+                                new_delta = f"{new_delta}{part_num:02d}"
+                    if new_delta:
+                        delta = f"{sign}{new_delta}"
+
             # delta is the value after the UTC part (eg. 4 for "UTC+4")
             if delta and "_" not in delta:
                 # Convert to integer, retrieve the sign and make delta positive
                 delta = int(delta)
+                if negate:
+                    delta = -delta
                 if delta < 0:
                     delta = -delta
                     sign = "-"
@@ -153,13 +184,23 @@ class FunctionBindings:
 
         raise ValueError(f"Cannot parse value as timezone: {orig_val}")
 
-    def datetimetz(self, d: List[str]) -> str:
+    def datetimetz(
+        self, d: Union[str, List[str]], split_at: Optional[str] = None
+    ) -> str:
         """Convert the input date, time, and timezone strings into a single string in the format
-        YYYY-mm-ddTHH:MM:SS+/-hhmm (eg. 2024-09-16T10:10:00-0700)
+        YYYY-mm-ddTHH:MM:SS+/-hhmm (eg. 2024-09-16T10:10:00-0700). This function can either
+        accept an array of strings, up to size 3, in the format [date, time, timezone], [date, time],
+        or just [date], or a single string that contains the date, time, and/or timezone.
 
         Args:
-            d (List[str]): List of strings, consisting of the date, time, and timezone. Multiple
-                formats are supported for each component. See DATE_TIME_TIMEZONE_FORMATS.
+            d (Union[str, List[str]]): If a string, then we try to parse the date, time, and timezone from
+                the single string by using the list of strings [d, d, d]. If split_at is specified, then we
+                first split the string by split_at and use the resulting array as the input.
+                If a list of strings, then the list should contain up to 3 items. The items are the date, time,
+                and timezone. Multiple formats are supported for each component. See DATE_TIME_TIMEZONE_FORMATS.
+            split_at (Optional[str]): If specified and d is a string, then we split d at split_at and use
+                the resulting array as input. If split_at is None and d is a string, then we use [d, d, d]
+                as the input. If d is already an array, then split_at is ignored.
 
         Returns:
             str: The date, time, and timezone combined into a single string. If the timezone
@@ -169,6 +210,12 @@ class FunctionBindings:
                 empty, then the date is ommitted in the output string (eg. 10:10:00-0700 or 10:10:00).
                 Any input date component that cannot be parsed will be treated as empty.
         """
+        if isinstance(d, str):
+            if split_at is None or split_at not in d:
+                d = [d, d, d]
+            else:
+                d = d.split(split_at)
+
         if len(d) > 3:
             logger.warning(
                 f"datetimetz expects at most 3 items as input, {len(d)} were found: {d}"
@@ -218,6 +265,9 @@ class FunctionBindings:
                     elif fmt == "dateutil_time":
                         date_obj = dateutil.parser.parse(val)
                         date_obj = date_obj.time()
+                    elif fmt == "dateutil_tz":
+                        date_obj = dateutil.parser.parse(val)
+                        date_obj = date_obj.tzinfo
                     else:
                         date_obj = datetime.datetime.strptime(val, fmt)
                     objects[idx] = date_obj
@@ -225,9 +275,12 @@ class FunctionBindings:
                 except Exception:
                     pass
             if objects[idx] is None:
-                source_file, source_row = (
-                    self.generator.get_current_source_file_and_row()
-                )
+                if self.generator is None:
+                    source_file, source_row = None, -1
+                else:
+                    source_file, source_row = (
+                        self.generator.get_current_source_file_and_row()
+                    )
                 logger.warning(
                     f"Could not parse {cur_format_name}: {val} (from row {source_row + 1} of file {source_file})"
                 )
@@ -274,17 +327,20 @@ class FunctionBindings:
         if dt is not None and time_obj is not None and time_zone_obj is not None:
             # Timezone is available, so add it to the dt object. time_zone_obj is either a datetime object
             # (created from datetime.strptime) or a BaseTzInfo object (created by pytz.timezone)
-            dt = dt.replace(
-                tzinfo=time_zone_obj
-                if isinstance(time_zone_obj, pytz.tzinfo.BaseTzInfo)
-                else time_zone_obj.tzinfo
-            )
+            if isinstance(time_zone_obj, pytz.tzinfo.BaseTzInfo):
+                use_tz = time_zone_obj
+            elif hasattr(time_zone_obj, "tzinfo"):
+                use_tz = time_zone_obj.tzinfo
+            else:
+                use_tz = time_zone_obj
+            dt = dt.replace(tzinfo=use_tz)
         if dt is None:
             logger.warning(f"No datetime object created from input: {d}")
             return ""
 
         # v = dt.isoformat()
         v = dt.strftime(output_format)
+
         return v
 
     def countrows(
