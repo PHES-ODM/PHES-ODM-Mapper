@@ -33,6 +33,10 @@ SHARED_MODULE = "_shared"
 # eg. "{shared}/ids/general_v2_id_code.xlsx" in config.yaml will point to "ids/general_v2_id_code.xlsx"
 # in the shared module.
 SHARED_DIR_TAG = "{shared}"
+# Temporary directory tag in all file paths of a module config file.
+# eg. "{temp}/mappers/schema/schema.yaml" in config.yaml will point to "mappers/schema/schema.yaml"
+# in the temporary directory
+TEMP_DIR_TAG = "{temp}"
 
 # Also available below: ModulesEnum for all available installed modules (based on get_all_modules(include_titles=False))
 
@@ -218,6 +222,9 @@ class PipelineModule(object):
         """
         return self.get_module_path(CONFIG_FILE)
 
+    def set_temp_dir(self, temp_dir: Union[str, Path]):
+        self.temp_dir = Path(temp_dir)
+
     def get_module_path(self, relative_path: Union[str, List[str]]) -> Optional[Path]:
         """Get the full path of a relative path within a module. This can be used to
         retrieve the path of files within the module.
@@ -239,5 +246,9 @@ class PipelineModule(object):
             shared_dir = (MODULE_DIR / SHARED_MODULE).resolve()
             relative_path = relative_path[len(SHARED_DIR_TAG) + 1 :]
             return shared_dir / relative_path
+
+        if relative_path.startswith(TEMP_DIR_TAG):
+            relative_path = relative_path[len(TEMP_DIR_TAG) + 1 :]
+            return self.temp_dir / relative_path
 
         return self.module_dir / relative_path
