@@ -1,0 +1,17 @@
+name: ODMv3_wide_empty
+description: Data model for the Public Health Environmental Surveillance Open Data
+  Model, version 3, universal wide format with no definitions.
+id: https://onto.phes-odm.org/odm/v3
+imports:
+- linkml:types
+prefixes:
+  odmv3_wide: https://onto.phes-odm.org/odm/v3/wide/empty/
+  linkml: https://w3id.org/linkml/
+default_prefix: odmv3_wide_empty
+default_range: string
+enums:
+classes:
+  odm_wide:
+    description: ODM wide table.
+    title: ODM wide table
+    from_schema: https://onto.phes-odm.org/odm/v3/wide/empty/
