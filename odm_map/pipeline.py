@@ -33,12 +33,14 @@ from odm_map.actions.action_generate_ids import action_generate_ids
 from odm_map.actions.action_filter_data import action_filter_data
 from odm_map.actions.action_expand_data import action_expand_data
 from odm_map.actions.action_select_enum_hierarchy import action_select_enum_hierarchy
+from odm_map.actions.action_prepare_wide_to_long import action_prepare_wide_to_long
 from odm_map.utils.pipeline_module import (
     PipelineModule,
     MODULE_STEPS_KEY,
     MODULE_IF_KEY,
     MODULE_ACTION_KEY,
     MODULE_PARAMS_KEY,
+    TEMP_DIR_TAG,
 )
 from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
@@ -153,6 +155,7 @@ class Pipeline(object):
         else:
             self.temp_dir_obj = None
             self.temp_dir = Path(temp_dir)
+        self.module.set_temp_dir(self.temp_dir)
         logger.debug(f"Using temporary directory {self.temp_dir}")
 
         # Load all data
@@ -167,7 +170,7 @@ class Pipeline(object):
         # Values used for string interpolation (eg. for output paths). Some actions will
         # add additional values to this.
         self.top_level_kwargs = {
-            "temp_dir": str(self.temp_dir),
+            TEMP_DIR_TAG.strip("{}"): str(self.temp_dir),
             "output_dir": str(Path(output_dir)),
             "debug_mode": debug_mode,
             "not_debug_mode": not debug_mode,
@@ -324,6 +327,16 @@ class Pipeline(object):
                 config = self.module.get_module_path(params.get("config"))
                 data_frames = action_select_enum_hierarchy(
                     data_frames=data_frames, schema=schema, config=config
+                )
+            elif action == "prepare_wide_to_long":
+                config = self.module.get_module_path(params.get("config"))
+                target_schema = self.module.get_module_path(params.get("target_schema"))
+                output_dir = self.get_formatted_string_key(params, "output_dir")
+                data_frames = action_prepare_wide_to_long(
+                    data_frames=data_frames,
+                    config=config,
+                    target_schema=target_schema,
+                    output_dir=output_dir,
                 )
             else:
                 raise CleanExitError(
