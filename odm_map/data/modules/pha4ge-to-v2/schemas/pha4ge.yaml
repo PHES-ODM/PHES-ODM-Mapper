@@ -322,9 +322,9 @@ classes:
           2" provided in the picklist.
         examples:
         - value: Severe acute respiratory syndrome coronavirus 2
-        range:
-        - OrganismMenu
-        - NullValueMenu
+        any_of:
+        - range: OrganismMenu
+        - range: NullValueMenu
         required: true
       purpose_of_sampling:
         rank: 29
@@ -818,9 +818,9 @@ classes:
         comments: Select a gene name value from the pick list provided.
         examples:
         - value: E gene (orf4)
-        range:
-        - GeneSymbolMenu
-        - NullValueMenu
+        any_of:
+        - range: GeneSymbolMenu
+        - range: NullValueMenu
       diagnostic_target_presence_1:
         rank: 192
         slot_group: Pathogen diagnostic testing
@@ -845,9 +845,9 @@ classes:
         comments: Select a gene name value from the pick list provided.
         examples:
         - value: E gene (orf4)
-        range:
-        - GeneSymbolMenu
-        - NullValueMenu
+        any_of:
+        - range: GeneSymbolMenu
+        - range: NullValueMenu
       diagnostic_target_presence_2:
         rank: 199
         slot_group: Pathogen diagnostic testing
@@ -872,9 +872,9 @@ classes:
         comments: Select a gene name value from the pick list provided.
         examples:
         - value: E gene (orf4)
-        range:
-        - GeneSymbolMenu
-        - NullValueMenu
+        any_of:
+        - range: GeneSymbolMenu
+        - range: NullValueMenu
       diagnostic_target_presence_3:
         rank: 206
         slot_group: Pathogen diagnostic testing
@@ -1128,9 +1128,9 @@ slots:
     comments: The name of the agency should be written out in full, (with minor exceptions)
       and be consistent across multiple submissions.
     slot_uri: GENEPIO:0001153
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     required: true
     examples:
     - value: Public Health Agency of Canada
@@ -1168,9 +1168,9 @@ slots:
     description: The country of origin of the sample.
     comments: If known, select a value from the pick list.
     slot_uri: GENEPIO:0001181
-    range:
-    - GeoLocNameCountryMenu
-    - NullValueMenu
+    any_of:
+    - range: GeoLocNameCountryMenu
+    - range: NullValueMenu
     required: true
     examples:
     - value: Canada
@@ -1181,9 +1181,9 @@ slots:
     comments: 'Provide the state/province/territory name from the GAZ geography ontology.
       Search for geography terms here: https://www.ebi.ac.uk/ols/ontologies/ga'
     slot_uri: GENEPIO:0001185
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     required: true
     examples:
     - value: Western Cape
@@ -1251,9 +1251,9 @@ slots:
     comments: Select a value from the picklist to describe whether or not a watershed
       shapefile would be available upon request.
     slot_uri: GENEPIO:0100919
-    range:
-    - WatershedShapefileAvailabilityMenu
-    - NullValueMenu
+    any_of:
+    - range: WatershedShapefileAvailabilityMenu
+    - range: NullValueMenu
     examples:
     - value: watershed shapefile available
   watershed_shapefile_filename:
@@ -1286,9 +1286,9 @@ slots:
       why it was selected for sequencing, which should be indicated in the "purpose
       of sequencing" field.
     slot_uri: GENEPIO:0001198
-    range:
-    - PurposeOfSamplingMenu
-    - NullValueMenu
+    any_of:
+    - range: PurposeOfSamplingMenu
+    - range: NullValueMenu
     multivalued: true
     required: true
     examples:
@@ -1302,9 +1302,9 @@ slots:
     comments: Provide the scale of wastewater sampling by selecting a value from the
       picklist.
     slot_uri: GENEPIO:0100877
-    range:
-    - ScaleOfSamplingMenu
-    - NullValueMenu
+    any_of:
+    - range: ScaleOfSamplingMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: Community-level surveillance
@@ -1316,9 +1316,9 @@ slots:
     description: The date on which the sample was received.
     comments: Provide the sample received date in ISO 8601 format, i.e. "YYYY-MM-DD".
     slot_uri: GENEPIO:0001179
-    range:
-    - date
-    - NullValueMenu
+    any_of:
+    - range: date
+    - range: NullValueMenu
     todos:
     - <={today}
     examples:
@@ -1333,9 +1333,9 @@ slots:
       types of analyses. Required granularity includes year, month and day. The date
       should be provided in ISO 8601 standard format "YYYY-MM-DD".
     slot_uri: GENEPIO:0001174
-    range:
-    - date
-    - NullValueMenu
+    any_of:
+    - range: date
+    - range: NullValueMenu
     todos:
     - <={today}
     required: true
@@ -1348,9 +1348,9 @@ slots:
     comments: Provide the date that sample collection ended in ISO 8601 format i.e.
       YYYY-MM-DD
     slot_uri: GENEPIO:0101071
-    range:
-    - date
-    - NullValueMenu
+    any_of:
+    - range: date
+    - range: NullValueMenu
     todos:
     - '>={sample_collection_start_date}'
     - <={today}
@@ -1365,9 +1365,9 @@ slots:
       The sample may be collected and processed (e.g. filtered, extraction) on the
       same day, or on different dates.
     slot_uri: GENEPIO:0100763
-    range:
-    - date
-    - NullValueMenu
+    any_of:
+    - range: date
+    - range: NullValueMenu
     todos:
     - <={today}
     examples:
@@ -1378,9 +1378,9 @@ slots:
     description: The time at which sample collection began.
     comments: Provide this time in ISO 8601 24hr format, in your local time.
     slot_uri: GENEPIO:0101072
-    range:
-    - time
-    - NullValueMenu
+    any_of:
+    - range: time
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: 17:15 PST
@@ -1390,9 +1390,9 @@ slots:
     description: The time at which sample collection ended.
     comments: Provide this time in ISO 8601 24hr format, in your local time.
     slot_uri: GENEPIO:0101073
-    range:
-    - time
-    - NullValueMenu
+    any_of:
+    - range: time
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: 19:15 PST
@@ -1404,9 +1404,9 @@ slots:
       matters especially for grab samples, as fecal concentration in wastewater fluctuates
       over the course of the day.
     slot_uri: GENEPIO:0100765
-    range:
-    - SampleCollectionTimeOfDayMenu
-    - NullValueMenu
+    any_of:
+    - range: SampleCollectionTimeOfDayMenu
+    - range: NullValueMenu
     examples:
     - value: Morning
   sample_collection_time_duration_value:
@@ -1415,9 +1415,9 @@ slots:
     description: The amount of time over which the sample was collected.
     comments: Provide the numerical value of time.
     slot_uri: GENEPIO:0100766
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: '4'
@@ -1429,9 +1429,9 @@ slots:
     description: The units of the time duration measurement of sample collection.
     comments: Provide the units from the pick list.
     slot_uri: GENEPIO:0100767
-    range:
-    - SampleCollectionDurationUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: SampleCollectionDurationUnitMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: Hour
@@ -1447,9 +1447,9 @@ slots:
       one or more values from the template pick list. If the information is unknown
       or cannot be provided, leave blank or provide a null value.
     slot_uri: GENEPIO:0100433
-    range:
-    - PresamplingActivityMenu
-    - NullValueMenu
+    any_of:
+    - range: PresamplingActivityMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: Agricultural activity
@@ -1460,9 +1460,9 @@ slots:
       collected.
     comments: Briefly describe the presampling activities using free text.
     slot_uri: GENEPIO:0100434
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     examples:
     - value: Agricultural waste from large farm contributes waste to the site sampled.
   sample_volume_measurement_value:
@@ -1482,9 +1482,9 @@ slots:
     description: The units of the volume measurement of the sample collected.
     comments: Provide the units from the pick list.
     slot_uri: GENEPIO:0100769
-    range:
-    - SampleVolumeMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: SampleVolumeMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: mL
     exact_mappings:
@@ -1529,9 +1529,9 @@ slots:
     description: The units of a measured sample storage duration.
     comments: Provide the units from the pick list.
     slot_uri: GENEPIO:0101015
-    range:
-    - SampleStorageDurationUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: SampleStorageDurationUnitMenu
+    - range: NullValueMenu
     examples:
     - value: Day
   specimen_processing:
@@ -1541,9 +1541,9 @@ slots:
       sample.
     comments: Select processes from the picklist that were applied to this sample.
     slot_uri: GENEPIO:0001253
-    range:
-    - SpecimenProcessingMenu
-    - NullValueMenu
+    any_of:
+    - range: SpecimenProcessingMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: Centrifugation
@@ -1579,9 +1579,9 @@ slots:
     comments: Provide a descriptor of the environmental site sampled. Use the picklist
       provided in the template. If not applicable, choose a null value.
     slot_uri: GENEPIO:0001232
-    range:
-    - EnvironmentalSiteMenu
-    - NullValueMenu
+    any_of:
+    - range: EnvironmentalSiteMenu
+    - range: NullValueMenu
     multivalued: true
     recommended: true
     examples:
@@ -1609,9 +1609,9 @@ slots:
     comments: Provide a descriptor of the environmental material sampled. Use the
       picklist provided in the template. If not applicable, choose a null value.
     slot_uri: GENEPIO:0001223
-    range:
-    - EnvironmentalMaterialMenu
-    - NullValueMenu
+    any_of:
+    - range: EnvironmentalMaterialMenu
+    - range: NullValueMenu
     multivalued: true
     recommended: true
     examples:
@@ -1626,9 +1626,9 @@ slots:
     comments: Provide the environmental material properties by selecting descriptors
       from the pick list.
     slot_uri: GENEPIO:0100770
-    range:
-    - EnvironmentalMaterialPropertiesMenu
-    - NullValueMenu
+    any_of:
+    - range: EnvironmentalMaterialPropertiesMenu
+    - range: NullValueMenu
     multivalued: true
     recommended: true
     examples:
@@ -1641,9 +1641,9 @@ slots:
     comments: Provide the classification of the wastewater system by selecting from
       the provided pick list.
     slot_uri: GENEPIO:0100771
-    range:
-    - WastewaterSystemTypeMenu
-    - NullValueMenu
+    any_of:
+    - range: WastewaterSystemTypeMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: Sanitary sewer
@@ -1658,9 +1658,9 @@ slots:
       or a replicate, select a role type from the picklist. If the sample was not
       a control, leave blank or select "Not Applicable".
     slot_uri: GENEPIO:0100921
-    range:
-    - ExperimentalSpecimenRoleTypeMenu
-    - NullValueMenu
+    any_of:
+    - range: ExperimentalSpecimenRoleTypeMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: Positive experimental control
@@ -1682,9 +1682,9 @@ slots:
     comments: Provide a descriptor of the device used for sampling. Use the picklist
       provided in the template. If not applicable, choose a null value.
     slot_uri: GENEPIO:0001234
-    range:
-    - CollectionDeviceMenu
-    - NullValueMenu
+    any_of:
+    - range: CollectionDeviceMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: Automatic flow-proportional sampler
@@ -1695,9 +1695,9 @@ slots:
     comments: Provide a descriptor of the collection method used for sampling. Use
       the picklist provided in the template. If not applicable, choose a null value.
     slot_uri: GENEPIO:0001241
-    range:
-    - CollectionMethodMenu
-    - NullValueMenu
+    any_of:
+    - range: CollectionMethodMenu
+    - range: NullValueMenu
     multivalued: true
     recommended: true
     examples:
@@ -1789,9 +1789,9 @@ slots:
       (e.g. the ID from your lab, if your lab did not isolate the isolate from the
       original sample), make asure to include it in the alternative_isolate_ID field.
     slot_uri: GENEPIO:0100456
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     required: true
     examples:
     - value: SA20131043
@@ -1938,9 +1938,9 @@ slots:
     comments: Where known, provide the numerical value of population size, i.e. the
       number of people.
     slot_uri: GENEPIO:0100773
-    range:
-    - integer
-    - NullValueMenu
+    any_of:
+    - range: integer
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: 10,500
@@ -1954,9 +1954,9 @@ slots:
     comments: Where catchment population is not well known, provide an estimation
       of population size by selecting a value from the picklist.
     slot_uri: GENEPIO:0100774
-    range:
-    - WaterCatchmentAreaHumanPopulationRangeMenu
-    - NullValueMenu
+    any_of:
+    - range: WaterCatchmentAreaHumanPopulationRangeMenu
+    - range: NullValueMenu
     examples:
     - value: 1,000 - 10,000 people
   water_catchment_area_human_population_measurement_method:
@@ -1990,9 +1990,9 @@ slots:
       a water catchment.
     comments: Provide the unit of the population density in the catchement area.
     slot_uri: GENEPIO:0100777
-    range:
-    - WaterCatchmentAreaHumanPopulationDensityUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: WaterCatchmentAreaHumanPopulationDensityUnitMenu
+    - range: NullValueMenu
     examples:
     - value: persons per Km^2
   populated_area_type:
@@ -2001,9 +2001,9 @@ slots:
     description: A type of area that is populated by humans to different degrees.
     comments: Provide the populated area type from the pick list.
     slot_uri: GENEPIO:0100778
-    range:
-    - PopulatedAreaTypeMenu
-    - NullValueMenu
+    any_of:
+    - range: PopulatedAreaTypeMenu
+    - range: NullValueMenu
     examples:
     - value: Urban area
   sampling_weather_conditions:
@@ -2013,9 +2013,9 @@ slots:
       dryness, sunshine, wind, rain, etc.
     comments: Provide the weather conditions at the time of sample collection.
     slot_uri: GENEPIO:0100779
-    range:
-    - SamplingWeatherConditionsMenu
-    - NullValueMenu
+    any_of:
+    - range: SamplingWeatherConditionsMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: Rain
@@ -2025,9 +2025,9 @@ slots:
     description: Weather conditions prior to collection that may affect the sample.
     comments: Provide the weather conditions prior to sample collection.
     slot_uri: GENEPIO:0100780
-    range:
-    - PresamplingWeatherConditionsMenu
-    - NullValueMenu
+    any_of:
+    - range: PresamplingWeatherConditionsMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: Drizzle
@@ -2038,9 +2038,9 @@ slots:
     comments: Provide the quantity of precipitation in the area leading up to the
       time of sample collection.
     slot_uri: GENEPIO:0100911
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: '12'
@@ -2052,9 +2052,9 @@ slots:
     comments: Provide the units of precipitation by selecting a value from the pick
       list.
     slot_uri: GENEPIO:0100912
-    range:
-    - PrecipitationMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: PrecipitationMeasurementUnitMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: inch
@@ -2083,9 +2083,9 @@ slots:
     description: The units of a measurement of the ambient temperature.
     comments: Provide the units of the measured temperature.
     slot_uri: GENEPIO:0100936
-    range:
-    - AmbientTemperatureMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: AmbientTemperatureMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: degree Celsius (C)
   ph_measurement_value:
@@ -2128,9 +2128,9 @@ slots:
     comments: Provide the units of the measured flow rate by selecting a value from
       the pick list.
     slot_uri: GENEPIO:0100906
-    range:
-    - TotalDailyFlowRateMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: TotalDailyFlowRateMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: million gallons per day (MGD)
     exact_mappings:
@@ -2161,9 +2161,9 @@ slots:
     comments: Provide the units of the measured flow rate by selecting a value from
       the pick list.
     slot_uri: GENEPIO:0100909
-    range:
-    - InstantaneousFlowRateMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: InstantaneousFlowRateMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: cubic meter per hour (m^3/h)
   instantaneous_flow_rate_measurement_method:
@@ -2193,9 +2193,9 @@ slots:
     comments: Provide the units of the measured turbidity by selecting a value from
       the pick list.
     slot_uri: GENEPIO:0100914
-    range:
-    - TurbidityMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: TurbidityMeasurementUnitMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: nephelometric turbidity unit (NTU)
@@ -2224,9 +2224,9 @@ slots:
     comments: Provide the units of the measured dissolved oxygen by selecting a value
       from the pick list.
     slot_uri: GENEPIO:0100784
-    range:
-    - DissolvedOxygenMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: DissolvedOxygenMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: part per million (ppm)
   dissolved_oxygen_measurement_method:
@@ -2256,9 +2256,9 @@ slots:
     comments: Provide the units of the measured oxygen reduction potential by selecting
       a value from the pick list.
     slot_uri: GENEPIO:0100786
-    range:
-    - OxygenReductionPotentialOrpMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: OxygenReductionPotentialOrpMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: milliVolt (mV)
   oxygen_reduction_potential_orp_measurement_method:
@@ -2287,9 +2287,9 @@ slots:
       test.
     comments: Provide the units of the COD test result.
     slot_uri: GENEPIO:0100789
-    range:
-    - ChemicalOxygenDemandCodMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: ChemicalOxygenDemandCodMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: milligram per liter (mg/L)
   chemical_oxygen_demand_cod_measurement_method:
@@ -2319,9 +2319,9 @@ slots:
     comments: Provide the units of the measured CBOD by selecting a value from the
       pick list.
     slot_uri: GENEPIO:0100792
-    range:
-    - CarbonaceousBiochemicalOxygenDemandCbodMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: CarbonaceousBiochemicalOxygenDemandCbodMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: milligram per liter (mg/L)
   carbonaceous_biochemical_oxygen_demand_cbod_measurement_method:
@@ -2352,9 +2352,9 @@ slots:
       test.
     comments: Provide the units of the measured TSS.
     slot_uri: GENEPIO:0100795
-    range:
-    - TotalSuspendedSolidsTssMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: TotalSuspendedSolidsTssMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: percent (%)
     exact_mappings:
@@ -2385,9 +2385,9 @@ slots:
       test.
     comments: Provide the units of the measured TDS.
     slot_uri: GENEPIO:0100798
-    range:
-    - TotalDissolvedSolidsTdsMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: TotalDissolvedSolidsTdsMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: percent (%)
   total_dissolved_solids_tds_measurement_method:
@@ -2414,9 +2414,9 @@ slots:
     description: The units associated with a value from a total solids (TS) test.
     comments: Provide the units of the measured TS.
     slot_uri: GENEPIO:0100801
-    range:
-    - TotalSolidsTsMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: TotalSolidsTsMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: percent (%)
   total_solids_ts_measurement_method:
@@ -2443,9 +2443,9 @@ slots:
     description: The units of a measurement of alkalinity.
     comments: Provide the units of the measured alkalinity.
     slot_uri: GENEPIO:0100879
-    range:
-    - AlkalinityMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: AlkalinityMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: milligram per liter of calcium carbonate (mg/L CaCO3)
   alkalinity_measurement_method:
@@ -2472,9 +2472,9 @@ slots:
     description: The units of a measurement of conductivity.
     comments: Provide the units of the measured conductivity.
     slot_uri: GENEPIO:0100803
-    range:
-    - ConductivityMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: ConductivityMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: "microSiemen per centimeter (\u03BCS/cm)"
   conductivity_measurement_method:
@@ -2503,9 +2503,9 @@ slots:
     description: The units of a measurement of salinity.
     comments: Provide the units of the measured salinity.
     slot_uri: GENEPIO:0100806
-    range:
-    - SalinityMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: SalinityMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: practical salinity unit (PSU)
     exact_mappings:
@@ -2534,9 +2534,9 @@ slots:
     description: The units of a measurement of total nitrogen (TN).
     comments: Provide the units of the measured TN.
     slot_uri: GENEPIO:0100809
-    range:
-    - TotalNitrogenTnMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: TotalNitrogenTnMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: milligram per liter (mg/L)
   total_nitrogen_tn_measurement_method:
@@ -2563,9 +2563,9 @@ slots:
     description: The units of a measurement of total phosphorus (TP).
     comments: Provide the units of the measured TP.
     slot_uri: GENEPIO:0100812
-    range:
-    - TotalPhosphorpusTpMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: TotalPhosphorpusTpMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: milligrams orthophosphate as phosphorus per liter (mg PO4-P/L)
   total_phosphorus_tp_measurement_method:
@@ -2585,9 +2585,9 @@ slots:
     comments: If a fecal contamination indicator was measured, select it from the
       picklist.
     slot_uri: GENEPIO:0100814
-    range:
-    - FecalContaminationIndicatorMenu
-    - NullValueMenu
+    any_of:
+    - range: FecalContaminationIndicatorMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: crAssphage
@@ -2607,9 +2607,9 @@ slots:
     description: The units of a measurement of fecal contamination.
     comments: Provide the units of the measured fecal contamination.
     slot_uri: GENEPIO:0100816
-    range:
-    - FecalContaminationUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: FecalContaminationUnitMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: cycle threshold (Ct) / quantification cycle (Cq)
@@ -2639,9 +2639,9 @@ slots:
     description: The units of a measurement of fecal coliforms.
     comments: Provide the units of the measured fecal coliforms.
     slot_uri: GENEPIO:0100819
-    range:
-    - FecalColiformCountUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: FecalColiformCountUnitMenu
+    - range: NullValueMenu
     examples:
     - value: most probable number per milliliter (MPN/mL)
   fecal_coliform_count_method:
@@ -2662,9 +2662,9 @@ slots:
     comments: If a urinary contamination indicator was measured, select it from the
       picklist.
     slot_uri: GENEPIO:0100837
-    range:
-    - UrinaryContaminationIndicatorMenu
-    - NullValueMenu
+    any_of:
+    - range: UrinaryContaminationIndicatorMenu
+    - range: NullValueMenu
     examples:
     - value: urobilin
   urinary_contamination_value:
@@ -2682,9 +2682,9 @@ slots:
     description: The units of a measurement of urinary contamination.
     comments: Provide the units of the measured urinary contamination.
     slot_uri: GENEPIO:0100839
-    range:
-    - UrinaryContaminationUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: UrinaryContaminationUnitMenu
+    - range: NullValueMenu
     examples:
     - value: nanograms per liter
   urinary_contamination_method:
@@ -2716,9 +2716,9 @@ slots:
       of collection.
     comments: Provide the units of the measured temperature.
     slot_uri: GENEPIO:0100822
-    range:
-    - SampleTemperatureUnitAtCollectionMenu
-    - NullValueMenu
+    any_of:
+    - range: SampleTemperatureUnitAtCollectionMenu
+    - range: NullValueMenu
     examples:
     - value: degree Celsius (C)
     exact_mappings:
@@ -2740,9 +2740,9 @@ slots:
       upon receipt.
     comments: Provide the units of the measured temperature.
     slot_uri: GENEPIO:0100824
-    range:
-    - SampleTemperatureUnitWhenReceivedMenu
-    - NullValueMenu
+    any_of:
+    - range: SampleTemperatureUnitWhenReceivedMenu
+    - range: NullValueMenu
     examples:
     - value: degree Celsius (C)
   purpose_of_sequencing:
@@ -2755,9 +2755,9 @@ slots:
       the purpose of sequencing from the picklist in the template. The reason for
       sample collection should be indicated in the "purpose of sampling" field.
     slot_uri: GENEPIO:0001445
-    range:
-    - PurposeOfSequencingMenu
-    - NullValueMenu
+    any_of:
+    - range: PurposeOfSequencingMenu
+    - range: NullValueMenu
     multivalued: true
     required: true
     examples:
@@ -2789,9 +2789,9 @@ slots:
       the sequencing in full (avoid abbreviations). If the information is unknown
       or cannot be provided, leave blank or provide a null value.
     slot_uri: GENEPIO:0100416
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     required: true
     examples:
     - value: Public Health Agency of Canada (PHAC) [GENEPIO:0100551]
@@ -2820,9 +2820,9 @@ slots:
       the information is unknown or cannot be provided, leave blank or provide a null
       value.
     slot_uri: GENEPIO:0100471
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     required: true
     examples:
     - value: Joe Bloggs, Enterics Lab Manager
@@ -2837,9 +2837,9 @@ slots:
       memory. If the information is unknown or cannot be provided, leave blank or
       provide a null value.
     slot_uri: GENEPIO:0100471
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     required: true
     examples:
     - value: enterics@lab.ca
@@ -2852,9 +2852,9 @@ slots:
       specimens rather than sequencing data, please put the "National Microbiology
       Laboratory (NML)".
     slot_uri: GENEPIO:0001159
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: Public Health Ontario (PHO)
@@ -2867,9 +2867,9 @@ slots:
       the sequence.
     comments: The email address can represent a specific individual or laboratory.
     slot_uri: GENEPIO:0001165
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     recommended: true
     pattern: ^\S+@\S+\.\S+$
     examples:
@@ -2908,9 +2908,9 @@ slots:
       by selecting a value from the template pick list. If the information is unknown
       or cannot be provided, leave blank or provide a null value.
     slot_uri: GENEPIO:0100473
-    range:
-    - SequencingPlatformMenu
-    - NullValueMenu
+    any_of:
+    - range: SequencingPlatformMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: Illumina [GENEPIO:0001923]
@@ -2924,9 +2924,9 @@ slots:
       template pick list. If the information is unknown or cannot be provided, leave
       blank or provide a null value.
     slot_uri: GENEPIO:0001452
-    range:
-    - SequencingInstrumentMenu
-    - NullValueMenu
+    any_of:
+    - range: SequencingInstrumentMenu
+    - range: NullValueMenu
     multivalued: true
     required: true
     examples:
@@ -2941,9 +2941,9 @@ slots:
     comments: Provide the name of the DNA or RNA sequencing technology used in your
       study. If unsure refer to the protocol documentation, or provide a null value.
     slot_uri: GENEPIO:0100997
-    range:
-    - SequencingAssayTypeMenu
-    - NullValueMenu
+    any_of:
+    - range: SequencingAssayTypeMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: whole genome sequencing assay
@@ -2992,9 +2992,9 @@ slots:
       regions of interest from a genome.
     comments: Provide the name of the enrichment method
     slot_uri: GENEPIO:0100966
-    range:
-    - GenomicTargetEnrichmentMethodMenu
-    - NullValueMenu
+    any_of:
+    - range: GenomicTargetEnrichmentMethodMenu
+    - range: NullValueMenu
     multivalued: true
     recommended: true
     examples:
@@ -3022,9 +3022,9 @@ slots:
     comments: Provide the name and version of the primer scheme used to generate the
       amplicons for sequencing.
     slot_uri: GENEPIO:0001456
-    range:
-    - AmpliconPcrPrimerSchemeMenu
-    - NullValueMenu
+    any_of:
+    - range: AmpliconPcrPrimerSchemeMenu
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: artic v3
@@ -3081,9 +3081,9 @@ slots:
       submit a new term request to the PHA4GE QC Tag GitHub issuetracker using the
       New Term Request form.
     slot_uri: GENEPIO:0100559
-    range:
-    - QualityControlDeterminationMenu
-    - NullValueMenu
+    any_of:
+    - range: QualityControlDeterminationMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: sequence failed quality control
@@ -3098,9 +3098,9 @@ slots:
       submit a new term request to the PHA4GE QC Tag GitHub issuetracker using the
       New Term Request form.
     slot_uri: GENEPIO:0100560
-    range:
-    - QualityControlIssuesMenu
-    - NullValueMenu
+    any_of:
+    - range: QualityControlIssuesMenu
+    - range: NullValueMenu
     multivalued: true
     examples:
     - value: low average genome coverage
@@ -3126,9 +3126,9 @@ slots:
     comments: Provide the software name followed by the version or a link to the github
       protocol e.g. Trimmomatic v. 0.38, Porechop v. 0.2.3
     slot_uri: GENEPIO:0001458
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: Porechop 0.2.3
@@ -3141,9 +3141,9 @@ slots:
     comments: Provide the name and version number of the software used to remove host
       reads.
     slot_uri: GENEPIO:0001459
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     recommended: true
     examples:
     - value: Nanostripper
@@ -3157,9 +3157,9 @@ slots:
       processed genome sequence file e.g. a consensus sequence FASTA file or a genome
       assembly file.
     slot_uri: GENEPIO:0101715
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     examples:
     - value: mpxvassembly.fasta
     exact_mappings:
@@ -3170,9 +3170,9 @@ slots:
     description: The filepath of the consensus sequence file.
     comments: Provide the filepath of the genome sequence FASTA file.
     slot_uri: GENEPIO:0101716
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     examples:
     - value: /User/Documents/ViralLab/Data/mpxvassembly.fasta
   sequence_assembly_software_name:
@@ -3181,9 +3181,9 @@ slots:
     description: The name of the software used to assemble a sequence.
     comments: Provide the name of the software used to assemble the sequence.
     slot_uri: GENEPIO:0100825
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     examples:
     - value: SPAdes Genome Assembler, Canu, wtdbg2, velvet
   sequence_assembly_software_version:
@@ -3192,9 +3192,9 @@ slots:
     description: The version of the software used to assemble a sequence.
     comments: Provide the version of the software used to assemble the sequence.
     slot_uri: GENEPIO:0100826
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     examples:
     - value: 3.15.5
   consensus_sequence_software_name:
@@ -3203,9 +3203,9 @@ slots:
     description: The name of the software used to generate the consensus sequence.
     comments: Provide the name of the software used to generate the consensus sequence.
     slot_uri: GENEPIO:0001463
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     examples:
     - value: iVar
   consensus_sequence_software_version:
@@ -3214,9 +3214,9 @@ slots:
     description: The version of the software used to generate the consensus sequence.
     comments: Provide the version of the software used to generate the consensus sequence.
     slot_uri: GENEPIO:0001469
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
     examples:
     - value: '1.3'
   breadth_of_coverage_value:
@@ -3591,9 +3591,9 @@ slots:
       or other genetic elements that serve as a marker for detecting the presence
       of a pathogen or other relevant entities.
     slot_uri: GENEPIO:0102052
-    range:
-    - WhitespaceMinimizedString
-    - NullValueMenu
+    any_of:
+    - range: WhitespaceMinimizedString
+    - range: NullValueMenu
   assay_target_details:
     name: assay_target_details
     title: assay target details
@@ -3614,9 +3614,9 @@ slots:
     comments: Select a value from the pick list provided, to describe whether a target
       was determined to be present or absent within a sample.
     slot_uri: GENEPIO:0100962
-    range:
-    - DiagnosticTargetPresenceMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticTargetPresenceMenu
+    - range: NullValueMenu
     examples:
     - value: diagnostic target present
     exact_mappings:
@@ -3640,9 +3640,9 @@ slots:
     comments: Select a value from the pick list provided, to describe the units of
       the given diagnostic test.
     slot_uri: GENEPIO:0100964
-    range:
-    - DiagnosticMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: cycle threshold (Ct)
     exact_mappings:
@@ -3654,9 +3654,9 @@ slots:
     comments: Select a value from the pick list provided to describe the method used
       for a given diagnostic test.
     slot_uri: GENEPIO:0100965
-    range:
-    - DiagnosticMeasurementMethodMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticMeasurementMethodMenu
+    - range: NullValueMenu
     examples:
     - value: qPCR
     exact_mappings:
@@ -3692,9 +3692,9 @@ slots:
     description: The binary value of the result from a diagnostic test.
     comments: Select a value from the pick list provided, to describe whether a target
       was determined to be present or absent within a sample.
-    range:
-    - DiagnosticTargetPresenceMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticTargetPresenceMenu
+    - range: NullValueMenu
     examples:
     - value: diagnostic target present
     exact_mappings:
@@ -3716,9 +3716,9 @@ slots:
     description: The unit of the result from a diagnostic test.
     comments: Select a value from the pick list provided, to describe the units of
       the given diagnostic test.
-    range:
-    - DiagnosticMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: cycle threshold (Ct)
     exact_mappings:
@@ -3729,9 +3729,9 @@ slots:
     description: The method by which a diagnostic result was determined.
     comments: Select a value from the pick list provided to describe the method used
       for a given diagnostic test.
-    range:
-    - DiagnosticMeasurementMethodMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticMeasurementMethodMenu
+    - range: NullValueMenu
     examples:
     - value: qPCR
   assay_target_name_3:
@@ -3763,9 +3763,9 @@ slots:
     description: The binary value of the result from a diagnostic test.
     comments: Select a value from the pick list provided, to describe whether a target
       was determined to be present or absent within a sample.
-    range:
-    - DiagnosticTargetPresenceMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticTargetPresenceMenu
+    - range: NullValueMenu
     examples:
     - value: diagnostic target present
   diagnostic_measurement_value_3:
@@ -3783,9 +3783,9 @@ slots:
     description: The unit of the result from a diagnostic test.
     comments: Select a value from the pick list provided, to describe the units of
       the given diagnostic test.
-    range:
-    - DiagnosticMeasurementUnitMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticMeasurementUnitMenu
+    - range: NullValueMenu
     examples:
     - value: cycle threshold (Ct)
   diagnostic_measurement_method_3:
@@ -3794,9 +3794,9 @@ slots:
     description: The method by which a diagnostic result was determined.
     comments: Select a value from the pick list provided to describe the method used
       for a given diagnostic test.
-    range:
-    - DiagnosticMeasurementMethodMenu
-    - NullValueMenu
+    any_of:
+    - range: DiagnosticMeasurementMethodMenu
+    - range: NullValueMenu
     examples:
     - value: qPCR
 enums:

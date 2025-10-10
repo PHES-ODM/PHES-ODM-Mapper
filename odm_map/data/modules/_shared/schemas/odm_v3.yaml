@@ -5175,6 +5175,13 @@ enums:
           facilities and can be cleaned manually or mechanically, depending on the
           design and operational requirements.
         title: Bar screen
+      ocu:
+        description: Odour Control Unit ventilation extends the life of a sewer by
+          reducing the amount of maintenance the pipeline needs, making management
+          of the network much more efficient. The filters used in the Odour Control
+          Unit and ventilation stacks absorb gases such as hydrogen sulphide, which
+          is a common source of odours from sewerage systems.
+        title: Odour Control Unit
   solidSeparationSet:
     description: set for the separation of solids.
     title: Solid separation set
@@ -9125,6 +9132,9 @@ enums:
       gcRx:
         description: Gene or variant copies per reaction in PCR
         title: Gene copies per Reaction
+      cpWell:
+        description: Gene or variant copies per well.
+        title: Gene copies per well
 slots:
   wideName:
     from_schema: https://onto.phes-odm.org/odm/v3
@@ -9969,27 +9979,27 @@ classes:
       orgType:
         description: Specifies the type or purpose of a given organization.
         title: Organization Type
-        range:
-        - orgTypeSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: orgTypeSet
+        - range: genMissingnessSet
       orgLevel:
         description: The geographic level of an organization.
         title: Organization level
         notes:
         - There are six levels based on International Standard Classification of Administrative
           Units (ISCU).
-        range:
-        - orgLevelSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: orgLevelSet
+        - range: genMissingnessSet
       orgSector:
         description: The sector of an organization
         title: Organization sector
-        range:
-        - orgSectorSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: orgSectorSet
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -10064,18 +10074,18 @@ classes:
         notes:
         - Types of quality flag vary on context; please see the qulaityFlagSet to
           be confirm.
-        range:
-        - qualityIndicators
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: qualityIndicators
+        - range: genMissingnessSet
       severity:
         description: An indicator of the severity or seriousness of a quality flag.
         title: Severity indicator
-        range:
-        - sevSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: sevSet
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -10876,18 +10886,18 @@ classes:
         title: Purpose
         notes:
         - 'See allowed categories: report, quality control, validation study, test'
-        range:
-        - purposeSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: purposeSet
+        - range: genMissingnessSet
       saMaterial:
         description: Type of sample.
         title: Sample material
-        range:
-        - sampleMatSet
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: sampleMatSet
+        - range: genMissingnessSet
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
@@ -10901,26 +10911,26 @@ classes:
       origin:
         description: An attribute of a sample specifying the origin.
         title: Sample origin
-        range:
-        - originSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: originSet
+        - range: genMissingnessSet
       repType:
         description: Attirbute of a sample, specifying whether the sample is unique,
           or a replicate. And if it is a replicate, what type of replicate is it?
         title: Replicate Type
-        range:
-        - replicateSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: replicateSet
+        - range: genMissingnessSet
       collType:
         description: The type of collection.
         title: Sample collection type
-        range:
-        - collectSet
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: collectSet
+        - range: genMissingnessSet
       collPer:
         description: Collection period. The time period over which the sample was
           collected, in hours. Alternatively, use collectionStart and collectionEnd.
@@ -11190,10 +11200,10 @@ classes:
         title: Purpose
         notes:
         - 'See allowed categories: report, quality control, validation study, test'
-        range:
-        - purposeSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: purposeSet
+        - range: genMissingnessSet
       polygonID:
         description: Unique identifier for the polygon.
         title: Polygon ID
@@ -11293,27 +11303,27 @@ classes:
         description: The attribute identifying the substance from which where a sample
           was taken. For more information, see partID = compartment.
         title: Compartment
-        range:
-        - compartments
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: compartments
+        - range: genMissingnessSet
       specimen:
         description: The substance or thing upon which the observation was made.
         title: Specimen
         notes:
         - 'Specimens include: site, sample, person and population.'
-        range:
-        - specimens
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: specimens
+        - range: genMissingnessSet
       fraction:
         description: Fraction of the sample that is analyzed.
         title: Fraction analyzed
-        range:
-        - fractionSet
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: fractionSet
+        - range: genMissingnessSet
       group:
         description: Unique identifier for a group of measures. Mostly applicable
           for measures, methods, units, and aggregations.
@@ -11323,10 +11333,10 @@ classes:
           the SARS-CoV-2 group, there are measure classes tht include RNA alleles
           (N1, N2, E, etc.), mutations, (E484K0), an entire sequence, viral proteins,
           etc. Currently groups are used for measures only.
-        range:
-        - groups
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: groups
+        - range: genMissingnessSet
       class:
         description: A unique identifier for a class, which is akin to a sub-group;
           it's a way of grouping parts within a given group. A group can have one
@@ -11336,10 +11346,10 @@ classes:
         - Currently, class is only used for biologics. For example, SARS-CoV-2 is
           a group of measures with the following classes of allele, variant, mutation,
           sequence, and protein.
-        range:
-        - classes
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: classes
+        - range: genMissingnessSet
       measure:
         description: A measurement or observation of any substance including a biological,
           physical or chemical substance.
@@ -11402,10 +11412,10 @@ classes:
         notes:
         - Currently only used for class = variant, mutation, or disease. Valid options
           are currently restricted to 'NextClade', 'Pangolin', 'WHO', or 'ICD'.
-        range:
-        - nomenclatures
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: nomenclatures
+        - range: genMissingnessSet
       index:
         description: Index number in case the measurement was taken multiple times.
         title: Index
@@ -11680,11 +11690,11 @@ classes:
           the SARS-CoV-2 group, there are measure classes tht include RNA alleles
           (N1, N2, E, etc.), mutations, (E484K0), an entire sequence, viral proteins,
           etc. Currently groups are used for measures only.
-        range:
-        - groups
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: groups
+        - range: genMissingnessSet
       class:
         description: A unique identifier for a class, which is akin to a sub-group;
           it's a way of grouping parts within a given group. A group can have one
@@ -11694,11 +11704,11 @@ classes:
         - Currently, class is only used for biologics. For example, SARS-CoV-2 is
           a group of measures with the following classes of allele, variant, mutation,
           sequence, and protein.
-        range:
-        - classes
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: classes
+        - range: genMissingnessSet
       nomenclature:
         description: A classification system to report the measure class. Only applicable
           to variants, mutations, and diseases.
@@ -11706,10 +11716,10 @@ classes:
         notes:
         - Currently only used for class = variant, mutation, or disease. Valid options
           are currently restricted to 'NextClade', 'Pangolin', 'WHO', or 'ICD'.
-        range:
-        - nomenclatures
-        - genMissingnessSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: nomenclatures
+        - range: genMissingnessSet
       ontologyRef:
         description: Ontology reference for a part.
         title: Ontology reference
@@ -12851,11 +12861,11 @@ classes:
       geoType:
         description: Type of geography that is represented by the polygon.
         title: Type of geography
-        range:
-        - geoTypeSet
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: geoTypeSet
+        - range: genMissingnessSet
       geoEPSG:
         description: The unique EPSG code specifying a given geospatial area.
         title: European Petroleum Survey Group Coordinates
@@ -13282,17 +13292,6 @@ classes:
         range: string
         required: true
         pattern: ^.{0,30}$
-      datasetID:
-        description: The name of the dataset that stores information for MeasureReport,
-          SampleReport and other reporting tables.
-        title: Dataset ID
-        notes:
-        - Where possible, datasetID name should correspond the orignial data custodian
-          responsible for generating environmental data. (suggestion for a default
-          name convention.)
-        range: datasets
-        required: true
-        pattern: ^.{0,30}$
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -13338,11 +13337,11 @@ classes:
       insType:
         description: Type of instrument used to perform the measurement.
         title: Instrument Type
-        range:
-        - insTypeSet
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: insTypeSet
+        - range: genMissingnessSet
       insTypeOth:
         description: Description of the instrument in case it is not listed in instrumentType.
         title: Describe other instrument type, if applicable
@@ -13443,11 +13442,11 @@ classes:
       siteType:
         description: Type of site or institution where sample was taken.
         title: Site Type
-        range:
-        - siteTypeSet
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: siteTypeSet
+        - range: genMissingnessSet
       sampleShed:
         description: A geographic area, physical space, or structure. A sample is
           taken from a sampleshed for a representative measurement of a substance(s).
@@ -13455,11 +13454,11 @@ classes:
         notes:
         - 'Examples: Airplane, Long-term care home, Neighbourhood, University campus,
           Municipality'
-        range:
-        - shedSet
-        - genMissingnessSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: shedSet
+        - range: genMissingnessSet
       addressID:
         description: A unique identifier for an address.
         title: Address ID
