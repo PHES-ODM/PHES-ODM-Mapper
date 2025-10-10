@@ -33,8 +33,8 @@ def action_save_data(
         name_format (str, optional): The string interpolation format of the file names, accepts the variable class_name.
             Defaults to "{class_name}.csv"
         name_format_kwargs (Dict, optional): A dictionary of values that contain some additional arguments for
-            string interpolation of name_format. This could include arguments such as "temp_dir" that can be
-            used in formating name_format (eg. "{temp_dir}/file.csv"). These arguments are used in addition
+            string interpolation of name_format. This could include arguments such as "temp" that can be
+            used in formating name_format (eg. "{temp}/file.csv"). These arguments are used in addition
             to arguments that this function calculates such as "class_name". Defaults to {}.
         exception_if_exists (bool, optional): If True then raise an exception if a file already exists with the same
             name as a file we are trying to save. If False then overwrite the file. Defaults to False.
