@@ -11,21 +11,26 @@ Expanded wide data has columns in the form tableShortName_attribute:index. For e
 ```python
 maker = WideColumnMapMaker(
     config="config.yaml",
-    source_class_name="ODMWide",
+    source_class_name="odm_wide",
     target_schema="odm_v3.yaml"
     )
-linkml_schema, linkml_map_schemas = maker.make(
+source_schema, source_schema_file, mapping_schemas, mapping_schemas_path = maker.make(
     data_file="expanded.csv",
     data_frame=None,
     output_dir="output/"
     )
 ```
 
-In the above example, linkml_schema is a LinkML schema in dictionary form, and linkml_map_schemas is a dictionary
-where the keys are names for a schema and the values are single LinkML-Map schemas. The keys (names) have no real
-meaning but can be used, as an example, as file names to save the schemas as. Running all the schemas on the
-expanded data will result in multiple rows for multiple tables that can be concatenated together to get the
-mapped data in ODM long format.
+In the above example, the following values are returned from the maker.make call:
+
+1. source_schema: A LinkML schema in dictionary form.
+2. source_schema_file: The path to the LinkML schema that was saved to disk (if output_dir is specified).
+3. mapping_schemas: A Dictionary where the keys are names for a schema and the values are single LinkML-Map schemas.
+The keys (names) have no real meaning but can be used, as an example, as file names to save the schemas as.
+4. mapping_schemas: The directory containing all the LinkML-Map schemas saved to disk (if output_dir is specified).
+
+Running all the schemas on the expanded data will result in multiple rows for multiple tables that can be concatenated
+together to get the mapped data in ODM long format.
 """
 
 import os

@@ -1,3 +1,54 @@
+"""
+# Wide Column Expander
+
+Expand wide column names (with values) to a format that is more usable by LinkML-Map. The target format
+of the columns is tableShortName_attribute:index.
+
+For example, the following data with a measure wide column:
+
+| wat_sa_liq_covN1_gch_me_1_value |
+|---------------------------------|
+| 100                             |
+| 120                             |
+
+Would get expanded into:
+
+| mr_compartment:1 | mr_specimen:1 | mr_fraction:1 | mr_measure:1 | mr_unit:1 | mr_aggregation:1 | mr_index:1 | mr_value:1 |
+|------------------|---------------|---------------|--------------|-----------|------------------|------------|------------|
+| wat              | sa            | liq           | covN1        | gch       | me               | 1          | 100        |
+| wat              | sa            | liq           | covN1        | gch       | me               | 1          | 120        |
+
+Once we have the resulting expanded DataFrame, we can then use WideColumnMapMaker to generate:
+
+1. A LinkML schema describing the expanded wide format. This schema is specific to the resulting expanded DataFrame, and
+will contain all the tableShortName_attribute:index columns as well as tracking columns.
+2. A group of LinkML-Map schemas that will map the expanded DataFrame to an ODM long format.
+
+## Usage
+
+```python
+# First expand the columns to be in tableShortName_attribute:index format
+expander = WideColumnExpander(
+    config="wide_column_config.yaml", source_class_name="odm_wide", target_schema="odm_v3.yaml"
+)
+data_frames = [b for a in data_frames.values() for b in a]
+df = expander.expand(data_files=None, data_frames=[df], output_file=None)
+data_frames = {"odm_wide": [df]}
+
+# Create the LinkML-Map schemas and the LinkML schema for the prepared data in data_frames.
+maker = WideColumnMapMaker(
+    config="wide_column_config.yaml", source_class_name="odm_wide", target_schema="odm_v3.yaml"
+)
+input_data_frame = data_frames[SOURCE_CLASS_NAME][0]
+maker.make(data_file=None, data_frame=input_data_frame, output_dir="wide_to_long_mappers")
+
+# The directory "wide_to_long_mappers" contains the LinkML-Map schemas for mapping the expanded
+# data indata_frames to long format, and the LinkML schema for the expanded wide format is at
+# "wide_to_long_mappers/schema/schema.yaml".
+```
+
+"""
+
 from typing import List, Union, Dict, Optional, Generator, Any
 from pathlib import Path
 import pandas as pd
