@@ -75,38 +75,71 @@ class WideColumnExpander:
             )
             return None
 
-        if col_parts[0][0] in self.config[ConfigKeys.TABLES_TO_SHORTNAMES].values():
-            # Column starts with a table short name (eg. "sm_...")
+        if (
+            len(col_parts[0]) == 1
+            and col_parts[0][0] in self.config[ConfigKeys.TABLES_TO_SHORTNAMES].values()
+        ):
+            # Column starts with a table short name (eg. "sm_..."). Could be a protocol step (measure or method) or an attribute.
             if num_parts <= 1:
                 logger.warning(
                     f"Column that starts with a table short name must have at least 2 parts, the column will be ignored: {col}"
                 )
                 return None
 
-            # Check for protocolSteps table
-            if col_parts[0][0] == WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG:
-                if col_parts[1][0] == WideColumnValues.COLUMN_MEASURE_TAG and (
-                    num_parts == 7 or num_parts == 8
+            if self.is_part_equal_at_index(
+                col_parts, WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG, 0
+            ):
+                # Possibly a protocol step. Check for second part equal to met or mes
+                if self.is_part_equal_at_index(
+                    col_parts, WideColumnValues.COLUMN_MEASURE_TAG, 1
                 ):
+                    if num_parts != 7 and num_parts != 8:
+                        logger.warning(
+                            f"Protocol steps measure must have 7 or 8 parts, instead {num_parts} parts were found: {col}"
+                        )
                     return ColumnType.PROTOCOL_STEP_MEASURE
-                elif col_parts[1][0] == WideColumnValues.COLUMN_METHOD_TAG and (
-                    num_parts == 4 or num_parts == 5
+                elif self.is_part_equal_at_index(
+                    col_parts, WideColumnValues.COLUMN_METHOD_TAG, 1
                 ):
+                    if num_parts != 4 and num_parts != 5:
+                        logger.warning(
+                            f"Protocol steps measure must have 4 or 5 parts, instead {num_parts} parts were found: {col}"
+                        )
                     return ColumnType.PROTOCOL_STEP_METHOD
                 logger.warning(
                     f"Protocol steps measures or methods columns must have '{WideColumnValues.COLUMN_MEASURE_TAG}' or '{WideColumnValues.COLUMN_METHOD_TAG}' as it's second part, '{col_parts[1][0]}' was found instead."
                 )
-                return None
 
             # This is an attribute column (eg. or_organizationID)
             return ColumnType.ATTRIBUTE
         elif num_parts == 8 or num_parts == 9:
             return ColumnType.MEASURE
 
-        logger.warning(
-            f"Unrecognized column type for column '{col}', the column will be ignored."
-        )
+        logger.warning(f"Unrecognized column type, the column will be ignored: {col}")
         return None
+
+    def is_part_equal_at_index(
+        self, col_parts: List[List[str]], equals: Union[str, List[str]], index: int
+    ) -> bool:
+        """Check if the part at the index, in col_parts, is equal to equals.
+
+        The part at col_parts[index] is equal if it is the same length as equals and if each item in the
+        array col_parts[index] is equal to each corresponding item in equals.
+
+        Args:
+            col_parts (List[str]): The parts to test, as retrieved with get_all_parts.
+            equals (Union[str, List[str]]): The value or list of values to compare to col_parts[index]. Can be
+                a string or a list of strings. If a string then it is converted to an array of size 1 with the
+                single item been the string.
+            index (int): The index of the part in col_parts to test. ie. we test if col_parts[index] == equals.
+
+        Returns:
+            bool: True if col_parts[index] == equals. That is, col_parts[index][i] == equals[i] for all i.
+        """
+        if isinstance(equals, str):
+            equals = [equals]
+
+        return col_parts[index] == equals
 
     def expand(
         self,
@@ -223,19 +256,33 @@ class WideColumnExpander:
                 idx += 1
                 yield [cur_part]
 
-    def get_table_short_name(self, table_name: str) -> Optional[str]:
+    def get_table_long_name(self, table_short_name: str) -> Optional[str]:
+        """Get the long table name of the specified short table name.
+
+        Args:
+            table_short_name (str): The short table name to get the long table name of.
+
+        Returns:
+            Optional[str]: The long table name of table_short_name, or None if table_short_name
+                is unrecognized.
+        """
+        tables = self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {})
+        tables = [k for k, v in tables.items() if v == table_short_name]
+        return tables[0] if len(tables) > 0 else None
+
+    def get_table_short_name(self, table_long_name: str) -> Optional[str]:
         """Get the short name of the specified table.
 
         For example, the short name for the "measures" table might be "mr".
 
         Args:
-            table_name (str): The table name to get the short name of.
+            table_long_name (str): The table name to get the short name of.
 
         Returns:
             Optional[str]: The short name of the table, or None if the table is not recognized.
         """
         return self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).get(
-            table_name, None
+            table_long_name, None
         )
 
     def get_row_index_from_col_parts(self, col_parts: List[List[str]]) -> Optional[int]:
@@ -256,7 +303,7 @@ class WideColumnExpander:
                 return int(row_index)
         return None
 
-    def get_single_part_at_index(
+    def get_resolved_single_part_at_index(
         self, col_parts: List[List[str]], index: int, row: pd.Series
     ) -> Any:
         """Get the value of the part at the index of the list of column parts (as returned
@@ -307,7 +354,7 @@ class WideColumnExpander:
         values = str(val).split(AND_VALUE_SEPARATOR)
         if len(values) < num_values:
             logger.warning(
-                f"Tried to parse value into {num_values} values, but only {len(values)} values were found. Using 'None' for all missing values. Value is '{val}'."
+                f"Tried to parse AND value into {num_values} values, but {len(values)} value{'s were' if len(values) != 1 else ' was'} found. Using 'None' for all missing values. Original value is: {val}."
             )
             values = values + [None] * (num_values - len(values))
 
@@ -331,23 +378,42 @@ class WideColumnExpander:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
                 correct number of parts, or a part is missing or invalid.)
         """
-        logger.info(f"Expaning attribute column '{col}'")
+        value = row[col]
+        logger.info(f"Expanding attribute column '{col}' with value '{value}'")
+
         col_parts = self.get_all_parts(col)
         row_index = self.get_row_index_from_col_parts(col_parts)
-        value = row[col]
+
+        # First part must be of size 1 (ie. a single table short name)
+        if len(col_parts[0]) != 1:
+            logger.warning(
+                f"An attribute column must have exactly one value for the first part, instead multiple the values {col_parts[0]} were found, column will not be expanded: {col}"
+            )
+            return False
 
         table_short_name = col_parts[0][0]
         if len(col_parts[1]) == 1:
             # The column is in the format tableShortName_column[_#]
-            if (
-                table_short_name
-                not in self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).values()
-            ):
+            table_long_name = self.get_table_long_name(table_short_name)
+            if not table_long_name:
                 logger.warning(
                     f"Attribute column {col} has an unknown table short name: {table_short_name}"
                 )
                 return False
 
+            # Make sure value is an actual slot for the table in the target schema
+            try:
+                slot_defn = self.target_schema.induced_slot(
+                    col_parts[1][0], table_long_name
+                )
+            except Exception:
+                slot_defn = None
+            if not slot_defn:
+                logger.warning(
+                    f"The slot {col_parts[1][0]} does not exist in the table {table_long_name}, column will not be expanded: {col}"
+                )
+
+            # Expand the attribute
             self.update_current_expanded_rows(
                 {
                     f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{col_parts[1][0]}": value,
@@ -403,38 +469,51 @@ class WideColumnExpander:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
                 correct number of parts, or a part is missing or invalid.)
         """
-        logger.info(f"Expaning protocolSteps measure '{col}'")
+        value = row[col]
+        logger.info(
+            f"Expanding protocolSteps measure column '{col}' with value '{value}'"
+        )
 
         col_parts = self.get_all_parts(col)
+
+        # First part must be of size 1 (ie. a single table short name)
+        if len(col_parts[0]) != 1:
+            logger.warning(
+                f"Protocol step measure column must have exactly one value for the first part, instead multiple the values {col_parts[0]} were found, column will not be expanded: {col}"
+            )
+            return False
+
         row_index = self.get_row_index_from_col_parts(col_parts)
-        value = row[col]
         table_short_name = col_parts[0][0]
         attribute = col_parts[6][0]
-        ps_unit = self.get_single_part_at_index(col_parts, 3, row)
-        ps_aggregation = self.get_single_part_at_index(col_parts, 4, row)
-        ps_index = self.get_single_part_at_index(col_parts, 5, row)
+        ps_unit = self.get_resolved_single_part_at_index(col_parts, 3, row)
+        ps_aggregation = self.get_resolved_single_part_at_index(col_parts, 4, row)
+        ps_index = self.get_resolved_single_part_at_index(col_parts, 5, row)
 
         # Make sure the table short name is for protocolSteps
         if table_short_name != WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG:
             logger.warning(
-                f"Tried to expand column '{col}' as a protocol steps method, but the column must start with '{WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG}'. Ignoring column."
+                f"Protocol steps measure column must start with '{WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG}'. Ignoring column: {col}"
             )
             return False
 
         # Make sure the second part is for measures
-        if col_parts[1][0] != WideColumnValues.COLUMN_MEASURE_TAG:
+        if not self.is_part_equal_at_index(
+            col_parts, WideColumnValues.COLUMN_MEASURE_TAG, 1
+        ):
             logger.warning(
-                f"Tried to expand column '{col}' as a protocol steps measure, but the column must have a second part equal to '{WideColumnValues.COLUMN_MEASURE_TAG}', instead '{col_parts[1][0]}' was found. Ignoring column."
+                f"Protocol steps measure column must have a second part equal to '{WideColumnValues.COLUMN_MEASURE_TAG}', instead '{col_parts[1][0]}' was found. Ignoring column: {col}"
             )
             return False
 
         if len(col_parts[2]) > 1:
+            # The third part is a boolean part
             bool_part = col_parts[2][1]
 
             # Only OR tags are allowed for protocolSteps measures
             if bool_part != WideColumnValues.OR_TAG:
                 logger.error(
-                    f"Boolean for measure part protocolSteps column of column must be '{WideColumnValues.OR_TAG}': {col}"
+                    f"Protocol steps measure column with a boolean third part must be '{WideColumnValues.OR_TAG}': {col}"
                 )
                 return False
 
@@ -443,9 +522,9 @@ class WideColumnExpander:
             ps_measure = self.select_matching_enum(value, candidate_enums)
         elif len(col_parts[2]) == 1:
             # Get the measure
-            ps_measure = self.get_single_part_at_index(col_parts, 2, row)
+            ps_measure = self.get_resolved_single_part_at_index(col_parts, 2, row)
         else:
-            logger.warning(f"Measure part of protocolSteps column '{col}' is missing.")
+            logger.warning(f"Measure part of protocol steps column is missing: {col}")
             return False
 
         self.update_current_expanded_rows(
@@ -481,25 +560,37 @@ class WideColumnExpander:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
                 correct number of parts, or a part is missing or invalid.)
         """
-        logger.info(f"Expaning protocolSteps method column '{col}'")
+        value = row[col]
+        logger.info(
+            f"Expanding protocolSteps method column '{col}' with value '{value}'"
+        )
 
         col_parts = self.get_all_parts(col)
+
+        # First part must be of size 1 (ie. a single table short name)
+        if len(col_parts[0]) != 1:
+            logger.warning(
+                f"Protocol step method column must have exactly one value for the first part, instead multiple the values {col_parts[0]} were found, column will not be expanded: {col}"
+            )
+            return False
+
         row_index = self.get_row_index_from_col_parts(col_parts)
-        value = row[col]
         table_short_name = col_parts[0][0]
         attribute = col_parts[3][0]
 
         # Make sure the table short name is for protocolSteps
         if table_short_name != WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG:
             logger.warning(
-                f"Tried to expand column '{col}' as a protocol steps method, but the column must start with '{WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG}'. Ignoring column."
+                f"Protocol steps method column must start with '{WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG}'. Ignoring column: {col}"
             )
             return False
 
         # Make sure the second part is for methods
-        if col_parts[1][0] != WideColumnValues.COLUMN_METHOD_TAG:
+        if not self.is_part_equal_at_index(
+            col_parts, WideColumnValues.COLUMN_METHOD_TAG, 1
+        ):
             logger.warning(
-                f"Tried to expand column '{col}' as a protocol steps method, but the column must have a second part equal to '{WideColumnValues.COLUMN_METHOD_TAG}', instead '{col_parts[1][0]}' was found. Ignoring column."
+                f"Protocol steps method column must have a second part equal to '{WideColumnValues.COLUMN_MEASURE_TAG}', instead '{col_parts[1][0]}' was found. Ignoring column: {col}"
             )
             return False
 
@@ -509,7 +600,7 @@ class WideColumnExpander:
             # Only OR tags are allowed for protocolSteps methods
             if bool_part != WideColumnValues.OR_TAG:
                 logger.error(
-                    f"Boolean for method part protocolSteps column of column must be '{WideColumnValues.OR_TAG}': {col}"
+                    f"Protocol steps method column with a boolean third part must be '{WideColumnValues.OR_TAG}': {col}"
                 )
                 return False
 
@@ -517,10 +608,10 @@ class WideColumnExpander:
             candidate_enums = col_parts[2][2:]
             ps_method = self.select_matching_enum(value, candidate_enums)
         elif len(col_parts[2]) == 1:
-            # Get the method
-            ps_method = self.get_single_part_at_index(col_parts, 2, row)
+            # Third part has only one prt, get the method
+            ps_method = self.get_resolved_single_part_at_index(col_parts, 2, row)
         else:
-            logger.warning(f"Method part of protocolSteps column '{col}' is missing.")
+            logger.warning(f"Method part of protocol steps column is missing: {col}")
             return False
 
         self.update_current_expanded_rows(
@@ -553,32 +644,33 @@ class WideColumnExpander:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
                 correct number of parts, or a part is missing or invalid.)
         """
-        logger.info(f"Expaning measure column '{col}'")
+        value = row[col]
+        logger.info(f"Expanding measure column '{col}' with value '{value}'")
+
         col_parts = self.get_all_parts(col)
         row_index = self.get_row_index_from_col_parts(col_parts)
 
-        mr_compartment = self.get_single_part_at_index(col_parts, 0, row)
-        mr_specimen = self.get_single_part_at_index(col_parts, 1, row)
-        mr_fraction = self.get_single_part_at_index(col_parts, 2, row)
+        mr_compartment = self.get_resolved_single_part_at_index(col_parts, 0, row)
+        mr_specimen = self.get_resolved_single_part_at_index(col_parts, 1, row)
+        mr_fraction = self.get_resolved_single_part_at_index(col_parts, 2, row)
         mr_measure = None
-        mr_unit = self.get_single_part_at_index(col_parts, 4, row)
-        mr_aggregation = self.get_single_part_at_index(col_parts, 5, row)
-        mr_index = self.get_single_part_at_index(col_parts, 6, row)
-        attribute = self.get_single_part_at_index(col_parts, 7, row)
-        value = row[col]
-        table_short_name = self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).get(
-            "measures", None
-        )
+        mr_unit = self.get_resolved_single_part_at_index(col_parts, 4, row)
+        mr_aggregation = self.get_resolved_single_part_at_index(col_parts, 5, row)
+        mr_index = self.get_resolved_single_part_at_index(col_parts, 6, row)
+        attribute = self.get_resolved_single_part_at_index(col_parts, 7, row)
+        table_short_name = self.get_table_short_name("measures")
 
         if len(col_parts[3]) == 1:
-            mr_measure = self.get_single_part_at_index(col_parts, 3, row)
+            # The measure part has a single value, so get the value
+            mr_measure = self.get_resolved_single_part_at_index(col_parts, 3, row)
         else:
+            # The measure part has multiple values, so it is a boolean part.
             bool_part = col_parts[3][1]
 
             # For measure columns, only the OR_TAG is allowed
             if bool_part != WideColumnValues.OR_TAG:
                 logger.error(
-                    f"Boolean for measure part of column must be '{WideColumnValues.OR_TAG}': {col}"
+                    f"Measure column with a boolean fourth part must be '{WideColumnValues.OR_TAG}': {col}"
                 )
                 return False
 
@@ -734,7 +826,7 @@ class WideColumnExpander:
             for column_index, col in enumerate(df.columns):
                 column_index += first_column_index
                 column_type = self.get_column_type(col)
-                logger.info(f"Column type is '{column_type}' for column: {col}")
+                # logger.info(f"Column type is '{column_type}' for column: {col}")
                 if column_type == ColumnType.ATTRIBUTE:
                     self.expand_column_type_attribute(
                         col, row, column_index=column_index
