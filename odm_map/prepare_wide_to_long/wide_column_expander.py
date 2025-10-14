@@ -157,9 +157,6 @@ class WideColumnExpander:
                             f"Protocol steps measure must have 4 or 5 parts, instead {num_parts} parts were found: {col}"
                         )
                     return ColumnType.PROTOCOL_STEP_METHOD
-                logger.warning(
-                    f"Protocol steps measures or methods columns must have '{WideColumnValues.COLUMN_MEASURE_TAG}' or '{WideColumnValues.COLUMN_METHOD_TAG}' as it's second part, '{col_parts[1][0]}' was found instead."
-                )
 
             # This is an attribute column (eg. or_organizationID)
             return ColumnType.ATTRIBUTE
@@ -198,7 +195,9 @@ class WideColumnExpander:
         data_frames: List[pd.DataFrame],
         output_file: Optional[Union[str, Path]],
     ) -> pd.DataFrame:
-        """Expand
+        """Expand the files and/or DataFrames to the expanded wide format, so that it's ready to map from
+        wide to long format. After expanding the data, WideColumnMapMaker should be run on the returned
+        DataFrame.
 
         Args:
             data_files (List[Path]): A list of data files to load and expand. These data files are concatenated
