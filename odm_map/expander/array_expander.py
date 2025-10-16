@@ -46,8 +46,12 @@ expand_columns:
 Each key in the `expand_columns` dictionary is a table name. The values are
 arrays of columns within that table to expand.
 
-Additionally, an index or list of indices can be specified in the configuration
-to specify which array elements to selected and expanded (the other elements
+Additional configuration options can also be specified, which are described below.
+
+## select_items Option
+
+An index or list of indices can be specified in the configuration
+to specify which array elements should be selected and expanded (the other elements
 get dropped). The following will select the first item in `sampleShed`:
 
 ```yaml
@@ -75,12 +79,60 @@ expand_columns:
             select_items: -1
 ```
 
-After selection with `select_items`, the row then gets expanded.
+After selection with `select_items`, the row then gets expanded using the selected
+items.
 
 If an index specified under `select_items` is out of range (either at or above
 the array length, or below the negative array length) then that index is
-removed. If an index is specified more than once (either as a negative or
-positive index) then the duplicate indices are removed.
+removed and ignored. If an index is specified more than once (either as a negative or
+positive index) then the duplicate indices are removed and ignored.
+
+## remove_nulls Option
+
+All Null items can be removed from the array before selecting and expanding. This is
+specified by setting the `remove_nulls` key to True:
+
+```yaml
+expand_columns:
+    sites:
+        - sampleShed:
+            remove_nulls: True
+            select_items: -1
+```
+
+For example, with the following sites table:
+
+| sampleShed               |
+|--------------------------|
+| ['hosptl', None, 'dorm'] |
+
+Removing the null values will result in:
+
+| sampleShed         |
+|--------------------|
+| ['hosptl', 'dorm'] |
+
+## max_length Option
+
+The `max_length` option does not modify any data. Instead, it logs an error message
+to tell the user that an array has too many elements. A common example is if you
+want to make sure that only one value is present in a certain column you would
+set `max_length` to one, although any value is allowed. Below is an example
+configuration:
+
+```yaml
+expand_columns:
+    sites:
+        - sampleShed:
+            remove_nulls: True
+            max_length: 1
+```
+
+If `remove_nulls` is also set to True, then the null values are removed first,
+followed by checking the length with `max_length`.
+
+If `select_items` is specified, then `max_length` is performed before selecting
+the items.
 
 """
 
@@ -96,9 +148,14 @@ from odm_map.utils.general_utils import (
 )
 from odm_map.progress import ProgressCounter
 
+
 # Config file keys
-EXPAND_COLUMNS_KEY = "expand_columns"
-SELECT_ITEMS_KEY = "select_items"
+class ConfigKeys:
+    EXPAND_COLUMNS = "expand_columns"
+    SELECT_ITEMS = "select_items"
+    MAX_LENGTH = "max_length"
+    REMOVE_NULLS_KEY = "remove_nulls"
+
 
 EXPAND_BARID = "Expanding"
 
@@ -152,13 +209,13 @@ class ArrayExpander(object):
         load_data_frames_for_classes(data_files, data_frames, max_rows=max_rows)
 
         # If config has no columns to expand then return the data_frames unchanged
-        if EXPAND_COLUMNS_KEY not in self.config:
+        if ConfigKeys.EXPAND_COLUMNS not in self.config:
             return data_frames
 
         # Count total expand operation to perform
         # total = (# of classes) * (# DataFrames in class) # (# columns to expand)
         total = 0
-        for class_name, class_config in self.config[EXPAND_COLUMNS_KEY].items():
+        for class_name, class_config in self.config[ConfigKeys.EXPAND_COLUMNS].items():
             if class_name not in data_frames:
                 continue
             total += len(data_frames[class_name]) * len(class_config)
@@ -167,7 +224,9 @@ class ArrayExpander(object):
 
         with progress:
             # Go through all classes to expand in the config file
-            for class_name, class_config in self.config[EXPAND_COLUMNS_KEY].items():
+            for class_name, class_config in self.config[
+                ConfigKeys.EXPAND_COLUMNS
+            ].items():
                 if class_name not in data_frames:
                     continue
                 # Go through all the column configs in the config file
@@ -179,7 +238,10 @@ class ArrayExpander(object):
                         dfs = []
                         for df in data_frames[class_name]:
                             df = self.expand_with_column(
-                                df, column=cur_column, config=cur_config
+                                df,
+                                column=cur_column,
+                                config=cur_config,
+                                class_name=class_name,
                             )
                             dfs.append(df)
                             progress.update(EXPAND_BARID, 1)
@@ -195,7 +257,11 @@ class ArrayExpander(object):
         return data_files, data_frames
 
     def expand_with_column(
-        self, df: pd.DataFrame, column: str, config: Optional[Dict[str, Any]]
+        self,
+        df: pd.DataFrame,
+        column: str,
+        config: Optional[Dict[str, Any]],
+        class_name: str,
     ) -> pd.DataFrame:
         """Expand the DataFrame based on the specified column and the specified optional configuration.
 
@@ -206,12 +272,19 @@ class ArrayExpander(object):
             config (Optional[Dict[str, Any]]): Optional configuration for the expand operation. If None or empty,
                 then we the output will have one row per value in the array. Otherwise expanding is done using
                 the following config options:
-                    SELECT_ITEMS_KEY: Only select the item(s) at the specified index/indices in the resulting array for
-                        expanding. For example: { SELECT_ITEMS_KEY: 0 } will only select the first item in the array,
+                    ConfigKeys.REMOVE_NULLS_KEY: If True then before doing anything remove any null values from the arrays within
+                        the columns being processed.
+                    ConfigKeys.MAX_LENGTH: If set then an integer defining the maximum allowable length of an array before
+                        any processing of the array is performed (but after nulls are removed if ConfigKeys.REMOVE_NULLS_KEY is True).
+                        If an array is too large then an error is logged.
+                    ConfigKeys.SELECT_ITEMS: Only select the item(s) at the specified index/indices in the resulting array for
+                        expanding. For example: { ConfigKeys.SELECT_ITEMS: 0 } will only select the first item in the array,
                         and so the expanding will not add any additional rows. If an array, then additional rows will
-                        be added. For example: { SELECT_ITEMS_KEY: [0, 3] } will only select the first (0) and fourth (3)
+                        be added. For example: { ConfigKeys.SELECT_ITEMS: [0, 3] } will only select the first (0) and fourth (3)
                         items in the array. If any of the indices are out of range then it is ignored. If none of the
-                        indices are in range then the current row gets dropped.
+                        indices are in range then the current row gets dropped. This is performed after ConfigKeys.REMOVE_NULLS_KEY
+                        and ConfigKeys.MAX_LENGTH is performed.
+            class_name (str): The class name of the DataFrame.
 
         Returns:
             pd.DataFrame: A copy of the DataFrame with the column expanded according to the configuration.
@@ -235,9 +308,25 @@ class ArrayExpander(object):
             else:
                 continue
 
-            if config and SELECT_ITEMS_KEY in config:
+            if (
+                config
+                and ConfigKeys.REMOVE_NULLS_KEY in config
+                and config[ConfigKeys.REMOVE_NULLS_KEY]
+            ):
+                # Remove null values from the array
+                expanded_values = [v for v in expanded_values if not pd.isna(v)]
+
+            if config and ConfigKeys.MAX_LENGTH in config:
+                # Make sure we have max_length or fewer items in the array
+                max_length = config[ConfigKeys.MAX_LENGTH]
+                if len(expanded_values) > max_length:
+                    logger.error(
+                        f"Row {idx + 1} of table for class {class_name} has more than the maximum allowable {max_length} item{'' if max_length == 1 else 's'}: {val}"
+                    )
+
+            if config and ConfigKeys.SELECT_ITEMS in config:
                 # Only expand selected items
-                select_items = config[SELECT_ITEMS_KEY]
+                select_items = config[ConfigKeys.SELECT_ITEMS]
                 if not isinstance(select_items, list):
                     select_items = [select_items]
                 # Drop indices that are out of range (above the upper limit)
@@ -252,25 +341,31 @@ class ArrayExpander(object):
                     expanded_values[i] for i in select_items if i < len(expanded_values)
                 ]
 
+            # @TODO: Not sure if we want to drop rows with empty arrays anymore. For now
+            # we shouldn't drop the rows (ie. code below is commented out). We might want
+            # to add a configuration option to allow dropping rows, but that may not be
+            # necessary and could just make things more confusing in the config file.
             # If there are no expanded values then we will drop the current row
-            if len(expanded_values) == 0:
-                logger.info(
-                    f"No expanded values found for row {idx}, row will be dropped"
-                )
-                drop_rows.append(idx)
-                continue
+            # if len(expanded_values) == 0:
+            #     logger.info(
+            #         f"No expanded values found for row {idx}, row will be dropped"
+            #     )
+            #     drop_rows.append(idx)
+            #     continue
 
             # Go through each expanded value and create the row for it. The first expanded
             # value will be assigned to the original row already in the DataFrame.
-            df.loc[idx, column] = expanded_values[0]
+            df.loc[idx, column] = expanded_values[0] if len(expanded_values) else None
             for expanded_value in expanded_values[1:]:
                 new_row = row.copy()
                 new_row[column] = expanded_value
                 new_rows.append(new_row)
 
-        # Drop all rows in drop_rows
-        keep_rows = [i for i in df.index if i not in drop_rows]
-        df = df.loc[keep_rows]
+        # Drop all rows in drop_rows (drop_rows is an array of row indices to drop)
+        if len(drop_rows) > 0:
+            # Keep rows at indices that are NOT in drop_rows
+            keep_rows = [i for i in df.index if i not in drop_rows]
+            df = df.loc[keep_rows]
 
         # Append the new rows and sort
         new_rows_df = pd.DataFrame(new_rows)
