@@ -47,7 +47,6 @@ steps:
         - add_ontology_ids_to_enums:
             match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
         - correct_enums: True
-        - report_unknown_enum_values: True
         - remove_unknown_columns: True
   - action: save
     if: "{debug_mode}"
@@ -149,7 +148,6 @@ Example:
       - add_ontology_ids_to_enums:
           match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
       - correct_enums: True
-      - report_unknown_enum_values: True
       - remove_unknown_columns: True
 ```
 
@@ -233,21 +231,6 @@ Note that when trying to match a data enum value with a schema enum value that
 capitalization is ignored, and sequences of multiple spaces are replaced with
 single spaces when trying to match (but the resulting enum value has the same
 capitalization and spacing as found in the LinkML schema).
-
-#### Clean Operation: report_unknown_enum_values
-
-This operation does not make any changes to the data, but it does report any
-enumeration value that is not recognized to the user. The purpose is to allow
-the user to go in and manually fix the data.
-
-```yaml
-operations:
-  - report_unknown_enum_values: True
-```
-
-Each slot that has at least one enumeration as its range will be tested.
-However, if a slot has at least one non-enumeration range (such as a string),
-then any value is allowed.
 
 #### Clean Operation: expand
 
