@@ -128,8 +128,6 @@ class DataBindings:
         if isinstance(linkage_path, str):
             linkage_path = self.get_named_linkage_path(source_class, linkage_path)
 
-        # prev_group_primary_keys = self.generator.group_primary_keys
-        # self.generator.group_primary_keys = not self.replace_empty_values
         v = self.generator.get_first_linked_value(
             source_class,
             source_index,
@@ -147,7 +145,6 @@ class DataBindings:
             logger.error(
                 f"Retrieved IDValue from primary key {self.prefix}.{self.root_class}.{target_slot} (source row: {source_class}:{source_index}) that has not yet had its index generated"
             )
-        # self.generator.group_primary_keys = prev_group_primary_keys
 
         # Convert float to integer if it has no decimals
         if isinstance(v, float) and not isna(v):
