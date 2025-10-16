@@ -34,6 +34,9 @@ class_derivations:
       recDate:
         name: recDate
         populated_from: sample_received_date
+      pooled:
+        name: pooled
+        expr: '''True'''
       _extra_contactID_tag:
         name: _extra_contactID_tag
         expr: '''sample collected by'''
@@ -46,17 +49,14 @@ class_derivations:
       sampleID:
         name: sampleID
         populated_from: pooled_sample_id
-      pooled:
-        name: pooled
-        expr: '''True'''
   Container:
     name: Container
     slot_derivations:
       samples[000,0000=pooled_sample_id]:
         populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_CollectionDeviceMenu:
-    name: ODMv2_enum_from_CollectionDeviceMenu
+  ODMv3_enum_from_CollectionDeviceMenu:
+    name: ODMv3_enum_from_CollectionDeviceMenu
     mirror_source: false
     populated_from: CollectionDeviceMenu
     permissible_value_derivations:
@@ -99,9 +99,9 @@ enum_derivations:
       bagFilt:
         name: bagFilt
         populated_from: Bag filtration device [GENEPIO:0102027]
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:
@@ -119,8 +119,8 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  ODMv2_enum_from_CollectionMethodMenu:
-    name: ODMv2_enum_from_CollectionMethodMenu
+  ODMv3_enum_from_CollectionMethodMenu:
+    name: ODMv3_enum_from_CollectionMethodMenu
     mirror_source: false
     populated_from: CollectionMethodMenu
     permissible_value_derivations:
@@ -142,8 +142,8 @@ enum_derivations:
       bagFilt:
         name: bagFilt
         populated_from: Bag Mediated Filtration [GENEPIO:0102028]
-  ODMv2_enum_from_EnvironmentalMaterialMenu:
-    name: ODMv2_enum_from_EnvironmentalMaterialMenu
+  ODMv3_enum_from_EnvironmentalMaterialMenu:
+    name: ODMv3_enum_from_EnvironmentalMaterialMenu
     mirror_source: false
     populated_from: EnvironmentalMaterialMenu
     permissible_value_derivations:
@@ -174,8 +174,8 @@ enum_derivations:
       sEfflu:
         name: sEfflu
         populated_from: Secondary wastewater effluent [GENEPIO:0100893]
-  ODMv2_enum_from_ExperimentalSpecimenRoleTypeMenu:
-    name: ODMv2_enum_from_ExperimentalSpecimenRoleTypeMenu
+  ODMv3_enum_from_ExperimentalSpecimenRoleTypeMenu:
+    name: ODMv3_enum_from_ExperimentalSpecimenRoleTypeMenu
     mirror_source: false
     populated_from: ExperimentalSpecimenRoleTypeMenu
     permissible_value_derivations:
@@ -191,8 +191,8 @@ enum_derivations:
       bioRep:
         name: bioRep
         populated_from: Biological replicate [EFO:0002091]
-  collAppxT_from_SampleCollectionTimeOfDayMenu:
-    name: collAppxT_from_SampleCollectionTimeOfDayMenu
+  collAppxSet:
+    name: collAppxSet
     mirror_source: false
     populated_from: SampleCollectionTimeOfDayMenu
     permissible_value_derivations:

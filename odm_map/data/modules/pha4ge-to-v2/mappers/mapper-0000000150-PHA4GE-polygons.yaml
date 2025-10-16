@@ -21,8 +21,8 @@ class_derivations:
       polygons:
         populated_from: PHA4GE
 enum_derivations:
-  poLic_from_WatershedShapefileAvailabilityMenu:
-    name: poLic_from_WatershedShapefileAvailabilityMenu
+  licSet:
+    name: licSet
     mirror_source: false
     populated_from: WatershedShapefileAvailabilityMenu
     permissible_value_derivations:
@@ -32,9 +32,9 @@ enum_derivations:
       NR:
         name: NR
         populated_from: Unknown [GENEPIO:0100995]
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:

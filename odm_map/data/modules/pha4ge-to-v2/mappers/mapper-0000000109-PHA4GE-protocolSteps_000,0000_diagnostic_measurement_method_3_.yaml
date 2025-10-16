@@ -21,8 +21,8 @@ class_derivations:
       protocolSteps[000,0000=diagnostic_measurement_method_3]:
         populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_DiagnosticMeasurementMethodMenu:
-    name: ODMv2_enum_from_DiagnosticMeasurementMethodMenu
+  ODMv3_enum_from_DiagnosticMeasurementMethodMenu:
+    name: ODMv3_enum_from_DiagnosticMeasurementMethodMenu
     mirror_source: false
     populated_from: DiagnosticMeasurementMethodMenu
     permissible_value_derivations:
@@ -35,9 +35,9 @@ enum_derivations:
       bacCul:
         name: bacCul
         populated_from: Bacteria culture test
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:

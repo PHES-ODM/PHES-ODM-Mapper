@@ -54,9 +54,9 @@ class_derivations:
       measures[000,0000=alkalinity_measurement_method-alkalinity_measurement_unit-alkalinity_measurement_value]:
         populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:
@@ -74,8 +74,8 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  ODMv2_enum_from_AlkalinityMeasurementUnitMenu:
-    name: ODMv2_enum_from_AlkalinityMeasurementUnitMenu
+  ODMv3_enum_from_AlkalinityMeasurementUnitMenu:
+    name: ODMv3_enum_from_AlkalinityMeasurementUnitMenu
     mirror_source: false
     populated_from: AlkalinityMeasurementUnitMenu
     permissible_value_derivations:

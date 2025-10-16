@@ -21,8 +21,8 @@ class_derivations:
       addresses:
         populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_GeoLocNameCountryMenu:
-    name: ODMv2_enum_from_GeoLocNameCountryMenu
+  ODMv3_enum_from_GeoLocNameCountryMenu:
+    name: ODMv3_enum_from_GeoLocNameCountryMenu
     mirror_source: false
     populated_from: GeoLocNameCountryMenu
     permissible_value_derivations:
@@ -837,9 +837,9 @@ enum_derivations:
       ZW:
         name: ZW
         populated_from: Zimbabwe [GAZ:00001106]
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:

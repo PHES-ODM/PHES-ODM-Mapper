@@ -54,9 +54,9 @@ class_derivations:
       ? measures[000,0000=urinary_contamination_indicator-urinary_contamination_method-urinary_contamination_unit-urinary_contamination_value]
       : populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:
@@ -74,16 +74,16 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  ODMv2_enum_from_UrinaryContaminationIndicatorMenu:
-    name: ODMv2_enum_from_UrinaryContaminationIndicatorMenu
+  ODMv3_enum_from_UrinaryContaminationIndicatorMenu:
+    name: ODMv3_enum_from_UrinaryContaminationIndicatorMenu
     mirror_source: false
     populated_from: UrinaryContaminationIndicatorMenu
     permissible_value_derivations:
       urobilin:
         name: urobilin
         populated_from: Urobilin [CHEBI:36378]
-  ODMv2_enum_from_UrinaryContaminationUnitMenu:
-    name: ODMv2_enum_from_UrinaryContaminationUnitMenu
+  ODMv3_enum_from_UrinaryContaminationUnitMenu:
+    name: ODMv3_enum_from_UrinaryContaminationUnitMenu
     mirror_source: false
     populated_from: UrinaryContaminationUnitMenu
     permissible_value_derivations:

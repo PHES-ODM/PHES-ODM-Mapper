@@ -35,8 +35,8 @@ class_derivations:
       protocolSteps[000,0000=specimen_processing-specimen_processing_details]:
         populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_SpecimenProcessingMenu:
-    name: ODMv2_enum_from_SpecimenProcessingMenu
+  ODMv3_enum_from_SpecimenProcessingMenu:
+    name: ODMv3_enum_from_SpecimenProcessingMenu
     mirror_source: false
     populated_from: SpecimenProcessingMenu
     permissible_value_derivations:
@@ -59,9 +59,12 @@ enum_derivations:
       pasteur:
         name: pasteur
         populated_from: Pasteurization [IDO:0100170]
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+      ? ''
+      : name: ''
+        populated_from: Pooling specimens [OBI:0600016]
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:

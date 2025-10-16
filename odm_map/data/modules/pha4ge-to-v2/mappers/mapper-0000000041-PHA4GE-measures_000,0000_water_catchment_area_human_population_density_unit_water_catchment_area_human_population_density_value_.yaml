@@ -51,9 +51,9 @@ class_derivations:
       measures[000,0000=water_catchment_area_human_population_density_unit-water_catchment_area_human_population_density_value]:
         populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:
@@ -71,8 +71,8 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  ODMv2_enum_from_WaterCatchmentAreaHumanPopulationDensityUnitMenu:
-    name: ODMv2_enum_from_WaterCatchmentAreaHumanPopulationDensityUnitMenu
+  ODMv3_enum_from_WaterCatchmentAreaHumanPopulationDensityUnitMenu:
+    name: ODMv3_enum_from_WaterCatchmentAreaHumanPopulationDensityUnitMenu
     mirror_source: false
     populated_from: WaterCatchmentAreaHumanPopulationDensityUnitMenu
     permissible_value_derivations:

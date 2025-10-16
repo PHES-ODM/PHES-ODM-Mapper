@@ -66,9 +66,9 @@ class_derivations:
       ? measures[000,0000=depth_of_coverage_value-gene_symbol_1-organism-purpose_of_sequencing-purpose_of_sequencing_details-sequencing_protocol]
       : populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:
@@ -86,16 +86,16 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  GeneSymbolMenu[=mirrored=]:
-    name: GeneSymbolMenu[=mirrored=]
-    mirror_source: true
+  GeneSymbolMenu[=not_mirrored=]:
+    name: GeneSymbolMenu[=not_mirrored=]
+    mirror_source: false
     populated_from: GeneSymbolMenu
-  OrganismMenu[=mirrored=]:
-    name: OrganismMenu[=mirrored=]
-    mirror_source: true
+  OrganismMenu[=not_mirrored=]:
+    name: OrganismMenu[=not_mirrored=]
+    mirror_source: false
     populated_from: OrganismMenu
-  ODMv2_enum_from_PurposeOfSequencingMenu:
-    name: ODMv2_enum_from_PurposeOfSequencingMenu
+  ODMv3_enum_from_PurposeOfSequencingMenu:
+    name: ODMv3_enum_from_PurposeOfSequencingMenu
     mirror_source: false
     populated_from: PurposeOfSequencingMenu
     permissible_value_derivations:

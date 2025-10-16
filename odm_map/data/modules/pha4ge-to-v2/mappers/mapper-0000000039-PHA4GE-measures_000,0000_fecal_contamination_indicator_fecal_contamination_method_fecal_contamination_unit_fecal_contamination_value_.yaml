@@ -54,9 +54,9 @@ class_derivations:
       ? measures[000,0000=fecal_contamination_indicator-fecal_contamination_method-fecal_contamination_unit-fecal_contamination_value]
       : populated_from: PHA4GE
 enum_derivations:
-  ODMv2_enum_from_NullValueMenu:
-    name: ODMv2_enum_from_NullValueMenu
-    mirror_source: true
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
       NA:
@@ -74,8 +74,8 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  ODMv2_enum_from_FecalContaminationIndicatorMenu:
-    name: ODMv2_enum_from_FecalContaminationIndicatorMenu
+  ODMv3_enum_from_FecalContaminationIndicatorMenu:
+    name: ODMv3_enum_from_FecalContaminationIndicatorMenu
     mirror_source: false
     populated_from: FecalContaminationIndicatorMenu
     permissible_value_derivations:
@@ -97,8 +97,8 @@ enum_derivations:
       stercobilin:
         name: stercobilin
         populated_from: Stercobilin [CHEBI:26756]
-  ODMv2_enum_from_FecalContaminationUnitMenu:
-    name: ODMv2_enum_from_FecalContaminationUnitMenu
+  ODMv3_enum_from_FecalContaminationUnitMenu:
+    name: ODMv3_enum_from_FecalContaminationUnitMenu
     mirror_source: false
     populated_from: FecalContaminationUnitMenu
     permissible_value_derivations:
