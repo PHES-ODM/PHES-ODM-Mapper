@@ -1,26 +1,59 @@
 expand_columns:
     instruments:
         - name:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
         - manufacturer:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
     measures:
+        - group:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
         - value:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
         - reportable:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+    protocolSteps:
+        - method:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+        - value:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
     qualityReports:
         - qualityFlag:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
     samples:
         - purpose:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
         - saMaterial:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
         - repType:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
         - collType:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
     sites:
         - sampleShed:
+            remove_nulls: True
+            max_length: 1
             select_items: 0
