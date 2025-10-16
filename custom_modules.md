@@ -328,6 +328,8 @@ expand_columns:
         - purpose
         - saMaterial:
             select_items: 0
+            remove_nulls: True
+            max_length: 1
         - collType:
             select_items: [0, -1]
     sites:
@@ -337,6 +339,11 @@ expand_columns:
 If the slot in the config file is specified as a string (as in the `purpose`
 slot of the `samples` table, or the `sampleShed` slot in the `sites` table
 above), then the rows in that slot are expanded using all values in the arrays.
+
+Additional configuration options can be specified, as described below
+
+##### select_items Option
+
 If instead it is a key-dictionary pair (as in the `saMaterial` and `collType`
 slots in the `samples` table above), then the array index values to select
 before expanding can be specified with the `select_items` key. In the above
@@ -375,6 +382,53 @@ select_items: [0, 1, 2]
 
 This is done on a per-row basis; since each row might have a different number
 of items in an array, the selected indices might vary for each row.
+
+#### remove_nulls Option
+
+All Null items can be removed from the array before selecting and expanding. This is
+specified by setting the `remove_nulls` key to True:
+
+```yaml
+expand_columns:
+    sites:
+        - sampleShed:
+            remove_nulls: True
+            select_items: -1
+```
+
+For example, with the following sites table:
+
+| sampleShed               |
+|--------------------------|
+| ['hosptl', None, 'dorm'] |
+
+Removing the null values will result in:
+
+| sampleShed         |
+|--------------------|
+| ['hosptl', 'dorm'] |
+
+##### max_length Option
+
+The `max_length` option does not modify any data. Instead, it logs an error message
+to tell the user that an array has too many elements. A common example is if you
+want to make sure that only one value is present in a certain column you would
+set `max_length` to one, although any value is allowed. Below is an example
+configuration:
+
+```yaml
+expand_columns:
+    sites:
+        - sampleShed:
+            remove_nulls: True
+            max_length: 1
+```
+
+If `remove_nulls` is also set to True, then the null values are removed first,
+followed by checking the length with `max_length`.
+
+If `select_items` is specified, then `max_length` is performed before selecting
+the items.
 
 ### Action: drop_columns
 
