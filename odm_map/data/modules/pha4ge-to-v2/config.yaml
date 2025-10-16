@@ -37,6 +37,7 @@ steps:
       filters: filters/pha4ge_to_v2_filters_empty_samples.csv
   - action: filter
     params:
+      # Remove blank and <ignore> values
       filters: filters/pha4ge_to_v2_filters_before_id.csv
   - action: save
     if: "{debug_mode}"
