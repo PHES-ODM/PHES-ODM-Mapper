@@ -360,13 +360,13 @@ class FunctionBindings:
 
         return len(rows) if rows is not None else 0
 
-    def datetimeparse(self, d, ignoretz=True) -> Any:
+    def datetime(self, d, ignoretz=True) -> Any:
         if not d or not isinstance(d, str):
             return d
 
         return self.datetimetz([d, d])
 
-    def dateparse(self, d) -> Any:
+    def date(self, d) -> Any:
         if not d or not isinstance(d, str):
             return d
         return self.datetimetz([d])
