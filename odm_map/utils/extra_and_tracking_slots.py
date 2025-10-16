@@ -229,20 +229,25 @@ def add_extra_and_tracking_slots_to_schema_class(
     """
     class_definition = schema.schema.classes[class_name]
 
-    # Add all the tracking slots to the class definition, if they don't already exist
+    # Determine which extra and tracking slots from extra_and_tracking_slots aren't
+    # already in the class in the schema
     extra_and_tracking_slots = list(
         dict.fromkeys(
             [c for c in extra_and_tracking_slots if c not in class_definition.slots]
         )
     )
+
+    # Add the slots to the class definition
     class_definition.slots.extend(extra_and_tracking_slots)
 
     # Add all the tracking slots to the top-level schema slots
     for slot in extra_and_tracking_slots:
         rng = TrackingSlotsTypes.get(slot, "string")
-        schema.schema.slots[slot] = SlotDefinition(
-            name=slot, from_schema=schema.schema.id, range=rng
+        schema.add_slot(
+            SlotDefinition(name=slot, from_schema=schema.schema.id, range=rng)
         )
+
+    schema.set_modified()
 
 
 def add_extra_and_tracking_slots_to_schema(
@@ -341,7 +346,7 @@ def add_source_tracking_columns(
     tracking_slots = get_tracking_slots()
     existing_tracking_slots = [c for c in df.columns if c in tracking_slots]
     if len(existing_tracking_slots) > 0:
-        raise ValueError(
+        logger.error(
             f"Loaded data already has one or more columns with the same name as a tracking column: {existing_tracking_slots}"
         )
 
