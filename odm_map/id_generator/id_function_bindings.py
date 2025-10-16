@@ -127,59 +127,44 @@ class FunctionBindings:
                 time components of the object should be ignored and the timezone used.
                 It can be converted to a string by using %z in datetime.strftime.
         """
+        orig_val = val
         if isinstance(val, str):
-            orig_val = val
             val = val.upper()
+            match = re.search(r"(UTC)(\+|\-)([0-9\:]+)", val)
+            if match is not None:
+                final = None
+                # sign is + or -
+                sign = match[2]
+                # delta is in the form "hhmm", "hmm", "hh", "h", "hh:mm", or "h:mm"
+                delta = match[3]
+                h = m = None
+                if delta.count(":") == 1:
+                    # delta is in the form "hh:mm" or "h:mm"
+                    check_h, check_m = delta.split(":")
+                    if (
+                        check_h.isdigit()
+                        and len(check_h) <= 2
+                        and check_m.isdigit()
+                        and len(check_m) <= 2
+                    ):
+                        h, m = int(check_h), int(check_m)
+                elif delta.isdigit():
+                    if len(delta) == 4:
+                        # delta is in the form "hhmm"
+                        h, m = delta[:2], delta[2:]
+                    elif len(delta) == 3:
+                        # delta is in the form "hmm"
+                        h, m = delta[:1], delta[1:]
+                    elif len(delta) == 2 or len(delta) == 1:
+                        # delta is in the form "hh" or "h"
+                        h, m = delta, "0"
 
-            keep_part_prefix = ["UTC-", "UTC+", "Z-", "Z+"]
-            for cur_part_prefix in keep_part_prefix:
-                if cur_part_prefix in val:
-                    val = cur_part_prefix + val.rsplit(cur_part_prefix, maxsplit=1)[-1]
-                    break
-
-            negate = False
-            if val.startswith("UTC-") or val.startswith("UTC+"):
-                # If UTC is specified, then in ISO format the timezone is the negative of the UTC offset
-                negate = True
-                delta = val.split("UTC")[1]
-            else:
-                delta = None
-
-            if delta:
-                # Parse the delta so it's in the format "+HHMM", "-HHMM", or "HHMM"
-                if delta.count(":") <= 1:
-                    sign = delta[0] if delta[0] in ["-", "+"] else ""
-                    delta_no_sign = delta[1 if sign else 0 :]
-                    parts = delta_no_sign.split(":")
-                    new_delta = ""
-                    for idx, part in enumerate(parts):
-                        if part.isdigit():
-                            part_num = int(part)
-                            if (idx == 0 and part_num <= 13) or (
-                                idx == 1 and part_num <= 59
-                            ):
-                                new_delta = f"{new_delta}{part_num:02d}"
-                    if new_delta:
-                        delta = f"{sign}{new_delta}"
-
-            # delta is the value after the UTC part (eg. 4 for "UTC+4")
-            if delta and "_" not in delta:
-                # Convert to integer, retrieve the sign and make delta positive
-                delta = int(delta)
-                if negate:
-                    delta = -delta
-                if delta < 0:
-                    delta = -delta
-                    sign = "-"
-                else:
-                    sign = "+"
-                # Add "00" to the end of delta (eg. 4 becomes "400", ie 4 hours)
-                if delta >= 0 and delta <= 99:
-                    delta *= 100
-                # Create the new timezone string and parse it
-                val = f"{sign}{delta:04d}"
-                tz_obj = datetime.datetime.strptime(val, "%z")
-                return tz_obj
+                if h is not None and m is not None:
+                    h = int(h)
+                    m = int(m)
+                    final = f"{sign}{h:02d}{m:02d}"
+                    tz_obj = datetime.datetime.strptime(final, "%z")
+                    return tz_obj
 
         raise ValueError(f"Cannot parse value as timezone: {orig_val}")
 
@@ -209,9 +194,11 @@ class FunctionBindings:
                 empty, then the date is ommitted in the output string (eg. 10:10:00-0700 or 10:10:00).
                 Any input date component that cannot be parsed will be treated as empty.
         """
+        report_timezone_error = True
         if isinstance(d, str):
             if split_at is None or split_at not in d:
                 d = [d, d, d]
+                report_timezone_error = False
             else:
                 d = d.split(split_at)
 
@@ -280,9 +267,10 @@ class FunctionBindings:
                     source_file, source_row = (
                         self.generator.get_current_source_file_and_row()
                     )
-                logger.warning(
-                    f"Could not parse {cur_format_name}: {val} (from row {source_row + 1} of file {source_file})"
-                )
+                if report_timezone_error or idx != 2:
+                    logger.warning(
+                        f"Could not parse {cur_format_name}: {val} (from row {source_row + 1} of file {source_file})"
+                    )
 
         date_obj, time_obj, time_zone_obj = objects
 
