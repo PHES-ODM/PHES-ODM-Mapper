@@ -235,7 +235,8 @@ class DataCleaner(object):
         source_values: List[str],
         target_values: List[str],
         can_be_anything: bool,
-        source_value_formatter: Callable[[str], str] = None,
+        clear_unknown_values: bool = False,
+        source_value_formatter: Optional[Callable[[str], str]] = None,
     ) -> pd.Series:
         """A general cleaning function for cleaning a single slot in a class. This is called by self.general_map_class.
 
@@ -270,7 +271,12 @@ class DataCleaner(object):
                 unknown_enums_history will remain unchanged. It is usually set to True if the slot has at
                 least one range that is not an enumeration. If False then if a value in the slot is not
                 found in source_values, then it is counted as an invalid value and stored in unknown_enums_history.
-            source_value_formatter (Callable[[str], str], optional): _description_. Defaults to None.
+            clear_unknown_values (bool): If True then any source value that is unrecognized (ie. is not found
+                in source_values) gets cleared in df_column (set to None). If False then unrecognized source
+                values are left unchanged. Defaults to False.
+            source_value_formatter (Optional[Callable[[str], str]], optional): Function that formats all the source values
+                within df_column before trying to map (from source_values[idx] to target_values[idx]). If None then the
+                default behavior is to use the source values unchanged when mapping.
 
         Returns:
             pd.Series: A copy of the column df_column with all the cleaning/mapping performed according to
@@ -315,10 +321,18 @@ class DataCleaner(object):
                 except Exception:
                     if not can_be_anything:
                         # Add the class name, slot name, original value to the history of unknown enum
-                        # values. We report this to the user
-                        self.add_to_change_history(
-                            unknown_enums_history, class_name, slot_name, old_v, None
-                        )
+                        # values. We report this to the user. Note if the original value (old_v) is
+                        # empty and the slot is not required then an empty value is allowed.
+                        if clear_unknown_values:
+                            v[v_idx] = None
+                        if (not pd.isna(old_v) and old_v != "") or slot_defn.required:
+                            self.add_to_change_history(
+                                unknown_enums_history,
+                                class_name,
+                                slot_name,
+                                old_v,
+                                None,
+                            )
                     pass
             if slot_defn.multivalued:
                 return v
@@ -334,10 +348,11 @@ class DataCleaner(object):
         clean_title: str,
         df: pd.DataFrame,
         class_name: str,
-        report_unknown_values_only: bool,
         get_source_values: Callable[[EnumDefinition], str],
         get_target_values: Callable[[EnumDefinition], str],
-        source_value_formatter: Callable[[str], str],
+        source_value_formatter: Optional[Callable[[str], str]],
+        report_unknown_values: bool = False,
+        clear_unknown_values: bool = False,
     ) -> pd.DataFrame:
         """A general cleaning operation to be called for each class that we want to clean. It works by formatting all values
         (using the function source_value_formatter) in the class's DataFrame for all slots that are enumerations, then mapping
@@ -353,9 +368,6 @@ class DataCleaner(object):
             df (pd.DataFrame): The DataFrame for the class. A copy is made and modified (and returned), with the original
                 value left unchanged.
             class_name (str): The name of the class that the DataFrame belongs to.
-            report_unknown_values_only (bool): If True, then the clean operation will only report unknown enumeration
-                values found in each enum slot of the DataFrame. In this case, get_source_values, get_target_values,
-                and source_value_formatter should all be None
             get_source_values (Callable[[EnumDefinition], str]): Function that takes an EnumDefinition as a parameter and
                 returns a list of source values for mapping for the enum. For a given enum, get_source_values(enum)[idx]
                 maps to get_target_values(enum)[idx]. If get_source_values is None, then the default will be to return
@@ -364,26 +376,17 @@ class DataCleaner(object):
                 returns a list of target values for mapping for the enum. For a given enum, get_source_values(enum)[idx]
                 maps to get_target_values(enum)[idx]. If get_target_values is None, then the default will be to return
                 all permissible values of the enum (ie. list(enum.permissible_values.keys()))
-            source_value_formatter (Callable[[str], str]): Function that formats all the source values within the slots
-                of the DataFrame before trying to map (from get_source_values(enum)[idx] to get_target_values(enum)[idx]).
-                If None then the default behavior is to use the source values unchanged when mapping.
+            source_value_formatter (Optional[Callable[[str], str]], optional): Function that formats all the source values
+                within the slots of the DataFrame before trying to map (from get_source_values(enum)[idx] to
+                get_target_values(enum)[idx]). If None then the default behavior is to use the source values unchanged when
+                mapping.
+            clear_unknown_values (bool): If True then any source value that is unrecognized (ie. is not found
+                in source_values) gets cleared in df (set to None). If False then unrecognized source
+                values are left unchanged. Defaults to False.
 
         Returns:
             pd.DataFrame: A copy of df with all the slots that are enumerations cleaned according to the parameters.
         """
-        if report_unknown_values_only and (
-            get_source_values is not None
-            or get_target_values is not None
-            or source_value_formatter is not None
-        ):
-
-            def _is_none(v):
-                return "None" if v is None else "Not None"
-
-            raise ValueError(
-                f"report_unknown_values_only is True but the following values must all be None: get_source_values ({_is_none(get_source_values)}), get_target_values ({_is_none(get_target_values)}), source_value_formatter ({_is_none(source_value_formatter)})"
-            )
-
         logger.debug(f"{clean_title}: class '{class_name}'")
         df = df.copy()
 
@@ -444,12 +447,13 @@ class DataCleaner(object):
                     target_values=target_values,
                     can_be_anything=can_be_anything,
                     source_value_formatter=source_value_formatter,
+                    clear_unknown_values=clear_unknown_values,
                 )
-
-        self.report_change_history(
-            unknown_enums_history if report_unknown_values_only else change_history,
-            clean_title,
-        )
+        self.report_change_history(change_history, clean_title)
+        if report_unknown_values:
+            self.report_change_history(
+                unknown_enums_history, "Unrecognized enum values"
+            )
 
         return df
 
@@ -537,10 +541,11 @@ class DataCleaner(object):
                         clean_title="Corrected capitalization and spacing",
                         df=df,
                         class_name=class_name,
-                        report_unknown_values_only=False,
                         get_source_values=_get_source_values,
                         get_target_values=None,
                         source_value_formatter=_lowercase_minimize_spacing,
+                        report_unknown_values=True,
+                        clear_unknown_values=True,
                     )
                 elif clean_name == "add_ontology_ids_to_enums" and clean_params:
 
@@ -565,20 +570,11 @@ class DataCleaner(object):
                         clean_title="Added ontology IDs",
                         df=df,
                         class_name=class_name,
-                        report_unknown_values_only=False,
                         get_source_values=_get_source_values,
                         get_target_values=None,
                         source_value_formatter=_lowercase_minimize_spacing,
-                    )
-                elif clean_name == "report_unknown_enum_values" and clean_params:
-                    self.general_map_class(
-                        clean_title="Unrecognized enum value(s)",
-                        df=df,
-                        class_name=class_name,
-                        report_unknown_values_only=True,
-                        get_source_values=None,
-                        get_target_values=None,
-                        source_value_formatter=None,
+                        report_unknown_values=False,
+                        clear_unknown_values=False,
                     )
                 elif clean_name == "format_columns":
                     df = self.clean_format_columns(
