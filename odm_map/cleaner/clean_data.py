@@ -375,7 +375,7 @@ class DataCleaner(object):
             get_target_values (Callable[[EnumDefinition], str]): Function that takes an EnumDefinition as a parameter and
                 returns a list of target values for mapping for the enum. For a given enum, get_source_values(enum)[idx]
                 maps to get_target_values(enum)[idx]. If get_target_values is None, then the default will be to return
-                all permissible values of the enum (ie. list(enum.permissible_values.keys()))
+                all permissible values of all the enums (ie. list(enum.permissible_values.keys()))
             source_value_formatter (Optional[Callable[[str], str]], optional): Function that formats all the source values
                 within the slots of the DataFrame before trying to map (from get_source_values(enum)[idx] to
                 get_target_values(enum)[idx]). If None then the default behavior is to use the source values unchanged when
@@ -532,6 +532,8 @@ class DataCleaner(object):
                 if clean_name == "correct_enums" and clean_params:
 
                     def _get_source_values(enum: EnumDefinition) -> List[Any]:
+                        # Get all permissible values of the enum, with multiple consecutive
+                        # spaces reduced to one space, and the value made lowercase.
                         return [
                             re.sub("  +", " ", v.lower())
                             for v in list(enum.permissible_values.keys())
