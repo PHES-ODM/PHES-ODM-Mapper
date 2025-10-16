@@ -19,7 +19,6 @@ from linkml_runtime.linkml_model.meta import EnumDefinition
 from odm_map.utils.general_utils import (
     read_data_frame,
     save_data_frame,
-    get_unique_output_file,
     make_multivalued,
     EXCEL_FILE_KEY,
 )
@@ -194,6 +193,10 @@ class DataCleaner(object):
         old_value: str,
         new_value: str,
     ):
+        if new_value is None:
+            new_value = ""
+        if old_value is None:
+            old_value = ""
         if class_name not in change_history:
             change_history[class_name] = {}
         if slot_name not in change_history[class_name]:
@@ -211,7 +214,7 @@ class DataCleaner(object):
                 changes_items = []
                 for old_val, old_val_data in slot_data.items():
                     for new_val, num_changes in old_val_data.items():
-                        if new_val is not None:
+                        if new_val is not None and new_val != "":
                             cur_changes = f"{old_val} -> {new_val} ({num_changes} time{'' if num_changes == 1 else 's'})"
                         else:
                             cur_changes = f"{old_val if old_val else '<empty>'} ({num_changes} time{'' if num_changes == 1 else 's'})"
@@ -431,16 +434,16 @@ class DataCleaner(object):
                 # There are source and target values, so perform the mapping of each row
                 # for slot_name from source_values[idx] to target_values[idx] when possible
                 df[slot_name] = self.general_map_slot(
-                    clean_title,
-                    change_history,
-                    unknown_enums_history,
-                    df[slot_name],
-                    class_name,
-                    slot_name,
-                    source_values,
-                    target_values,
-                    can_be_anything,
-                    source_value_formatter,
+                    clean_title=clean_title,
+                    change_history=change_history,
+                    unknown_enums_history=unknown_enums_history,
+                    df_column=df[slot_name],
+                    class_name=class_name,
+                    slot_name=slot_name,
+                    source_values=source_values,
+                    target_values=target_values,
+                    can_be_anything=can_be_anything,
+                    source_value_formatter=source_value_formatter,
                 )
 
         self.report_change_history(
@@ -531,13 +534,13 @@ class DataCleaner(object):
                         ]
 
                     df = self.general_map_class(
-                        "Corrected capitalization and spacing",
-                        df,
-                        class_name,
-                        False,
-                        _get_source_values,
-                        None,
-                        _lowercase_minimize_spacing,
+                        clean_title="Corrected capitalization and spacing",
+                        df=df,
+                        class_name=class_name,
+                        report_unknown_values_only=False,
+                        get_source_values=_get_source_values,
+                        get_target_values=None,
+                        source_value_formatter=_lowercase_minimize_spacing,
                     )
                 elif clean_name == "add_ontology_ids_to_enums" and clean_params:
 
@@ -559,23 +562,23 @@ class DataCleaner(object):
                         )
 
                     df = self.general_map_class(
-                        "Added ontology IDs",
-                        df,
-                        class_name,
-                        False,
-                        _get_source_values,
-                        None,
-                        _lowercase_minimize_spacing,
+                        clean_title="Added ontology IDs",
+                        df=df,
+                        class_name=class_name,
+                        report_unknown_values_only=False,
+                        get_source_values=_get_source_values,
+                        get_target_values=None,
+                        source_value_formatter=_lowercase_minimize_spacing,
                     )
                 elif clean_name == "report_unknown_enum_values" and clean_params:
                     self.general_map_class(
-                        "Unrecognized enum value(s)",
-                        df,
-                        class_name,
-                        True,
-                        None,
-                        None,
-                        None,
+                        clean_title="Unrecognized enum value(s)",
+                        df=df,
+                        class_name=class_name,
+                        report_unknown_values_only=True,
+                        get_source_values=None,
+                        get_target_values=None,
+                        source_value_formatter=None,
                     )
                 elif clean_name == "format_columns":
                     df = self.clean_format_columns(
@@ -695,7 +698,7 @@ class DataCleaner(object):
                                     output_dir, f"{class_name}.csv"
                                 )
                             # Make sure the output file doesn't already exist
-                            output_file = get_unique_output_file(output_file)
+                            # output_file = get_unique_output_file(output_file)
                         else:
                             output_file = None
 
