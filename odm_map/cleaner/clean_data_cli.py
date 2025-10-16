@@ -69,7 +69,6 @@ def main(
                 }
             },
             {"correct_enums": True},
-            {"report_unknown_enum_values": True},
             {"remove_unknown_columns": True},
         ],
     )
