@@ -21,11 +21,11 @@ class_derivations:
       protocolSteps[000,0000=ext_blank]:
         populated_from: nwss
 enum_derivations:
-  vs_reporting_jurisdiction[=mirrored=]:
-    name: vs_reporting_jurisdiction[=mirrored=]
-    mirror_source: true
+  vs_reporting_jurisdiction[=not_mirrored=]:
+    name: vs_reporting_jurisdiction[=not_mirrored=]
+    mirror_source: false
     populated_from: vs_reporting_jurisdiction
-  vs_yne[ext_blank][=mirrored=]:
-    name: vs_yne[ext_blank][=mirrored=]
-    mirror_source: true
+  vs_yne[ext_blank][=not_mirrored=]:
+    name: vs_yne[ext_blank][=not_mirrored=]
+    mirror_source: false
     populated_from: vs_yne[ext_blank]

@@ -12,8 +12,8 @@ class_derivations:
       qualityReports[000,0000=qc_ignore]:
         populated_from: nwss
 enum_derivations:
-  ODMv2_enum_from_vs_yne[qc_ignore]:
-    name: ODMv2_enum_from_vs_yne[qc_ignore]
+  ODMv3_enum_from_vs_yne[qc_ignore]:
+    name: ODMv3_enum_from_vs_yne[qc_ignore]
     mirror_source: false
     populated_from: vs_yne[qc_ignore]
     permissible_value_derivations:

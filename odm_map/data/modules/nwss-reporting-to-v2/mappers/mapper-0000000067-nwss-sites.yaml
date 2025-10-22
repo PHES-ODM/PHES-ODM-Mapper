@@ -7,6 +7,9 @@ class_derivations:
         name: notes
         expr: '"County_names=" + county_names + "; EPA_id=" + epaid + "; EPA_registry_id="
           + epa_registry_id + "; sample_location_specify=" + sample_location_specify'
+      popServ:
+        name: popServ
+        populated_from: population_served
       siteID:
         name: siteID
         populated_from: site_id
@@ -44,12 +47,12 @@ class_derivations:
       sites:
         populated_from: nwss
 enum_derivations:
-  vs_reporting_jurisdiction[=mirrored=]:
-    name: vs_reporting_jurisdiction[=mirrored=]
-    mirror_source: true
+  vs_reporting_jurisdiction[=not_mirrored=]:
+    name: vs_reporting_jurisdiction[=not_mirrored=]
+    mirror_source: false
     populated_from: vs_reporting_jurisdiction
-  shedSet:
-    name: shedSet
+  ODMv3_enum_from_vs_institution_type:
+    name: ODMv3_enum_from_vs_institution_type
     mirror_source: false
     populated_from: vs_institution_type
     permissible_value_derivations:

@@ -12,8 +12,8 @@ class_derivations:
       qualityReports[000,0000=ntc_amplify]:
         populated_from: nwss
 enum_derivations:
-  ODMv2_enum_from_vs_yn[ntc_amplify]:
-    name: ODMv2_enum_from_vs_yn[ntc_amplify]
+  ODMv3_enum_from_vs_yn[ntc_amplify]:
+    name: ODMv3_enum_from_vs_yn[ntc_amplify]
     mirror_source: false
     populated_from: vs_yn[ntc_amplify]
     permissible_value_derivations:

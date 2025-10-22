@@ -51,12 +51,12 @@ class_derivations:
       measures[000,0000=pcr_gene_target-pcr_gene_target_ref-pcr_target-pcr_target_units]:
         populated_from: nwss
 enum_derivations:
-  vs_reporting_jurisdiction[=mirrored=]:
-    name: vs_reporting_jurisdiction[=mirrored=]
-    mirror_source: true
+  vs_reporting_jurisdiction[=not_mirrored=]:
+    name: vs_reporting_jurisdiction[=not_mirrored=]
+    mirror_source: false
     populated_from: vs_reporting_jurisdiction
-  ODMv2_enum_from_vs_pcr_gene_target:
-    name: ODMv2_enum_from_vs_pcr_gene_target
+  ODMv3_enum_from_vs_pcr_gene_target:
+    name: ODMv3_enum_from_vs_pcr_gene_target
     mirror_source: false
     populated_from: vs_pcr_gene_target
     permissible_value_derivations:
@@ -403,8 +403,8 @@ enum_derivations:
       rsvAB:
         name: rsvAB
         populated_from: RSV-A and RSV-B combined
-  ODMv2_enum_from_vs_mic_chem_units:
-    name: ODMv2_enum_from_vs_mic_chem_units
+  ODMv3_enum_from_vs_mic_chem_units:
+    name: ODMv3_enum_from_vs_mic_chem_units
     mirror_source: false
     populated_from: vs_mic_chem_units
     permissible_value_derivations:
@@ -440,8 +440,8 @@ enum_derivations:
         sources:
         - log10 micrograms/g wet sludge
         - log10 micrograms/g dry sludge
-  ODMv2_enum_from_vs_pcr_target:
-    name: ODMv2_enum_from_vs_pcr_target
+  ODMv3_enum_from_vs_pcr_target:
+    name: ODMv3_enum_from_vs_pcr_target
     mirror_source: false
     populated_from: vs_pcr_target
     permissible_value_derivations:

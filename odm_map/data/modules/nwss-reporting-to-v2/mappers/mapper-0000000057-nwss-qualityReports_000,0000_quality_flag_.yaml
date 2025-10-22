@@ -12,8 +12,8 @@ class_derivations:
       qualityReports[000,0000=quality_flag]:
         populated_from: nwss
 enum_derivations:
-  ODMv2_enum_from_vs_yne[quality_flag]:
-    name: ODMv2_enum_from_vs_yne[quality_flag]
+  ODMv3_enum_from_vs_yne[quality_flag]:
+    name: ODMv3_enum_from_vs_yne[quality_flag]
     mirror_source: false
     populated_from: vs_yne[quality_flag]
     permissible_value_derivations:

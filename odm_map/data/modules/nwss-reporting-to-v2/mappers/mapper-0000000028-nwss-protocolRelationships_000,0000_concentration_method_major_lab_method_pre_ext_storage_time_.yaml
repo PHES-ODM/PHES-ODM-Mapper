@@ -21,7 +21,7 @@ class_derivations:
       protocolRelationships[000,0000=concentration_method-major_lab_method-pre_ext_storage_time]:
         populated_from: nwss
 enum_derivations:
-  vs_concentration_method[=mirrored=]:
-    name: vs_concentration_method[=mirrored=]
-    mirror_source: true
+  vs_concentration_method[=not_mirrored=]:
+    name: vs_concentration_method[=not_mirrored=]
+    mirror_source: false
     populated_from: vs_concentration_method

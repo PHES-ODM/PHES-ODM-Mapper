@@ -12,8 +12,8 @@ class_derivations:
       qualityReports[000,0000=pcr_target_below_lod]:
         populated_from: nwss
 enum_derivations:
-  ODMv2_enum_from_vs_yne[pcr_target_below_lod]:
-    name: ODMv2_enum_from_vs_yne[pcr_target_below_lod]
+  ODMv3_enum_from_vs_yne[pcr_target_below_lod]:
+    name: ODMv3_enum_from_vs_yne[pcr_target_below_lod]
     mirror_source: false
     populated_from: vs_yne[pcr_target_below_lod]
     permissible_value_derivations:

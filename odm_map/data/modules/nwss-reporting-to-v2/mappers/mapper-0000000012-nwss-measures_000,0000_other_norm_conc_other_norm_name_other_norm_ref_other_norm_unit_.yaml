@@ -51,12 +51,12 @@ class_derivations:
       measures[000,0000=other_norm_conc-other_norm_name-other_norm_ref-other_norm_unit]:
         populated_from: nwss
 enum_derivations:
-  vs_reporting_jurisdiction[=mirrored=]:
-    name: vs_reporting_jurisdiction[=mirrored=]
-    mirror_source: true
+  vs_reporting_jurisdiction[=not_mirrored=]:
+    name: vs_reporting_jurisdiction[=not_mirrored=]
+    mirror_source: false
     populated_from: vs_reporting_jurisdiction
-  ODMv2_enum_from_vs_other_norm_name:
-    name: ODMv2_enum_from_vs_other_norm_name
+  ODMv3_enum_from_vs_other_norm_name:
+    name: ODMv3_enum_from_vs_other_norm_name
     mirror_source: false
     populated_from: vs_other_norm_name
     permissible_value_derivations:
@@ -93,8 +93,8 @@ enum_derivations:
       <ignore>:
         name: <ignore>
         populated_from: ''
-  ODMv2_enum_from_vs_mic_chem_units_e:
-    name: ODMv2_enum_from_vs_mic_chem_units_e
+  ODMv3_enum_from_vs_mic_chem_units_e:
+    name: ODMv3_enum_from_vs_mic_chem_units_e
     mirror_source: false
     populated_from: vs_mic_chem_units_e
     permissible_value_derivations:

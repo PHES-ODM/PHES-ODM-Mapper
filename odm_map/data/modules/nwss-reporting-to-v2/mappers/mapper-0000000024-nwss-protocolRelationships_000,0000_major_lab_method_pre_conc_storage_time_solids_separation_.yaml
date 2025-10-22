@@ -21,7 +21,7 @@ class_derivations:
       protocolRelationships[000,0000=major_lab_method-pre_conc_storage_time-solids_separation]:
         populated_from: nwss
 enum_derivations:
-  vs_solids_separation[=mirrored=]:
-    name: vs_solids_separation[=mirrored=]
-    mirror_source: true
+  vs_solids_separation[=not_mirrored=]:
+    name: vs_solids_separation[=not_mirrored=]
+    mirror_source: false
     populated_from: vs_solids_separation

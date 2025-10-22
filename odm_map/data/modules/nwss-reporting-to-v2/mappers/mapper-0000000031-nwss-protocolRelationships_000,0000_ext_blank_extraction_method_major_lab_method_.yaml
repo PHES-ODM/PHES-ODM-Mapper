@@ -21,11 +21,11 @@ class_derivations:
       protocolRelationships[000,0000=ext_blank-extraction_method-major_lab_method]:
         populated_from: nwss
 enum_derivations:
-  vs_yne[ext_blank][=mirrored=]:
-    name: vs_yne[ext_blank][=mirrored=]
-    mirror_source: true
+  vs_yne[ext_blank][=not_mirrored=]:
+    name: vs_yne[ext_blank][=not_mirrored=]
+    mirror_source: false
     populated_from: vs_yne[ext_blank]
-  vs_extraction_method[=mirrored=]:
-    name: vs_extraction_method[=mirrored=]
-    mirror_source: true
+  vs_extraction_method[=not_mirrored=]:
+    name: vs_extraction_method[=not_mirrored=]
+    mirror_source: false
     populated_from: vs_extraction_method
