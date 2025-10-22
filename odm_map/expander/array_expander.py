@@ -89,8 +89,8 @@ positive index) then the duplicate indices are removed and ignored.
 
 ## remove_nulls Option
 
-All Null items can be removed from the array before selecting and expanding. This is
-specified by setting the `remove_nulls` key to True:
+All Null items and empty strings can be removed from the array before selecting and
+expanding. This is specified by setting the `remove_nulls` key to True:
 
 ```yaml
 expand_columns:
@@ -102,9 +102,9 @@ expand_columns:
 
 For example, with the following sites table:
 
-| sampleShed               |
-|--------------------------|
-| ['hosptl', None, 'dorm'] |
+| sampleShed                   |
+|------------------------------|
+| ['hosptl', None, 'dorm', ''] |
 
 Removing the null values will result in:
 
@@ -308,20 +308,18 @@ class ArrayExpander(object):
             else:
                 continue
 
-            if (
-                config
-                and ConfigKeys.REMOVE_NULLS_KEY in config
-                and config[ConfigKeys.REMOVE_NULLS_KEY]
-            ):
+            if config and config.get(ConfigKeys.REMOVE_NULLS_KEY, False):
                 # Remove null values from the array
-                expanded_values = [v for v in expanded_values if not pd.isna(v)]
+                expanded_values = [
+                    v for v in expanded_values if not pd.isna(v) and v != ""
+                ]
 
             if config and ConfigKeys.MAX_LENGTH in config:
                 # Make sure we have max_length or fewer items in the array
                 max_length = config[ConfigKeys.MAX_LENGTH]
                 if len(expanded_values) > max_length:
                     logger.error(
-                        f"Row {idx + 1} of table for class {class_name} has more than the maximum allowable {max_length} item{'' if max_length == 1 else 's'}: {val}"
+                        f"Row {idx + 1} of table for class {class_name}, slot {column}, has more than the maximum allowable {max_length} item{'' if max_length == 1 else 's'}: {expanded_values}"
                     )
 
             if config and ConfigKeys.SELECT_ITEMS in config:

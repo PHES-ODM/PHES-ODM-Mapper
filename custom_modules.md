@@ -368,8 +368,8 @@ of items in an array, the selected indices might vary for each row.
 
 #### remove_nulls Option
 
-All Null items can be removed from the array before selecting and expanding. This is
-specified by setting the `remove_nulls` key to True:
+All Null items and empty strings can be removed from the array before selecting
+and expanding. This is specified by setting the `remove_nulls` key to True:
 
 ```yaml
 expand_columns:
@@ -381,9 +381,9 @@ expand_columns:
 
 For example, with the following sites table:
 
-| sampleShed               |
-|--------------------------|
-| ['hosptl', None, 'dorm'] |
+| sampleShed                   |
+|------------------------------|
+| ['hosptl', None, 'dorm', ''] |
 
 Removing the null values will result in:
 
