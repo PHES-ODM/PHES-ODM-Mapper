@@ -28,7 +28,12 @@ from odm_map.utils.extra_and_tracking_slots import TrackingSlots
 from odm_map.progress import ProgressCounter, EmptyCounter
 from odm_map.id_generator.id_function_bindings import FunctionBindings
 from odm_map.id_generator.id_data_bindings import DataBindings
-from odm_map.id_generator.generator_data import GeneratorData, IDValue
+from odm_map.id_generator.generator_data import (
+    GeneratorData,
+    IDValue,
+    get_slot_and_selectors_from_slot,
+    add_code_selector_to_slot,
+)
 from odm_map.id_generator.id_na import isna, EMPTY_OBJ
 from odm_map.id_generator.generator_config_keys import ConfigKeys
 from odm_map.utils.schema_utils import all_primary_keys
@@ -275,7 +280,7 @@ class IDGenerator(object):
                     class_name,
                     cur_data,
                     schema=self.schema,
-                    generated_slots=generated_slots.get(class_name, []),
+                    generated_slots_for_selectors=generated_slots.get(class_name, []),
                     primary_key=self.primary_keys.get(class_name),
                     for_merging=self.for_merging,
                 )
@@ -492,16 +497,48 @@ class IDGenerator(object):
 
         self.id_code_df = id_code_df
 
-    def get_all_generated_slots_from_id_code(self):
+    def get_code_selectors_from_row(self, class_name: str, row_index: int) -> List[str]:
+        """Get the code selectors associated with the specified row in the specified class.
+
+        Args:
+            class_name (str): The class to get the row from.
+            row_index (int): The row index in the class to get the code selectors for.
+
+        Returns:
+            List[str]: A list of the code selectors associated with the row. If there are no
+                code selectors then the default None code selector is returned as [None].
+        """
+        return self.data[class_name].get_code_selectors_from_row(row_index)
+        # # If code selector column doesn't exist, then return the blank code selector [None]
+        # if not self.data[class_name].has_column(CODE_SELECTOR_SLOT):
+        #     return [None]
+
+        # code_selector = self.data[class_name].get_data_value(CODE_SELECTOR_SLOT, row_index)
+
+        # # If code selector value is empty, then return blank code selector [None]
+        # if pd.isna(code_selector) or code_selector == "":
+        #     return [None]
+
+        # # Return the code selectors
+        # return self.get_code_selectors_from_string(str(code_selector))
+
+    def get_all_generated_slots_from_id_code(self) -> Dict[str, Dict[str, List[str]]]:
         # Determine all the ID slots that need to be calculated (in all classes).
         generated_slots = {}
         for _, row in self.id_code_df.iterrows():
             class_name = row[IDCodeColumns.CLASS]
-            slot = row[IDCodeColumns.SLOT]
+            orig_slot = row[IDCodeColumns.SLOT]
+            slot, selectors = get_slot_and_selectors_from_slot(orig_slot)
+            # Add the class to generated_slots dictionary
             if class_name not in generated_slots:
-                generated_slots[class_name] = []
-            if slot not in generated_slots[class_name]:
-                generated_slots[class_name].append(slot)
+                generated_slots[class_name] = {}
+            for selector in selectors:
+                # Add the selector to generated_slots[class_name] dictionary
+                if selector not in generated_slots[class_name]:
+                    generated_slots[class_name][selector] = []
+                # Add the slot to generated_slots[class_name][selector]
+                if slot not in generated_slots[class_name][selector]:
+                    generated_slots[class_name][selector].append(slot)
         return generated_slots
 
     def run_generator(
@@ -625,12 +662,16 @@ class IDGenerator(object):
 
         # Total number of ID cells to generate. This is to report progress.
         self.total_ids = np.sum(
-            [len(self.data[c]) * len(self.data[c].generated_slots) for c in class_names]
+            [
+                len(self.data[c]) * len(self.data[c].get_all_generated_slots())
+                for c in class_names
+            ]
         )
         if output_progress:
             # Set up the ProgressCounter to show progress bars
             totals = [
-                len(self.data[c]) * len(self.data[c].generated_slots)
+                # len(self.data[c]) * len(self.data[c].get_all_generated_slots())
+                self.data[c].number_of_ids_to_calculate
                 for c in class_names
             ]
             bar_totals = {
@@ -660,7 +701,7 @@ class IDGenerator(object):
                 )
 
                 # All the slots in the class that are IDs that need to be generated
-                all_slots = self.data[class_name].generated_slots
+                # all_slots = self.data[class_name].generated_slots
 
                 # Determine the rows to iterate over (based on row_indices parameter)
                 row_indices = orig_row_indices
@@ -674,8 +715,12 @@ class IDGenerator(object):
 
                 # Iterate over all rows to generate the IDs
                 for idx in row_indices:
+                    selectors = self.get_code_selectors_from_row(class_name, idx)
+
                     # Iterate over all slots to generate an ID for in the current row
-                    for slot in all_slots:
+                    for slot in self.data[
+                        class_name
+                    ].get_generated_slots_with_selectors(selectors):
                         if slot not in self.data[class_name].columns:
                             raise ValueError(
                                 f"Found slot '{slot}' in class '{class_name}' in ID code file that does not exist in the source data."
@@ -724,7 +769,9 @@ class IDGenerator(object):
             IDCodeColumns.CODE_PREFIX, IDCodeColumns.CODE_SUFFIX
         ).format(idx)
 
-    def get_code(self, class_name: str, slot: str, idx: int) -> Optional[str]:
+    def get_code(
+        self, class_name: str, slot: str, idx: int, code_selector: str
+    ) -> Optional[str]:
         """Get the ID code for generating the ID for the specified slot.
 
         Args:
@@ -734,22 +781,47 @@ class IDGenerator(object):
                 file. We should execute the code starting with the first index (index 0). If the code
                 results in an empty value, we should advance to the next code index, and continue until
                 a non-empty value is obtained, or we reach a code index where no code is available.
+            code_selector (str): A selector that specifies different code to access associated with the
+                slot. This allows the same slot to have different code depending on this selector.
+                In the ID code configuration file, code with a different selector are specified by adding
+                the selector after a colon after the slot name. For example, if selector is "pooled" and the
+                slot is "sampleID", then we would access code in the config file for the slot "sampleID:pooled".
+                If code for this modified slot does not exist, then we will step down to trying to select code
+                for the slot "sampleID" without the selector. If code_selector is None then no selector
+                is added to the slot (ie. we would access code for the slot "sampleID" instead of
+                "sampleID:pooled").
 
         Returns:
             Optional[str]: The code (at index idx) that generates the ID for the slot. None if no code
                 is available.
         """
+        select_slots = []  # [slot]
+
+        code_selector = None if pd.isna(code_selector) else str(code_selector)
+        if code_selector is not None and code_selector != "":
+            select_slots = [
+                add_code_selector_to_slot(slot, code_selector)
+            ] + select_slots
+        else:
+            select_slots = [slot]
+
         # Get the code column name at the index, and make sure the column exists.
         code_column = self.make_code_column_name(idx)
         if code_column not in self.id_code_df.columns:
             return None
 
-        # Filter to get all rows for the specified class and slot.
-        code = self.id_code_df[
-            (self.id_code_df[IDCodeColumns.CLASS] == class_name)
-            & (self.id_code_df[IDCodeColumns.SLOT] == slot)
+        # Get all the code for the class. We will select the code for the slot from this.
+        id_code_class_df = self.id_code_df[
+            self.id_code_df[IDCodeColumns.CLASS] == class_name
         ]
-        if len(code) == 0:
+
+        # Try to get the code for the slots in select_slots. Once we find a slot with code we will use it.
+        code = None
+        for cur_slot in select_slots:
+            code = id_code_class_df[id_code_class_df[IDCodeColumns.SLOT] == cur_slot]
+            if len(code) > 0:
+                break
+        if code is None or len(code) == 0:
             return None
 
         code = code[code_column].iloc[0]
@@ -773,7 +845,8 @@ class IDGenerator(object):
         max_rows: Optional[int] = None,
         ignore_indices: Optional[List[int]] = None,
         linkage_path: Optional[Union[Dict, List[Dict]]] = None,
-        return_indices: Optional[bool] = False,
+        return_indices: bool = False,
+        ignore_current_row: bool = False,
     ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """Get the rows in target_class, that are linked to the row(s) at index source_index in source_class. Use the linkage path to determine
         the linking steps required to go from source_class to target_class. If linkage_path is None then we use the
@@ -792,9 +865,11 @@ class IDGenerator(object):
                 will not be returned. If None then all rows are considered.
             linkage_path (Optional[Union[Dict, List[Dict]]], Optional): Configuration of how to link from source_class to target_class. If None then
                 the default linkage in the config file is used. Defaults to None.
-            return_indices (Optional[bool], Optional): If True then return the indices of all the rows. The return value
+            return_indices (bool): If True then return the indices of all the rows. The return value
                 will be a tuple of the form (rows, indices) where indices is a 1-D array of indices for each row. If False
                 then only the rows are returned. Defaults to False.
+            ignore_current_row (bool): If True then do not include the current row in the results. If False then
+                the current row might be included in the results.
 
         Returns:
             Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]: If return_indices is False then returns an 2D Numpy array that is
@@ -814,8 +889,15 @@ class IDGenerator(object):
             return _ret_value(None, None)
 
         # If the source_class and target_class are the same, then we just return the source row
-        # (in class source_class and row source_index)
-        if source_class == target_class:
+        # (in class source_class and row source_index). Only do this if linkage_path is None. If
+        # linkage_path is not None then it's possible that the caller is requesting a row other
+        # than the current row. If ignore_current_row is True (and source_class == target_class)
+        # then we do not return the current row.
+        if (
+            source_class == target_class
+            and linkage_path is None
+            and not ignore_current_row
+        ):
             rows = self.data[source_class].get_rows_at_index(source_index)
             return _ret_value(rows, [source_index])
 
@@ -845,6 +927,7 @@ class IDGenerator(object):
             raise ValueError(
                 f"No row(s) at index {source_index} in class '{source_class}'"
             )
+        orig_ignore_indices = ignore_indices.copy() if ignore_indices else []
         for linkage in linkage_path:
             linkage_source_class = linkage[LinkageKeys.SOURCE_CLASS]
             linkage_source_slot = linkage[LinkageKeys.SOURCE_SLOT]
@@ -864,6 +947,18 @@ class IDGenerator(object):
             # in the target table.
             row_match = tuple(set(map(tuple, rows)))
 
+            # If ignore_current_row is True and the target class is the current source class then add the
+            # current row index (source_index) to ignore_indices. We will NOT return the current row in
+            # the results.
+            if ignore_current_row and source_class == linkage_target_class:
+                ignore_indices = orig_ignore_indices.copy()
+                if ignore_indices is None:
+                    ignore_indices = []
+                ignore_indices.append(source_index)
+            else:
+                ignore_indices = orig_ignore_indices
+
+            # Get the rows
             rows, indices = self.data[linkage_target_class].get_rows_equal(
                 linkage_target_slot,
                 row_match,
@@ -885,6 +980,7 @@ class IDGenerator(object):
         target_class: str,
         linkage_path: Optional[Union[Dict, List[Dict]]] = None,
         return_index: bool = False,
+        ignore_current_row: bool = False,
     ) -> Union[np.ndarray, Tuple[np.ndarray, int]]:
         """Get the first row in target_class that is linked to the row at index source_index in the class source_class.
 
@@ -896,8 +992,10 @@ class IDGenerator(object):
             target_class (str): The target class to get the linked rows from.
             linkage_path (Optional[Union[Dict, List[Dict]]], Optional): The configuration specifying how to link from source_class to target_class. If None
                 then the default linkage path from source_class to target_class in the config file is used. Defaults to None.
-            return_index (Optional[bool], Optional): If True then return the index of the first linked row, in addition to
+            return_index (bool): If True then return the index of the first linked row, in addition to
                 the row. The return value will be the tuple (row, index)
+            ignore_current_row (bool): If True then do not include the current row in the results. If False then
+                the current row might be included in the results.
 
         Returns:
             Union[np.ndarray, Tuple[np.ndarray, int]]: If return_index is False then a 1D Numpy array is returned
@@ -913,6 +1011,7 @@ class IDGenerator(object):
             max_rows=1,
             linkage_path=linkage_path,
             return_indices=return_index,
+            ignore_current_row=ignore_current_row,
         )
         if rows is None or len(rows) == 0:
             row = None
@@ -933,6 +1032,7 @@ class IDGenerator(object):
         target_slot: str,
         linkage_path: Optional[Union[Dict, List[Dict]]] = None,
         generate_index_if_primary_key: bool = True,
+        ignore_current_row: bool = False,
     ) -> Any:
         """Get the first value in target_class and slot target_slot that is linked to the row in source_class at row index
         source_index, using the linkage_path to determine how to link from source_class to target_class. If linkage_path
@@ -953,18 +1053,25 @@ class IDGenerator(object):
                 generate the index of the first linked value before returning it if the index has not yet been generated.
                 In a lot of cases we do not need the index, and calculating the index can result in circular dependencies
                 that cause an error.
+            ignore_current_row (bool): If True then do not include the current row in the results. If False then
+                the current row might be included in the results.
 
         Returns:
             Any: The first linked value in the target class and slot. If no linked value is found then None is returned.
         """
         row, idx = self.get_first_linked_row(
-            source_class, source_index, target_class, linkage_path, return_index=True
+            source_class,
+            source_index,
+            target_class,
+            linkage_path,
+            return_index=True,
+            ignore_current_row=ignore_current_row,
         )
         if row is None:
             return None
 
         # If the target slot is an ID that needs to be generated, then generate it and return the value
-        if target_slot in self.data[target_class].generated_slots:
+        if target_slot in self.data[target_class].get_all_generated_slots():
             cur_value = self.data[target_class].get_value_from_row(row, target_slot)
             # The value needs to be generated if it is empty (ie. None, EMPTY_OBJ, or root_id is None) or
             # if the root ID has been generated but its index has not (ie. generate_primary_key_index() hasn't been called yet)
@@ -1160,45 +1267,56 @@ class IDGenerator(object):
             interpreter = self.interpreter
             orig_symtable = interpreter.symtable
 
-            code_idx = -1
-            while True:
-                code_idx += 1
-                code = self.get_code(class_name, slot, code_idx)
+            code_selectors = self.data[class_name].get_code_selectors_from_row(
+                row_index
+            )
 
-                if pd.isna(code) or not code:
-                    v = None
+            has_value = False
+            for code_selector in code_selectors:
+                if has_value:
                     break
+                code_idx = -1
+                while not has_value:
+                    code_idx += 1
+                    code = self.get_code(class_name, slot, code_idx, code_selector)
 
-                orig_current_class = self.current_class
-                orig_current_row_index = self.current_row_index
-                self.current_class = class_name
-                self.current_row_index = row_index
+                    if pd.isna(code) or not code:
+                        if code_idx > 0:
+                            v = None
+                            has_value = True
+                        break
 
-                interpreter.symtable = self.interpreter_clean_symtable.copy()
-                try:
-                    v = interpreter(code, raise_errors=True)
-                except Exception as e:
-                    # format_exc() will provide extra traceback information related to the exception that occurred
-                    # when executing the code string.
-                    print("*" * 100)
-                    print(traceback.format_exc())
-                    print("=" * 100)
-                    raise ValueError(
-                        f"Error when calculating ID for '{class_name}.{slot}:{row_index}': {e}\nCode: {code}"
-                    )
-                finally:
-                    self.current_class = orig_current_class
-                    self.current_row_index = orig_current_row_index
+                    orig_current_class = self.current_class
+                    orig_current_row_index = self.current_row_index
+                    self.current_class = class_name
+                    self.current_row_index = row_index
 
-                # If the variable "target" has been set by the code, then use that value instead
-                if "target" in interpreter.symtable:
-                    v = interpreter.symtable["target"]
+                    interpreter.symtable = self.interpreter_clean_symtable.copy()
+                    try:
+                        v = interpreter(code, raise_errors=True)
+                    except Exception as e:
+                        # format_exc() will provide extra traceback information related to the exception that occurred
+                        # when executing the code string.
+                        print("*" * 100)
+                        print(traceback.format_exc())
+                        print("=" * 100)
+                        raise ValueError(
+                            f"Error when calculating ID for '{class_name}.{slot}:{row_index}': {e}\nCode: {code}"
+                        )
+                    finally:
+                        self.current_class = orig_current_class
+                        self.current_row_index = orig_current_row_index
 
-                # If the code resulted in an empty value, continue to the next code column
-                if isna(v) or v == "":
-                    continue
+                    # If the variable "target" has been set by the code, then use that value instead
+                    if "target" in interpreter.symtable:
+                        v = interpreter.symtable["target"]
 
-                break
+                    # If the code resulted in an empty value, continue to the next code column
+                    if isna(v) or v == "":
+                        continue
+
+                    has_value = True
+                    break
 
             interpreter.symtable = orig_symtable
 

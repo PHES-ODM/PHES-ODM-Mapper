@@ -493,3 +493,40 @@ which would result in the output string `2022-11-16T07:00:00-0400`. If the time
 is empty, then just the date is returned (eg. `2022-11-16`). If the date is
 empty, then just the time is returned (eg. `07:00:00-0400`). If both are empty,
 then an empty string is returned. The timezone can also be omitted.
+
+## Code Selectors
+
+It's possible to specify to use a different code row in the code configuration file. This is done through code selectors. There are two parts to code selectors:
+
+1. The code selector column in the actual data that we are generating IDs for. This column is named `extra_code_selector`. Within this column, a list of comma-separated code selectors can be specified.
+2. The code selector markers in the ID generation code config file. This is also a list of comma-separated code selectors, with the code selectors being specified in the `slot` column.
+
+Below is an example of code selectors in the data:
+
+| sampleID  | name | _extra_code_selector |
+|-----------|------|----------------------|
+| mySample1 |      | pooling,main         |
+| mySample2 |      | main                 |
+| mySample2 |      | other2               |
+| mySample3 |      |                      |
+
+The code selectors above are `pooling` and `main` for the first sample, `main` for the second sample, `other2` for the third sample, and no selector for the fourth sample.
+
+Below is an example of code selectors in the ID generation config file:
+
+| class   | slot               | code                                       |
+|---------|--------------------|--------------------------------------------|
+| samples | name               | fn.makeid(dat.samples.sampleID, "default") |
+| samples | name:pooling       | fn.makeid(dat.samples.sampleID, "pooling") |
+| samples | name:main          | fn.makeid(dat.samples.sampleID, "main")    |
+| samples | name:other1,other2 | fn.makeid(dat.samples.sampleID, "other")   |
+
+For `mySample1`, with `pooling` and `main` as the selectors, we will first execute the code for `name:pooling`. If that code produces an output, then it will be used to populate the `name` column. If it doesn't produce output, then we will execute the code for `name:main` and use the resulting value.
+
+For `mySample2`, we will only execute the code for `name:main`.
+
+For `mySample3`, we will only execute the code for `name:other1,other2`. Note that if the code selector for `mySample3` was `other1` then the same code for `name:other1,other2` will be executed, since within the comma-separated list of code-selectors we have `other1`.
+
+For `mySample3`, we will only execute the code for `name`.
+
+Note that we can also specify the default (or blank) code selector by using a comma with no value after it. So in the data we are generating code for we can use something like `pooling,,main` to execute code for `name:pooling`, then the default (no code selector) `name`, and finally the code for `name:main`. Using `pooling,main,` with a trailing comma will execute the default `name` code last. This pattern can also be used in the `_extra_code_selector` column.

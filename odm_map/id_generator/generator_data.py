@@ -39,6 +39,7 @@ from odm_map.utils.extra_and_tracking_slots import (
     is_extra_or_tracking_slot,
     is_tracking_slot,
     is_extra_slot,
+    EXTRA_SLOT_PREFIX,
 )
 from odm_map.utils.general_utils import (
     read_data_frame,
@@ -74,6 +75,10 @@ USE_PRIMARY_KEY_LIST = True
 # will ensure the two rows are treated as being different.
 INCLUDE_INITIAL_VALUE_SLOTS_IN_MATCH_COLUMNS = False
 
+CODE_SELECTOR_SLOT = f"{EXTRA_SLOT_PREFIX}code_selector"
+CODE_SELECTOR_SPECIFIER = ":"
+CODE_SELECTOR_SEPARATOR = ","
+
 
 def match_len(a: str, b: str) -> int:
     """Count the number of characters at the start of two strings that are equal in the two strings.
@@ -103,6 +108,70 @@ def match_len(a: str, b: str) -> int:
     return idx + 1
 
 
+def add_code_selector_to_slot(slot: str, selector: str) -> str:
+    return f"{slot}{CODE_SELECTOR_SPECIFIER}{selector}"
+
+
+def remove_code_selectors_from_slot(slot: str) -> str:
+    """Remove the code selector from the slot name. The code selector appears after the string
+    CODE_SELECTOR_SPECIFIER. For example, if the code selector specifier is ":", then a slot
+    named "sampleID:pooled,main" would result in "sampleID" being returned.
+
+    Args:
+        slot (str): The slot to remove the code selector from.
+
+    Returns:
+        str: The slot with the code selector removed. If no code selector is found then slot is returned
+            unchanged.
+    """
+    if not isinstance(slot, str):
+        return slot
+    return slot.split(CODE_SELECTOR_SPECIFIER)[0]
+
+
+def get_slot_and_selectors_from_slot(slot: str) -> Tuple[str, List[str]]:
+    """Get a list of code selectors from the specified slot name. This will also
+    include the default or blank code selector, which would be returned as None.
+    For example, the slot name "sampleID:pooled,,main" would return
+    ["pooled", None, "main"] (the second selector is the default/blank selector,
+    or None). If no selector is specified, then the None selector is returned as
+    [ None ] (for example, for the slot "sampleID" or the slot "sampleID:").
+
+    Args:
+        slot (str): The slot name to get the code selectors from.
+
+    Returns:
+        List[str]: A list of all code selectors in the slot name.
+    """
+    if not isinstance(slot, str):
+        return None, []
+    if CODE_SELECTOR_SPECIFIER not in slot:
+        return slot, [None]
+    slot_without_selectors, selectors = slot.split(CODE_SELECTOR_SPECIFIER, maxsplit=1)
+    return slot_without_selectors, get_code_selectors_from_string(selectors)
+
+
+def get_code_selectors_from_string(value: str) -> List[str]:
+    """Get the list of code selectors from the specified string, which should be a comma-separated
+    list of code selectors. In contrast to get_slot_and_selectors_from_slot, it does not include
+    a preceding slot name. For example, the value "pooled,,main" would have the code selectors
+    ["pooled", None, "main"]. The blank value "" would have the default/blank code selector and
+    return [None].
+
+    Args:
+        value (str): The value to get the code selectors from.
+
+    Returns:
+        List[str]: A lits of the code selectors.
+    """
+    if not isinstance(value, str):
+        return [None]
+    selectors = value.split(CODE_SELECTOR_SEPARATOR)
+    # Convert empty selectors to None
+    selectors = [s if s else None for s in selectors]
+    return selectors
+
+
 class GeneratorData:
     def __init__(
         self,
@@ -110,7 +179,7 @@ class GeneratorData:
         input_data: List[Union[str, Path, Dict, pd.DataFrame]],
         primary_key: str,
         schema: Union[str, Path, SchemaView],
-        generated_slots: Optional[List[str]] = None,
+        generated_slots_for_selectors: Optional[Dict[str, List[str]]] = None,
         for_merging: bool = False,
     ):
         if isinstance(schema, (str, Path)):
@@ -121,7 +190,9 @@ class GeneratorData:
 
         self.class_name = class_name
         self.primary_key = primary_key
-        self.generated_slots = generated_slots if generated_slots else []
+        self.generated_slots_for_selectors: Dict[str, List[str]] = (
+            generated_slots_for_selectors if generated_slots_for_selectors else {}
+        )
         self.largest_pk_indices = {}
 
         all_dfs = []
@@ -143,7 +214,10 @@ class GeneratorData:
                 )
 
             missing_generated_slots = [
-                s for s in self.generated_slots if s not in df.columns
+                slot
+                for selectors in self.generated_slots_for_selectors.values()
+                for slot in selectors
+                if slot not in df.columns
             ]
             if missing_generated_slots:
                 df[missing_generated_slots] = None
@@ -181,6 +255,16 @@ class GeneratorData:
                 return v
 
             self.orig_df[DROP_COLUMN] = self.orig_df[DROP_COLUMN].map(_make_bool)
+
+        # Process the code selectors column
+        if CODE_SELECTOR_SLOT not in self.orig_df.columns:
+            self.orig_df[CODE_SELECTOR_SLOT] = [[None]] * len(self.orig_df)
+        else:
+            for idx in self.orig_df.index:
+                selectors = self.orig_df.loc[idx, CODE_SELECTOR_SLOT]
+                self.orig_df.loc[idx, CODE_SELECTOR_SLOT] = (
+                    get_code_selectors_from_string(selectors)
+                )
 
         # Create a list of all original columns found in the dataset (excluding the tracking columns)
         columns = list(df.columns)
@@ -224,6 +308,38 @@ class GeneratorData:
     def __len__(self):
         return len(self.data)
 
+    def get_generated_slots_with_selectors(self, selectors: List[str]) -> List[str]:
+        return [
+            slot
+            for selector in selectors
+            for slot in self.generated_slots_for_selectors.get(selector, [])
+        ]
+
+    def get_all_generated_slots(self) -> List[str]:
+        slots = [
+            slot
+            for slots in self.generated_slots_for_selectors.values()
+            for slot in slots
+        ]
+        slots = list(dict.fromkeys(slots))
+        return slots
+
+    def get_code_selectors_from_row(self, row_index: int) -> List[str]:
+        """Get the code selectors associated with the specified row.
+
+        Args:
+            row_index (int): The row index in the class to get the code selectors for.
+
+        Returns:
+            List[str]: A list of the code selectors associated with the row. If there are no
+                code selectors then the default None code selector is returned as [None].
+        """
+        # # If code selector column doesn't exist, then return the blank code selector [None]
+        # if not self.has_column(CODE_SELECTOR_SLOT):
+        #     return [None]
+
+        return self.get_data_value(CODE_SELECTOR_SLOT, row_index)
+
     def make_initial_slot_names_if_generated_slots(
         self, slots: Union[str, List[str]]
     ) -> List[str]:
@@ -244,10 +360,18 @@ class GeneratorData:
             slots = [slots]
         else:
             slots = slots.copy()
+        generated_slots = self.get_all_generated_slots()
         for idx, s in enumerate(slots):
-            if s in self.generated_slots:
+            if s in generated_slots:
                 slots[idx] = f"{INITIAL_ID_PREFIX}{s}"
         return slots
+
+    def get_slots_with_code_for_selectors(self, selectors: List[str]) -> List[str]:
+        return [
+            slot
+            for selector in selectors
+            for slot in self.generated_slots_for_selectors[selector]
+        ]
 
     def prepare_ids(self):
         """Do some preparation of the ID columns in the loaded DataFrame.
@@ -261,18 +385,31 @@ class GeneratorData:
         self.current_class = None
         self.current_row_index = None
         self.initial_value_columns = []
+        self.number_of_ids_to_calculate = 0
 
         logger.debug(f"Preparing IDs for class '{self.class_name}'")
         # Copy all ID columns to new columns preceded by INITIAL_ID_PREFIX (eg. __), and clear the
         # original column. Once make_all_ids is called, if the original column has a None value
         # then that means we need to calculate the ID for that column (while the double-underscore
         # column remains unchanged).
-        slots = [s for s in self.generated_slots if s in self.orig_df.columns]
+        slots = self.get_all_generated_slots()
         if len(slots) > 0:
             orig_values_slots = [f"{INITIAL_ID_PREFIX}{s}" for s in slots]
             self.orig_df[orig_values_slots] = self.orig_df[slots]
-            self.orig_df[slots] = None  # IDValue(None)
             self.initial_value_columns.extend(orig_values_slots)
+            for idx in self.orig_df.index:
+                selectors = self.orig_df.loc[idx, CODE_SELECTOR_SLOT]
+                # selectors = get_code_selectors_from_string(selectors)
+                slots_with_code = self.get_slots_with_code_for_selectors(selectors)
+                self.orig_df.loc[idx, slots_with_code] = None
+                self.number_of_ids_to_calculate += len(slots_with_code)
+                slots_without_code = [s for s in slots if s not in slots_with_code]
+                self.orig_df.loc[idx, slots_without_code] = self.orig_df.loc[
+                    idx, slots_without_code
+                ].map(lambda x: IDValue("" if pd.isna(x) else x, 0))
+
+        # Remove duplicates (and retain original order)
+        self.initial_value_columns = list(dict.fromkeys(self.initial_value_columns))
 
     def init_lookup_table(self, lookup_slots: List[str]):
         """Initialize the lookup tables and populate them.
@@ -375,7 +512,9 @@ class GeneratorData:
         Returns:
             Any: The value that was set, which might be different than v.
         """
-        if slot in self.generated_slots and not isinstance(v, IDValue):
+        # if slot in self.generated_slots and not isinstance(v, IDValue):
+        #     v = IDValue(v)
+        if slot in self.get_all_generated_slots() and not isinstance(v, IDValue):
             v = IDValue(v)
 
         if self.lookup.is_lookup_slot(slot):
