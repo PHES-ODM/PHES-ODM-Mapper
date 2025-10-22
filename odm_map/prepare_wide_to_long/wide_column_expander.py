@@ -404,7 +404,7 @@ class WideColumnExpander:
         values = str(val).split(AND_VALUE_SEPARATOR)
         if len(values) < num_values:
             logger.warning(
-                f"Tried to parse AND value into {num_values} values, but {len(values)} value{'s were' if len(values) != 1 else ' was'} found. Using 'None' for all missing values. Original value is: {val}."
+                f"Tried to parse AND value into {num_values} values, but {len(values)} value{'s were' if len(values) != 1 else ' was'} found. Using 'None' for all missing values. Original value is: '{val}'."
             )
             values = values + [None] * (num_values - len(values))
 
@@ -830,7 +830,7 @@ class WideColumnExpander:
             key = _key_with_index(key, column_index)
             if key in current_row:
                 logger.warning(
-                    f"The column {key} has already been populated in the expanded row for row index {row_index} with value {current_row[key]}. This value will be overwritten with the value {val}."
+                    f"The column {key} has already been populated in the expanded row for row index {row_index} with value '{current_row[key]}'. This value will be overwritten with the value '{val}'."
                 )
             current_row[key] = val
 
