@@ -337,6 +337,7 @@ class Pipeline(object):
                     config=config,
                     target_schema=target_schema,
                     output_dir=output_dir,
+                    debug_mode=debug_mode,
                 )
             else:
                 raise CleanExitError(

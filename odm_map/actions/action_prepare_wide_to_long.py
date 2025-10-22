@@ -1,3 +1,4 @@
+import os
 from typing import Dict, List, Union
 import pandas as pd
 from pathlib import Path
@@ -13,6 +14,7 @@ def action_prepare_wide_to_long(
     config: Union[str, Path],
     target_schema: Union[str, Path],
     output_dir: Union[str, Path],
+    debug_mode: bool = False,
 ) -> Dict[str, List[pd.DataFrame]]:
     """Prepare the data to map from wide format to long format. This will rearrange the data to be
     in a format that is ready for wide to long mapping, will create multiple LinkML-Map mapping
@@ -36,6 +38,8 @@ def action_prepare_wide_to_long(
             mapping. This include the LinkML-Map schemas for mapping (in output_dir) and the
             LinkML schema used for the prepared dataset that gets returned to the caller
             (in {output_dir}/schema/schema.yaml).
+        debug_mode (bool): If True then run in debug mode. In debug mode the expanded wide data
+            is saved to output_dir/data/expanded.csv.
 
     Returns:
         Dict[str, List[pd.DataFrame]]: Dictionary of DataFrames based on the input data_frames that
@@ -50,7 +54,19 @@ def action_prepare_wide_to_long(
         config=config, source_class_name=SOURCE_CLASS_NAME, target_schema=target_schema
     )
     data_frames = [b for a in data_frames.values() for b in a]
-    df = expander.expand(data_files=None, data_frames=data_frames, output_file=None)
+
+    # Save expanded data as expanded_output_file if we're in debug mode
+    expanded_output_file = (
+        os.path.join(output_dir, "data", "expanded.csv")
+        if output_dir and debug_mode
+        else None
+    )
+    if expanded_output_file and os.path.dirname(expanded_output_file):
+        os.makedirs(os.path.dirname(expanded_output_file), exist_ok=True)
+
+    df = expander.expand(
+        data_files=None, data_frames=data_frames, output_file=expanded_output_file
+    )
     data_frames = {SOURCE_CLASS_NAME: [df]}
 
     # Create the LinkML-Map schemas and the LinkML schema for the prepared data in data_frames.
