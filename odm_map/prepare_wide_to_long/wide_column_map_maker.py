@@ -467,7 +467,9 @@ class WideColumnMapMaker:
         slot_name = parts[1]
 
         # Make sure the slot exists
-        if not self.target_schema.induced_slot(slot_name, class_name):
+        if not get_slot_definition(
+            class_name, slot_name, self.target_schema, exception_on_error=False
+        ):
             raise ValueError(
                 f"Unrecognized slot '{slot_name}' in class '{class_name}' for column {col}"
             )
@@ -637,6 +639,9 @@ class WideColumnMapMaker:
         """
         for col in columns:
             target_class_name, target_slot_name = self.get_class_and_slot(col)
+
+            if target_class_name is None or target_slot_name is None:
+                continue
 
             # Map from col to class_name.slot_name
             self.add_slot_derivation(
