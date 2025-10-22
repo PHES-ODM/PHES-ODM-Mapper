@@ -22,7 +22,7 @@ tables_to_shortnames:
     protocolSteps: ps
     qualityReports: qr
     sampleRelationships: sar
-    samples: sm
+    samples: sas
     sets: se
     sites: si
     translations: tr
