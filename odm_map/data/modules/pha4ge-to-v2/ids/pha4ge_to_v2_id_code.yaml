@@ -115,6 +115,11 @@ named_class_linkages:
       samples:
         source_slot: ["(__source_file_and_row__)", "_extra_sampleIDObject_tag"]
         target_slot: ["(__source_file_and_row__)", "_extra_sampleID_tag"]
+  sampleRelationships_to_samples_object_replicate:
+    sampleRelationships:
+      samples:
+        source_slot: ["(__source_file_and_row__)", "_extra_sampleIDObject_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_sample_type_tag"]
   protocolRelationships_to_protocolSteps_subject:
     protocolRelationships:
       protocolSteps:
@@ -150,3 +155,9 @@ named_class_linkages:
       measures:
         source_slot: ["(__source_file_and_row__)", "_extra_measures_measure_tag"]
         target_slot: ["(__source_file_and_row__)", "measure"]
+  samples_to_samples_replicate_pairing:
+    samples:
+      samples:
+        source_slot: ["(__source_file_and_row__)", "_extra_sample_type_paired_tag"]
+        target_slot: ["(__source_file_and_row__)", "_extra_sample_type_tag"]
+      
