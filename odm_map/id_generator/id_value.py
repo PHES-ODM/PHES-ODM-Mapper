@@ -33,6 +33,7 @@ print(id_value)
 """
 
 from typing import Optional, Union
+import pandas as pd
 
 
 class IDValue(object):
@@ -67,7 +68,7 @@ class IDValue(object):
 
     @classmethod
     def make_id_str(self, unindexed_value: Union["IDValue", str], index: str) -> str:
-        unindexed_str = f"{unindexed_value}"
+        unindexed_str = "" if pd.isna(unindexed_value) else f"{unindexed_value}"
         index_str = f"{index:03d}" if index else ""
         return f"{unindexed_str}{index_str}"
 
