@@ -10,10 +10,10 @@ class_derivations:
           \ = emap.collection_method"
       saMaterial:
         name: saMaterial
-        populated_from: environmental_material
+        expr: ''''''
       repType:
         name: repType
-        populated_from: experimental_specimen_role_type
+        expr: '""'
       organizationID:
         name: organizationID
         populated_from: sample_collected_by
@@ -36,10 +36,7 @@ class_derivations:
         populated_from: sample_received_date
       pooled:
         name: pooled
-        expr: "def is_pooled(values):\n    values = [v.lower().split('[')[0].strip()\
-          \ for v in values if isinstance(v, str)]\n    values = [v for v in values\
-          \ if v == \"pooling specimens\"]\n    return len(values) > 0\n\ntarget =\
-          \ is_pooled(src.specimen_processing)"
+        expr: ''''''
       _extra_contactID_tag:
         name: _extra_contactID_tag
         expr: '''sample collected by'''
@@ -52,6 +49,12 @@ class_derivations:
       sampleID:
         name: sampleID
         populated_from: sampling_event_id
+      _extra_sample_type_tag:
+        name: _extra_sample_type_tag
+        expr: '''event'''
+      collPer:
+        name: collPer
+        expr: '""'
   Container:
     name: Container
     slot_derivations:
@@ -145,55 +148,6 @@ enum_derivations:
       bagFilt:
         name: bagFilt
         populated_from: Bag Mediated Filtration [GENEPIO:0102028]
-  ODMv3_enum_from_EnvironmentalMaterialMenu:
-    name: ODMv3_enum_from_EnvironmentalMaterialMenu
-    mirror_source: false
-    populated_from: EnvironmentalMaterialMenu
-    permissible_value_derivations:
-      nww:
-        name: nww
-        populated_from: Surface water [ENVO:00002042]
-      rawWW:
-        name: rawWW
-        populated_from: Wastewater [ENVO:00002001]
-      swrSed:
-        name: swrSed
-        populated_from: Wastewater sediment [ENVO:03501456]
-      sludgeNS:
-        name: sludgeNS
-        populated_from: Sludge [ENVO:00002044]
-      pSludge:
-        name: pSludge
-        populated_from: Primary sludge [ENVO:00002057]
-      sSludge:
-        name: sSludge
-        populated_from: Secondary sludge [ENVO:00002058]
-      effluNS:
-        name: effluNS
-        populated_from: Wastewater effluent [ENVO:03501457]
-      pEfflu:
-        name: pEfflu
-        populated_from: Primary wastewater effluent [GENEPIO:0100892]
-      sEfflu:
-        name: sEfflu
-        populated_from: Secondary wastewater effluent [GENEPIO:0100893]
-  ODMv3_enum_from_ExperimentalSpecimenRoleTypeMenu:
-    name: ODMv3_enum_from_ExperimentalSpecimenRoleTypeMenu
-    mirror_source: false
-    populated_from: ExperimentalSpecimenRoleTypeMenu
-    permissible_value_derivations:
-      posCon:
-        name: posCon
-        populated_from: Positive experimental control [GENEPIO:0101018]
-      negCon:
-        name: negCon
-        populated_from: Negative experimental control [GENEPIO:0101019]
-      techRep:
-        name: techRep
-        populated_from: Technical replicate [EFO:0002090]
-      bioRep:
-        name: bioRep
-        populated_from: Biological replicate [EFO:0002091]
   collAppxSet:
     name: collAppxSet
     mirror_source: false

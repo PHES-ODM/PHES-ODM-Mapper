@@ -1,0 +1,26 @@
+class_derivations:
+  sampleRelationships[000,0000=]:
+    name: sampleRelationships[000,0000=]
+    populated_from: PHA4GE
+    slot_derivations:
+      relationshipID:
+        name: relationshipID
+        expr: '''child'''
+      sampleIDObject:
+        name: sampleIDObject
+        expr: '''biological replicate ID'''
+      _extra_sampleIDSubject_tag:
+        name: _extra_sampleIDSubject_tag
+        expr: '''biological replicate ID'''
+      _extra_sampleIDObject_tag:
+        name: _extra_sampleIDObject_tag
+        expr: '''main'''
+      _extra_code_selector:
+        name: _extra_code_selector
+        expr: '''replicate'''
+  Container:
+    name: Container
+    slot_derivations:
+      sampleRelationships[000,0000=]:
+        populated_from: PHA4GE
+enum_derivations: {}

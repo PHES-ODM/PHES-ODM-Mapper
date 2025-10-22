@@ -1,6 +1,6 @@
 class_derivations:
-  samples[000,0000=isolate_id-isolate_received_date-isolation_date]:
-    name: samples[000,0000=isolate_id-isolate_received_date-isolation_date]
+  samples[000,0000=]:
+    name: samples[000,0000=]
     populated_from: PHA4GE
     slot_derivations:
       collType:
@@ -13,13 +13,18 @@ class_derivations:
         populated_from: environmental_material
       repType:
         name: repType
-        populated_from: experimental_specimen_role_type
+        expr: "def is_replicate(values, rep_type):\n    values = [v.lower().split('[')[0].strip()\
+          \ for v in values if isinstance(v, str)]\n    values = [v for v in values\
+          \ if v == f\"{rep_type} replicate process\"]\n    return len(values) > 0\n\
+          \nif is_replicate(src.specimen_processing, \"technical\"):\n    target =\
+          \ \"techRep\"\nelse:\n    target = \"\""
       organizationID:
         name: organizationID
         populated_from: sample_collected_by
       collDT:
         name: collDT
-        populated_from: isolation_date
+        expr: sample_collection_start_date + '/!/' + sample_collection_start_time
+          + '/!/'
       collDTEnd:
         name: collDTEnd
         expr: sample_collection_end_date + '/!/' + sample_collection_end_time + '/!/'
@@ -32,7 +37,7 @@ class_derivations:
         populated_from: sample_collection_time_of_day
       recDate:
         name: recDate
-        populated_from: isolate_received_date
+        populated_from: sample_received_date
       pooled:
         name: pooled
         expr: "def is_pooled(values):\n    values = [v.lower().split('[')[0].strip()\
@@ -41,23 +46,33 @@ class_derivations:
           \ is_pooled(src.specimen_processing)"
       _extra_contactID_tag:
         name: _extra_contactID_tag
-        expr: '''isolated by'''
+        expr: '''<blank>'''
       _extra_organizationID_tag:
         name: _extra_organizationID_tag
-        expr: '''isolated by'''
+        expr: '''<blank>'''
       _extra_sampleID_tag:
         name: _extra_sampleID_tag
-        expr: '''isolate ID'''
-      sampleID:
-        name: sampleID
-        populated_from: isolate_id
+        expr: '''technical replicate ID'''
+      _extra_code_selector:
+        name: _extra_code_selector
+        expr: '''replicate'''
       _extra_sample_type_tag:
         name: _extra_sample_type_tag
+        expr: '''technical replicate'''
+      _extra_sample_type_paired_tag:
+        name: _extra_sample_type_paired_tag
         expr: '''main'''
+      sampleID:
+        name: sampleID
+        expr: "def is_replicate(values, rep_type):\n    values = [v.lower().split('[')[0].strip()\
+          \ for v in values if isinstance(v, str)]\n    values = [v for v in values\
+          \ if v == f\"{rep_type} replicate process\"]\n    return len(values) > 0\n\
+          \nif is_replicate(src.specimen_processing, \"technical\"):\n    target =\
+          \ \"techRep\"\nelse:\n    target = \"\""
   Container:
     name: Container
     slot_derivations:
-      samples[000,0000=isolate_id-isolate_received_date-isolation_date]:
+      samples[000,0000=]:
         populated_from: PHA4GE
 enum_derivations:
   ODMv3_enum_from_CollectionDeviceMenu:
@@ -179,23 +194,6 @@ enum_derivations:
       sEfflu:
         name: sEfflu
         populated_from: Secondary wastewater effluent [GENEPIO:0100893]
-  ODMv3_enum_from_ExperimentalSpecimenRoleTypeMenu:
-    name: ODMv3_enum_from_ExperimentalSpecimenRoleTypeMenu
-    mirror_source: false
-    populated_from: ExperimentalSpecimenRoleTypeMenu
-    permissible_value_derivations:
-      posCon:
-        name: posCon
-        populated_from: Positive experimental control [GENEPIO:0101018]
-      negCon:
-        name: negCon
-        populated_from: Negative experimental control [GENEPIO:0101019]
-      techRep:
-        name: techRep
-        populated_from: Technical replicate [EFO:0002090]
-      bioRep:
-        name: bioRep
-        populated_from: Biological replicate [EFO:0002091]
   collAppxSet:
     name: collAppxSet
     mirror_source: false

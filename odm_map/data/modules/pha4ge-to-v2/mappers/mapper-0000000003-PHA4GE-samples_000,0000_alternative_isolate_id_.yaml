@@ -52,6 +52,9 @@ class_derivations:
       sampleID:
         name: sampleID
         populated_from: alternative_isolate_id
+      _extra_sample_type_tag:
+        name: _extra_sample_type_tag
+        expr: '''main'''
   Container:
     name: Container
     slot_derivations:

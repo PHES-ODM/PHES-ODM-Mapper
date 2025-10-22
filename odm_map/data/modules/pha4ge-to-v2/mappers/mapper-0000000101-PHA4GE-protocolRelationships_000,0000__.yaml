@@ -8,7 +8,7 @@ class_derivations:
         expr: '''sequencing protocol'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
-        expr: '''read mapping software name'''
+        expr: '''nucleic acid extraction kit'''
       relationshipID:
         name: relationshipID
         expr: '''relNR'''

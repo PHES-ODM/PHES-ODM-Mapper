@@ -8,7 +8,7 @@ class_derivations:
         expr: '''sequencing protocol'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
-        expr: '''library preparation kit'''
+        expr: '''sequence assembly software name'''
       relationshipID:
         name: relationshipID
         expr: '''relNR'''

@@ -52,6 +52,9 @@ class_derivations:
       sampleID:
         name: sampleID
         populated_from: specimen_collector_sample_id
+      _extra_sample_type_tag:
+        name: _extra_sample_type_tag
+        expr: '''main'''
       purpose:
         name: purpose
         populated_from: purpose_of_sampling

@@ -5,10 +5,10 @@ class_derivations:
     slot_derivations:
       _extra_protocolIDContainer_tag:
         name: _extra_protocolIDContainer_tag
-        expr: '''sequencing protocol'''
+        expr: '''water catchment area human population measurement method'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
-        expr: '''diagnostic measurement method 2'''
+        expr: '''water catchment area human population measurement method'''
       relationshipID:
         name: relationshipID
         expr: '''relNR'''
