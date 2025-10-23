@@ -106,15 +106,23 @@ def get_excel_file_info(
     if isinstance(schema, (str, Path)):
         schema = SchemaView(schema)
 
+    all_classes = all_classes_without_tree_root(schema)
+
     # Load all sheet names from Excel file
     with pd.ExcelFile(file) as xl:
         sheet_names = list(xl.sheet_names)
 
-    # Map the sheet names to class names
-    sheet_to_class = {
-        sheet_name: find_class(sheet_name, schema, ignore_case=True)
-        for sheet_name in sheet_names
-    }
+    if len(sheet_names) == 1 and len(all_classes) == 1:
+        # There is one sheet in the Excel file, and only a single non tree-root class in the
+        # schema, so assume the single sheet belongs to the single class
+        sheet_to_class = {sheet_names[0]: all_classes[0]}
+    else:
+        # Map the sheet names to class names
+        sheet_to_class = {
+            sheet_name: find_class(sheet_name, schema, ignore_case=True)
+            for sheet_name in sheet_names
+        }
+
     # Remove any sheet that maps to no class
     sheet_to_class = {s: c for s, c in sheet_to_class.items() if c is not None}
 
