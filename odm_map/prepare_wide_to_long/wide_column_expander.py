@@ -84,6 +84,12 @@ class ColumnType(Enum):
     TRACKING_SLOT = auto()
 
 
+# Columns in a DataFrame that have duplicate names will have DUPLICATE_COLUMNS_SEPARATOR
+# in the name, followed by an integer. For example, "myColumn.1" has the same name as
+# "myColumn" (the ".1" was added when loading the data from disk)
+DUPLICATE_COLUMNS_SEPARATOR = "."
+
+
 class WideColumnExpander:
     def __init__(
         self,
@@ -194,6 +200,7 @@ class WideColumnExpander:
         data_files: List[Path],
         data_frames: List[pd.DataFrame],
         output_file: Optional[Union[str, Path]],
+        max_rows: Optional[int] = None,
     ) -> pd.DataFrame:
         """Expand the files and/or DataFrames to the expanded wide format, so that it's ready to map from
         wide to long format. After expanding the data, WideColumnMapMaker should be run on the returned
@@ -206,6 +213,8 @@ class WideColumnExpander:
                 to the DataFrames loaded from data_files. TrackingSlots should already have been added to these
                 DataFrames.
             output_file (Optional[Union[str, Path]]): If set then save the expanded DataFrame result to this file.
+            max_rows (Optional[int]): Maximum number of rows to load from all files in data_files. If 0 or None
+                then all rows are loaded.
 
         Returns:
             pd.DataFrame: The expanded DataFrame.
@@ -217,7 +226,7 @@ class WideColumnExpander:
         if data_files:
             for f in data_files:
                 dfs = load_data_with_source_tracking_columns(
-                    {self.source_class_name: [f]}
+                    {self.source_class_name: [f]}, max_rows=max_rows
                 )
                 # df = read_data_frame(f, keep_default_na=False, na_values=None)
                 cur_dfs = dfs[self.source_class_name]
@@ -853,6 +862,116 @@ class WideColumnExpander:
         current_rows = list(self.current_expanded_rows.values())
         self.all_expanded_rows.extend(current_rows)
 
+    def get_duplicate_columns(self, df: pd.DataFrame) -> Dict[str, List[str]]:
+        """Get a dictionary containing lists of columns that have duplicate names. If a column
+        name ends with .# (dot followed by an integer), then the base name is the column
+        name without the trailing .#. If after removing the suffix it has the same base name
+        as any other column then those columns are considered duplicates.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to get the duplicate columns of.
+
+        Returns:
+            Dict[str, List[str]]: Dictionary where the key is the base name of a column,
+                and the values are lists of column names that have that base name. An example
+                is shown below:
+                    {
+                        "myColumn": ["myColumn", "myColumn.1", "myColumn.2"],
+                        "otherColumn": ["otherColumn.1"],
+                    }
+        """
+        duplicate_columns = {}
+
+        # Find all duplicate columns. The key of duplicate_columns is the main column without
+        # an index (eg. "myColumn"), and the values are lists of column names that are duplicates
+        # of that column
+        for col in df.columns:
+            # Get the base name of the column name. The base name has the trailing .# removed, if
+            # there is one.
+            base_col = col
+            if DUPLICATE_COLUMNS_SEPARATOR not in col:
+                base_col = col
+            else:
+                prefix, suffix = col.rsplit(DUPLICATE_COLUMNS_SEPARATOR, maxsplit=1)
+                if suffix.isdigit():
+                    base_col = prefix
+
+            # Add the base column name as a key, and the actual full column name to the list.
+            if base_col not in duplicate_columns:
+                duplicate_columns[base_col] = []
+            duplicate_columns[base_col].append(col)
+
+        # Only keep the keys where the lists have at least one column name that isn't equal
+        # to the base column name (ie. the key)
+        duplicate_columns = {
+            k: v
+            for k, v in duplicate_columns.items()
+            if len(v) - (1 if k in v else 0) >= 1
+        }
+
+        return duplicate_columns
+
+    def merge_duplicate_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Merge all columns in the DataFrame that have duplicate names. Duplicate column names
+        end with a dot followed by an integer. For example, the column "myColumn.1" has the same
+        name as the column "myColumn". The ".1" was added when loading the data from disk, to make
+        sure the resulting DataFrame has unique column names.
+
+        Merging the columns means taking the first non-empty value among the duplicates, and
+        then dropping the duplicate columns.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to merge duplicate columns. If there are duplicate
+                columns then a copy is made, modified, and returned, with the original DataFrame
+                left unchanged. If no duplicates are found, then the same DataFrame is returned
+                unchanged.
+
+        Returns:
+            pd.DataFrame: The DataFrame with duplicate columns merged.
+        """
+        duplicate_columns = self.get_duplicate_columns(df)
+
+        if duplicate_columns:
+
+            def _get_non_null(s: pd.Series) -> Any:
+                """Get the first non-empty value in the series, or None if they are all empty.
+                If there are more than one non-empty values, then the first one is returned and
+                a warning is logged.
+
+                Args:
+                    s (pd.Series): The series to get the first non-empty value from.
+
+                Returns:
+                    Any: The first non-empty value in s, or None if all values are empty.
+                """
+                non_na = s[(~pd.isna(s)) & (s != "")]
+                if len(non_na) > 1:
+                    logger.warning(
+                        f"For row {s.name + 1}, found more than one value when merging duplicate columns {list(non_na.index)}, values are {list(non_na)}, using first value '{non_na.iloc[0]}'"
+                    )
+                if len(non_na) == 0:
+                    return None
+                return non_na.iloc[0]
+
+            for base_column, cur_duplicates in duplicate_columns.items():
+                # Once we have remove the duplicate columns and set/add the base column
+                # in the DataFrame, we will move the base column to be in order so that
+                # it's at the same index that the first duplicate column was at.
+                first_index = min([list(df.columns).index(c) for c in cur_duplicates])
+
+                df[base_column] = df[cur_duplicates].apply(_get_non_null, axis=1)
+                if base_column in cur_duplicates:
+                    cur_duplicates.remove(base_column)
+                df = df.drop(cur_duplicates, axis=1)
+
+                # Move the base column to at the index first_index
+                columns = list(df.columns)
+                columns.remove(base_column)
+                columns.insert(first_index, base_column)
+                df = df[columns]
+
+        return df
+
     def expand_single(
         self, df: pd.DataFrame, first_column_index: int = 0
     ) -> pd.DataFrame:
@@ -870,6 +989,8 @@ class WideColumnExpander:
             pd.DataFrame: The expanded DataFrame. The input DataFrame (df) is left unchanged.
         """
         self.all_expanded_rows = []
+
+        df = self.merge_duplicate_columns(df)
 
         for _, row in tqdm(df.iterrows(), total=len(df.index)):
             self.new_current_expanded_rows()
