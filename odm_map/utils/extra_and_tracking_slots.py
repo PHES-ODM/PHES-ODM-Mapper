@@ -377,6 +377,7 @@ def load_data_with_source_tracking_columns(
     progress_barid: Optional[str] = None,
     validate_class_names: bool = False,
     validate_columns: bool = False,
+    add_tracking_columns: bool = True,
 ) -> Dict[str, List[pd.DataFrame]]:
     """Load all data from disk (as DataFrames) and add the tracking columns that specify which source rows and
     files the data was loaded from.
@@ -398,6 +399,8 @@ def load_data_with_source_tracking_columns(
         validate_columns (bool, optional): If True then check for missing or unrecognized columns in the
             data based on the schema. Unlike validate_class_names, no exception is raised for missing
             or unrecognized columns. Instead log warnings are output. Defaults to False.
+        add_tracking_columns (bool): If True then add the tracking columns (ie. source file and row number).
+            Defaults to True.
 
     Returns:
         Dict[str, List[pd.DataFrame]]: Keys are the class names (matching the keys in data_file) and the
@@ -525,8 +528,9 @@ def load_data_with_source_tracking_columns(
                     if schema_caster is not None:
                         schema_caster.cast_df(df, class_name)
 
-                    # Add the predefined source tracking columns
-                    add_source_tracking_columns(df, class_name, track_file)
+                    if add_tracking_columns:
+                        # Add the predefined source tracking columns
+                        add_source_tracking_columns(df, class_name, track_file)
 
                     data_frames[class_name].append(df)
 
