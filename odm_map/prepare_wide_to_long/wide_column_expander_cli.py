@@ -22,6 +22,9 @@ OUTPUT_FILE_HELP = """If specified, then the file to save the expanded data to."
 
 SOURCE_CLASS_HELP = """The name of the source class in the mapping."""
 
+MAX_ROWS_HELP = """The maximum number of rows to load from each input data file.
+If 0 then load all rows."""
+
 
 @app.command(help=MAIN_HELP)
 def main(
@@ -36,11 +39,14 @@ def main(
     output_file: Annotated[
         Path, typer.Option(show_default=False, help=OUTPUT_FILE_HELP)
     ] = None,
+    max_rows: Annotated[int, typer.Option(show_default=True, help=MAX_ROWS_HELP)] = 0,
 ):
     expander = WideColumnExpander(
         config=config, source_class_name=source_class, target_schema=target_schema
     )
-    df = expander.expand(data_files=inputs, data_frames=None, output_file=output_file)
+    df = expander.expand(
+        data_files=inputs, data_frames=None, output_file=output_file, max_rows=max_rows
+    )
     print(df)
 
 
