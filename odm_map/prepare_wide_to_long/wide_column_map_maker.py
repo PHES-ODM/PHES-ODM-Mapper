@@ -23,7 +23,7 @@ source_schema, source_schema_file, mapping_schemas, mapping_schemas_path = maker
 
 In the above example, the following values are returned from the maker.make call:
 
-1. source_schema: A LinkML schema in dictionary form.
+1. source_schema: A LinkML schema as a SchemaView.
 2. source_schema_file: The path to the LinkML schema that was saved to disk (if output_dir is specified).
 3. mapping_schemas: A Dictionary where the keys are names for a schema and the values are single LinkML-Map schemas.
 The keys (names) have no real meaning but can be used, as an example, as file names to save the schemas as.
@@ -43,7 +43,7 @@ from dataclasses import asdict
 
 from linkml_runtime import SchemaView
 from linkml.utils.schema_builder import SchemaBuilder
-from linkml_runtime.linkml_model import SchemaDefinition, SlotDefinition
+from linkml_runtime.linkml_model import SlotDefinition
 
 from odm_map.utils.logger import get_logger
 from odm_map.utils.extra_and_tracking_slots import is_tracking_slot, get_tracking_slots
@@ -106,7 +106,7 @@ class WideColumnMapMaker:
         data_file: Union[str, Path],
         data_frame: pd.DataFrame,
         output_dir: Union[str, Path] = None,
-    ) -> Tuple[SchemaDefinition, Optional[Path], Dict[str, Dict], Optional[Path]]:
+    ) -> Tuple[SchemaView, Optional[Path], Dict[str, Dict], Optional[Path]]:
         """Make the LinkML-Map schemas and the LinkML schema for the source dataset, to map
         the expanded source dataset from wide to long format. The expanded source dataset is
         a wide dataset that has been expanded with WideColumnExpander.
@@ -123,9 +123,9 @@ class WideColumnMapMaker:
                 Defaults to None.
 
         Returns:
-            Tuple[SchemaDefinition, Optional[Path], Dict[str, Dict], Optional[Path]]: Tuple
+            Tuple[SchemaView, Optional[Path], Dict[str, Dict], Optional[Path]]: Tuple
                 containing the artifacts and paths to the saved artifacts:
-                    source_schema (SchemaDefinition): The constructed LinkML-Schema that should
+                    source_schema (SchemaView): The constructed LinkML-Schema that should
                         be used as the source schema when mapping from expanded wide to long.
                     source_schema_file (Optional[Path]): If output_dir was provided, then the full
                         path to the saved LinkML-schema associated with source_schema. If output_dir
@@ -166,7 +166,7 @@ class WideColumnMapMaker:
             self.save(output_dir)
 
         return (
-            self.source_schema.schema,
+            self.source_schema,
             self.source_schema_file,
             self.mapping_schemas,
             self.map_schemas_path,
