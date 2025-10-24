@@ -175,7 +175,7 @@ class WideColumnMapMaker:
     def add_enums_to_source_schema_builder(self):
         """Add all the enum definitions to the schema builder.
 
-        We will through all enums that appear as a range of a slot in the schema builder, then copy
+        We will go through all enums that appear as a range of a slot in the schema builder, then copy
         the enum definition (containing the enum's permissible values) from self.target_schema to
         the schema builder.
         """
