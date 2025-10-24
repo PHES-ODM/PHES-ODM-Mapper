@@ -145,22 +145,34 @@ class WideColumnMapMaker:
             )
         self.df: pd.DataFrame = data_frame
 
+        self.enum_derivations = {}
+
         self.make_global_class_derivations()
         self.make_indexed_class_derivations()
         self.add_tracking_slots_to_class_derivations()
+        self.add_enums_to_source_schema_builder()
+
+        # Make the final source schema
+        self.source_schema = SchemaView(self.source_schema_builder.schema)
+        self.source_schema_builder = None
+
+        # Make a mapping schema for all the calculated class derivations
         self.make_mapping_schemas_from_class_derivations()
-        self.add_enums()
+        # Add an enum derivation for all source enums involved in mapping. The enum
+        # derivations will just copy the source enum value unchanged (ie. mirror_source=True)
+        self.add_enum_derivations_to_mapping_schemas()
+
         if output_dir:
             self.save(output_dir)
 
         return (
-            self.source_schema_builder.schema,
+            self.source_schema.schema,
             self.source_schema_file,
             self.mapping_schemas,
             self.map_schemas_path,
         )
 
-    def add_enums(self):
+    def add_enums_to_source_schema_builder(self):
         """Add all the enum definitions to the schema builder.
 
         We will through all enums that appear as a range of a slot in the schema builder, then copy
@@ -368,6 +380,54 @@ class WideColumnMapMaker:
                 schema_name = f"{self.source_class_name}-{target_class}-{idx if idx is not None else 'global'}"
                 self.mapping_schemas[schema_name] = cur_schema
 
+    def add_enum_derivations_to_mapping_schemas(self):
+        """For all source slots in all mapping schemas, get the enumerations that the slot can take on
+        and add a mirror_source=True enum derivation to the mapping schema. This will copy the enumeration
+        from the source slot to the target slot.
+        """
+        # Go through all mapping schemas
+        for mapping_schema in self.mapping_schemas.values():
+            # Get all enums for all source slots in the mapping schema
+            required_enums = []
+            for target_class_name, class_derivation in mapping_schema[
+                "class_derivations"
+            ].items():
+                if target_class_name == TREE_ROOT_CLASS_NAME:
+                    continue
+                source_class_name = class_derivation["populated_from"]
+                # Go through all slot derivation
+                for slot_derivation in class_derivation["slot_derivations"].values():
+                    # Get the ranges of the populated_from slot. For any range that is an enumeration,
+                    # add that enumeration name to required_enums
+                    source_slot_name = slot_derivation["populated_from"]
+                    ranges = get_ranges_of_slot(
+                        source_class_name, source_slot_name, self.source_schema
+                    )
+                    ranges = [r for r in ranges if r in self.source_schema.all_enums()]
+                    if len(ranges) > 0:
+                        required_enums.extend(ranges)
+
+            # Remove duplicates
+            required_enums = list(dict.fromkeys(required_enums))
+
+            # Add a mirror_source=True enum derivation for all required enums
+            for source_enum_name in required_enums:
+                if "enum_derivations" not in mapping_schema:
+                    mapping_schema["enum_derivations"] = {}
+
+                target_enum_name = f"{source_enum_name}_target"
+                if target_enum_name in mapping_schema["enum_derivations"]:
+                    continue
+
+                enum_derivation = {
+                    target_enum_name: {
+                        "name": target_enum_name,
+                        "mirror_source": True,
+                        "populated_from": source_enum_name,
+                    }
+                }
+                mapping_schema["enum_derivations"].update(enum_derivation)
+
     def add_tree_root_derivation(self, derivation: Dict):
         """Add the tree root derivation to the specified class derivation. The tree root is the
         top-level class that contains all the tables, and is named TREE_ROOT_CLASS_NAME. Its
@@ -447,7 +507,7 @@ class WideColumnMapMaker:
         if os.path.dirname(self.source_schema_file):
             os.makedirs(os.path.dirname(self.source_schema_file), exist_ok=True)
         with open(self.source_schema_file, "w") as f:
-            yaml.safe_dump(self.source_schema_builder.as_dict(), f)
+            yaml.safe_dump(self.source_schema.schema, f)
 
         # Save all LinkML-Map schemas
         self.map_schemas_path = Path(output_dir)
