@@ -39,6 +39,7 @@ from pathlib import Path
 import pandas as pd
 import yaml
 from copy import deepcopy
+from dataclasses import asdict
 
 from linkml_runtime import SchemaView
 from linkml.utils.schema_builder import SchemaBuilder
@@ -52,7 +53,11 @@ from odm_map.prepare_wide_to_long.wide_column_data import (
     WideColumnValues,
     COLUMN_INDEX_SEPARATOR,
 )
-from odm_map.utils.schema_utils import get_ranges_of_slot, get_slot_definition
+from odm_map.utils.schema_utils import (
+    get_ranges_of_slot,
+    get_slot_definition,
+    get_ranges_of_slot_defn,
+)
 
 logger = get_logger(__name__)
 
@@ -144,6 +149,7 @@ class WideColumnMapMaker:
         self.make_indexed_class_derivations()
         self.add_tracking_slots_to_class_derivations()
         self.make_mapping_schemas_from_class_derivations()
+        self.add_enums()
         if output_dir:
             self.save(output_dir)
 
@@ -153,6 +159,33 @@ class WideColumnMapMaker:
             self.mapping_schemas,
             self.map_schemas_path,
         )
+
+    def add_enums(self):
+        """Add all the enum definitions to the schema builder.
+
+        We will through all enums that appear as a range of a slot in the schema builder, then copy
+        the enum definition (containing the enum's permissible values) from self.target_schema to
+        the schema builder.
+        """
+        # Get all the enums that appear as a range in the schema
+        all_enums = []
+        schema = SchemaView(self.source_schema_builder.schema)
+        for class_name in schema.all_classes().keys():
+            class_defn = schema.induced_class(class_name)
+            for slot_defn in class_defn.attributes.values():
+                ranges = get_ranges_of_slot_defn(slot_defn)
+                enum_ranges = [
+                    r for r in ranges if r in self.target_schema.all_enums().keys()
+                ]
+                all_enums.extend(enum_ranges)
+
+        # Drop duplicates
+        all_enums = list(dict.fromkeys(all_enums))
+
+        # Add all the enums, from self.target_schema to self.source_schema_builder
+        for enum in all_enums:
+            enum_defn = self.target_schema.get_enum(enum)
+            self.source_schema_builder.add_enum(enum_defn)
 
     def index_of_column(self, col: str) -> Optional[int]:
         """Get the index of the specified column.
@@ -283,11 +316,12 @@ class WideColumnMapMaker:
         # Add all tracking slots to the source schema
         for tracking_slot in tracking_slots:
             self.add_slot(
-                self.source_schema_builder,
-                self.source_class_name,
-                tracking_slot,
-                type_class_name=None,
-                type_slot_name=None,
+                schema_builder=self.source_schema_builder,
+                class_name=self.source_class_name,
+                slot_name=tracking_slot,
+                info_schema=self.target_schema,
+                info_class_name=None,
+                info_slot_name=None,
                 slot_type="string",
                 slot_info={},
                 replace_if_present=True,
@@ -515,14 +549,105 @@ class WideColumnMapMaker:
         # another table
         return "string"
 
+    def get_slot_definition_info_for_ranges(
+        self, ranges: Union[str, List[str]]
+    ) -> Dict:
+        """For the specified ranges, create the slot definition information required to specify
+        that a slot can be any of the ranges.
+
+        If a single range is provided, it will be returned as:
+            {
+                "range": ranges[0]
+            }
+        If multiple ranges are provided, it will be returned as:
+            {
+                "any_of": [
+                    { "range": range[0] },
+                    { "range": range[1] },
+                    ...
+                ]
+            }
+
+        Args:
+            ranges (Union[str, List[str]]): Either a single range or a list of one or more ranges.
+
+        Returns:
+            Dict: A dictionary that contains the proper slot definition information for a slot that
+                can be any of the specified ranges. The result will either have the "range" key set
+                (for a single range) or the "any_of" key set (for multiple ranges)
+        """
+        if isinstance(ranges, str):
+            ranges = [ranges]
+
+        if len(ranges) == 0:
+            ranges.append("string")
+
+        if len(ranges) == 1:
+            return {"range": ranges[0]}
+
+        return {"any_of": [{"range": r} for r in ranges]}
+
+    def get_range_info_of_slot(
+        self, slot_defn: Union[SlotDefinition, Dict], schema: SchemaView
+    ) -> Dict:
+        """Get the range information from the specified slot definition. The range information is stored
+        in the slot definition's "range" and "any_of" keys. We will extract this information, and replace any
+        range that points to a class with a string.
+
+        If the slot has a single range, it will be returned as:
+            {
+                "range": range
+            }
+        If the slot has multiple ranges, it will be returned as:
+            {
+                "any_of": [
+                    { "range": range[0] },
+                    { "range": range[1] },
+                    ...
+                ]
+            }
+
+        Args:
+            slot_defn (Union[SlotDefinition, Dict]): The slot definition to get the range info from.
+            schema (SchemaView): The schema that the slot belongs to. If any of the ranges are a class
+                in this schema, then the range will be converted to a string (since in the final
+                schema that we build we will not have those class definitions).
+
+        Returns:
+            Dict: A dictionary that contains the range information extracted from the slot definition.
+                Either the "range" key (if there is only one range) or "any_of" key (if there is more
+                than one range) will be set.
+        """
+        if isinstance(slot_defn, SlotDefinition):
+            slot_defn = asdict(slot_defn)
+
+        # Get an array of all ranges (get them from the "range" and "any_of" slots)
+        rng = slot_defn.get("range", None)
+        any_of = slot_defn.get("any_of", [])
+
+        if any_of:
+            ranges = [d.get("range", None) for d in any_of]
+        else:
+            ranges = [rng]
+
+        # Replace any ranges that are a class (ie a foreign key) with "string"
+        classes = schema.all_classes().keys()
+        ranges = [r if r not in classes else "string" for r in ranges]
+
+        # Drop duplicates
+        ranges = list(dict.fromkeys(ranges))
+
+        return self.get_slot_definition_info_for_ranges(ranges)
+
     def add_slot(
         self,
         schema_builder: SchemaBuilder,
         class_name: str,
         slot_name: str,
-        type_class_name: Optional[str],
-        type_slot_name: Optional[str],
-        slot_type: Optional[str] = None,
+        info_schema: SchemaView,
+        info_class_name: Optional[str],
+        info_slot_name: Optional[str],
+        slot_type: Optional[Union[str, List[str]]] = None,
         slot_info: Dict = None,
         replace_if_present: bool = False,
     ):
@@ -532,19 +657,17 @@ class WideColumnMapMaker:
             schema_builder (SchemaBuilder): The SchemaBuilder to add the class and slot to.
             class_name (str): The name of the class to add.
             slot_name (str): The name of the slot to add.
-            type_class_name (Optional[str]): If slot_type is None, then use this plus type_slot_name to determine the
-                type that the slot should be (eg. "string", "float", etc). To determine the type, we get the type of the
-                type_class_name and type_slot_name from the target schema. If slot_info is None, then we get the info
-                (such as the title, description, notes, etc) to assign to the slot from the slot definition for
-                type_class_name and type_slot_name.
-            type_slot_name (Optional[str]): If slot_type is None, then use this plus type_class_name to determine the
-                type that the slot should be (eg. "string", "float", etc). To determine the type, we get the type of the
-                type_class_name and type_slot_name from the target schema. If slot_info is None, then we get the info
-                (such as the title, description, notes, etc) to assign to the slot from the slot definition for
-                type_class_name and type_slot_name.
-            slot_type (Optional[str], optional): If specified, then use this type (eg. "string", "float") to assign to
-                the slot being added. If None, then we use the type of type_class_name and type_slot_name in the target
-                schema. Defaults to None.
+            info_schema (SchemaView): The schema to use for determining the range, description, title, and
+                other information about the slot when using info_class_name and info_slot_name.
+            info_class_name (Optional[str]): If slot_type is None, then use this plus info_slot_name to determine the
+                range, description, title and other info about the slot. This information will be inherited
+                from the slot info_slot_name in the schema info_schema.
+            info_slot_name (Optional[str]): If slot_type is None, then use this plus info_class_name to determine the
+                range, description, title and other info about the slot. This information will be inherited
+                from the slot info_slot_name in the schema info_schema.
+            slot_type (Optional[Union[str, List[str]]], optional): If specified, then use this type or types
+                (eg. "string", "float") to assign as ranges to the slot being added. If None, then we use the
+                type of info_class_name and info_slot_name in the info_schema. Defaults to None.
             slot_info (Dict, optional): If specified, then use the values in this dictionary as information to add
                 to the new slot being added. It can contain keys and values for "description", "title", and "notes".
                 Defaults to None.
@@ -552,25 +675,34 @@ class WideColumnMapMaker:
                 replace the existing slot with the new information. If False then raise an exception if the slot
                 already exists in the SchemaBuilder. Defaults to False.
         """
-        if slot_type is None:
-            slot_type = self.get_type_of_slot(
-                type_class_name, type_slot_name, schema=self.target_schema
-            )
-        if slot_info is None:
+        if slot_type is not None:
+            slot_ranges = self.get_slot_definition_info_for_ranges(slot_type)
+        elif slot_info is None:
             slot_info = get_slot_definition(
-                type_class_name, type_slot_name, schema=self.target_schema
+                info_class_name, info_slot_name, schema=info_schema
             )
+            slot_ranges = self.get_range_info_of_slot(slot_info, schema=info_schema)
+
+        if slot_info is None:
+            slot_info = {}
+
+        # Set the range info in slot_info
+        if "range" in slot_info:
+            del slot_info["range"]
+        if "any_of" in slot_info:
+            del slot_info["any_of"]
+        slot_info.update(slot_ranges)
+
+        # Select only certain keys for slot_info
+        slot_info = {
+            k: slot_info.get(k, None)
+            for k in ["description", "title", "notes", "range", "any_of"]
+        }
 
         if class_name not in schema_builder.schema.classes:
             schema_builder.add_class(class_name)
         schema_builder.add_slot(
-            slot_name,
-            class_name,
-            range=slot_type,
-            description=slot_info.get("description", None),
-            title=slot_info.get("title", None),
-            notes=slot_info.get("notes", None),
-            replace_if_present=replace_if_present,
+            slot_name, class_name, replace_if_present=replace_if_present, **slot_info
         )
 
     def add_slot_derivation(
@@ -652,9 +784,10 @@ class WideColumnMapMaker:
                 target_slot_name=target_slot_name,
             )
             self.add_slot(
-                self.source_schema_builder,
-                self.source_class_name,
-                col,
-                type_class_name=target_class_name,
-                type_slot_name=target_slot_name,
+                schema_builder=self.source_schema_builder,
+                class_name=self.source_class_name,
+                slot_name=col,
+                info_schema=self.target_schema,
+                info_class_name=target_class_name,
+                info_slot_name=target_slot_name,
             )
