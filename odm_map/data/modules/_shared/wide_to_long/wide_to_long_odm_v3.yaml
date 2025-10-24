@@ -29,7 +29,7 @@ see_headers:
   hAg: mr_aggregation
   hCo: mr_compartment
   hFr: mr_fraction
-  hMe: mr_measure
+  hMr: mr_measure
   hSp: mr_specimen
   hUn: mr_unit
 partid_to_mmaset:
