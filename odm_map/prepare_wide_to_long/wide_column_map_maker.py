@@ -4,7 +4,7 @@
 The class WideColumnMapMaker takes in expanded wide data (eg. created by WideColumnExpander) and creates
 LinkML-Map schemas as well as a LinkML schema to map from the expanded data to an ODM long format.
 
-Expanded wide data has columns in the form tableShortName_attribute:index. For example, mr_organizationID:10.
+Expanded wide data has columns in the form tableShortName_attribute:group. For example, mr_organizationID:10.
 
 ## Usage
 
@@ -51,7 +51,7 @@ from odm_map.utils.general_utils import read_data_frame, TREE_ROOT_CLASS_NAME
 from odm_map.prepare_wide_to_long.wide_column_data import (
     ConfigKeys,
     WideColumnValues,
-    COLUMN_INDEX_SEPARATOR,
+    COLUMN_GROUP_SEPARATOR,
 )
 from odm_map.utils.schema_utils import (
     get_ranges_of_slot,
@@ -148,7 +148,7 @@ class WideColumnMapMaker:
         self.enum_derivations = {}
 
         self.make_global_class_derivations()
-        self.make_indexed_class_derivations()
+        self.make_grouped_class_derivations()
         self.add_tracking_slots_to_class_derivations()
         self.add_enums_to_source_schema_builder()
 
@@ -199,87 +199,87 @@ class WideColumnMapMaker:
             enum_defn = self.target_schema.get_enum(enum)
             self.source_schema_builder.add_enum(enum_defn)
 
-    def index_of_column(self, col: str) -> Optional[int]:
-        """Get the index of the specified column.
+    def group_of_column(self, col: str) -> Optional[str]:
+        """Get the group of the specified column.
 
-        The index is the number that follows the colon in the column name. For example,
-        mr_protocolID:12 has the index 12. If the column does not have an index the None
+        The group is the string that follows the colon in the column name. For example,
+        mr_protocolID:12 has the group 12. If the column does not have a group then None
         is returned.
 
         Args:
-            col (str): The column name to get the index of.
+            col (str): The column name to get the group of.
 
         Returns:
-            Optional[int]: The index of the column, or None if no index exists.
+            Optional[str]: The group of the column, or None if no group exists.
         """
         if (
-            COLUMN_INDEX_SEPARATOR in col
-            and col.split(COLUMN_INDEX_SEPARATOR)[-1].isdigit()
+            COLUMN_GROUP_SEPARATOR in col
+            and not col.split(COLUMN_GROUP_SEPARATOR)[-1].isdigit()
         ):
-            return int(col.split(COLUMN_INDEX_SEPARATOR)[-1])
+            return col.split(COLUMN_GROUP_SEPARATOR)[-1]
         return None
 
-    def remove_column_index(self, col: str) -> str:
-        """Get the column name with the index removed, if there is one.
+    def remove_column_group(self, col: str) -> str:
+        """Get the column name with the group removed, if there is one.
 
-        The index is the number that follows the colon in the column name. For example,
-        mr_protocolID:12 has the index 12. If the column does not have an index the None
+        The group is the string that follows the colon in the column name. For example,
+        mr_protocolID:12 has the group 12. If the column does not have a group then None
         is returned.
 
         Args:
-            col (str): The column to remove the index from.
+            col (str): The column to remove the group from.
 
         Returns:
-            str: The column with the index removed.
+            str: The column with the group removed.
         """
         if (
-            COLUMN_INDEX_SEPARATOR in col
-            and col.split(COLUMN_INDEX_SEPARATOR)[-1].isdigit()
+            COLUMN_GROUP_SEPARATOR in col
+            and not col.split(COLUMN_GROUP_SEPARATOR)[-1].isdigit()
         ):
-            return col.rsplit(COLUMN_INDEX_SEPARATOR, maxsplit=1)[0]
+            return col.rsplit(COLUMN_GROUP_SEPARATOR, maxsplit=1)[0]
         return col
 
     def make_global_class_derivations(self):
-        """Make the class derivations for all slots that do not have an index. These are called
-        "global" class derivations. Whenever an indexed class derivation is created, it must
-        also include the global slot derivations for that class. This does not include
-        tracking slots.
+        """Make the class derivations for all slots that do not have a group. These are called
+        "global" class derivations. Whenever a grouped class derivation is created, it
+        also includes the global slot derivations for that class (for the slots that do not
+        have a grouped derivation). This does not include tracking slots.
         """
         self.global_class_derivations = {}
 
-        # Make derivations for all columns that do not have an index, and is not a tracking slot.
+        # Make derivations for all columns that do not have a group, and is not a tracking slot.
         global_columns = [
             c
             for c in self.df.columns
-            if self.index_of_column(c) is None and not is_tracking_slot(c)
+            if self.group_of_column(c) is None and not is_tracking_slot(c)
         ]
         self.make_derivations(self.global_class_derivations, global_columns)
 
-    def make_indexed_class_derivations(self):
-        """Make the class derivations for all slots that have an index. Within each indexed
-        class derivation, all columns have the same index.
+    def make_grouped_class_derivations(self):
+        """Make the class derivations for all slots that have a group. Within each grouped
+        class derivation, all columns have the same group.
 
-        The index is the number that follows the colon in the column name. For example,
-        mr_protocolID:12 has the index 12. If the column does not have an index the None
+        The group is the string that follows the colon in the column name. For example,
+        mr_protocolID:12 has the group 12. If the column does not have a group then None
         is returned.
         """
         # Gather all column indices. The indices are the numbers that appear after the column name.
-        # For example, measure:10 has an index of "10". When mapping, all columns with the
-        # same index get mapped together to a single long format row, and each index gets
-        # its own LinkML-Map schema (with no overlap with other indices).
-        indices = [self.index_of_column(c) for c in self.df.columns]
-        indices = [c for c in indices if c is not None]
+        # For example, measure:10 has a group of "10". When mapping, all columns with the
+        # same group get mapped together to a single long format row, and each group gets
+        # its own LinkML-Map schema (with no overlap with other groups).
+        groups = [self.group_of_column(c) for c in self.df.columns]
+        groups = [c for c in groups if c is not None]
         # Remove duplicates
-        indices = list(dict.fromkeys(indices))
+        groups = list(dict.fromkeys(groups))
 
-        # Make derivations for each index
+        # Make derivations for each group
         self.class_derivations = {
             None: self.global_class_derivations,
         }
-        for column_index in indices:
+        for column_group in groups:
             cur_class_derivations = {}
             cur_columns = [
-                c for c in self.df.columns if self.index_of_column(c) == column_index
+                c for c in self.df.columns if self.group_of_column(c) == column_group
             ]
             self.make_derivations(cur_class_derivations, cur_columns)
 
@@ -292,7 +292,7 @@ class WideColumnMapMaker:
                     # We want to use the global derivations first, then update/overwrite
                     # slot derivations from cur_class_derivations. This means that
                     # any slot derivation in the global derivation will be overwritten
-                    # by a slot derivation in the indexed derivation if one exists.
+                    # by a slot derivation in the grouped derivation if one exists.
                     cur_slot_derivations = cur_class_derivations[target_class][
                         "slot_derivations"
                     ]
@@ -304,7 +304,7 @@ class WideColumnMapMaker:
                         new_slot_derivations
                     )
 
-            self.class_derivations[column_index] = cur_class_derivations
+            self.class_derivations[column_group] = cur_class_derivations
 
     def add_tracking_slots_to_class_derivations(self):
         """Add slot derivations to all class derivations to copy the tracking slots from the source to
@@ -350,7 +350,7 @@ class WideColumnMapMaker:
         # have no real meaning, so can be anything as long as they are unique.
         self.mapping_schemas = {}
         # has_non_global_class_derivations contains a list of all target classes that have a non-global
-        # derivation, ie. a derivation that has an index.
+        # derivation, ie. a derivation that has a group.
         # For all of these target classes that has a non-global derivation, we DO NOT save the global derivation
         # in a mapping schema. This is because the global derivation will be present in the non global derivation.
         has_non_global_class_derivations = [
@@ -518,7 +518,7 @@ class WideColumnMapMaker:
         return self.source_schema_file, self.map_schemas_path
 
     def get_class_and_slot(self, col: str) -> Tuple[str, str]:
-        """From the specified (possibly indexed) wide column, get the class name and the slot that
+        """From the specified (possibly grouped) wide column, get the class name and the slot that
         the column is for. For example, the column mr_organizationID:12 has a class of
         "measures" (from mr) and a slot of "organizationID". The class and slot must be
         present in the target schema passed to the constructor.
@@ -533,7 +533,7 @@ class WideColumnMapMaker:
         Returns:
             Tuple[str, str]: The class name and slot name for the column.
         """
-        parts = self.remove_column_index(col).split(
+        parts = self.remove_column_group(col).split(
             WideColumnValues.COLUMN_PART_SEPARATOR
         )
         if len(parts) != 2:

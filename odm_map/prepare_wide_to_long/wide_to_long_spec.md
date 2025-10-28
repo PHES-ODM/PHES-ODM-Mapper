@@ -125,7 +125,7 @@ The above gets expanded to:
 |------------|---------|----------------|----------|----------|
 | temp       | cel     | sin            | 1        | 20       |
 
-### Indices for Column Names
+### Groups for Column Names
 
 Within a single wide row, it's possible that we may have multiple measures or
 multiple protocolSteps. The table below shows an example of two measures in a
@@ -138,25 +138,27 @@ single wide row, one for the measure `covN1` and another for the measure
 
 When expanding these columns, we want to make sure there are no duplicate
 column names in the `tableShortName_attribute` format. To avoid these
-conflicts, we add an index after each expanded column name in order to group
-the columns and make their names unique. The index can be anything, but we will
-use the zero-based column index in the source wide row that the target column
-was expanded from, preceded by a colon. Using this method, the columns for
-`covN1` will receive the index `:0` and the columns for `pcrmeth` will receive
-the index `:1` (the following table has been split in two for readability
-reasons, but should be interpreted as a single table with a single row):
+conflicts, we add a group after each expanded column name in order to group the
+columns and make their names unique. The group can be any string that starts
+with the letter "o", but we will use the zero-based column index in the source
+wide row that the target column was expanded from, preceded by the letter "o"
+and a colon (ie. ":o#"). Using this method, the columns for `covN1` will
+receive the group `:o0` and the columns for `pcrmeth` will receive the group
+`:o1` (the following table has been split in two for readability reasons, but
+should be interpreted as a single table with a single row):
 
-| mr_compartment:0 | mr_specimen:0 | mr_fraction:0 | mr_measure:0 | mr_unit:0 | mr_aggregation:0 | mr_index:0 | mr_value:0 |
-|------------------|---------------|---------------|--------------|-----------|------------------|------------|------------|
-| wat              | sa            | liq           | covN1        | gcL       | me               | 1          | 40         |
+| mr_compartment:o0 | mr_specimen:o0 | mr_fraction:o0 | mr_measure:o0 | mr_unit:o0 | mr_aggregation:o0 | mr_index:o0 | mr_value:o0 |
+|-------------------|----------------|----------------|---------------|------------|-------------------|-------------|-------------|
+| wat               | sa             | liq            | covN1         | gcL        | me                | 1           | 40          |
 
-| mr_compartment:1 | mr_specimen:1 | mr_fraction:1 | mr_measure:1 | mr_unit:1 | mr_aggregation:1 | mr_index:1 | mr_value:1 |
-|------------------|---------------|---------------|--------------|-----------|------------------|------------|------------|
-| wat              | sa            | liq           | pcrmeth      | gcMl      | me               | None       | amp        |
+| mr_compartment:o1 | mr_specimen:o1 | mr_fraction:o1 | mr_measure:o1 | mr_unit:o1 | mr_aggregation:o1 | mr_index:o1 | mr_value:o1 |
+|-------------------|----------------|----------------|---------------|------------|-------------------|-------------|-------------|
+| wat               | sa             | liq            | pcrmeth       | gcMl       | me                | None        | amp         |
 
-We will automatically add these indices whenever expanding a measure wide
-column, a protocolSteps measure wide column, or a protocolSteps method wide
-column.
+We will automatically add these groups whenever expanding a measure wide
+column, a protocolSteps measure wide column, a protocolSteps method wide
+column, or any attribute column that has an `AND` boolean aggregator, such as
+`in_2_AND_name_insType`.
 
 ### Example Handling for `#_AND_` in Column Names
 

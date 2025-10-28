@@ -36,4 +36,4 @@ class ProtocolStepsTableColumns:
 
 
 AND_VALUE_SEPARATOR = "."
-COLUMN_INDEX_SEPARATOR = ":"
+COLUMN_GROUP_SEPARATOR = ":"
