@@ -70,7 +70,7 @@ from odm_map.prepare_wide_to_long.wide_column_data import (
     MeasureTableColumns,
     ProtocolStepsTableColumns,
     AND_VALUE_SEPARATOR,
-    COLUMN_INDEX_SEPARATOR,
+    COLUMN_GROUP_SEPARATOR,
 )
 
 logger = get_logger(__name__)
@@ -261,6 +261,39 @@ class WideColumnExpander:
         """
         return list(self.get_next_part(col))
 
+    # def get_single_compound_part(self, col_parts: List[List[str]], idx: int) -> Tuple[List[str], int]:
+    #     parts = []
+    #     # If the current part is an integer, then it should be in the form "#_AND" or "#_OR"
+    #     if len(col_parts[idx]) == 1 and col_parts[idx].isdigit():
+    #         # Next part is an integer, so the whole part is [int, AND/OR]
+    #         parts.append(col_parts[idx])
+    #         idx += 1
+    #         if self.is_part_equal_at_index(col_parts, idx, WideColumnValues.OR_TAG) or self.is_part_equal_at_index(col_parts, idx, WideColumnValues.AND_TAG):
+    #             parts.append(col_parts[idx])
+    #             idx += 1
+    #             return parts, idx
+    #         return None, None
+
+    #     # The current part can't be an underscored part (eg. "_flowmeter_")
+    #     if self.is_part_equal_at_index(col_parts, "", idx):
+    #         return None, None
+
+    #     parts.append(col_parts[idx])
+    #     idx += 1
+
+    #     if self.is_part_equal_at_index(col_parts, "", idx):
+    #         # The next part is an underscored part
+    #         idx += 1
+    #         if self.is_part_equal_at_index(col_parts, "", idx):
+    #             return None, None
+    #         idx += 1
+    #         if not self.is_part_equal_at_index(col_parts, "", idx+1):
+    #             return None, None
+    #         parts.append(f"_{col_parts[idx]}_")
+    #         idx += 1
+
+    #     return parts, idx
+
     def get_next_part(self, col: str) -> Generator[List[str], None, None]:
         """Generator to retrieve all parts of the specified column. See get_all_parts for details.
 
@@ -295,16 +328,34 @@ class WideColumnExpander:
                         # The next part (after the digit), is an AND or OR tag, in which case we need
                         # to return multiple parts. In total, we return the current part, the AND/OR tag, plus
                         # an additional int(cur_part) number of parts
+                        try:
+                            expected_parts = int(cur_part)
+                        except Exception:
+                            # @TODO: This should be an error
+                            expected_parts = 0
+                            pass
                         parts = [cur_part, next_part]
-                        if idx + num >= len(col_parts):
-                            raise ValueError(
-                                f"Not enough parts for {num}_{next_part} tag in column: {col}"
-                            )
-                        # Skip number and AND/OR parts
+
+                        # Skip the number and the boolean part (ie. cur_part and next_part)
                         idx += 2
-                        parts.extend(col_parts[idx : idx + num])
-                        # Skip all possible options for the AND/OR list
-                        idx += num
+
+                        # We need to add expected_parts number of parts
+                        num_parts_added = 0
+                        while idx < len(col_parts):
+                            if col_parts[idx] == "":
+                                # The next part to add is in the form _partValue_ (ie. with leading and trailing underscore)
+                                # This does not contribute to num_parts_added, it just represents the value that the previous part
+                                # should take on in the row
+                                idx += 1
+                                if col_parts[idx + 1] == "":
+                                    parts.append(f"_{col_parts[idx]}_")
+                                    idx += 2
+                            else:
+                                if num_parts_added >= expected_parts:
+                                    break
+                                parts.append(col_parts[idx])
+                                idx += 1
+                                num_parts_added += 1
                         yield parts
                     else:
                         # There is no AND/OR tag, so return the current part as a single part
@@ -420,7 +471,7 @@ class WideColumnExpander:
         return values[:num_values]
 
     def expand_column_type_attribute(
-        self, col: str, row: pd.Series, column_index: int
+        self, col: str, row: pd.Series, column_group: Optional[str]
     ) -> bool:
         """Expand the specified column, treating it as an attribute. Attributes are in the form tableShortName_attribute or
         tableShortName_#_AND_a_b_c_...
@@ -428,17 +479,17 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_index (int): The index that the expansion belongs to. An index is assigned to each expanded
+            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
-                If it is a positive integer, then it is added to the end of the expanded column(s), eg.
-                sm_sampleID:1 (1 is the index).
+                If it is not None, then it is added to the end of the expanded column(s), eg.
+                sm_sampleID:1 (1 is the group).
 
         Returns:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
                 correct number of parts, or a part is missing or invalid.)
         """
         value = row[col]
-        logger.info(f"Expanding attribute column '{col}' with value '{value}'")
+        # logger.info(f"Expanding attribute column '{col}' with value '{value}'")
 
         col_parts = self.get_all_parts(col)
         row_index = self.get_row_index_from_col_parts(col_parts)
@@ -450,6 +501,7 @@ class WideColumnExpander:
             )
             return False
 
+        use_column_group = False
         table_short_name = col_parts[0][0]
         if len(col_parts[1]) == 1:
             # The column is in the format tableShortName_column[_#]
@@ -478,14 +530,14 @@ class WideColumnExpander:
                     f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{col_parts[1][0]}": value,
                 },
                 row_index=row_index,
-                column_index=None,
+                column_group=None,
             )
 
             return True
         else:
             # The column has an AND tag (ie. tableShortName_#_AND_a_b_c[_#])
             bool_part = col_parts[1][1]
-            num_values = len(col_parts[1]) - 2
+            use_column_group = True
 
             # For attribute columns, only the AND_TAG is allowed
             if bool_part != WideColumnValues.AND_TAG:
@@ -494,23 +546,40 @@ class WideColumnExpander:
                 )
                 return False
 
-            new_row = {}
-            values = self.get_and_values(value, num_values=num_values)
-            new_row.update(
-                {
-                    f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{col}": val
-                    for col, val in zip(col_parts[1][2:], values)
-                }
+            # Get the column names which are in the parts, and the underscored values which are in the parts (eg. _myvalue_)
+            col_names = [c for c in col_parts[1][2:] if not c.startswith("_")]
+            col_values = [c for c in col_parts[1][2:] if c not in col_names]
+            # Get the dot-separated values in the value
+            values = self.get_and_values(
+                value, num_values=len(col_names) - len(col_values)
             )
 
+            # Get all the columns and the values associated with the columns, assign these to new_row
+            new_row = {}
+            col_info = col_parts[1][2:]
+            values_idx = 0
+            for idx in range(len(col_info)):
+                if col_info[idx].startswith("_"):
+                    continue
+                cur_col = f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{col_info[idx]}"
+                if idx + 1 < len(col_info) and col_info[idx + 1].startswith("_"):
+                    # The next value (at idx+1) is an underscored value, so use it for the current column
+                    new_row[cur_col] = col_info[idx + 1].strip("_")
+                else:
+                    # There is no underscored value, so get the value from values
+                    new_row[cur_col] = values[values_idx]
+                    values_idx += 1
+
             self.update_current_expanded_rows(
-                new_row, row_index=row_index, column_index=None
+                new_row,
+                row_index=row_index,
+                column_group=column_group if use_column_group else None,
             )
 
             return True
 
     def expand_column_type_protocol_step_measure(
-        self, col: str, row: pd.Series, column_index: int
+        self, col: str, row: pd.Series, column_group: Optional[str]
     ) -> bool:
         """Expand the specified column, treating it as a protocolSteps measure. protocolSteps measures are in the format
         tableShortName_partTypeShortName_measure_unit_aggregation_index_attribute. It results in multiple output
@@ -519,19 +588,19 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_index (int): The index that the expansion belongs to. An index is assigned to each expanded
+            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
-                If it is a positive integer, then it is added to the end of the expanded column(s), eg.
-                sm_sampleID:1 (1 is the index).
+                If it is not None, then it is added to the end of the expanded column(s), eg.
+                sm_sampleID:1 (1 is the group).
 
         Returns:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
                 correct number of parts, or a part is missing or invalid.)
         """
         value = row[col]
-        logger.info(
-            f"Expanding protocolSteps measure column '{col}' with value '{value}'"
-        )
+        # logger.info(
+        #     f"Expanding protocolSteps measure column '{col}' with value '{value}'"
+        # )
 
         col_parts = self.get_all_parts(col)
 
@@ -595,13 +664,13 @@ class WideColumnExpander:
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
             row_index=row_index,
-            column_index=column_index,
+            column_group=column_group,
         )
 
         return True
 
     def expand_column_type_protocol_step_method(
-        self, col: str, row: pd.Series, column_index: int
+        self, col: str, row: pd.Series, column_group: Optional[str]
     ) -> bool:
         """Expand the specified column, treating it as a protocolSteps method. protocolSteps methods are in the format
         tableShortName_partTypeShortName_method_attribute. It results in multiple output columns, each containing the
@@ -610,19 +679,19 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_index (int): The index that the expansion belongs to. An index is assigned to each expanded
+            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
-                If it is a positive integer, then it is added to the end of the expanded column(s), eg.
-                sm_sampleID:1 (1 is the index).
+                If it is not None, then it is added to the end of the expanded column(s), eg.
+                sm_sampleID:1 (1 is the group).
 
         Returns:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
                 correct number of parts, or a part is missing or invalid.)
         """
         value = row[col]
-        logger.info(
-            f"Expanding protocolSteps method column '{col}' with value '{value}'"
-        )
+        # logger.info(
+        #     f"Expanding protocolSteps method column '{col}' with value '{value}'"
+        # )
 
         col_parts = self.get_all_parts(col)
 
@@ -667,7 +736,7 @@ class WideColumnExpander:
             candidate_enums = col_parts[2][2:]
             ps_method = self.select_matching_enum(value, candidate_enums)
         elif len(col_parts[2]) == 1:
-            # Third part has only one prt, get the method
+            # Third part has only one aprt, get the method
             ps_method = self.get_resolved_single_part_at_index(col_parts, 2, row)
         else:
             logger.warning(f"Method part of protocol steps column is missing: {col}")
@@ -679,13 +748,36 @@ class WideColumnExpander:
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
             row_index=row_index,
-            column_index=column_index,
+            column_group=column_group,
         )
 
         return True
 
+    # def get_aggregate_part(self, col_parts: List[List[str]]) -> Tuple[List[str], List[str]]:
+    #     # Return: bool_part, list of columns, list of values in column
+    #     bool_part = None
+
+    #     if len(col_parts[0]) == 1 and col_parts[0][0].isdigit():
+    #         num_aggregate_parts = int(col_parts[0][0])
+    #     else:
+    #         num_aggregate_parts = 0
+
+    #     if num_aggregate_parts > 0:
+    #         if len(col_parts)
+
+    #     if self.is_part_equal_at_index(col_parts, WideColumnValues.OR_TAG, 1):
+    #         bool_part = WideColumnValues.OR_TAG
+    #     elif self.is_part_equal_at_index(col_parts, WideColumnValues.AND_TAG, 1):
+    #         bool_part = WideColumnValues.AND_TAG
+
+    #     if bool_part == WideColumnValues.OR_TAG:
+    #         pass
+    #     elif bool_part == WideColumnValues.AND_TAG:
+    #         pass
+    #     else:
+
     def expand_column_type_measure(
-        self, col: str, row: pd.Series, column_index: int
+        self, col: str, row: pd.Series, column_group: Optional[str]
     ) -> bool:
         """Expand the specified column, treating it as a measure. Measures are in the format
         compartment_specimen_fraction_measure_unit_aggregation_index_attribute. It results in multiple output columns,
@@ -694,17 +786,17 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_index (int): The index that the expansion belongs to. An index is assigned to each expanded
+            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
-                If it is a positive integer, then it is added to the end of the expanded column(s), eg.
-                sm_sampleID:1 (1 is the index).
+                If it is not None, then it is added to the end of the expanded column(s), eg.
+                sm_sampleID:1 (1 is the group).
 
         Returns:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
                 correct number of parts, or a part is missing or invalid.)
         """
         value = row[col]
-        logger.info(f"Expanding measure column '{col}' with value '{value}'")
+        # logger.info(f"Expanding measure column '{col}' with value '{value}'")
 
         col_parts = self.get_all_parts(col)
         row_index = self.get_row_index_from_col_parts(col_parts)
@@ -748,13 +840,13 @@ class WideColumnExpander:
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
             row_index=row_index,
-            column_index=column_index,
+            column_group=column_group,
         )
 
         return True
 
     def expand_column_type_tracking(
-        self, col: str, row: pd.Series, column_index: int
+        self, col: str, row: pd.Series, column_group: Optional[str]
     ) -> bool:
         """Expand the specified column, treating it as a tracking column. Tracking columns provide information about which
         file and row number that the current row was loaded from. Tracking columns get expanded by keeping the same column
@@ -763,10 +855,10 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_index (int): The index that the expansion belongs to. An index is assigned to each expanded
+            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
-                If it is a positive integer, then it is added to the end of the expanded column(s), eg.
-                sm_sampleID:1 (1 is the index).
+                If it is not None, then it is added to the end of the expanded column(s), eg.
+                sm_sampleID:1 (1 is the group).
 
         Returns:
             bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
@@ -776,7 +868,7 @@ class WideColumnExpander:
             self.update_current_expanded_rows(
                 {col: row[col]},
                 row_index=row_index,
-                column_index=column_index,
+                column_group=column_group,
             )
 
     def select_matching_enum(
@@ -808,35 +900,35 @@ class WideColumnExpander:
         self,
         data: Dict[str, Any],
         row_index: Optional[int],
-        column_index: Optional[int] = None,
+        column_group: Optional[int] = None,
     ):
         """Update the expanded row that we're currently working on with new values.
 
         This function should be called multiple times when expanding a row after new_current_expanded_rows is called.
 
         Args:
-            data (Dict[str, Any]): The columns (keys) and values (values) to update the current row with. If column_index is
-                a positive integer, then the column_index is appended to the column names.
+            data (Dict[str, Any]): The columns (keys) and values (values) to update the current row with. If column_group is
+                not None, then the column_group is appended to the column names.
             row_index (Optional[int]): The output expanded row index to update. When expanding a given input row, we might have
                 multiple output expanded rows (ie. a 1-to-many relationship). The row_index specifies which of these output rows
                 to update. When there is a 1-to-1 relationship from input to output rows, then row_index should be None.
-            column_index (Optional[int], optional): The column index to assign to all the columns in data. This meant for
-                grouping all the columns together, with columns that have the same index belonging to the same group. For example,
-                a measure might have a compartment, unit, aggregation, etc. all specified in different columns. By adding an
-                index to these columns we know which of the columns belong to the same measure. Columns with no index
-                (ie. column_index is None) usually represent global columns that apply to all indices. Defaults to None.
+            column_group (Optional[str]): The group that the expansion belongs to. This meant for
+                grouping all the columns together, with columns that have the same group value belonging to the same group. For example,
+                a measure might have a compartment, unit, aggregation, etc. all specified in different columns. By adding a
+                group to these columns we know which of the columns belong to the same measure. Columns with no group
+                (ie. column_group is None) usually represent global columns that apply to all groups. Defaults to None.
         """
         if row_index not in self.current_expanded_rows:
             self.current_expanded_rows[row_index] = {}
         current_row = self.current_expanded_rows[row_index]
 
-        def _key_with_index(key: str, index: Optional[int]) -> str:
-            if index is None:
+        def _key_with_group(key: str, group: Optional[str]) -> str:
+            if group is None:
                 return key
-            return f"{key}{COLUMN_INDEX_SEPARATOR}{index}"
+            return f"{key}{COLUMN_GROUP_SEPARATOR}{group}"
 
         for key, val in data.items():
-            key = _key_with_index(key, column_index)
+            key = _key_with_group(key, column_group)
             if key in current_row:
                 logger.warning(
                     f"The column {key} has already been populated in the expanded row for row index {row_index} with value '{current_row[key]}'. This value will be overwritten with the value '{val}'."
@@ -972,18 +1064,11 @@ class WideColumnExpander:
 
         return df
 
-    def expand_single(
-        self, df: pd.DataFrame, first_column_index: int = 0
-    ) -> pd.DataFrame:
+    def expand_single(self, df: pd.DataFrame) -> pd.DataFrame:
         """Expand a single input/DataFrame.
 
         Args:
             df (pd.DataFrame): The DataFrame to expand
-            first_column_index (int): For indexing columns in the DataFrame, the
-                first column should have this index, and each subsequent column should
-                have its index incremented by one. This is to allow multiple measures/
-                protocol steps/etc in a single expanded row with unique column names.
-                Defaults to 0.
 
         Returns:
             pd.DataFrame: The expanded DataFrame. The input DataFrame (df) is left unchanged.
@@ -995,28 +1080,28 @@ class WideColumnExpander:
         for _, row in tqdm(df.iterrows(), total=len(df.index)):
             self.new_current_expanded_rows()
             for column_index, col in enumerate(df.columns):
-                column_index += first_column_index
+                column_group = f"o{column_index}"
                 column_type = self.get_column_type(col)
                 # logger.info(f"Column type is '{column_type}' for column: {col}")
                 if column_type == ColumnType.ATTRIBUTE:
                     self.expand_column_type_attribute(
-                        col, row, column_index=column_index
+                        col, row, column_group=column_group
                     )
                 elif column_type == ColumnType.PROTOCOL_STEP_MEASURE:
                     self.expand_column_type_protocol_step_measure(
-                        col, row, column_index=column_index
+                        col, row, column_group=column_group
                     )
                 elif column_type == ColumnType.PROTOCOL_STEP_METHOD:
                     self.expand_column_type_protocol_step_method(
-                        col, row, column_index=column_index
+                        col, row, column_group=column_group
                     )
                 elif column_type == ColumnType.MEASURE:
-                    self.expand_column_type_measure(col, row, column_index=column_index)
+                    self.expand_column_type_measure(col, row, column_group=column_group)
 
             # Copy over the tracking slots. We do this last to make sure all row indices
             # for the current expanded rows get populated with the tracking info.
             for col in [c for c in df.columns if is_tracking_slot(c)]:
-                self.expand_column_type_tracking(col, row, column_index=None)
+                self.expand_column_type_tracking(col, row, column_group=None)
             self.save_current_expanded_rows()
 
         expanded_df = pd.DataFrame(self.all_expanded_rows)
