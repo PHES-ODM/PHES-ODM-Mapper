@@ -33,6 +33,6 @@ see_headers:
     hAg: mr_aggregation
     hCo: mr_compartment
     hFr: mr_fraction
-    hMr: mr_measure
+    hMe: mr_measure
     hSp: mr_specimen
     hUn: mr_unit
