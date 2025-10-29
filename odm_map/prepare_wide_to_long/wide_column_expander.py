@@ -49,12 +49,13 @@ maker.make(data_file=None, data_frame=input_data_frame, output_dir="wide_to_long
 
 """
 
-from typing import List, Union, Dict, Optional, Generator, Any
+from typing import List, Union, Dict, Optional, Generator, Any, Tuple
 from pathlib import Path
 import pandas as pd
 import yaml
 from enum import Enum, auto
 from tqdm import tqdm
+import os
 
 from linkml_runtime import SchemaView
 
@@ -79,7 +80,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
 logger = get_logger(__name__)
 
 
-class ColumnType(Enum):
+class ColumnType(str, Enum):
     ATTRIBUTE = auto()
     PROTOCOL_STEP_MEASURE = auto()
     PROTOCOL_STEP_METHOD = auto()
@@ -91,6 +92,12 @@ class ColumnType(Enum):
 # in the name, followed by an integer. For example, "myColumn.1" has the same name as
 # "myColumn" (the ".1" was added when loading the data from disk)
 DUPLICATE_COLUMNS_SEPARATOR = "."
+
+# If output_dir is specified when calling WideColumnExpander.expand, then save the
+# expanded DataFrame to EXPANDED_OUTPUT_DATA_FILE and the configuration information
+# for the data file to EXPANDED_OUTPUT_CONFIG_FILE
+EXPANDED_OUTPUT_DATA_FILE = "expanded.csv"
+EXPANDED_OUTPUT_CONFIG_FILE = "expanded_config.yaml"
 
 
 class WideColumnExpander:
@@ -201,9 +208,9 @@ class WideColumnExpander:
         self,
         data_files: List[Path],
         data_frames: List[pd.DataFrame],
-        output_file: Optional[Union[str, Path]],
+        output_dir: Optional[Union[str, Path]],
         max_rows: Optional[int] = None,
-    ) -> pd.DataFrame:
+    ) -> Tuple[pd.DataFrame, Dict]:
         """Expand the files and/or DataFrames to the expanded wide format, so that it's ready to map from
         wide to long format. After expanding the data, WideColumnMapMaker should be run on the returned
         DataFrame.
@@ -214,12 +221,16 @@ class WideColumnExpander:
             data_frames (List[pd.DataFrame]): A list of DataFrames to expand. These DataFrames are concatenated
                 to the DataFrames loaded from data_files. TrackingSlots should already have been added to these
                 DataFrames.
-            output_file (Optional[Union[str, Path]]): If set then save the expanded DataFrame result to this file.
+            output_dir (Optional[Union[str, Path]]): If set then save the expanded DataFrame result as well as
+                configuration information to this directory. The file is saved as expanded.csv and the configuration
+                as expanded_config.yaml.
             max_rows (Optional[int]): Maximum number of rows to load from all files in data_files. If 0 or None
                 then all rows are loaded.
 
         Returns:
-            pd.DataFrame: The expanded DataFrame.
+            Tuple[pd.DataFrame, Dict]: The expanded DataFrame and the configuration information about the DataFrame.
+                This configuration includes information such as which groups in the expanded DataFrame are explicitly
+                specified in the input data file and which are implicitly (and generated at runtime).
         """
         # Load the data to expand
         input_df: List[pd.DataFrame] = []
@@ -237,13 +248,32 @@ class WideColumnExpander:
 
         # Expand the DataFrame
         expanded_df = self.expand_single(input_df)
+        output_config = self.get_expanded_config()
 
-        # Save to disk if required
-        if output_file:
-            logger.info(f"Saving expanded data to {output_file}")
-            save_data_frame(expanded_df, output_file, index=False)
+        # Save expanded data to disk if required
+        if output_dir is not None:
+            output_data_file = os.path.join(output_dir, EXPANDED_OUTPUT_DATA_FILE)
+            output_config_file = os.path.join(output_dir, EXPANDED_OUTPUT_CONFIG_FILE)
+            logger.info(f"Saving expanded data to {output_data_file}")
+            save_data_frame(expanded_df, output_data_file, index=False)
+            logger.info(f"Saving expanded data configuration to {output_config_file}")
+            with open(output_config_file, "w") as f:
+                yaml.safe_dump(output_config, f)
 
-        return expanded_df
+        return expanded_df, output_config
+
+    def get_expanded_config(self) -> Dict:
+        """Get the configuration information about the expanded DataFrame. This includes information
+        such as which groups in the expanded DataFrame are explicitly specified in the input data
+        file and which are implicitly (and generated at runtime).
+
+        Returns:
+            Dict: The configuration information about the expanded DataFrame.
+        """
+        return {
+            "explicit_groups": self.explicit_groups,
+            "implicit_groups": self.implicit_groups,
+        }
 
     def get_all_parts(self, col: str) -> List[List[str]]:
         """Get a list of all parts of the specified wide-name column. The parts are separated
@@ -503,7 +533,6 @@ class WideColumnExpander:
                 later rows might have valid values and we would want to continue processing those later values.
         """
         value = row[col]
-        # logger.info(f"Expanding attribute column '{col}' with value '{value}'")
 
         col_parts = self.get_all_parts(col)
         row_index = self.get_row_index_from_col_parts(col_parts)
@@ -623,9 +652,6 @@ class WideColumnExpander:
                 later rows might have valid values and we would want to continue processing those later values.
         """
         value = row[col]
-        # logger.info(
-        #     f"Expanding protocolSteps measure column '{col}' with value '{value}'"
-        # )
 
         col_parts = self.get_all_parts(col)
 
@@ -725,9 +751,6 @@ class WideColumnExpander:
                 later rows might have valid values and we would want to continue processing those later values.
         """
         value = row[col]
-        # logger.info(
-        #     f"Expanding protocolSteps method column '{col}' with value '{value}'"
-        # )
 
         col_parts = self.get_all_parts(col)
 
@@ -843,7 +866,6 @@ class WideColumnExpander:
                 later rows might have valid values and we would want to continue processing those later values.
         """
         value = row[col]
-        # logger.info(f"Expanding measure column '{col}' with value '{value}'")
 
         col_parts = self.get_all_parts(col)
         row_index = self.get_row_index_from_col_parts(col_parts)
@@ -1165,20 +1187,61 @@ class WideColumnExpander:
         df = self.merge_duplicate_columns(df)
         first_group_number = self.get_first_group_number(df)
 
+        # Explicit groups are those that are explicitly specified in the original data in the column names (eg. qr_qualityFlags.o123)
+        self.explicit_groups = []
+        # Implicit groups are those that are generated in code because the original data does not have a group in the column name (eg. qr_qualityFlags)
+        self.implicit_groups = []
+
+        # For all columns, generate the some meta data for the column that is used for expanding the columns
+        column_data = []
+        for column_index, col in enumerate(df.columns):
+            # Get the type of the column
+            column_type = self.get_column_type(col)
+            if column_type is None:
+                logger.warning(
+                    f"Unrecognized column type, the column will be ignored: {col}"
+                )
+                continue
+
+            # Get or generate the column group
+            column_group = group_of_column(col)
+            if column_group is None:
+                # Column group not available, generate a new one
+                explicit_group = False
+                column_group = (
+                    f"{COLUMN_GROUP_PREFIX}{column_index + first_group_number}"
+                )
+            else:
+                explicit_group = True
+
+            if explicit_group:
+                self.explicit_groups.append(column_group)
+            else:
+                self.implicit_groups.append(column_group)
+
+            cur_data = {
+                "column": col,
+                "column_index": column_index,
+                "column_group": column_group,
+                "explicit_group": explicit_group,
+                "column_type": column_type,
+            }
+            column_data.append(cur_data)
+
+        # Iterate over all rows and all columns
         for row_idx, row in tqdm(df.iterrows(), total=len(df.index)):
             self.new_current_expanded_rows()
-            for column_index, col in enumerate(df.columns):
-                if col in self.skip_columns:
-                    continue
-                column_group = group_of_column(col)
-                always_use_group = True
-                if column_group is None:
-                    always_use_group = False
-                    column_group = (
-                        f"{COLUMN_GROUP_PREFIX}{column_index + first_group_number}"
-                    )
-                column_type = self.get_column_type(col)
-                # logger.info(f"Column type is '{column_type}' for column: {col}")
+            # We iterate over a copy of column_data because we might be modifying column_data
+            # in the for loop
+            column_data_copy = column_data.copy()
+            for cur_data in column_data_copy:
+                col = cur_data["column"]
+                column_index = cur_data["column_index"]
+                column_group = cur_data["column_group"]
+                explicit_group = cur_data["explicit_group"]
+                column_type = cur_data["column_type"]
+                always_use_group = explicit_group
+
                 if column_type == ColumnType.ATTRIBUTE:
                     skip_column = not self.expand_column_type_attribute(
                         col,
@@ -1218,16 +1281,14 @@ class WideColumnExpander:
                         raise RuntimeError(
                             f"The column {col} was marked to be skipped but should only be marked when processing the first row, instead it is being marked on row {row_idx}."
                         )
-                    self.skip_columns.append(col)
+                    column_data.remove(cur_data)
 
             # Copy over the tracking slots. We do this last to make sure all row indices
             # for the current expanded rows get populated with the tracking info.
             for col in [c for c in df.columns if is_tracking_slot(c)]:
-                skip_column = not self.expand_column_type_tracking(
+                self.expand_column_type_tracking(
                     col, row, column_group=None, always_use_group=False
                 )
-                if skip_column:
-                    self.skip_columns.append(col)
 
             self.save_current_expanded_rows()
 
