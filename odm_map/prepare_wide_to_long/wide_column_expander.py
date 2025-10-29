@@ -2,7 +2,7 @@
 # Wide Column Expander
 
 Expand wide column names (with values) to a format that is more usable by LinkML-Map. The target format
-of the columns is tableShortName_attribute:index.
+of the columns is tableShortName_attribute.group.
 
 For example, the following data with a measure wide column:
 
@@ -13,21 +13,21 @@ For example, the following data with a measure wide column:
 
 Would get expanded into:
 
-| mr_compartment:1 | mr_specimen:1 | mr_fraction:1 | mr_measure:1 | mr_unit:1 | mr_aggregation:1 | mr_index:1 | mr_value:1 |
-|------------------|---------------|---------------|--------------|-----------|------------------|------------|------------|
-| wat              | sa            | liq           | covN1        | gch       | me               | 1          | 100        |
-| wat              | sa            | liq           | covN1        | gch       | me               | 1          | 120        |
+| mr_compartment.o1 | mr_specimen.o1 | mr_fraction.o1 | mr_measure.o1 | mr_unit.o1 | mr_aggregation.o1 | mr_index.o1 | mr_value.o1 |
+|-------------------|----------------|----------------|---------------|------------|-------------------|-------------|-------------|
+| wat               | sa             | liq            | covN1         | gch        | me                | 1           | 100         |
+| wat               | sa             | liq            | covN1         | gch        | me                | 1           | 120         |
 
 Once we have the resulting expanded DataFrame, we can then use WideColumnMapMaker to generate:
 
 1. A LinkML schema describing the expanded wide format. This schema is specific to the resulting expanded DataFrame, and
-will contain all the tableShortName_attribute:index columns as well as tracking columns.
+will contain all the tableShortName_attribute.group columns as well as tracking columns.
 2. A group of LinkML-Map schemas that will map the expanded DataFrame to an ODM long format.
 
 ## Usage
 
 ```python
-# First expand the columns to be in tableShortName_attribute:index format
+# First expand the columns to be in tableShortName_attribute.group format
 expander = WideColumnExpander(
     config="wide_column_config.yaml", source_class_name="odm_wide", target_schema="odm_v3.yaml"
 )
@@ -64,13 +64,16 @@ from odm_map.utils.extra_and_tracking_slots import (
     load_data_with_source_tracking_columns,
     is_tracking_slot,
 )
-from odm_map.prepare_wide_to_long.wide_column_data import (
+from odm_map.prepare_wide_to_long.wide_column_utils import (
     ConfigKeys,
     WideColumnValues,
     MeasureTableColumns,
     ProtocolStepsTableColumns,
     AND_VALUE_SEPARATOR,
     COLUMN_GROUP_SEPARATOR,
+    group_of_column,
+    remove_column_group,
+    WIDE_GROUP_PREFIX,
 )
 
 logger = get_logger(__name__)
@@ -259,6 +262,7 @@ class WideColumnExpander:
                 of col. If the sub-list is for a part that has #_AND or #_OR, then the sub-list
                 will have 2+# strings, where # is the value preceding _AND or _OR.
         """
+        col = remove_column_group(col)
         return list(self.get_next_part(col))
 
     # def get_single_compound_part(self, col_parts: List[List[str]], idx: int) -> Tuple[List[str], int]:
@@ -471,7 +475,11 @@ class WideColumnExpander:
         return values[:num_values]
 
     def expand_column_type_attribute(
-        self, col: str, row: pd.Series, column_group: Optional[str]
+        self,
+        col: str,
+        row: pd.Series,
+        column_group: Optional[str],
+        always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as an attribute. Attributes are in the form tableShortName_attribute or
         tableShortName_#_AND_a_b_c_...
@@ -501,7 +509,7 @@ class WideColumnExpander:
             )
             return False
 
-        use_column_group = False
+        use_column_group = always_use_group
         table_short_name = col_parts[0][0]
         if len(col_parts[1]) == 1:
             # The column is in the format tableShortName_column[_#]
@@ -530,7 +538,7 @@ class WideColumnExpander:
                     f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{col_parts[1][0]}": value,
                 },
                 row_index=row_index,
-                column_group=None,
+                column_group=column_group if always_use_group else None,
             )
 
             return True
@@ -579,7 +587,11 @@ class WideColumnExpander:
             return True
 
     def expand_column_type_protocol_step_measure(
-        self, col: str, row: pd.Series, column_group: Optional[str]
+        self,
+        col: str,
+        row: pd.Series,
+        column_group: Optional[str],
+        always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as a protocolSteps measure. protocolSteps measures are in the format
         tableShortName_partTypeShortName_measure_unit_aggregation_index_attribute. It results in multiple output
@@ -670,7 +682,11 @@ class WideColumnExpander:
         return True
 
     def expand_column_type_protocol_step_method(
-        self, col: str, row: pd.Series, column_group: Optional[str]
+        self,
+        col: str,
+        row: pd.Series,
+        column_group: Optional[str],
+        always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as a protocolSteps method. protocolSteps methods are in the format
         tableShortName_partTypeShortName_method_attribute. It results in multiple output columns, each containing the
@@ -777,7 +793,11 @@ class WideColumnExpander:
     #     else:
 
     def expand_column_type_measure(
-        self, col: str, row: pd.Series, column_group: Optional[str]
+        self,
+        col: str,
+        row: pd.Series,
+        column_group: Optional[str],
+        always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as a measure. Measures are in the format
         compartment_specimen_fraction_measure_unit_aggregation_index_attribute. It results in multiple output columns,
@@ -846,7 +866,11 @@ class WideColumnExpander:
         return True
 
     def expand_column_type_tracking(
-        self, col: str, row: pd.Series, column_group: Optional[str]
+        self,
+        col: str,
+        row: pd.Series,
+        column_group: Optional[str],
+        always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as a tracking column. Tracking columns provide information about which
         file and row number that the current row was loaded from. Tracking columns get expanded by keeping the same column
@@ -1064,6 +1088,32 @@ class WideColumnExpander:
 
         return df
 
+    def get_first_group_number(self, df: pd.DataFrame) -> int:
+        """Based on the column names of the specified DataFrames, find the first integer group
+        number to use for generating group names of the form "{WIDE_GROUP_PREFIX}{n}".
+
+        Any number greater than or equal to the returned value will result in a group name that
+        will not interfere with already (explicitly) specified group names in the DataFrame.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to get the first group number to use.
+
+        Returns:
+            int: The first group number to use when generating group names for the DataFrame.
+                Using this group number, or any number greater than it, will result in group
+                names that are not already used in the DataFrame.
+        """
+        columns = [group_of_column(c) for c in df.columns]
+        columns = [
+            c.split(WIDE_GROUP_PREFIX, maxsplit=1)[1]
+            for c in columns
+            if c and c.startswith(WIDE_GROUP_PREFIX)
+        ]
+        columns = [int(c) for c in columns if c.isdigit()]
+        if len(columns) == 0:
+            return 0
+        return max(columns) + 1
+
     def expand_single(self, df: pd.DataFrame) -> pd.DataFrame:
         """Expand a single input/DataFrame.
 
@@ -1076,32 +1126,55 @@ class WideColumnExpander:
         self.all_expanded_rows = []
 
         df = self.merge_duplicate_columns(df)
+        first_group_number = self.get_first_group_number(df)
 
         for _, row in tqdm(df.iterrows(), total=len(df.index)):
             self.new_current_expanded_rows()
             for column_index, col in enumerate(df.columns):
-                column_group = f"o{column_index}"
+                column_group = group_of_column(col)
+                always_use_group = True
+                if column_group is None:
+                    always_use_group = False
+                    column_group = (
+                        f"{WIDE_GROUP_PREFIX}{column_index + first_group_number}"
+                    )
                 column_type = self.get_column_type(col)
                 # logger.info(f"Column type is '{column_type}' for column: {col}")
                 if column_type == ColumnType.ATTRIBUTE:
                     self.expand_column_type_attribute(
-                        col, row, column_group=column_group
+                        col,
+                        row,
+                        column_group=column_group,
+                        always_use_group=always_use_group,
                     )
                 elif column_type == ColumnType.PROTOCOL_STEP_MEASURE:
                     self.expand_column_type_protocol_step_measure(
-                        col, row, column_group=column_group
+                        col,
+                        row,
+                        column_group=column_group,
+                        always_use_group=always_use_group,
                     )
                 elif column_type == ColumnType.PROTOCOL_STEP_METHOD:
                     self.expand_column_type_protocol_step_method(
-                        col, row, column_group=column_group
+                        col,
+                        row,
+                        column_group=column_group,
+                        always_use_group=always_use_group,
                     )
                 elif column_type == ColumnType.MEASURE:
-                    self.expand_column_type_measure(col, row, column_group=column_group)
+                    self.expand_column_type_measure(
+                        col,
+                        row,
+                        column_group=column_group,
+                        always_use_group=always_use_group,
+                    )
 
             # Copy over the tracking slots. We do this last to make sure all row indices
             # for the current expanded rows get populated with the tracking info.
             for col in [c for c in df.columns if is_tracking_slot(c)]:
-                self.expand_column_type_tracking(col, row, column_group=None)
+                self.expand_column_type_tracking(
+                    col, row, column_group=None, always_use_group=False
+                )
             self.save_current_expanded_rows()
 
         expanded_df = pd.DataFrame(self.all_expanded_rows)
