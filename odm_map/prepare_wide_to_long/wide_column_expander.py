@@ -172,7 +172,6 @@ class WideColumnExpander:
         elif num_parts == 8 or num_parts == 9:
             return ColumnType.MEASURE
 
-        logger.warning(f"Unrecognized column type, the column will be ignored: {col}")
         return None
 
     def is_part_equal_at_index(
@@ -491,10 +490,17 @@ class WideColumnExpander:
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
+            always_use_group (bool): If True then we should always assign the specified column_group to the data. If False
+                then this function may or may not assign the specified column_group, depending on how processing occurs.
+                This is usually set to True if the original data had the column group explicitly specified, rather than
+                the group name being generated at runtime due to it not being present in the original column name.
 
         Returns:
-            bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
-                correct number of parts, or a part is missing or invalid.)
+            bool: True if the column is in a good format and we should continue expanding the column for later rows.
+                False if there is an error in the column (eg. too many parts, unrecognized parts, etc.) and it should
+                no longer be expanded for later rows. Note that if the column is in the correct format, but something
+                is wrong with a value in the column for the current row, then True should still be returned, since
+                later rows might have valid values and we would want to continue processing those later values.
         """
         value = row[col]
         # logger.info(f"Expanding attribute column '{col}' with value '{value}'")
@@ -505,7 +511,7 @@ class WideColumnExpander:
         # First part must be of size 1 (ie. a single table short name)
         if len(col_parts[0]) != 1:
             logger.warning(
-                f"An attribute column must have exactly one value for the first part, instead multiple the values {col_parts[0]} were found, column will not be expanded: {col}"
+                f"An attribute column must have exactly one value for the first part, instead the values {col_parts[0]} were found, column will not be expanded: {col}"
             )
             return False
 
@@ -604,10 +610,17 @@ class WideColumnExpander:
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
+            always_use_group (bool): If True then we should always assign the specified column_group to the data. If False
+                then this function may or may not assign the specified column_group, depending on how processing occurs.
+                This is usually set to True if the original data had the column group explicitly specified, rather than
+                the group name being generated at runtime due to it not being present in the original column name.
 
         Returns:
-            bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
-                correct number of parts, or a part is missing or invalid.)
+            bool: True if the column is in a good format and we should continue expanding the column for later rows.
+                False if there is an error in the column (eg. too many parts, unrecognized parts, etc.) and it should
+                no longer be expanded for later rows. Note that if the column is in the correct format, but something
+                is wrong with a value in the column for the current row, then True should still be returned, since
+                later rows might have valid values and we would want to continue processing those later values.
         """
         value = row[col]
         # logger.info(
@@ -619,7 +632,7 @@ class WideColumnExpander:
         # First part must be of size 1 (ie. a single table short name)
         if len(col_parts[0]) != 1:
             logger.warning(
-                f"Protocol step measure column must have exactly one value for the first part, instead multiple the values {col_parts[0]} were found, column will not be expanded: {col}"
+                f"Protocol step measure column must have exactly one value for the first part, instead the values {col_parts[0]} were found, column will not be expanded: {col}"
             )
             return False
 
@@ -699,10 +712,17 @@ class WideColumnExpander:
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
+            always_use_group (bool): If True then we should always assign the specified column_group to the data. If False
+                then this function may or may not assign the specified column_group, depending on how processing occurs.
+                This is usually set to True if the original data had the column group explicitly specified, rather than
+                the group name being generated at runtime due to it not being present in the original column name.
 
         Returns:
-            bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
-                correct number of parts, or a part is missing or invalid.)
+            bool: True if the column is in a good format and we should continue expanding the column for later rows.
+                False if there is an error in the column (eg. too many parts, unrecognized parts, etc.) and it should
+                no longer be expanded for later rows. Note that if the column is in the correct format, but something
+                is wrong with a value in the column for the current row, then True should still be returned, since
+                later rows might have valid values and we would want to continue processing those later values.
         """
         value = row[col]
         # logger.info(
@@ -714,7 +734,7 @@ class WideColumnExpander:
         # First part must be of size 1 (ie. a single table short name)
         if len(col_parts[0]) != 1:
             logger.warning(
-                f"Protocol step method column must have exactly one value for the first part, instead multiple the values {col_parts[0]} were found, column will not be expanded: {col}"
+                f"Protocol step method column must have exactly one value for the first part, instead the values {col_parts[0]} were found, column will not be expanded: {col}"
             )
             return False
 
@@ -810,10 +830,17 @@ class WideColumnExpander:
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
+            always_use_group (bool): If True then we should always assign the specified column_group to the data. If False
+                then this function may or may not assign the specified column_group, depending on how processing occurs.
+                This is usually set to True if the original data had the column group explicitly specified, rather than
+                the group name being generated at runtime due to it not being present in the original column name.
 
         Returns:
-            bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
-                correct number of parts, or a part is missing or invalid.)
+            bool: True if the column is in a good format and we should continue expanding the column for later rows.
+                False if there is an error in the column (eg. too many parts, unrecognized parts, etc.) and it should
+                no longer be expanded for later rows. Note that if the column is in the correct format, but something
+                is wrong with a value in the column for the current row, then True should still be returned, since
+                later rows might have valid values and we would want to continue processing those later values.
         """
         value = row[col]
         # logger.info(f"Expanding measure column '{col}' with value '{value}'")
@@ -883,10 +910,17 @@ class WideColumnExpander:
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
+            always_use_group (bool): If True then we should always assign the specified column_group to the data. If False
+                then this function may or may not assign the specified column_group, depending on how processing occurs.
+                This is usually set to True if the original data had the column group explicitly specified, rather than
+                the group name being generated at runtime due to it not being present in the original column name.
 
         Returns:
-            bool: True if the column was expanded successfully, False if it wasn't (eg. the column does not have the
-                correct number of parts, or a part is missing or invalid.)
+            bool: True if the column is in a good format and we should continue expanding the column for later rows.
+                False if there is an error in the column (eg. too many parts, unrecognized parts, etc.) and it should
+                no longer be expanded for later rows. Note that if the column is in the correct format, but something
+                is wrong with a value in the column for the current row, then True should still be returned, since
+                later rows might have valid values and we would want to continue processing those later values.
         """
         for row_index in self.current_expanded_rows.keys():
             self.update_current_expanded_rows(
@@ -894,6 +928,7 @@ class WideColumnExpander:
                 row_index=row_index,
                 column_group=column_group,
             )
+        return True
 
     def select_matching_enum(
         self, val: Any, candidate_enums: List[str]
@@ -1123,14 +1158,18 @@ class WideColumnExpander:
         Returns:
             pd.DataFrame: The expanded DataFrame. The input DataFrame (df) is left unchanged.
         """
+        self.skip_columns = []
+
         self.all_expanded_rows = []
 
         df = self.merge_duplicate_columns(df)
         first_group_number = self.get_first_group_number(df)
 
-        for _, row in tqdm(df.iterrows(), total=len(df.index)):
+        for row_idx, row in tqdm(df.iterrows(), total=len(df.index)):
             self.new_current_expanded_rows()
             for column_index, col in enumerate(df.columns):
+                if col in self.skip_columns:
+                    continue
                 column_group = group_of_column(col)
                 always_use_group = True
                 if column_group is None:
@@ -1141,40 +1180,55 @@ class WideColumnExpander:
                 column_type = self.get_column_type(col)
                 # logger.info(f"Column type is '{column_type}' for column: {col}")
                 if column_type == ColumnType.ATTRIBUTE:
-                    self.expand_column_type_attribute(
+                    skip_column = not self.expand_column_type_attribute(
                         col,
                         row,
                         column_group=column_group,
                         always_use_group=always_use_group,
                     )
                 elif column_type == ColumnType.PROTOCOL_STEP_MEASURE:
-                    self.expand_column_type_protocol_step_measure(
+                    skip_column = not self.expand_column_type_protocol_step_measure(
                         col,
                         row,
                         column_group=column_group,
                         always_use_group=always_use_group,
                     )
                 elif column_type == ColumnType.PROTOCOL_STEP_METHOD:
-                    self.expand_column_type_protocol_step_method(
+                    skip_column = not self.expand_column_type_protocol_step_method(
                         col,
                         row,
                         column_group=column_group,
                         always_use_group=always_use_group,
                     )
                 elif column_type == ColumnType.MEASURE:
-                    self.expand_column_type_measure(
+                    skip_column = not self.expand_column_type_measure(
                         col,
                         row,
                         column_group=column_group,
                         always_use_group=always_use_group,
                     )
+                else:
+                    logger.warning(
+                        f"Unrecognized column type, the column will be ignored: {col}"
+                    )
+                    skip_column = True
+
+                if skip_column:
+                    if row_idx > 0:
+                        raise RuntimeError(
+                            f"The column {col} was marked to be skipped but should only be marked when processing the first row, instead it is being marked on row {row_idx}."
+                        )
+                    self.skip_columns.append(col)
 
             # Copy over the tracking slots. We do this last to make sure all row indices
             # for the current expanded rows get populated with the tracking info.
             for col in [c for c in df.columns if is_tracking_slot(c)]:
-                self.expand_column_type_tracking(
+                skip_column = not self.expand_column_type_tracking(
                     col, row, column_group=None, always_use_group=False
                 )
+                if skip_column:
+                    self.skip_columns.append(col)
+
             self.save_current_expanded_rows()
 
         expanded_df = pd.DataFrame(self.all_expanded_rows)
