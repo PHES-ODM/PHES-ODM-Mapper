@@ -1,6 +1,7 @@
 from typing import Optional, Tuple
 from odm_map.utils.extra_and_tracking_slots import EXTRA_SLOT_PREFIX, EXTRA_SLOT_SUFFIX
 
+
 class ConfigKeys:
     TABLES_TO_SHORTNAMES = "tables_to_shortnames"
     PARTID_TO_MMASET = "partid_to_mmaset"
@@ -48,6 +49,7 @@ EXTRA_GROUP_COLUMN = f"{EXTRA_SLOT_PREFIX}group{EXTRA_SLOT_SUFFIX}"
 # Group names start with this string
 WIDE_GROUP_PREFIX = "o"
 
+
 def group_of_column(col: str) -> Optional[str]:
     """Get the group of the specified column.
 
@@ -63,6 +65,7 @@ def group_of_column(col: str) -> Optional[str]:
     """
     return column_and_group_of_column(col)[1]
 
+
 def remove_column_group(col: str) -> str:
     """Get the column name with the group removed, if there is one.
 
@@ -77,6 +80,7 @@ def remove_column_group(col: str) -> str:
         str: The column with the group removed.
     """
     return column_and_group_of_column(col)[0]
+
 
 def column_and_group_of_column(col: str) -> Tuple[str, Optional[str]]:
     """Get the column name (without group) and the group of the specified column.
@@ -96,4 +100,3 @@ def column_and_group_of_column(col: str) -> Tuple[str, Optional[str]]:
     ):
         return col.rsplit(COLUMN_GROUP_SEPARATOR, maxsplit=1)
     return col, None
-    
