@@ -39,15 +39,21 @@ class ProtocolStepsTableColumns:
     INDEX = "ps_index"
 
 
+# For columns that have multiple values (eg. in_2_AND_name_insType), the value in the row for the
+# column has multiple sub-values, each separated by AND_VALUE_SEPARATOR (eg. 24.12 has the values
+# 24 and 12, if the AND_VALUE_SEPARATOR is ".")
 AND_VALUE_SEPARATOR = "."
+
+# Separates the group name from the column name. eg. with qr_qualityReports.o123, the dot is the separator.
+# Note that the group name must begin with COLUMN_GROUP_PREFIX.
 COLUMN_GROUP_SEPARATOR = "."
+
+# Group names start with this string
+COLUMN_GROUP_PREFIX = "o"
 
 # The extra column, in all mapped DataFrames, where the group name is added. This can be used
 # for downstream linking of IDs
 EXTRA_GROUP_COLUMN = f"{EXTRA_SLOT_PREFIX}group{EXTRA_SLOT_SUFFIX}"
-
-# Group names start with this string
-WIDE_GROUP_PREFIX = "o"
 
 
 def group_of_column(col: str) -> Optional[str]:
@@ -95,7 +101,7 @@ def column_and_group_of_column(col: str) -> Tuple[str, Optional[str]]:
             If there is no group, then the group is returned as None.
     """
     if (
-        COLUMN_GROUP_SEPARATOR in col
+        f"{COLUMN_GROUP_SEPARATOR}{COLUMN_GROUP_PREFIX}" in col
         and not col.rsplit(COLUMN_GROUP_SEPARATOR, maxsplit=1)[-1].isdigit()
     ):
         return col.rsplit(COLUMN_GROUP_SEPARATOR, maxsplit=1)
