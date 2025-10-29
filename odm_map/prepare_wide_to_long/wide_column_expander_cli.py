@@ -18,7 +18,8 @@ CONFIG_HELP = """Configuration file for the expander."""
 
 TARGET_SCHEMA_HELP = """Path to the LinkML schema that the data is for."""
 
-OUTPUT_FILE_HELP = """If specified, then the file to save the expanded data to."""
+OUTPUT_DIR_HELP = """If specified, then the directory to save the expanded data to
+and the configuration file containing meta information about the expanded data."""
 
 SOURCE_CLASS_HELP = """The name of the source class in the mapping."""
 
@@ -36,16 +37,16 @@ def main(
     source_class: Annotated[
         str, typer.Option(show_default=False, help=SOURCE_CLASS_HELP)
     ],
-    output_file: Annotated[
-        Path, typer.Option(show_default=False, help=OUTPUT_FILE_HELP)
+    output_dir: Annotated[
+        Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)
     ] = None,
     max_rows: Annotated[int, typer.Option(show_default=True, help=MAX_ROWS_HELP)] = 0,
 ):
     expander = WideColumnExpander(
         config=config, source_class_name=source_class, target_schema=target_schema
     )
-    df = expander.expand(
-        data_files=inputs, data_frames=None, output_file=output_file, max_rows=max_rows
+    df, _ = expander.expand(
+        data_files=inputs, data_frames=None, output_dir=output_dir, max_rows=max_rows
     )
     print(df)
 

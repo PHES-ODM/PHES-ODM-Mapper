@@ -56,16 +56,14 @@ def action_prepare_wide_to_long(
     data_frames = [b for a in data_frames.values() for b in a]
 
     # Save expanded data as expanded_output_file if we're in debug mode
-    expanded_output_file = (
-        os.path.join(output_dir, "data", "expanded.csv")
-        if output_dir and debug_mode
-        else None
+    expanded_output_dir = (
+        os.path.join(output_dir, "data") if output_dir and debug_mode else None
     )
-    if expanded_output_file and os.path.dirname(expanded_output_file):
-        os.makedirs(os.path.dirname(expanded_output_file), exist_ok=True)
+    if expanded_output_dir:
+        os.makedirs(expanded_output_dir, exist_ok=True)
 
-    df = expander.expand(
-        data_files=None, data_frames=data_frames, output_file=expanded_output_file
+    df, _ = expander.expand(
+        data_files=None, data_frames=data_frames, output_dir=expanded_output_dir
     )
     data_frames = {SOURCE_CLASS_NAME: [df]}
 
