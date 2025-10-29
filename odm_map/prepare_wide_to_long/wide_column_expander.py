@@ -71,9 +71,9 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     ProtocolStepsTableColumns,
     AND_VALUE_SEPARATOR,
     COLUMN_GROUP_SEPARATOR,
+    COLUMN_GROUP_PREFIX,
     group_of_column,
     remove_column_group,
-    WIDE_GROUP_PREFIX,
 )
 
 logger = get_logger(__name__)
@@ -1105,9 +1105,9 @@ class WideColumnExpander:
         """
         columns = [group_of_column(c) for c in df.columns]
         columns = [
-            c.split(WIDE_GROUP_PREFIX, maxsplit=1)[1]
+            c.split(COLUMN_GROUP_PREFIX, maxsplit=1)[1]
             for c in columns
-            if c and c.startswith(WIDE_GROUP_PREFIX)
+            if c and c.startswith(COLUMN_GROUP_PREFIX)
         ]
         columns = [int(c) for c in columns if c.isdigit()]
         if len(columns) == 0:
@@ -1136,7 +1136,7 @@ class WideColumnExpander:
                 if column_group is None:
                     always_use_group = False
                     column_group = (
-                        f"{WIDE_GROUP_PREFIX}{column_index + first_group_number}"
+                        f"{COLUMN_GROUP_PREFIX}{column_index + first_group_number}"
                     )
                 column_type = self.get_column_type(col)
                 # logger.info(f"Column type is '{column_type}' for column: {col}")
