@@ -46,23 +46,36 @@ from linkml.utils.schema_builder import SchemaBuilder
 from linkml_runtime.linkml_model import SlotDefinition
 
 from odm_map.utils.logger import get_logger
-from odm_map.utils.extra_and_tracking_slots import is_tracking_slot, get_tracking_slots
-from odm_map.utils.general_utils import read_data_frame, TREE_ROOT_CLASS_NAME
-from odm_map.prepare_wide_to_long.wide_column_data import (
-    ConfigKeys,
-    WideColumnValues,
-    COLUMN_GROUP_SEPARATOR,
+from odm_map.utils.extra_and_tracking_slots import (
+    is_tracking_slot,
+    get_tracking_slots,
+    EXTRA_SLOT_PREFIX,
+    EXTRA_SLOT_SUFFIX,
 )
+from odm_map.utils.general_utils import read_data_frame, TREE_ROOT_CLASS_NAME
 from odm_map.utils.schema_utils import (
     get_ranges_of_slot,
     get_slot_definition,
     get_ranges_of_slot_defn,
 )
 
+from odm_map.prepare_wide_to_long.wide_column_utils import (
+    ConfigKeys,
+    WideColumnValues,
+)
+from odm_map.prepare_wide_to_long.wide_column_utils import (
+    group_of_column,
+    remove_column_group,
+)
+
 logger = get_logger(__name__)
 
 # Subdirectory in the output directory to put the generated LinkML source schema in.
 SCHEMA_SUB_DIR = "schema"
+
+# The name of the extra slot in all mapping schemas that gets populated with the group name associated
+# with the mapping schema.
+EXTRA_GROUP_TAG_SLOT = f"{EXTRA_SLOT_PREFIX}group_tag{EXTRA_SLOT_SUFFIX}"
 
 
 class WideColumnMapMaker:
@@ -199,46 +212,6 @@ class WideColumnMapMaker:
             enum_defn = self.target_schema.get_enum(enum)
             self.source_schema_builder.add_enum(enum_defn)
 
-    def group_of_column(self, col: str) -> Optional[str]:
-        """Get the group of the specified column.
-
-        The group is the string that follows the colon in the column name. For example,
-        mr_protocolID:12 has the group 12. If the column does not have a group then None
-        is returned.
-
-        Args:
-            col (str): The column name to get the group of.
-
-        Returns:
-            Optional[str]: The group of the column, or None if no group exists.
-        """
-        if (
-            COLUMN_GROUP_SEPARATOR in col
-            and not col.split(COLUMN_GROUP_SEPARATOR)[-1].isdigit()
-        ):
-            return col.split(COLUMN_GROUP_SEPARATOR)[-1]
-        return None
-
-    def remove_column_group(self, col: str) -> str:
-        """Get the column name with the group removed, if there is one.
-
-        The group is the string that follows the colon in the column name. For example,
-        mr_protocolID:12 has the group 12. If the column does not have a group then None
-        is returned.
-
-        Args:
-            col (str): The column to remove the group from.
-
-        Returns:
-            str: The column with the group removed.
-        """
-        if (
-            COLUMN_GROUP_SEPARATOR in col
-            and not col.split(COLUMN_GROUP_SEPARATOR)[-1].isdigit()
-        ):
-            return col.rsplit(COLUMN_GROUP_SEPARATOR, maxsplit=1)[0]
-        return col
-
     def make_global_class_derivations(self):
         """Make the class derivations for all slots that do not have a group. These are called
         "global" class derivations. Whenever a grouped class derivation is created, it
@@ -251,9 +224,11 @@ class WideColumnMapMaker:
         global_columns = [
             c
             for c in self.df.columns
-            if self.group_of_column(c) is None and not is_tracking_slot(c)
+            if group_of_column(c) is None and not is_tracking_slot(c)
         ]
-        self.make_derivations(self.global_class_derivations, global_columns)
+        self.make_derivations(
+            self.global_class_derivations, global_columns, group_name=None
+        )
 
     def make_grouped_class_derivations(self):
         """Make the class derivations for all slots that have a group. Within each grouped
@@ -267,7 +242,7 @@ class WideColumnMapMaker:
         # For example, measure:10 has a group of "10". When mapping, all columns with the
         # same group get mapped together to a single long format row, and each group gets
         # its own LinkML-Map schema (with no overlap with other groups).
-        groups = [self.group_of_column(c) for c in self.df.columns]
+        groups = [group_of_column(c) for c in self.df.columns]
         groups = [c for c in groups if c is not None]
         # Remove duplicates
         groups = list(dict.fromkeys(groups))
@@ -279,9 +254,11 @@ class WideColumnMapMaker:
         for column_group in groups:
             cur_class_derivations = {}
             cur_columns = [
-                c for c in self.df.columns if self.group_of_column(c) == column_group
+                c for c in self.df.columns if group_of_column(c) == column_group
             ]
-            self.make_derivations(cur_class_derivations, cur_columns)
+            self.make_derivations(
+                cur_class_derivations, cur_columns, group_name=column_group
+            )
 
             # Add the global class derivations if required
             for (
@@ -397,6 +374,8 @@ class WideColumnMapMaker:
                 source_class_name = class_derivation["populated_from"]
                 # Go through all slot derivation
                 for slot_derivation in class_derivation["slot_derivations"].values():
+                    if "populated_from" not in slot_derivation:
+                        continue
                     # Get the ranges of the populated_from slot. For any range that is an enumeration,
                     # add that enumeration name to required_enums
                     source_slot_name = slot_derivation["populated_from"]
@@ -533,9 +512,7 @@ class WideColumnMapMaker:
         Returns:
             Tuple[str, str]: The class name and slot name for the column.
         """
-        parts = self.remove_column_group(col).split(
-            WideColumnValues.COLUMN_PART_SEPARATOR
-        )
+        parts = remove_column_group(col).split(WideColumnValues.COLUMN_PART_SEPARATOR)
         if len(parts) != 2:
             raise ValueError(
                 f"Column name must have exactly two parts (separated by '{WideColumnValues.COLUMN_PART_SEPARATOR}'): {col}"
@@ -813,7 +790,9 @@ class WideColumnMapMaker:
             "populated_from": source_slot_name,
         }
 
-    def make_derivations(self, class_derivations: Dict, columns: List[str]):
+    def make_derivations(
+        self, class_derivations: Dict, columns: List[str], group_name: Optional[str]
+    ):
         """Add class/slot derivations for all columns, to copy from the column to the corresponding
         class/slot. This will also add the slot to the dynamics schema being built for the source
         data (ie. in the SchemaBuilder self.source_schema_builder).
@@ -828,6 +807,9 @@ class WideColumnMapMaker:
             columns (List[str]): All the columns to make a derivation for. For example, the
                 column mr_organizationID:1 will add a derivation to copy from the column
                 mr_organizationID:1 to the column organizationID in the target class measure (mr).
+            group_name (Optional[str]): The group that the derivations belong to. Each class
+                derivation has a group associated with it. It is used to populate and extra column
+                with the group name, which can be used for linking purposes.
         """
         for col in columns:
             target_class_name, target_slot_name = self.get_class_and_slot(col)
@@ -851,3 +833,11 @@ class WideColumnMapMaker:
                 info_class_name=target_class_name,
                 info_slot_name=target_slot_name,
             )
+
+        # Add the expr to populate the group name to all class derivations
+        for target_class in class_derivations:
+            slot_derivations = class_derivations[target_class]["slot_derivations"]
+            slot_derivations[EXTRA_GROUP_TAG_SLOT] = {
+                "name": EXTRA_GROUP_TAG_SLOT,
+                "expr": f"'{group_name}'" if group_name else "''",
+            }
