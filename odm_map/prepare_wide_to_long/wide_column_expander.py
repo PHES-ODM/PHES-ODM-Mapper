@@ -71,10 +71,10 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     MeasureTableColumns,
     ProtocolStepsTableColumns,
     AND_VALUE_SEPARATOR,
-    COLUMN_GROUP_SEPARATOR,
     COLUMN_GROUP_PREFIX,
     group_of_column,
-    remove_column_group,
+    column_without_flags,
+    column_with_flags,
 )
 
 logger = get_logger(__name__)
@@ -291,7 +291,7 @@ class WideColumnExpander:
                 of col. If the sub-list is for a part that has #_AND or #_OR, then the sub-list
                 will have 2+# strings, where # is the value preceding _AND or _OR.
         """
-        col = remove_column_group(col)
+        col = column_without_flags(col)
         return list(self.get_next_part(col))
 
     # def get_single_compound_part(self, col_parts: List[List[str]], idx: int) -> Tuple[List[str], int]:
@@ -1003,13 +1003,8 @@ class WideColumnExpander:
             self.current_expanded_rows[row_index] = {}
         current_row = self.current_expanded_rows[row_index]
 
-        def _key_with_group(key: str, group: Optional[str]) -> str:
-            if group is None:
-                return key
-            return f"{key}{COLUMN_GROUP_SEPARATOR}{group}"
-
         for key, val in data.items():
-            key = _key_with_group(key, column_group)
+            key = column_with_flags(key, column_group)
             if key in current_row:
                 logger.warning(
                     f"The column {key} has already been populated in the expanded row for row index {row_index} with value '{current_row[key]}'. This value will be overwritten with the value '{val}'."
@@ -1160,13 +1155,8 @@ class WideColumnExpander:
                 Using this group number, or any number greater than it, will result in group
                 names that are not already used in the DataFrame.
         """
-        columns = [group_of_column(c) for c in df.columns]
-        columns = [
-            c.split(COLUMN_GROUP_PREFIX, maxsplit=1)[1]
-            for c in columns
-            if c and c.startswith(COLUMN_GROUP_PREFIX)
-        ]
-        columns = [int(c) for c in columns if c.isdigit()]
+        columns = [group_of_column(c, remove_flag_prefix=True) for c in df.columns]
+        columns = [int(c) for c in columns if c and c.isdigit()]
         if len(columns) == 0:
             return 0
         return max(columns) + 1

@@ -65,7 +65,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
 )
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     group_of_column,
-    remove_column_group,
+    column_without_flags,
 )
 
 logger = get_logger(__name__)
@@ -512,7 +512,7 @@ class WideColumnMapMaker:
         Returns:
             Tuple[str, str]: The class name and slot name for the column.
         """
-        parts = remove_column_group(col).split(WideColumnValues.COLUMN_PART_SEPARATOR)
+        parts = column_without_flags(col).split(WideColumnValues.COLUMN_PART_SEPARATOR)
         if len(parts) != 2:
             raise ValueError(
                 f"Column name must have exactly two parts (separated by '{WideColumnValues.COLUMN_PART_SEPARATOR}'): {col}"
