@@ -113,7 +113,8 @@ def group_of_column(col: str, remove_flag_prefix: bool = False) -> Optional[str]
         col (str): The column name to get the group of.
         remove_flag_prefix (bool): If True then remove the group flag prefix from the returned
             group. For example, for mr_protocolID.o12 will return "12" if remove_flag_prefix is
-            True, but will return "o12" if remove_flag_prefix is False.
+            True, but will return "o12" if remove_flag_prefix is False. Only the first group is
+            returned.
 
     Returns:
         Optional[str]: The group of the column, or None if no group exists.
@@ -136,7 +137,8 @@ def column_and_group_of_column(
 
     Returns:
         Tuple[str, Optional[str]]: The ungrouped column name and the group of col.
-            If there is no group, then the group is returned as None.
+            If there is no group, then the group is returned as None. Only the first
+            group is returned.
     """
     return column_and_flag_of_column(
         col, flag_prefix=COLUMN_GROUP_PREFIX, remove_flag_prefix=remove_flag_prefix
@@ -147,7 +149,7 @@ def column_and_flag_of_column(
     col: str, flag_prefix: str, remove_flag_prefix: bool = False
 ):
     """Get the column name (without flags) and the flag with the specified flag_prefix
-    of the specified column. For example, if flag_prefix is 0, then the column
+    of the specified column. For example, if flag_prefix is "o", then the column
     "qr_qualityFlag.o1" will return the tuple ("qr_qualityFlag", "o1"), and
     "qr_qualityFlag" will return the tuple ("qr_qualityFlag", None).
     If there are multiple flags with the flag_prefix then only the first one will be returned.
@@ -159,12 +161,13 @@ def column_and_flag_of_column(
             For example, if flag_prefix is "o" then the first flag that starts with "o" is
             returned.
         remove_flag_prefix (bool): If True then remove the flag prefix from the returned
-            flag. For example, for mr_protocolID.o12 will return "12" if remove_flag_prefix is
+            flag. For example, "mr_protocolID.o12" will return "12" if remove_flag_prefix is
             True, but will return "o12" if remove_flag_prefix is False.
 
     Returns:
-        Tuple[str, Optional[str]]: The ungrouped column name and the group of col.
-            If there is no group, then the group is returned as None.
+        Tuple[str, Optional[str]]: The unflagged column name and the flag of col (where
+            the flag starts with flag_prefix). If no flag is found in col then the flag
+            is returned as None.
     """
     if COLUMN_FLAG_SEPARATOR in col:
         flags = column_flags(
