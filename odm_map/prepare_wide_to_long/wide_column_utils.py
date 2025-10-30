@@ -1,5 +1,4 @@
 from typing import Optional, Tuple, List, Union
-from odm_map.utils.extra_and_tracking_slots import EXTRA_SLOT_PREFIX, EXTRA_SLOT_SUFFIX
 
 
 class ConfigKeys:
@@ -49,10 +48,6 @@ COLUMN_FLAG_SEPARATOR = "."
 
 # Group names (as a flag) start with this string
 COLUMN_GROUP_PREFIX = "o"
-
-# The extra column, in all mapped DataFrames, where the group name is added. This can be used
-# for downstream linking of IDs
-EXTRA_GROUP_COLUMN = f"{EXTRA_SLOT_PREFIX}group{EXTRA_SLOT_SUFFIX}"
 
 
 def column_flags(

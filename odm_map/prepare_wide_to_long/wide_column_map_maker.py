@@ -75,7 +75,7 @@ SCHEMA_SUB_DIR = "schema"
 
 # The name of the extra slot in all mapping schemas that gets populated with the group name associated
 # with the mapping schema.
-EXTRA_GROUP_TAG_SLOT = f"{EXTRA_SLOT_PREFIX}group_tag{EXTRA_SLOT_SUFFIX}"
+EXTRA_GROUP_TAG_SLOT = f"{EXTRA_SLOT_PREFIX}group_flag_tag{EXTRA_SLOT_SUFFIX}"
 
 
 class WideColumnMapMaker:
