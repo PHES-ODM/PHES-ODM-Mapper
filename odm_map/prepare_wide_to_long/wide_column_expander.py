@@ -250,7 +250,7 @@ class WideColumnExpander:
         expanded_df = self.expand_single(input_df)
         output_config = self.get_expanded_config()
 
-        # Save expanded data to disk if required
+        # Save expanded data and meta data to disk if required
         if output_dir is not None:
             output_data_file = os.path.join(output_dir, EXPANDED_OUTPUT_DATA_FILE)
             output_config_file = os.path.join(output_dir, EXPANDED_OUTPUT_CONFIG_FILE)
