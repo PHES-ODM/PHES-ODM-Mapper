@@ -75,6 +75,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     group_of_column,
     column_without_flags,
     column_with_flags,
+    get_column_flags,
 )
 
 logger = get_logger(__name__)
@@ -507,6 +508,7 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
+        column_flags: Optional[List[str]],
         column_group: Optional[str],
         always_use_group: bool,
     ) -> bool:
@@ -516,6 +518,8 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
+            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+                This should NOT include a group flag, which is specified by the column_group parameter.
             column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
@@ -573,6 +577,7 @@ class WideColumnExpander:
                     f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{col_parts[1][0]}": value,
                 },
                 row_index=row_index,
+                column_flags=column_flags,
                 column_group=column_group if always_use_group else None,
             )
 
@@ -616,6 +621,7 @@ class WideColumnExpander:
             self.update_current_expanded_rows(
                 new_row,
                 row_index=row_index,
+                column_flags=column_flags,
                 column_group=column_group if use_column_group else None,
             )
 
@@ -625,6 +631,7 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
+        column_flags: Optional[List[str]],
         column_group: Optional[str],
         always_use_group: bool,
     ) -> bool:
@@ -635,6 +642,8 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
+            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+                This should NOT include a group flag, which is specified by the column_group parameter.
             column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
@@ -715,6 +724,7 @@ class WideColumnExpander:
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
             row_index=row_index,
+            column_flags=column_flags,
             column_group=column_group,
         )
 
@@ -724,6 +734,7 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
+        column_flags: Optional[List[str]],
         column_group: Optional[str],
         always_use_group: bool,
     ) -> bool:
@@ -734,6 +745,8 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
+            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+                This should NOT include a group flag, which is specified by the column_group parameter.
             column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
@@ -807,6 +820,7 @@ class WideColumnExpander:
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
             row_index=row_index,
+            column_flags=column_flags,
             column_group=column_group,
         )
 
@@ -839,6 +853,7 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
+        column_flags: Optional[List[str]],
         column_group: Optional[str],
         always_use_group: bool,
     ) -> bool:
@@ -849,6 +864,8 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
+            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+                This should NOT include a group flag, which is specified by the column_group parameter.
             column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
@@ -909,6 +926,7 @@ class WideColumnExpander:
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
             row_index=row_index,
+            column_flags=column_flags,
             column_group=column_group,
         )
 
@@ -918,8 +936,6 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
-        column_group: Optional[str],
-        always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as a tracking column. Tracking columns provide information about which
         file and row number that the current row was loaded from. Tracking columns get expanded by keeping the same column
@@ -928,14 +944,6 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
-                column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
-                If it is not None, then it is added to the end of the expanded column(s), eg.
-                sm_sampleID:1 (1 is the group).
-            always_use_group (bool): If True then we should always assign the specified column_group to the data. If False
-                then this function may or may not assign the specified column_group, depending on how processing occurs.
-                This is usually set to True if the original data had the column group explicitly specified, rather than
-                the group name being generated at runtime due to it not being present in the original column name.
 
         Returns:
             bool: True if the column is in a good format and we should continue expanding the column for later rows.
@@ -948,7 +956,8 @@ class WideColumnExpander:
             self.update_current_expanded_rows(
                 {col: row[col]},
                 row_index=row_index,
-                column_group=column_group,
+                column_flags=None,
+                column_group=None,
             )
         return True
 
@@ -981,6 +990,7 @@ class WideColumnExpander:
         self,
         data: Dict[str, Any],
         row_index: Optional[int],
+        column_flags: Optional[List[str]] = None,
         column_group: Optional[int] = None,
     ):
         """Update the expanded row that we're currently working on with new values.
@@ -990,9 +1000,13 @@ class WideColumnExpander:
         Args:
             data (Dict[str, Any]): The columns (keys) and values (values) to update the current row with. If column_group is
                 not None, then the column_group is appended to the column names.
+            source_column (str): The original wide-column name that generated this data. We use this to copy over the column
+                flags to the new target columns in data.
             row_index (Optional[int]): The output expanded row index to update. When expanding a given input row, we might have
                 multiple output expanded rows (ie. a 1-to-many relationship). The row_index specifies which of these output rows
                 to update. When there is a 1-to-1 relationship from input to output rows, then row_index should be None.
+            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+                This should NOT include a group flag, which is specified by the column_group parameter.
             column_group (Optional[str]): The group that the expansion belongs to. This meant for
                 grouping all the columns together, with columns that have the same group value belonging to the same group. For example,
                 a measure might have a compartment, unit, aggregation, etc. all specified in different columns. By adding a
@@ -1003,8 +1017,18 @@ class WideColumnExpander:
             self.current_expanded_rows[row_index] = {}
         current_row = self.current_expanded_rows[row_index]
 
+        # Get all the flags to add to the columns.
+        flags = column_group
+        if pd.isna(flags):
+            flags = []
+        if isinstance(flags, str):
+            flags = [flags]
+        if column_flags:
+            flags = flags + column_flags
+
+        # Add all the columns (along with the flags) to the current row
         for key, val in data.items():
-            key = column_with_flags(key, column_group)
+            key = column_with_flags(key, flags)
             if key in current_row:
                 logger.warning(
                     f"The column {key} has already been populated in the expanded row for row index {row_index} with value '{current_row[key]}'. This value will be overwritten with the value '{val}'."
@@ -1204,6 +1228,9 @@ class WideColumnExpander:
             else:
                 explicit_group = True
 
+            # Get all flags of the column (including the group flag)
+            column_flags = get_column_flags(col, ignore_prefixes=COLUMN_GROUP_PREFIX)
+
             if explicit_group:
                 self.explicit_groups.append(column_group)
             else:
@@ -1215,6 +1242,7 @@ class WideColumnExpander:
                 "column_group": column_group,
                 "explicit_group": explicit_group,
                 "column_type": column_type,
+                "column_flags": column_flags,
             }
             column_data.append(cur_data)
 
@@ -1228,6 +1256,7 @@ class WideColumnExpander:
                 col = cur_data["column"]
                 column_index = cur_data["column_index"]
                 column_group = cur_data["column_group"]
+                column_flags = cur_data["column_flags"]
                 explicit_group = cur_data["explicit_group"]
                 column_type = cur_data["column_type"]
                 always_use_group = explicit_group
@@ -1236,6 +1265,7 @@ class WideColumnExpander:
                     skip_column = not self.expand_column_type_attribute(
                         col,
                         row,
+                        column_flags=column_flags,
                         column_group=column_group,
                         always_use_group=always_use_group,
                     )
@@ -1243,6 +1273,7 @@ class WideColumnExpander:
                     skip_column = not self.expand_column_type_protocol_step_measure(
                         col,
                         row,
+                        column_flags=column_flags,
                         column_group=column_group,
                         always_use_group=always_use_group,
                     )
@@ -1250,6 +1281,7 @@ class WideColumnExpander:
                     skip_column = not self.expand_column_type_protocol_step_method(
                         col,
                         row,
+                        column_flags=column_flags,
                         column_group=column_group,
                         always_use_group=always_use_group,
                     )
@@ -1257,6 +1289,7 @@ class WideColumnExpander:
                     skip_column = not self.expand_column_type_measure(
                         col,
                         row,
+                        column_flags=column_flags,
                         column_group=column_group,
                         always_use_group=always_use_group,
                     )
@@ -1276,9 +1309,7 @@ class WideColumnExpander:
             # Copy over the tracking slots. We do this last to make sure all row indices
             # for the current expanded rows get populated with the tracking info.
             for col in [c for c in df.columns if is_tracking_slot(c)]:
-                self.expand_column_type_tracking(
-                    col, row, column_group=None, always_use_group=False
-                )
+                self.expand_column_type_tracking(col, row)
 
             self.save_current_expanded_rows()
 
