@@ -41,21 +41,21 @@ id_code:
     - class: qualityReports
       slot: sampleID
       code000: |-
-        if dat.qualityReports.has_column("_extra_l_flag") and "l_sampleID" in dat.qualityReports._extra_l_flag.split(","):
+        if dat.qualityReports.has_column("_extra_l_flag") and "l_sampleID" in str(dat.qualityReports._extra_l_flag).split(","):
             target = dat.measures.sampleID
         else:
             target = ""
     - class: qualityReports
       slot: measureRepID
       code000: |-
-        if dat.qualityReports.has_column("_extra_l_flag") and "l_measureRepID" in dat.qualityReports._extra_l_flag.split(","):
+        if dat.qualityReports.has_column("_extra_l_flag") and "l_measureRepID" in str(dat.qualityReports._extra_l_flag).split(","):
             target = dat.measures.measureRepID
         else:
             target = ""
     - class: qualityReports
       slot: measureSetRepID
       code000: |-
-        if dat.qualityReports.has_column("_extra_l_flag") and "l_measureSetRepID" in dat.qualityReports._extra_l_flag.split(","):
+        if dat.qualityReports.has_column("_extra_l_flag") and "l_measureSetRepID" in str(dat.qualityReports._extra_l_flag).split(","):
             target = dat.measureSets.measureSetRepID
         else:
             target = ""
