@@ -115,6 +115,19 @@ class DataBindings:
             )
         return linkage_path
 
+    def has_column(self, name: str) -> bool:
+        """Check if we have the specified column.
+
+        Args:
+            name (str): The column to check if it exists.
+
+        Returns:
+            bool: True if the column exists, False otherwise.
+        """
+        if self.root_class is None:
+            return False
+        return self.generator.data[self.root_class].has_column(name)
+
     def get_first_linked_value(
         self,
         target_slot: str,
