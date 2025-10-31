@@ -353,6 +353,11 @@ will return the generated ID, whereas `dat.samples.__sampleID` will return the
 original unmodified `sampleID` before it was generated (ie. what `sampleID` was
 initially populated with).
 
+#### dat.targetClass.has_column(name)
+
+This function will return True if the target class has the specified column,
+False otherwise.
+
 #### dat.targetClass.get_first_linked_value(target_slot, linkage_path=None)
 
 This function will extract the value in `target_slot` for the first linked row
