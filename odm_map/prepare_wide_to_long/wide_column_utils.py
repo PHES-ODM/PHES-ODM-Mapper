@@ -1,5 +1,10 @@
 from typing import Optional, Tuple, List, Union
 
+from odm_map.utils.extra_and_tracking_slots import (
+    EXTRA_SLOT_PREFIX,
+    EXTRA_SLOT_SUFFIX,
+)
+
 
 class ConfigKeys:
     TABLES_TO_SHORTNAMES = "tables_to_shortnames"
@@ -48,6 +53,10 @@ COLUMN_FLAG_SEPARATOR = "."
 
 # Group names (as a flag) start with this string
 COLUMN_GROUP_PREFIX = "o"
+
+# The name of the extra slot in all mapping schemas that gets populated with the group name associated
+# with the mapping schema.
+EXTRA_GROUP_TAG_SLOT = f"{EXTRA_SLOT_PREFIX}group_flag{EXTRA_SLOT_SUFFIX}"
 
 
 def column_flags(

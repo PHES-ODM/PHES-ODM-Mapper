@@ -49,8 +49,6 @@ from odm_map.utils.logger import get_logger
 from odm_map.utils.extra_and_tracking_slots import (
     is_tracking_slot,
     get_tracking_slots,
-    EXTRA_SLOT_PREFIX,
-    EXTRA_SLOT_SUFFIX,
 )
 from odm_map.utils.general_utils import read_data_frame, TREE_ROOT_CLASS_NAME
 from odm_map.utils.schema_utils import (
@@ -66,16 +64,13 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     group_of_column,
     column_without_flags,
+    EXTRA_GROUP_TAG_SLOT,
 )
 
 logger = get_logger(__name__)
 
 # Subdirectory in the output directory to put the generated LinkML source schema in.
 SCHEMA_SUB_DIR = "schema"
-
-# The name of the extra slot in all mapping schemas that gets populated with the group name associated
-# with the mapping schema.
-EXTRA_GROUP_TAG_SLOT = f"{EXTRA_SLOT_PREFIX}group_flag_tag{EXTRA_SLOT_SUFFIX}"
 
 
 class WideColumnMapMaker:
