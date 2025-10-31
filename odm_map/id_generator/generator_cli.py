@@ -69,6 +69,10 @@ def main(
     new_code_files = []
     if not id_code_sheets:
         id_code_sheets = len(id_code_files) * [None]
+    else:
+        id_code_sheets = id_code_sheets + [None] * (
+            len(id_code_files) - len(id_code_sheets)
+        )
     for id_code_file, id_code_sheet in zip(id_code_files, id_code_sheets):
         new_code_files.append(
             {"id_code_file": id_code_file, "id_code_sheet": id_code_sheet}
