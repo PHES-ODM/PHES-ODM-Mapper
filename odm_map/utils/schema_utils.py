@@ -32,26 +32,43 @@ def all_primary_keys(schema: SchemaView) -> Dict[str, str]:
     all_classes = all_classes_without_tree_root(schema)
     primary_keys = {}
     for cur_class in all_classes:
-        class_defn = schema.induced_class(cur_class)
-        class_primary_keys = []
-        for attr, attr_defn in class_defn.attributes.items():
-            if attr_defn.identifier:
-                class_primary_keys.append(attr)
-
-        if len(class_primary_keys) > 1:
-            logger.warning(
-                f"Class '{cur_class}' can only have one primary key, instead found {len(class_primary_keys)} (using first primary key {class_primary_keys[0]}): {class_primary_keys}"
-            )
-        if len(class_primary_keys) == 0:
-            raise ValueError(
-                f"Class '{cur_class}' must have at least one primary key, none were found."
-            )
-        primary_keys[cur_class] = class_primary_keys[0]
+        primary_keys[cur_class] = get_primary_key(cur_class, schema=schema)
 
     # Sort the keys
     primary_keys = dict(sorted(primary_keys.items()))
 
     return primary_keys
+
+
+def get_primary_key(class_name: str, schema: SchemaView) -> str:
+    """Get the primary key for the specified class.
+
+    Args:
+        class_name (str): The class to get the primary key of.
+        schema (SchemaView): The schema that contains the class information.
+
+    Raises:
+        ValueError: No primary key was found.
+
+    Returns:
+        str: The primary key of the class.
+    """
+    class_defn = schema.induced_class(class_name)
+    class_primary_keys = []
+    for attr, attr_defn in class_defn.attributes.items():
+        if attr_defn.identifier:
+            class_primary_keys.append(attr)
+
+    if len(class_primary_keys) > 1:
+        logger.warning(
+            f"Class '{class_name}' can only have one primary key, instead found {len(class_primary_keys)} (using first primary key {class_primary_keys[0]}): {class_primary_keys}"
+        )
+    if len(class_primary_keys) == 0:
+        raise ValueError(
+            f"Class '{class_name}' must have at least one primary key, none were found."
+        )
+
+    return class_primary_keys[0]
 
 
 def all_classes_without_tree_root(schema: SchemaView) -> List[str]:
