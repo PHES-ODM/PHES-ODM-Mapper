@@ -37,7 +37,7 @@ see_headers:
     hSp: mr_specimen
     hUn: mr_unit
 
-id_code:
+custom_id_code:
     - class: qualityReports
       slot: sampleID
       code000: |-

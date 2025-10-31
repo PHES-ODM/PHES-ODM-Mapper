@@ -203,7 +203,7 @@ class WideColumnIDCodeMaker:
                                 "target_slot": [TrackingSlots.SOURCE_FILE_AND_ROW],
                             }
         # If there is custom ID code in the config file then add it
-        if custom_id_code := self.config.get(ConfigKeys.ID_CODE, None):
+        if custom_id_code := self.config.get(ConfigKeys.CUSTOM_ID_CODE, None):
             custom_id_code_df = pd.DataFrame(custom_id_code)
             if len(custom_id_code_df):
                 # Rename all code columns to be in the correct format, and the correct indexing

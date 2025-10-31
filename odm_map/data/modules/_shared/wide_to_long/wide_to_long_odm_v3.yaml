@@ -32,7 +32,7 @@ see_headers:
   hMe: mr_measure
   hSp: mr_specimen
   hUn: mr_unit
-id_code:
+custom_id_code:
 - class: qualityReports
   slot: sampleID
   code000: "if dat.qualityReports.has_column(\"_extra_l_flag\") and \"l_sampleID\"\
