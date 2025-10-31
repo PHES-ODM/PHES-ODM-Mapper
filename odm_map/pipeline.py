@@ -154,7 +154,7 @@ class Pipeline(object):
             self.temp_dir = Path(self.temp_dir_obj.name)
         else:
             self.temp_dir_obj = None
-            self.temp_dir = Path(temp_dir)
+            self.temp_dir = Path(temp_dir).resolve()
         self.module.set_temp_dir(self.temp_dir)
         logger.debug(f"Using temporary directory {self.temp_dir}")
 
