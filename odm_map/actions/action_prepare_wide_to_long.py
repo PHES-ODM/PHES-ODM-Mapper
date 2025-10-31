@@ -5,6 +5,7 @@ from pathlib import Path
 
 from odm_map.prepare_wide_to_long.wide_column_expander import WideColumnExpander
 from odm_map.prepare_wide_to_long.wide_column_map_maker import WideColumnMapMaker
+from odm_map.prepare_wide_to_long.wide_column_idcode_maker import WideColumnIDCodeMaker
 
 SOURCE_CLASS_NAME = "wide_data"
 
@@ -62,7 +63,7 @@ def action_prepare_wide_to_long(
     if expanded_output_dir:
         os.makedirs(expanded_output_dir, exist_ok=True)
 
-    df, _ = expander.expand(
+    df, expanded_meta = expander.expand(
         data_files=None, data_frames=data_frames, output_dir=expanded_output_dir
     )
     data_frames = {SOURCE_CLASS_NAME: [df]}
@@ -73,5 +74,15 @@ def action_prepare_wide_to_long(
     )
     input_data_frame = data_frames[SOURCE_CLASS_NAME][0]
     maker.make(data_file=None, data_frame=input_data_frame, output_dir=output_dir)
+
+    # Create the ID code and linkage rules for generating the foreign keys in the final long format
+    input_data_frame = data_frames[SOURCE_CLASS_NAME][0]
+    idmaker = WideColumnIDCodeMaker(
+        config=config,
+        expanded_meta=expanded_meta,
+        source_class_name=SOURCE_CLASS_NAME,
+        target_schema=target_schema,
+    )
+    idmaker.make(None, input_data_frame, output_dir=os.path.join(output_dir, "ids"))
 
     return data_frames
