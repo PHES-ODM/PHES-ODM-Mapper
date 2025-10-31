@@ -852,18 +852,26 @@ enums:
     permissible_values:
       sites:
         description: The table that contains information about a site; the location
-          where an environmental sample was taken.
+          where an environmental sample was taken. The site of an eviromental sample.
+          Information in the site table does not regularly change. Consider using
+          the MeasureReport table if the infomation changes often. The short name
+          for the table (partID) can be found in the instructions field.
         title: Sites table
       organizations:
-        description: The table that contains information about a laboratory.
+        description: The table that contains information about a laboratory. The short
+          name for the table (partID) can be found in the instructions field.
         title: Organization table
       contacts:
         description: The table that contains information about a contact; a person
-          who is the contact of a site or laboratory.
+          who is the contact of a site or laboratory. The short name for the table
+          (partID) can be found in the instructions field.
         title: Contact table
       addresses:
         description: The table that contains information about addresses. Addresses
-          can recorded for sites, organizations or contacts (indivduals).
+          can recorded for sites, organizations or contacts (indivduals). The Sites,
+          Organizations, and Contacts tables include a link to the addresses table
+          through Address ID. The short name for the table (partID) can be found in
+          the instructions field.
         title: Address table
   crosswalkTableSet:
     description: Tables used to translate to and from other environmental dictionaries
@@ -1099,25 +1107,34 @@ enums:
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
       parts:
-        description: Look up table containing all parts in of the data model.
+        description: Look up table containing all parts in of the data model. Contains
+          all parts, including self-referential parts. The short name for the table
+          (partID) can be found in the instructions field.
         title: Parts Look-up table
       sets:
         description: Look up table for all sets, managing how categorical inputs for
-          various methods and attributes are grouped together.
+          various methods and attributes are grouped together. This table manages
+          many-to-many relationships and category recycling within the ODM. The short
+          name for the table (partID) can be found in the instructions field.
         title: Sets look-up table
       languages:
         description: Look up table for all languages, used to give structure to the
-          translation table.
+          translation table. The short name for the table (partID) can be found in
+          the instructions field.
         title: Language Look-up table
       countries:
-        description: Look up table for the possible country inputs.
+        description: Look up table for the possible country inputs. The short name
+          for the table (partID) can be found in the instructions field.
         title: Countries look-up tables
       zones:
         description: Look up table for the possible sub-national region or zone inputs.
+          The short name for the table (partID) can be found in the instructions field.
         title: Zones look-up table
       translations:
         description: Look up table for translations of the description, label, and
-          instruction for all parts.
+          instruction for all parts. The default language if a translation is not
+          specified is English. The short name for the table (partID) can be found
+          in the instructions field.
         title: Translation look-up table
   dissGasUnitSet:
     description: Unit set for carbon dioxide concentrations measurements in water
@@ -1152,81 +1169,119 @@ enums:
     permissible_values:
       addresses:
         description: The table that contains information about addresses. Addresses
-          can recorded for sites, organizations or contacts (indivduals).
+          can recorded for sites, organizations or contacts (indivduals). The Sites,
+          Organizations, and Contacts tables include a link to the addresses table
+          through Address ID. The short name for the table (partID) can be found in
+          the instructions field.
         title: Address table
       contacts:
         description: The table that contains information about a contact; a person
-          who is the contact of a site or laboratory.
+          who is the contact of a site or laboratory. The short name for the table
+          (partID) can be found in the instructions field.
         title: Contact table
       datasets:
         description: A report table for capturing details about data's parental data
-          set and data custodians. Supplying attribution for data collectors.
+          set and data custodians. Supplying attribution for data collectors. The
+          short name for the table (partID) can be found in the instructions field.
         title: Dataset table
       instruments:
-        description: The table that contains information about instruments.
+        description: The table that contains information about instruments. The short
+          name for the table (partID) can be found in the instructions field.
         title: Instrument table
       languages:
         description: Look up table for all languages, used to give structure to the
-          translation table.
+          translation table. The short name for the table (partID) can be found in
+          the instructions field.
         title: Language Look-up table
       measures:
         description: The table that contains information and details about a given
-          measure
+          measure. The short name for the table (partID) can be found in the instructions
+          field.
         title: Measure report table
       measureSets:
-        description: The table that identifies sets of measures.
+        description: The table that identifies sets of measures. Examples of measure
+          sets include a set of replicates, dilutions (used to generate a Ct curve)
+          or varients that are identified in a single sample. The short name for the
+          table (partID) can be found in the instructions field.
         title: Measure set report table
       organizations:
-        description: The table that contains information about a laboratory.
+        description: The table that contains information about a laboratory. The short
+          name for the table (partID) can be found in the instructions field.
         title: Organization table
       parts:
-        description: Look up table containing all parts in of the data model.
+        description: Look up table containing all parts in of the data model. Contains
+          all parts, including self-referential parts. The short name for the table
+          (partID) can be found in the instructions field.
         title: Parts Look-up table
       polygons:
         description: The table that contains information about the geometry of a geographic
-          area.
+          area. The short name for the table (partID) can be found in the instructions
+          field.
         title: Polygon table
       protocolRelationships:
         description: The table that contains the organizational information and details
           (such as order) about a given protocol, recorded as a series of protocol
-          steps (protocolSteps).
+          steps (protocolSteps). Protocols are a group of related protocol steps.
+          For example a protocol step can describe a sample concentration, extraction,
+          inhibition or a measurement. Protocols can include both methodID (a proceedure)
+          and measureIDs (a measure). An example of a method is centrifugation; where
+          the centriguation rotation speed is described as a measure. The short name
+          for the table (partID) can be found in the instructions field.
         title: Protocol relationships table
       protocols:
-        description: The table for protocols.
+        description: The table for protocols. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocols table
       protocolSteps:
         description: The table for collecting metadata on individual steps in a protocol,
-          methodological process, or assay.
+          methodological process, or assay. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocol steps table
       qualityReports:
         description: The table for recording the various quality metrics and indicators
-          for samples and measures.
+          for samples and measures. The short name for the table (partID) can be found
+          in the instructions field.
         title: Quality reports table
       reportersDep:
         description: The table that contains information about a reporter of a sample,
-          method, measure, or attribute.
+          method, measure, or attribute. The short name for the table (partID) can
+          be found in the instructions field.
         title: Reporter table depreciated
       sampleRelationships:
-        description: Table for recording the relationships between samples.
+        description: Table for recording the relationships between samples.Samples
+          can be pooled or split. The sample relationships table holds information
+          on parent-child relationships between samples, and allow for tracking sample
+          lineage for single and pooled samples. The short name for the table (partID)
+          can be found in the instructions field.
         title: Sample relationships table
       samples:
         description: The table that contains information about a sample. A sample
           is defined as a representative volume of wastewater (or other forms of water
-          or liquid), air, or surface area taken from a site.
+          or liquid), air, or surface area taken from a site.Samples can be combined,
+          split, stored and reused. The `Sample relationships` (sampleRelationships)
+          is used to describe the relationships between samples. The short name for
+          the table (partID) can be found in the instructions field.
         title: Sample report table
       sets:
         description: Look up table for all sets, managing how categorical inputs for
-          various methods and attributes are grouped together.
+          various methods and attributes are grouped together. This table manages
+          many-to-many relationships and category recycling within the ODM. The short
+          name for the table (partID) can be found in the instructions field.
         title: Sets look-up table
       countries:
-        description: Look up table for the possible country inputs.
+        description: Look up table for the possible country inputs. The short name
+          for the table (partID) can be found in the instructions field.
         title: Countries look-up tables
       zones:
         description: Look up table for the possible sub-national region or zone inputs.
+          The short name for the table (partID) can be found in the instructions field.
         title: Zones look-up table
       sites:
         description: The table that contains information about a site; the location
-          where an environmental sample was taken.
+          where an environmental sample was taken. The site of an eviromental sample.
+          Information in the site table does not regularly change. Consider using
+          the MeasureReport table if the infomation changes often. The short name
+          for the table (partID) can be found in the instructions field.
         title: Sites table
   extractSet:
     description: set used for storing all the valid category values for the nucleic
@@ -1446,75 +1501,112 @@ enums:
     permissible_values:
       addresses:
         description: The table that contains information about addresses. Addresses
-          can recorded for sites, organizations or contacts (indivduals).
+          can recorded for sites, organizations or contacts (indivduals). The Sites,
+          Organizations, and Contacts tables include a link to the addresses table
+          through Address ID. The short name for the table (partID) can be found in
+          the instructions field.
         title: Address table
       contacts:
         description: The table that contains information about a contact; a person
-          who is the contact of a site or laboratory.
+          who is the contact of a site or laboratory. The short name for the table
+          (partID) can be found in the instructions field.
         title: Contact table
       datasets:
         description: A report table for capturing details about data's parental data
-          set and data custodians. Supplying attribution for data collectors.
+          set and data custodians. Supplying attribution for data collectors. The
+          short name for the table (partID) can be found in the instructions field.
         title: Dataset table
       instruments:
-        description: The table that contains information about instruments.
+        description: The table that contains information about instruments. The short
+          name for the table (partID) can be found in the instructions field.
         title: Instrument table
       languages:
         description: Look up table for all languages, used to give structure to the
-          translation table.
+          translation table. The short name for the table (partID) can be found in
+          the instructions field.
         title: Language Look-up table
       measures:
         description: The table that contains information and details about a given
-          measure
+          measure. The short name for the table (partID) can be found in the instructions
+          field.
         title: Measure report table
       measureSets:
-        description: The table that identifies sets of measures.
+        description: The table that identifies sets of measures. Examples of measure
+          sets include a set of replicates, dilutions (used to generate a Ct curve)
+          or varients that are identified in a single sample. The short name for the
+          table (partID) can be found in the instructions field.
         title: Measure set report table
       organizations:
-        description: The table that contains information about a laboratory.
+        description: The table that contains information about a laboratory. The short
+          name for the table (partID) can be found in the instructions field.
         title: Organization table
       parts:
-        description: Look up table containing all parts in of the data model.
+        description: Look up table containing all parts in of the data model. Contains
+          all parts, including self-referential parts. The short name for the table
+          (partID) can be found in the instructions field.
         title: Parts Look-up table
       polygons:
         description: The table that contains information about the geometry of a geographic
-          area.
+          area. The short name for the table (partID) can be found in the instructions
+          field.
         title: Polygon table
       protocolRelationships:
         description: The table that contains the organizational information and details
           (such as order) about a given protocol, recorded as a series of protocol
-          steps (protocolSteps).
+          steps (protocolSteps). Protocols are a group of related protocol steps.
+          For example a protocol step can describe a sample concentration, extraction,
+          inhibition or a measurement. Protocols can include both methodID (a proceedure)
+          and measureIDs (a measure). An example of a method is centrifugation; where
+          the centriguation rotation speed is described as a measure. The short name
+          for the table (partID) can be found in the instructions field.
         title: Protocol relationships table
       protocols:
-        description: The table for protocols.
+        description: The table for protocols. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocols table
       protocolSteps:
         description: The table for collecting metadata on individual steps in a protocol,
-          methodological process, or assay.
+          methodological process, or assay. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocol steps table
       qualityReports:
         description: The table for recording the various quality metrics and indicators
-          for samples and measures.
+          for samples and measures. The short name for the table (partID) can be found
+          in the instructions field.
         title: Quality reports table
       sampleRelationships:
-        description: Table for recording the relationships between samples.
+        description: Table for recording the relationships between samples.Samples
+          can be pooled or split. The sample relationships table holds information
+          on parent-child relationships between samples, and allow for tracking sample
+          lineage for single and pooled samples. The short name for the table (partID)
+          can be found in the instructions field.
         title: Sample relationships table
       samples:
         description: The table that contains information about a sample. A sample
           is defined as a representative volume of wastewater (or other forms of water
-          or liquid), air, or surface area taken from a site.
+          or liquid), air, or surface area taken from a site.Samples can be combined,
+          split, stored and reused. The `Sample relationships` (sampleRelationships)
+          is used to describe the relationships between samples. The short name for
+          the table (partID) can be found in the instructions field.
         title: Sample report table
       sets:
         description: Look up table for all sets, managing how categorical inputs for
-          various methods and attributes are grouped together.
+          various methods and attributes are grouped together. This table manages
+          many-to-many relationships and category recycling within the ODM. The short
+          name for the table (partID) can be found in the instructions field.
         title: Sets look-up table
       sites:
         description: The table that contains information about a site; the location
-          where an environmental sample was taken.
+          where an environmental sample was taken. The site of an eviromental sample.
+          Information in the site table does not regularly change. Consider using
+          the MeasureReport table if the infomation changes often. The short name
+          for the table (partID) can be found in the instructions field.
         title: Sites table
       translations:
         description: Look up table for translations of the description, label, and
-          instruction for all parts.
+          instruction for all parts. The default language if a translation is not
+          specified is English. The short name for the table (partID) can be found
+          in the instructions field.
         title: Translation look-up table
       summary:
         description: Summary sheet of the dictionary.xlxs file.
@@ -1523,13 +1615,16 @@ enums:
         description: Parts lists for template dropdowns and other documentation.
         title: List worksheet
       countries:
-        description: Look up table for the possible country inputs.
+        description: Look up table for the possible country inputs. The short name
+          for the table (partID) can be found in the instructions field.
         title: Countries look-up tables
       zones:
         description: Look up table for the possible sub-national region or zone inputs.
+          The short name for the table (partID) can be found in the instructions field.
         title: Zones look-up table
       wideNames:
-        description: The table for wide names.
+        description: The table for wide names. The short name for the table (partID)
+          can be found in the instructions field.
         title: Wide name table
   genMissingnessSet:
     description: The general set for missingness values.
@@ -2142,7 +2237,14 @@ enums:
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
       dataTypes:
-        description: The data type for a part.
+        description: 'The data type for a part. Data types used in the ODM include:
+          varchar, booleen, float, category, date, time, datetime, url, email. dataType
+          corresponds the the entry or cell within a data table, most commonly within
+          a report table. If the data entry has a unit, then the dataType corresponds
+          to the unit and the dataType refers to ''unit''. If the data entry is a
+          category, then the dataType refers to ''category''. All categories are varchar.
+          Otherwise the dataType is identifed within the part entry. TBA: dataType
+          for dictionary.'
         title: Data types
       aggregationScales:
         description: The scale of an aggregation set. Aggregation scales include quantitative
@@ -2150,11 +2252,15 @@ enums:
         title: Aggregation scales
       aggregations:
         description: Statistical measures used to report a measure. Each measure reported
-          as a number should be reported with an aggregation.
+          as a number should be reported with an aggregation. The default aggregation
+          is `sin`, which corresponds to a single measurement.
         title: Aggregations
       attributes:
         description: Attributes describe the who, where, when, and why of environmental
-          surveillance.
+          surveillance. There are attributes for domain, specimen, compartment, or
+          table. Attributes are one of the three main components or ways to report
+          environment surviellence data. The other two components are measures and
+          methods.
         title: Attributes
       classes:
         description: A class is a collection of one or more related measures or methods
@@ -2162,14 +2268,18 @@ enums:
           parts or the class.
         title: Classes
       compartments:
-        description: The substance from which a sample was taken.
+        description: The substance from which a sample was taken. For example, wastewater
+          has component of "water". Compartments are attributes of measures, methods,
+          units, and aggregations.
         title: Compartments
       domains:
         description: 'There are three domain types: biologic (i.e. Covid-19, chemical
           (i.e. nitrogen), physical measure (temperature).'
         title: Domains
       groups:
-        description: A collection of related measures.
+        description: A collection of related measures. Used primary to group measurements
+          and methods, this helps pare down the drop down list for a given measurement
+          or methods.
         title: Groups
       measurements:
         description: The attribute to describe a part type of measures. All measures
@@ -2177,26 +2287,35 @@ enums:
         title: Measures
       methods:
         description: Procedures or steps for collecting samples or performing measures.
+          For example, `methodExtract` is a method that describes the how a sample
+          was extracted.
         title: Methods
       missingness:
-        description: The part type for missingness values.
+        description: The part type for missingness values. Only used for the dictionary
+          entries of parts.
         title: Missingness
       nomenclatures:
-        description: A classification system to report the measure class.
+        description: A classification system to report the measure class. See partID
+          = nomenclatureID.
         title: Nomenclatures
       qualityIndicators:
-        description: A measure of the quality of a reported value or sample.
+        description: A measure of the quality of a reported value or sample. Only
+          used for the dictionary entries of parts.
         title: Quality indicators
       specimens:
         description: 'Measures or observations are taken from three types of substances:
-          populations (humans or geographic areas), samples, sites.'
+          populations (humans or geographic areas), samples, sites. See partID = specimentID.'
         title: Specimens
       tables:
         description: Tables are where measures, methods and attributes are recorded.
-          Tables represent the main entities of the environmental surveillance. There
+          Tables represent the main entities of the environmental surveillance. An
+          example of a  table is `site` a collection of attributes such as site name
+          and address to describe where environment samples are taken. PHES-ODM has
+          report tables, but users can create their own tables as well.
         title: Tables
       units:
-        description: The unit of the measurement.
+        description: The unit of the measurement. Every measurement must have a unit.
+          Meaning, `units` are a mandatory field whenever a measurement is recorded.
         title: Units
   logAggrSet:
     description: The aggregation set that contains all aggregations that exist on
@@ -2532,9 +2651,10 @@ enums:
     title: Original Data Format Set
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
-      phesODMForm:
-        description: Dataset was originally recorded and/or stored in PHES-ODM format.
-        title: PHES-ODM Format
+      phesODMFormV1:
+        description: Dataset was originally recorded and/or stored in PHES-ODM version
+          1 format.
+        title: PHES-ODM Version 1 Format
       pha4geForm:
         description: Dataset was originally recorded and/or stored in PHA4GE format.
         title: PHA4GE Format
@@ -2558,6 +2678,14 @@ enums:
         description: Dataset was originally recorded and/or stored in a format not
           otherwise described.
         title: Other (or proprietary) Format
+      phesODMFormV2:
+        description: Dataset was originally recorded and/or stored in PHES-ODM version
+          2 format.
+        title: PHES-ODM Version 2 Format
+      phesODMFormV3:
+        description: Dataset was originally recorded and/or stored in PHES-ODM version
+          3 format.
+        title: PHES-ODM Version 3 Format
   orgLevelSet:
     description: Categories of organization levels.
     title: Organization level set
@@ -2741,11 +2869,13 @@ enums:
     permissible_values:
       polygons:
         description: The table that contains information about the geometry of a geographic
-          area.
+          area. The short name for the table (partID) can be found in the instructions
+          field.
         title: Polygon table
       datasets:
         description: A report table for capturing details about data's parental data
-          set and data custodians. Supplying attribution for data collectors.
+          set and data custodians. Supplying attribution for data collectors. The
+          short name for the table (partID) can be found in the instructions field.
         title: Dataset table
   outbreakSet:
     description: set for the valid values of the outbreak measure.
@@ -3497,19 +3627,27 @@ enums:
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
       protocols:
-        description: The table for protocols.
+        description: The table for protocols. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocols table
       protocolRelationships:
         description: The table that contains the organizational information and details
           (such as order) about a given protocol, recorded as a series of protocol
-          steps (protocolSteps).
+          steps (protocolSteps). Protocols are a group of related protocol steps.
+          For example a protocol step can describe a sample concentration, extraction,
+          inhibition or a measurement. Protocols can include both methodID (a proceedure)
+          and measureIDs (a measure). An example of a method is centrifugation; where
+          the centriguation rotation speed is described as a measure. The short name
+          for the table (partID) can be found in the instructions field.
         title: Protocol relationships table
       protocolSteps:
         description: The table for collecting metadata on individual steps in a protocol,
-          methodological process, or assay.
+          methodological process, or assay. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocol steps table
       instruments:
-        description: The table that contains information about instruments.
+        description: The table that contains information about instruments. The short
+          name for the table (partID) can be found in the instructions field.
         title: Instrument table
   purposeSet:
     description: Purpose set for a sample or measure.
@@ -3830,12 +3968,16 @@ enums:
     permissible_values:
       measures:
         description: The table that contains information and details about a given
-          measure
+          measure. The short name for the table (partID) can be found in the instructions
+          field.
         title: Measure report table
       samples:
         description: The table that contains information about a sample. A sample
           is defined as a representative volume of wastewater (or other forms of water
-          or liquid), air, or surface area taken from a site.
+          or liquid), air, or surface area taken from a site.Samples can be combined,
+          split, stored and reused. The `Sample relationships` (sampleRelationships)
+          is used to describe the relationships between samples. The short name for
+          the table (partID) can be found in the instructions field.
         title: Sample report table
   relHumidUnitSet:
     description: Unit set for relative humidity measurements.
@@ -4961,10 +5103,6 @@ enums:
           contains information about a site; the location where an environmental sample
           was taken.
         title: Sites table Shorthand
-      su:
-        description: The abbreviated short name used to reference the Summary sheet
-          of the dictionary.xlxs file.
-        title: Summary worksheet Shorthand
       tr:
         description: The abbreviated short name used to reference the Look up table
           for translations of the description, label, and instruction for all parts.
@@ -4981,6 +5119,24 @@ enums:
         description: The abbreviated short name used to reference the report table
           for accessions and accessionIDs.
         title: Accessions report table Shorthand
+      ad:
+        description: The abbreviated short name used to reference the The table that
+          contains information about addresses. Addresses can recorded for sites,
+          organizations or contacts (indivduals).
+        title: Address table Shorthand
+      cl:
+        description: The abbreviated short name used to reference the table for recording
+          data on data treatments and calculations applied to measurements and reported
+          values.
+        title: Calculations Table Short Name
+      por:
+        description: The abbreviated short name used to reference the table for recording
+          the relationships between polygons.
+        title: Polygon Relationships Table Short Name
+      pha:
+        description: The abbreviated short name used to reference the table for recording
+          information on public health actions.
+        title: Public Health Actions Report Table Shortname
   siSaSpecimenSet:
     description: A specimen set that inculdes site or sample specimen.
     title: Site or sample specimen set
@@ -5616,71 +5772,106 @@ enums:
     permissible_values:
       addresses:
         description: The table that contains information about addresses. Addresses
-          can recorded for sites, organizations or contacts (indivduals).
+          can recorded for sites, organizations or contacts (indivduals). The Sites,
+          Organizations, and Contacts tables include a link to the addresses table
+          through Address ID. The short name for the table (partID) can be found in
+          the instructions field.
         title: Address table
       contacts:
         description: The table that contains information about a contact; a person
-          who is the contact of a site or laboratory.
+          who is the contact of a site or laboratory. The short name for the table
+          (partID) can be found in the instructions field.
         title: Contact table
       datasets:
         description: A report table for capturing details about data's parental data
-          set and data custodians. Supplying attribution for data collectors.
+          set and data custodians. Supplying attribution for data collectors. The
+          short name for the table (partID) can be found in the instructions field.
         title: Dataset table
       instruments:
-        description: The table that contains information about instruments.
+        description: The table that contains information about instruments. The short
+          name for the table (partID) can be found in the instructions field.
         title: Instrument table
       languages:
         description: Look up table for all languages, used to give structure to the
-          translation table.
+          translation table. The short name for the table (partID) can be found in
+          the instructions field.
         title: Language Look-up table
       measures:
         description: The table that contains information and details about a given
-          measure
+          measure. The short name for the table (partID) can be found in the instructions
+          field.
         title: Measure report table
       measureSets:
-        description: The table that identifies sets of measures.
+        description: The table that identifies sets of measures. Examples of measure
+          sets include a set of replicates, dilutions (used to generate a Ct curve)
+          or varients that are identified in a single sample. The short name for the
+          table (partID) can be found in the instructions field.
         title: Measure set report table
       organizations:
-        description: The table that contains information about a laboratory.
+        description: The table that contains information about a laboratory. The short
+          name for the table (partID) can be found in the instructions field.
         title: Organization table
       parts:
-        description: Look up table containing all parts in of the data model.
+        description: Look up table containing all parts in of the data model. Contains
+          all parts, including self-referential parts. The short name for the table
+          (partID) can be found in the instructions field.
         title: Parts Look-up table
       polygons:
         description: The table that contains information about the geometry of a geographic
-          area.
+          area. The short name for the table (partID) can be found in the instructions
+          field.
         title: Polygon table
       protocolRelationships:
         description: The table that contains the organizational information and details
           (such as order) about a given protocol, recorded as a series of protocol
-          steps (protocolSteps).
+          steps (protocolSteps). Protocols are a group of related protocol steps.
+          For example a protocol step can describe a sample concentration, extraction,
+          inhibition or a measurement. Protocols can include both methodID (a proceedure)
+          and measureIDs (a measure). An example of a method is centrifugation; where
+          the centriguation rotation speed is described as a measure. The short name
+          for the table (partID) can be found in the instructions field.
         title: Protocol relationships table
       protocols:
-        description: The table for protocols.
+        description: The table for protocols. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocols table
       protocolSteps:
         description: The table for collecting metadata on individual steps in a protocol,
-          methodological process, or assay.
+          methodological process, or assay. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocol steps table
       qualityReports:
         description: The table for recording the various quality metrics and indicators
-          for samples and measures.
+          for samples and measures. The short name for the table (partID) can be found
+          in the instructions field.
         title: Quality reports table
       sampleRelationships:
-        description: Table for recording the relationships between samples.
+        description: Table for recording the relationships between samples.Samples
+          can be pooled or split. The sample relationships table holds information
+          on parent-child relationships between samples, and allow for tracking sample
+          lineage for single and pooled samples. The short name for the table (partID)
+          can be found in the instructions field.
         title: Sample relationships table
       samples:
         description: The table that contains information about a sample. A sample
           is defined as a representative volume of wastewater (or other forms of water
-          or liquid), air, or surface area taken from a site.
+          or liquid), air, or surface area taken from a site.Samples can be combined,
+          split, stored and reused. The `Sample relationships` (sampleRelationships)
+          is used to describe the relationships between samples. The short name for
+          the table (partID) can be found in the instructions field.
         title: Sample report table
       sets:
         description: Look up table for all sets, managing how categorical inputs for
-          various methods and attributes are grouped together.
+          various methods and attributes are grouped together. This table manages
+          many-to-many relationships and category recycling within the ODM. The short
+          name for the table (partID) can be found in the instructions field.
         title: Sets look-up table
       sites:
         description: The table that contains information about a site; the location
-          where an environmental sample was taken.
+          where an environmental sample was taken. The site of an eviromental sample.
+          Information in the site table does not regularly change. Consider using
+          the MeasureReport table if the infomation changes often. The short name
+          for the table (partID) can be found in the instructions field.
         title: Sites table
       lists:
         description: Parts lists for template dropdowns and other documentation.
@@ -5924,6 +6115,9 @@ enums:
         description: Multiple fractions were analyzed separately and aggregated together
           post-analysis.
         title: Multiple fraction
+      nr:
+        description: A value could have been recorded, however, it was not.
+        title: Not reported
   wideSpecimenSet:
     description: Speciment set for wide names.
     title: Speciment set for wide names
@@ -5986,7 +6180,8 @@ enums:
         title: See unit (aggregation scales)
   aggregations:
     description: Statistical measures used to report a measure. Each measure reported
-      as a number should be reported with an aggregation.
+      as a number should be reported with an aggregation. The default aggregation
+      is `sin`, which corresponds to a single measurement.
     title: Aggregations
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -6069,7 +6264,8 @@ enums:
         description: Specifies the the upper limit of a 95% confidence interval.
         title: Upper limit of a 95% confidence interval
   aggregationSets:
-    description: Sets of aggregations.
+    description: Sets of aggregations. Examples of aggregation sets include logarithm,
+      linear and boolean.
     title: Aggregation sets
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -6197,7 +6393,9 @@ enums:
         description: Measures and methods relating to weather.
         title: Weather class
   compartments:
-    description: The substance from which a sample was taken.
+    description: The substance from which a sample was taken. For example, wastewater
+      has component of "water". Compartments are attributes of measures, methods,
+      units, and aggregations.
     title: Compartments
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -6222,7 +6420,13 @@ enums:
           including wastewater.
         title: Water compartment
   dataTypes:
-    description: The data type for a part.
+    description: 'The data type for a part. Data types used in the ODM include: varchar,
+      booleen, float, category, date, time, datetime, url, email. dataType corresponds
+      the the entry or cell within a data table, most commonly within a report table.
+      If the data entry has a unit, then the dataType corresponds to the unit and
+      the dataType refers to ''unit''. If the data entry is a category, then the dataType
+      refers to ''category''. All categories are varchar. Otherwise the dataType is
+      identifed within the part entry. TBA: dataType for dictionary.'
     title: Data types
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -6277,7 +6481,9 @@ enums:
         description: A physical property or object not characterized by life or chemistry.
         title: Physical property
   groups:
-    description: A collection of related measures.
+    description: A collection of related measures. Used primary to group measurements
+      and methods, this helps pare down the drop down list for a given measurement
+      or methods.
     title: Groups
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -6707,6 +6913,10 @@ enums:
       brucella:
         description: Brucella
         title: Brucella
+      c2811t:
+        description: A measure of the C to T point mutation at position 28311 (C28311T)
+          of the N1 probe, present in all Omicron sub-linages.
+        title: C28311T Omicron N1 Point Mutation
       caff:
         description: Caffeine (usually measured as a human fecal chemical indicator)
         title: Caffeine
@@ -7263,7 +7473,9 @@ enums:
           for sewage samples.
         title: Limit of detection (LOD) - sewage
       loq:
-        description: Loq
+        description: "Sample limit of quantification (LOQ) is defined as \u201Cthe\
+          \ concentration of a target that can be quantified with an acceptable level\
+          \ of precision when present in a sample\u201D (Ahmed et al., 2021)."
         title: Limit of quantification (LOQ)
       lp81V:
         description: The LP.8.1 variant of SARS-CoV-2, a Omicron subvariant of JN.1,
@@ -7277,12 +7489,22 @@ enums:
           of the sample material in situ (ie. The material from which the sample is
           collected.
         title: Sample Material Characteristics
+      mCF:
+        description: Concentration Factor (CF) is the degree to which the concentration
+          observed in the final qPCR assay volume has been magnified compared to concentration
+          of the analyte in the original sample (see Box 2.1 Protocol).
+        title: Concentration Factor
       mcr11:
         description: The MCR-1.1 colistin anti-microbial resistance gene target.
         title: MCR-1.1 Colistin-resistence gene target
       measles:
         description: Measles
         title: Measles
+      mESV:
+        description: Effective Sample Size/Volume (ESV) is the amount of the original
+          sample size/volume that was actually analyzed in a qPCR reaction (see Box
+          2.1 Protocol)
+        title: Effective Sample Size/Volume
       mGenitalus:
         description: Mycoplasma genitalus
         title: Mycoplasma genitalus
@@ -7401,6 +7623,9 @@ enums:
       nGonorrhoeae:
         description: Neisseria gonorrhoeae
         title: Neisseria gonorrhoeae
+      nh3nh4:
+        description: Ammonia and Ammonium combined concentration, as Nitrogen
+        title: Ammonia and Ammonium as Nitrogen
       nH4N:
         description: Ammonium nitrogen concentration, as N.
         title: Ammonium Nitrogen
@@ -7502,10 +7727,6 @@ enums:
         description: The percentage of the assembly that consists of ambiguous bases
           (Ns).
         title: percent Ns across total genome length
-      percRec:
-        description: Percent of the surrogate recovery for a recovery efficiency control
-          assay.
-        title: Percent recovery
       ph:
         description: pH measurement
         title: pH
@@ -7906,6 +8127,8 @@ enums:
         title: Zika
   methods:
     description: Procedures or steps for collecting samples or performing measures.
+      For example, `methodExtract` is a method that describes the how a sample was
+      extracted.
     title: Methods
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -8040,7 +8263,8 @@ enums:
           template for the reaction.
         title: Nucelic Acid Template Type
   missingnessSets:
-    description: Set of missingness values.
+    description: Set of missingness values. Examples of missingness sets may include
+      NR or NA esclusive sets, or general all-purpose sets.
     title: Missingness sets
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -8053,6 +8277,7 @@ enums:
   mmaSets:
     description: A set of categories. For example, site type has a list of different
       sites, such as a wastewater treatment plant, a septic tank, or a pumping station.
+      Only used for the dictionary entries of parts.
     title: Measure, method, or attribute sets
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -8310,7 +8535,8 @@ enums:
         description: Fraction set for wide names.
         title: Fraction set for wide names
   nomenclatures:
-    description: A classification system to report the measure class.
+    description: A classification system to report the measure class. See partID =
+      nomenclatureID.
     title: Nomenclatures
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -8335,28 +8561,42 @@ enums:
           Health Organization.
         title: WHO nomenclature
   partType:
-    description: Part types describe the purpose or use of the part.
+    description: 'Part types describe the purpose or use of the part. Enivornment
+      data has three main part types: measure (i.e. covN1 viral measures, wasteawater
+      flow rate, temperature), method (e.g. how the measure was taken), and attribute
+      (such as a site name). See description of each of the part types within setID
+      = partTypeCatSets.'
     title: Part types
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
       aggregations:
         description: Statistical measures used to report a measure. Each measure reported
-          as a number should be reported with an aggregation.
+          as a number should be reported with an aggregation. The default aggregation
+          is `sin`, which corresponds to a single measurement.
         title: Aggregations
       aggregationScales:
         description: The scale of an aggregation set. Aggregation scales include quantitative
           and qualitative.
         title: Aggregation scales
       aggregationSets:
-        description: Sets of aggregations.
+        description: Sets of aggregations. Examples of aggregation sets include logarithm,
+          linear and boolean.
         title: Aggregation sets
       attributes:
         description: Attributes describe the who, where, when, and why of environmental
-          surveillance.
+          surveillance. There are attributes for domain, specimen, compartment, or
+          table. Attributes are one of the three main components or ways to report
+          environment surviellence data. The other two components are measures and
+          methods.
         title: Attributes
       categories:
-        description: A discrete list of values that can be reported for a measure,
-          method or attribute.
+        description: 'A discrete list of values that can be reported for a measure,
+          method or attribute. A use-case example of categories would be how they
+          are used to record the site where a measure is taken (partID = geoType).
+          For the geoType attribute there are different type of sites where samples
+          can be taken: a wastwater treatment plant, airplane holding tank, wastwater
+          pumping station, etc. Each of these site types is recorded as a category
+          that can be identified in categorySetID = sTypeCatSets'
         title: Categories
       classes:
         description: A class is a collection of one or more related measures or methods
@@ -8364,16 +8604,29 @@ enums:
           parts or the class.
         title: Classes
       compartments:
-        description: The substance from which a sample was taken.
+        description: The substance from which a sample was taken. For example, wastewater
+          has component of "water". Compartments are attributes of measures, methods,
+          units, and aggregations.
         title: Compartments
       compartmentSets:
-        description: Sets of compartments.
+        description: Sets of compartments. Compartment sets are used to identify when
+          a measure can be recorded for more than one compartment. For example, SARS-CoV-2
+          can be measured in people (humans), water, surface, or air.
         title: Compartment sets
       dataTypes:
-        description: The data type for a part.
+        description: 'The data type for a part. Data types used in the ODM include:
+          varchar, booleen, float, category, date, time, datetime, url, email. dataType
+          corresponds the the entry or cell within a data table, most commonly within
+          a report table. If the data entry has a unit, then the dataType corresponds
+          to the unit and the dataType refers to ''unit''. If the data entry is a
+          category, then the dataType refers to ''category''. All categories are varchar.
+          Otherwise the dataType is identifed within the part entry. TBA: dataType
+          for dictionary.'
         title: Data types
       dictionarySupport:
-        description: Additional sheets for the Excel version of the ODM dictionary.
+        description: 'Additional sheets for the Excel version of the ODM dictionary.
+          Sheets or tabs for the ODM Excel dictionary include: all ERD tables (look-up
+          tables and data entry tables) and additional supportig tables.'
         title: Additional dictionary sheets
       dictSets:
         description: Sets used to describe and group dictionary tables.
@@ -8387,7 +8640,9 @@ enums:
           not follow the general structure.
         title: Exceptions Part Type
       groups:
-        description: A collection of related measures.
+        description: A collection of related measures. Used primary to group measurements
+          and methods, this helps pare down the drop down list for a given measurement
+          or methods.
         title: Groups
       measurements:
         description: The attribute to describe a part type of measures. All measures
@@ -8395,30 +8650,40 @@ enums:
         title: Measures
       methods:
         description: Procedures or steps for collecting samples or performing measures.
+          For example, `methodExtract` is a method that describes the how a sample
+          was extracted.
         title: Methods
       missingness:
-        description: The part type for missingness values.
+        description: The part type for missingness values. Only used for the dictionary
+          entries of parts.
         title: Missingness
       missingnessSets:
-        description: Set of missingness values.
+        description: Set of missingness values. Examples of missingness sets may include
+          NR or NA esclusive sets, or general all-purpose sets.
         title: Missingness sets
       mmaSets:
         description: A set of categories. For example, site type has a list of different
           sites, such as a wastewater treatment plant, a septic tank, or a pumping
-          station.
+          station. Only used for the dictionary entries of parts.
         title: Measure, method, or attribute sets
       nomenclatures:
-        description: A classification system to report the measure class.
+        description: A classification system to report the measure class. See partID
+          = nomenclatureID.
         title: Nomenclatures
       partSupport:
         description: Parts designed to support the metadata definition of other parts
           in the parts table.
         title: Part Support
       partType:
-        description: Part types describe the purpose or use of the part.
+        description: 'Part types describe the purpose or use of the part. Enivornment
+          data has three main part types: measure (i.e. covN1 viral measures, wasteawater
+          flow rate, temperature), method (e.g. how the measure was taken), and attribute
+          (such as a site name). See description of each of the part types within
+          setID = partTypeCatSets.'
         title: Part types
       qualityIndicators:
-        description: A measure of the quality of a reported value or sample.
+        description: A measure of the quality of a reported value or sample. Only
+          used for the dictionary entries of parts.
         title: Quality indicators
       qualityIndSets:
         description: Sets of quality indicators or measures. For example, PCR have
@@ -8434,28 +8699,40 @@ enums:
         title: Shorthand or Short Name Set Type
       specimens:
         description: 'Measures or observations are taken from three types of substances:
-          populations (humans or geographic areas), samples, sites.'
+          populations (humans or geographic areas), samples, sites. See partID = specimentID.'
         title: Specimens
       specimenSets:
-        description: Sets of specimens.
+        description: Sets of specimens.  Specimen sets are used when a measure or
+          attribute can be recorded for more than one specimen.
         title: Specimen sets
       tables:
         description: Tables are where measures, methods and attributes are recorded.
-          Tables represent the main entities of the environmental surveillance. There
+          Tables represent the main entities of the environmental surveillance. An
+          example of a  table is `site` a collection of attributes such as site name
+          and address to describe where environment samples are taken. PHES-ODM has
+          report tables, but users can create their own tables as well.
         title: Tables
       tableSupport:
         description: Parts designed to support the metadata definition oftables in
           the parts table.
         title: Table Support
       units:
-        description: The unit of the measurement.
+        description: The unit of the measurement. Every measurement must have a unit.
+          Meaning, `units` are a mandatory field whenever a measurement is recorded.
         title: Units
       unitSets:
         description: Sets of units. Contains units that are associated with part types
-          such as measures.
+          such as measures. Sets are lists of input values. Each input value within
+          a set is a part (has a partID) that can be reused between sets. For example,
+          a set A could contain the values of 'yes' and 'no'; and set B could contain
+          the values of 'yes', 'no', and 'maybe.' partTypes with sets include aggregations,
+          compartments, missingness, quality flags, specimens, and units. Measures
+          with categories and dataTypes have their own specific sets (catSetID) because
+          their input values are unique and are not reused.
         title: Unit sets
   qualityIndicators:
-    description: A measure of the quality of a reported value or sample.
+    description: A measure of the quality of a reported value or sample. Only used
+      for the dictionary entries of parts.
     title: Quality indicators
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -8601,7 +8878,7 @@ enums:
         title: Sample stored at wrong temperature
   specimens:
     description: 'Measures or observations are taken from three types of substances:
-      populations (humans or geographic areas), samples, sites.'
+      populations (humans or geographic areas), samples, sites. See partID = specimentID.'
     title: Specimens
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -8626,7 +8903,8 @@ enums:
         description: A measure made on a compartment or property at a site.
         title: Site
   units:
-    description: The unit of the measurement.
+    description: The unit of the measurement. Every measurement must have a unit.
+      Meaning, `units` are a mandatory field whenever a measurement is recorded.
     title: Units
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
@@ -8707,6 +8985,9 @@ enums:
         description: Number of confirmed cases of a given disease, totaled by test
           date.
         title: Number of confirmed cases test date
+      cpWell:
+        description: Gene or variant copies per well.
+        title: Gene copies per well
       ct:
         description: Cycle thresholds in a PCR assay.
         title: Cycle threshold or quantification cycle (Ct or Cq)
@@ -8768,6 +9049,9 @@ enums:
       gcPpmov:
         description: Gene or variant copies per copy of PMMoV.
         title: Gene copies per PMMoV copy
+      gcRx:
+        description: Gene or variant copies per reaction in PCR
+        title: Gene copies per Reaction
       gkg:
         description: gram per kilogram (g/kg)
         title: Gram per kilogram
@@ -8966,6 +9250,10 @@ enums:
       perc:
         description: Percentage.
         title: Percent
+      percRec:
+        description: Percent of the surrogate recovery for a recovery efficiency control
+          assay (as a unit).
+        title: Percent recovery
       personPerKm:
         description: Persons per square kilometre.
         title: Persons for square kilometre
@@ -9129,12 +9417,6 @@ enums:
       years:
         description: A unit for indicating a length of time in years.
         title: Years
-      gcRx:
-        description: Gene or variant copies per reaction in PCR
-        title: Gene copies per Reaction
-      cpWell:
-        description: Gene or variant copies per well.
-        title: Gene copies per well
 slots:
   wideName:
     from_schema: https://onto.phes-odm.org/odm/v3
@@ -9724,7 +10006,8 @@ slots:
     from_schema: https://onto.phes-odm.org/odm/v3
 classes:
   wideNames:
-    description: The table for wide names.
+    description: The table for wide names. The short name for the table (partID) can
+      be found in the instructions field.
     title: Wide name table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -9927,7 +10210,8 @@ classes:
         range: string
         pattern: ^.{0,30}$
   organizations:
-    description: The table that contains information about a laboratory.
+    description: The table that contains information about a laboratory. The short
+      name for the table (partID) can be found in the instructions field.
     title: Organization table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -10028,7 +10312,8 @@ classes:
         pattern: ^.{0,1000}$
   qualityReports:
     description: The table for recording the various quality metrics and indicators
-      for samples and measures.
+      for samples and measures. The short name for the table (partID) can be found
+      in the instructions field.
     title: Quality reports table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -10114,7 +10399,8 @@ classes:
         pattern: ^.{0,1000}$
   translations:
     description: Look up table for translations of the description, label, and instruction
-      for all parts.
+      for all parts. The default language if a translation is not specified is English.
+      The short name for the table (partID) can be found in the instructions field.
     title: Translation look-up table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -10224,7 +10510,8 @@ classes:
         pattern: ^.{0,1000}$
   languages:
     description: Look up table for all languages, used to give structure to the translation
-      table.
+      table. The short name for the table (partID) can be found in the instructions
+      field.
     title: Language Look-up table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -10466,7 +10753,8 @@ classes:
     tree_root: true
   accessions:
     description: Table for recording accession IDs for external data, namely sequences
-      in large sequencing databases and repositories.
+      in large sequencing databases and repositories. The short name for the table
+      (partID) can be found in the instructions field.
     title: accessions Table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -10560,7 +10848,8 @@ classes:
         pattern: ^.{0,1000}$
   protocolSteps:
     description: The table for collecting metadata on individual steps in a protocol,
-      methodological process, or assay.
+      methodological process, or assay. The short name for the table (partID) can
+      be found in the instructions field.
     title: Protocol steps table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -10704,7 +10993,12 @@ classes:
   protocolRelationships:
     description: The table that contains the organizational information and details
       (such as order) about a given protocol, recorded as a series of protocol steps
-      (protocolSteps).
+      (protocolSteps). Protocols are a group of related protocol steps. For example
+      a protocol step can describe a sample concentration, extraction, inhibition
+      or a measurement. Protocols can include both methodID (a proceedure) and measureIDs
+      (a measure). An example of a method is centrifugation; where the centriguation
+      rotation speed is described as a measure. The short name for the table (partID)
+      can be found in the instructions field.
     title: Protocol relationships table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -10818,7 +11112,10 @@ classes:
   samples:
     description: The table that contains information about a sample. A sample is defined
       as a representative volume of wastewater (or other forms of water or liquid),
-      air, or surface area taken from a site.
+      air, or surface area taken from a site.Samples can be combined, split, stored
+      and reused. The `Sample relationships` (sampleRelationships) is used to describe
+      the relationships between samples. The short name for the table (partID) can
+      be found in the instructions field.
     title: Sample report table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -11057,7 +11354,8 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   polygonRelationships:
-    description: Table for recording the relationships between polygons.
+    description: Table for recording the relationships between polygons. The short
+      name for the table (partID) can be found in the instructions field.
     title: Polygon Relationships Table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -11131,7 +11429,8 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   measures:
-    description: The table that contains information and details about a given measure
+    description: The table that contains information and details about a given measure.
+      The short name for the table (partID) can be found in the instructions field.
     title: Measure report table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -11438,12 +11737,12 @@ classes:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
+        range: organizations
         pattern: ^.{0,100}$
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: string
+        range: contacts
         pattern: ^.{0,30}$
       refLink:
         description: Link to the reference material for a part. May link to literature
@@ -11482,7 +11781,9 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   parts:
-    description: Look up table containing all parts in of the data model.
+    description: Look up table containing all parts in of the data model. Contains
+      all parts, including self-referential parts. The short name for the table (partID)
+      can be found in the instructions field.
     title: Parts Look-up table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -11628,13 +11929,12 @@ classes:
         required: true
         pattern: ^.{0,30}$
       partType:
-        description: Part types describe the purpose or use of the part.
+        description: 'Part types describe the purpose or use of the part. Enivornment
+          data has three main part types: measure (i.e. covN1 viral measures, wasteawater
+          flow rate, temperature), method (e.g. how the measure was taken), and attribute
+          (such as a site name). See description of each of the part types within
+          setID = partTypeCatSets.'
         title: Part types
-        notes:
-        - 'Enivornment data has three main part types: measure (i.e. covN1 viral measures,
-          wasteawater flow rate, temperature), method (e.g. how the measure was taken),
-          and attribute (such as a site name). See description of each of the part
-          types within categorySetID = partTypeCatSets.'
         range: partType
         required: true
         pattern: ^.{0,30}$
@@ -11809,8 +12109,11 @@ classes:
         pattern: ^.{0,30}$
       protocolSteps:
         description: The table for collecting metadata on individual steps in a protocol,
-          methodological process, or assay.
+          methodological process, or assay. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocol steps table
+        notes:
+        - ps
         range: string
         pattern: ^.{0,30}$
       protocolStepsRequired:
@@ -11826,14 +12129,15 @@ classes:
       protocolRelationships:
         description: The table that contains the organizational information and details
           (such as order) about a given protocol, recorded as a series of protocol
-          steps (protocolSteps).
+          steps (protocolSteps). Protocols are a group of related protocol steps.
+          For example a protocol step can describe a sample concentration, extraction,
+          inhibition or a measurement. Protocols can include both methodID (a proceedure)
+          and measureIDs (a measure). An example of a method is centrifugation; where
+          the centriguation rotation speed is described as a measure. The short name
+          for the table (partID) can be found in the instructions field.
         title: Protocol relationships table
         notes:
-        - Protocols are a group of related protocol steps. For example a protocol
-          step can describe a sample concentration, extraction, inhibition or a measurement.
-          Protocols can include both methodID (a proceedure) and measureIDs (a measure).
-          An example of a method is centrifugation; where the centriguation rotation
-          speed is described as a measure.
+        - pr
         range: string
         pattern: ^.{0,30}$
       protocolRelationshipsRequired:
@@ -11849,10 +12153,11 @@ classes:
         minimum_value: 1
       measures:
         description: The table that contains information and details about a given
-          measure
+          measure. The short name for the table (partID) can be found in the instructions
+          field.
         title: Measure report table
         notes:
-        - adapt from verson 1 documentation
+        - mr
         range: string
         pattern: ^.{0,30}$
       measuresRequired:
@@ -11866,11 +12171,13 @@ classes:
         range: integer
         minimum_value: 1
       measureSets:
-        description: The table that identifies sets of measures.
+        description: The table that identifies sets of measures. Examples of measure
+          sets include a set of replicates, dilutions (used to generate a Ct curve)
+          or varients that are identified in a single sample. The short name for the
+          table (partID) can be found in the instructions field.
         title: Measure set report table
         notes:
-        - Examples of measure sets include a set of replicates, dilutions (used to
-          generate a Ct curve) or varients that are identified in a single sample.
+        - ms
         range: string
         pattern: ^.{0,30}$
       measureSetsOrder:
@@ -11885,8 +12192,11 @@ classes:
         pattern: ^.{0,30}$
       datasets:
         description: A report table for capturing details about data's parental data
-          set and data custodians. Supplying attribution for data collectors.
+          set and data custodians. Supplying attribution for data collectors. The
+          short name for the table (partID) can be found in the instructions field.
         title: Dataset table
+        notes:
+        - ds
         range: string
         pattern: ^.{0,30}$
       datasetsRequired:
@@ -11901,12 +12211,13 @@ classes:
         minimum_value: 1
       sites:
         description: The table that contains information about a site; the location
-          where an environmental sample was taken.
+          where an environmental sample was taken. The site of an eviromental sample.
+          Information in the site table does not regularly change. Consider using
+          the MeasureReport table if the infomation changes often. The short name
+          for the table (partID) can be found in the instructions field.
         title: Sites table
         notes:
-        - The site of an eviromental sample. Information in the site table does not
-          regularly change. Consider using the MeasureReport table if the infomation
-          changes often.
+        - si
         range: string
         pattern: ^.{0,30}$
       sitesRequired:
@@ -11922,11 +12233,13 @@ classes:
       samples:
         description: The table that contains information about a sample. A sample
           is defined as a representative volume of wastewater (or other forms of water
-          or liquid), air, or surface area taken from a site.
+          or liquid), air, or surface area taken from a site.Samples can be combined,
+          split, stored and reused. The `Sample relationships` (sampleRelationships)
+          is used to describe the relationships between samples. The short name for
+          the table (partID) can be found in the instructions field.
         title: Sample report table
         notes:
-        - Samples can be combined, split, stored and reused. The `Sample relationships`
-          (sampleRelationships) is used to describe the relationships between samples.
+        - sas
         range: string
         pattern: ^.{0,30}$
       samplesRequired:
@@ -11941,11 +12254,13 @@ classes:
         minimum_value: 1
       addresses:
         description: The table that contains information about addresses. Addresses
-          can recorded for sites, organizations or contacts (indivduals).
+          can recorded for sites, organizations or contacts (indivduals). The Sites,
+          Organizations, and Contacts tables include a link to the addresses table
+          through Address ID. The short name for the table (partID) can be found in
+          the instructions field.
         title: Address table
         notes:
-        - The Sites, Organizations, and Contacts tables include a link to the addresses
-          table through Address ID.
+        - ad
         range: string
         pattern: ^.{0,30}$
       addressesRequired:
@@ -11960,10 +12275,11 @@ classes:
         minimum_value: 1
       contacts:
         description: The table that contains information about a contact; a person
-          who is the contact of a site or laboratory.
+          who is the contact of a site or laboratory. The short name for the table
+          (partID) can be found in the instructions field.
         title: Contact table
         notes:
-        - adapt from verson 1 documentation
+        - co
         range: string
         pattern: ^.{0,30}$
       contactsRequired:
@@ -11977,10 +12293,11 @@ classes:
         range: integer
         minimum_value: 1
       organizations:
-        description: The table that contains information about a laboratory.
+        description: The table that contains information about a laboratory. The short
+          name for the table (partID) can be found in the instructions field.
         title: Organization table
         notes:
-        - adapt from verson 1 documentation
+        - or
         range: string
         pattern: ^.{0,30}$
       organizationsRequired:
@@ -11994,8 +12311,11 @@ classes:
         range: integer
         minimum_value: 1
       phActions:
-        description: Table for recording information on public health actions.
+        description: Table for recording information on public health actions. The
+          short name for the table (partID) can be found in the instructions field.
         title: Public Health Actions Report Table
+        notes:
+        - pha
         range: string
         required: true
         pattern: ^.{0,30}$
@@ -12016,6 +12336,8 @@ classes:
         description: Table for recording data on data treatments and calculations
           applied to measurements and reported values.
         title: Calculations Table
+        notes:
+        - cl
         range: string
         pattern: ^.{0,30}$
       calculationsRequired:
@@ -12031,10 +12353,11 @@ classes:
         required: true
         minimum_value: 1
       instruments:
-        description: The table that contains information about instruments.
+        description: The table that contains information about instruments. The short
+          name for the table (partID) can be found in the instructions field.
         title: Instrument table
         notes:
-        - adapt from verson 1 documentation
+        - in
         range: string
         pattern: ^.{0,30}$
       instrumentsRequired:
@@ -12048,8 +12371,11 @@ classes:
         range: integer
         minimum_value: 1
       polygonRelationships:
-        description: Table for recording the relationships between polygons.
+        description: Table for recording the relationships between polygons. The short
+          name for the table (partID) can be found in the instructions field.
         title: Polygon Relationships Table
+        notes:
+        - por
         range: string
         pattern: ^.{0,30}$
       polygonRelationshipsRequired:
@@ -12067,8 +12393,11 @@ classes:
         minimum_value: 1
       polygons:
         description: The table that contains information about the geometry of a geographic
-          area.
+          area. The short name for the table (partID) can be found in the instructions
+          field.
         title: Polygon table
+        notes:
+        - po
         range: string
         pattern: ^.{0,30}$
       polygonsRequired:
@@ -12083,8 +12412,11 @@ classes:
         minimum_value: 1
       accessions:
         description: Table for recording accession IDs for external data, namely sequences
-          in large sequencing databases and repositories.
+          in large sequencing databases and repositories. The short name for the table
+          (partID) can be found in the instructions field.
         title: accessions Table
+        notes:
+        - ac
         range: string
         pattern: ^.{0,30}$
       accessionsRequired:
@@ -12101,8 +12433,11 @@ classes:
         minimum_value: 1
       languages:
         description: Look up table for all languages, used to give structure to the
-          translation table.
+          translation table. The short name for the table (partID) can be found in
+          the instructions field.
         title: Language Look-up table
+        notes:
+        - la
         range: string
         pattern: ^.{0,30}$
       languagesRequired:
@@ -12117,10 +12452,12 @@ classes:
         minimum_value: 1
       translations:
         description: Look up table for translations of the description, label, and
-          instruction for all parts.
+          instruction for all parts. The default language if a translation is not
+          specified is English. The short name for the table (partID) can be found
+          in the instructions field.
         title: Translation look-up table
         notes:
-        - The default language if a translation is not specified is English.
+        - tr
         range: string
         pattern: ^.{0,30}$
       translationsRequired:
@@ -12134,10 +12471,12 @@ classes:
         range: integer
         minimum_value: 1
       parts:
-        description: Look up table containing all parts in of the data model.
+        description: Look up table containing all parts in of the data model. Contains
+          all parts, including self-referential parts. The short name for the table
+          (partID) can be found in the instructions field.
         title: Parts Look-up table
         notes:
-        - Contains all parts, including self-referential parts.
+        - pa
         range: string
         pattern: ^.{0,30}$
       partsRequired:
@@ -12152,11 +12491,12 @@ classes:
         minimum_value: 1
       sets:
         description: Look up table for all sets, managing how categorical inputs for
-          various methods and attributes are grouped together.
+          various methods and attributes are grouped together. This table manages
+          many-to-many relationships and category recycling within the ODM. The short
+          name for the table (partID) can be found in the instructions field.
         title: Sets look-up table
         notes:
-        - This table manages many-to-many relationships and category recycling within
-          the ODM.
+        - se
         range: string
         pattern: ^.{0,30}$
       setsRequired:
@@ -12171,8 +12511,11 @@ classes:
         minimum_value: 1
       qualityReports:
         description: The table for recording the various quality metrics and indicators
-          for samples and measures.
+          for samples and measures. The short name for the table (partID) can be found
+          in the instructions field.
         title: Quality reports table
+        notes:
+        - qr
         range: string
         pattern: ^.{0,30}$
       qualityReportsRequired:
@@ -12186,12 +12529,14 @@ classes:
         range: integer
         minimum_value: 1
       sampleRelationships:
-        description: Table for recording the relationships between samples.
+        description: Table for recording the relationships between samples.Samples
+          can be pooled or split. The sample relationships table holds information
+          on parent-child relationships between samples, and allow for tracking sample
+          lineage for single and pooled samples. The short name for the table (partID)
+          can be found in the instructions field.
         title: Sample relationships table
         notes:
-        - Samples can be pooled or split. The sample relationships table holds information
-          on parent-child relationships between samples, and allow for tracking sample
-          lineage for single and pooled samples.
+        - sar
         range: string
         pattern: ^.{0,30}$
       sampleRelationshipsRequired:
@@ -12206,8 +12551,11 @@ classes:
         range: integer
         minimum_value: 1
       protocols:
-        description: The table for protocols.
+        description: The table for protocols. The short name for the table (partID)
+          can be found in the instructions field.
         title: Protocols table
+        notes:
+        - pro
         range: string
         pattern: ^.{0,30}$
       protocolsRequired:
@@ -12221,8 +12569,11 @@ classes:
         range: integer
         minimum_value: 1
       countries:
-        description: Look up table for the possible country inputs.
+        description: Look up table for the possible country inputs. The short name
+          for the table (partID) can be found in the instructions field.
         title: Countries look-up tables
+        notes:
+        - cu
         range: string
         pattern: ^.{0,30}$
       countriesRequired:
@@ -12237,7 +12588,10 @@ classes:
         minimum_value: 1
       zones:
         description: Look up table for the possible sub-national region or zone inputs.
+          The short name for the table (partID) can be found in the instructions field.
         title: Zones look-up table
+        notes:
+        - zo
         range: string
         pattern: ^.{0,30}$
       zonesRequired:
@@ -12251,8 +12605,11 @@ classes:
         range: integer
         minimum_value: 1
       wideNames:
-        description: The table for wide names.
+        description: The table for wide names. The short name for the table (partID)
+          can be found in the instructions field.
         title: Wide name table
+        notes:
+        - wn
         range: string
         pattern: ^.{0,30}$
       wideNamesRequired:
@@ -12278,16 +12635,15 @@ classes:
         range: string
         pattern: ^.{0,255}$
       dataTypes:
-        description: The data type for a part.
+        description: 'The data type for a part. Data types used in the ODM include:
+          varchar, booleen, float, category, date, time, datetime, url, email. dataType
+          corresponds the the entry or cell within a data table, most commonly within
+          a report table. If the data entry has a unit, then the dataType corresponds
+          to the unit and the dataType refers to ''unit''. If the data entry is a
+          category, then the dataType refers to ''category''. All categories are varchar.
+          Otherwise the dataType is identifed within the part entry. TBA: dataType
+          for dictionary.'
         title: Data types
-        notes:
-        - 'Data types used in the ODM include: varchar, booleen, float, category,
-          date, time, datetime, url, email. dataType corresponds the the entry or
-          cell within a data table, most commonly within a report table. If the data
-          entry has a unit, then the dataType corresponds to the unit and the dataType
-          refers to ''unit''. If the data entry is a category, then the dataType refers
-          to ''category''. All categories are varchar. Otherwise the dataType is identifed
-          within the part entry. TBA: dataType for dictionary.'
         range: dataTypes
         required: true
         pattern: ^.{0,30}$
@@ -12455,7 +12811,8 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   phActions:
-    description: Table for recording information on public health actions.
+    description: Table for recording information on public health actions. The short
+      name for the table (partID) can be found in the instructions field.
     title: Public Health Actions Report Table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -12561,13 +12918,13 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   protocols:
-    description: The table for protocols.
+    description: The table for protocols. The short name for the table (partID) can
+      be found in the instructions field.
     title: Protocols table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
     - sourceProtocol
     - protocolID
-    - datasetID
     - name
     - summ
     - refLink
@@ -12592,16 +12949,6 @@ classes:
         identifier: true
         range: string
         required: true
-        pattern: ^.{0,30}$
-      datasetID:
-        description: The name of the dataset that stores information for MeasureReport,
-          SampleReport and other reporting tables.
-        title: Dataset ID
-        notes:
-        - Where possible, datasetID name should correspond the orignial data custodian
-          responsible for generating environmental data. (suggestion for a default
-          name convention.)
-        range: datasets
         pattern: ^.{0,30}$
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
@@ -12675,7 +13022,9 @@ classes:
         pattern: ^.{0,1000}$
   sets:
     description: Look up table for all sets, managing how categorical inputs for various
-      methods and attributes are grouped together.
+      methods and attributes are grouped together. This table manages many-to-many
+      relationships and category recycling within the ODM. The short name for the
+      table (partID) can be found in the instructions field.
     title: Sets look-up table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -12706,7 +13055,6 @@ classes:
         notes:
         - A set is a group of units, attributes, categories, specimens, or compartments
           that can be used for a measure, method or attribute.
-        identifier: true
         range: string
         required: true
         pattern: ^.{0,30}$
@@ -12798,7 +13146,8 @@ classes:
         pattern: ^.{0,1000}$
   polygons:
     description: The table that contains information about the geometry of a geographic
-      area.
+      area. The short name for the table (partID) can be found in the instructions
+      field.
     title: Polygon table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -12812,8 +13161,8 @@ classes:
     - fileLocation
     - refLink
     - organizationID
-    - contactID
     - poLic
+    - contactID
     - lastEdited
     - notes
     slot_usage:
@@ -12899,18 +13248,18 @@ classes:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
+        range: organizations
         pattern: ^.{0,100}$
-      contactID:
-        description: A unique identifier for a given contact person.
-        title: Contact ID
-        range: string
-        pattern: ^.{0,30}$
       poLic:
         description: The license for the availability of the polygon shapefile.
         title: Polygon License
         range: licSet
         pattern: ^.{0,50}$
+      contactID:
+        description: A unique identifier for a given contact person.
+        title: Contact ID
+        range: contacts
+        pattern: ^.{0,30}$
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -12939,7 +13288,8 @@ classes:
         pattern: ^.{0,1000}$
   datasets:
     description: A report table for capturing details about data's parental data set
-      and data custodians. Supplying attribution for data collectors.
+      and data custodians. Supplying attribution for data collectors. The short name
+      for the table (partID) can be found in the instructions field.
     title: Dataset table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -13093,12 +13443,13 @@ classes:
         pattern: ^.{0,1000}$
   addresses:
     description: The table that contains information about addresses. Addresses can
-      recorded for sites, organizations or contacts (indivduals).
+      recorded for sites, organizations or contacts (indivduals). The Sites, Organizations,
+      and Contacts tables include a link to the addresses table through Address ID.
+      The short name for the table (partID) can be found in the instructions field.
     title: Address table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
     - addressID
-    - datasetID
     - addL1
     - addL2
     - city
@@ -13113,17 +13464,6 @@ classes:
         title: Address ID
         identifier: true
         range: string
-        required: true
-        pattern: ^.{0,30}$
-      datasetID:
-        description: The name of the dataset that stores information for MeasureReport,
-          SampleReport and other reporting tables.
-        title: Dataset ID
-        notes:
-        - Where possible, datasetID name should correspond the orignial data custodian
-          responsible for generating environmental data. (suggestion for a default
-          name convention.)
-        range: datasets
         required: true
         pattern: ^.{0,30}$
       addL1:
@@ -13191,7 +13531,11 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   sampleRelationships:
-    description: Table for recording the relationships between samples.
+    description: Table for recording the relationships between samples.Samples can
+      be pooled or split. The sample relationships table holds information on parent-child
+      relationships between samples, and allow for tracking sample lineage for single
+      and pooled samples. The short name for the table (partID) can be found in the
+      instructions field.
     title: Sample relationships table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -13269,7 +13613,8 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   instruments:
-    description: The table that contains information about instruments.
+    description: The table that contains information about instruments. The short
+      name for the table (partID) can be found in the instructions field.
     title: Instrument table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -13380,7 +13725,10 @@ classes:
         pattern: ^.{0,1000}$
   sites:
     description: The table that contains information about a site; the location where
-      an environmental sample was taken.
+      an environmental sample was taken. The site of an eviromental sample. Information
+      in the site table does not regularly change. Consider using the MeasureReport
+      table if the infomation changes often. The short name for the table (partID)
+      can be found in the instructions field.
     title: Sites table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -13468,7 +13816,7 @@ classes:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
+        range: organizations
         pattern: ^.{0,100}$
       contactID:
         description: A unique identifier for a given contact person.
@@ -13579,12 +13927,12 @@ classes:
         pattern: ^.{0,1000}$
   contacts:
     description: The table that contains information about a contact; a person who
-      is the contact of a site or laboratory.
+      is the contact of a site or laboratory. The short name for the table (partID)
+      can be found in the instructions field.
     title: Contact table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
     - contactID
-    - datasetID
     - organizationID
     - firstName
     - lastName
@@ -13600,16 +13948,6 @@ classes:
         identifier: true
         range: string
         required: true
-        pattern: ^.{0,30}$
-      datasetID:
-        description: The name of the dataset that stores information for MeasureReport,
-          SampleReport and other reporting tables.
-        title: Dataset ID
-        notes:
-        - Where possible, datasetID name should correspond the orignial data custodian
-          responsible for generating environmental data. (suggestion for a default
-          name convention.)
-        range: datasets
         pattern: ^.{0,30}$
       organizationID:
         description: A unique identifier for the organization to which the reporter
@@ -13671,7 +14009,10 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   measureSets:
-    description: The table that identifies sets of measures.
+    description: The table that identifies sets of measures. Examples of measure sets
+      include a set of replicates, dilutions (used to generate a Ct curve) or varients
+      that are identified in a single sample. The short name for the table (partID)
+      can be found in the instructions field.
     title: Measure set report table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -13743,7 +14084,8 @@ classes:
         range: string
         pattern: ^.{0,1000}$
   countries:
-    description: Look up table for the possible country inputs.
+    description: Look up table for the possible country inputs. The short name for
+      the table (partID) can be found in the instructions field.
     title: Countries look-up tables
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -13898,6 +14240,7 @@ classes:
         pattern: ^.{0,75}$
   zones:
     description: Look up table for the possible sub-national region or zone inputs.
+      The short name for the table (partID) can be found in the instructions field.
     title: Zones look-up table
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
