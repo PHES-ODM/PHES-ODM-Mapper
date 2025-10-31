@@ -12,7 +12,8 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     ConfigKeys,
     WideColumnValues,
     column_and_group_of_column,
-    EXTRA_GROUP_TAG_SLOT,
+    get_extra_slot_for_flag_prefix,
+    COLUMN_GROUP_PREFIX,
 )
 from odm_map.utils.extra_and_tracking_slots import (
     is_tracking_slot,
@@ -189,11 +190,11 @@ class WideColumnIDCodeMaker:
                             class_linkages[class_name][target_class] = {
                                 "source_slot": [
                                     TrackingSlots.SOURCE_FILE_AND_ROW,
-                                    EXTRA_GROUP_TAG_SLOT,
+                                    get_extra_slot_for_flag_prefix(COLUMN_GROUP_PREFIX),
                                 ],
                                 "target_slot": [
                                     TrackingSlots.SOURCE_FILE_AND_ROW,
-                                    EXTRA_GROUP_TAG_SLOT,
+                                    get_extra_slot_for_flag_prefix(COLUMN_GROUP_PREFIX),
                                 ],
                             }
                         else:

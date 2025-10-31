@@ -60,11 +60,11 @@ from odm_map.utils.schema_utils import (
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     ConfigKeys,
     WideColumnValues,
-)
-from odm_map.prepare_wide_to_long.wide_column_utils import (
+    get_column_flags,
+    get_flag_prefix,
     group_of_column,
     column_without_flags,
-    EXTRA_GROUP_TAG_SLOT,
+    get_extra_slot_for_flag_prefix,
 )
 
 logger = get_logger(__name__)
@@ -806,8 +806,15 @@ class WideColumnMapMaker:
                 derivation has a group associated with it. It is used to populate and extra column
                 with the group name, which can be used for linking purposes.
         """
+        flags = {}
         for col in columns:
             target_class_name, target_slot_name = self.get_class_and_slot(col)
+            cur_flags = get_column_flags(col)
+            for flag in cur_flags:
+                flag_prefix = get_flag_prefix(flag)
+                if flag_prefix not in flags:
+                    flags[flag_prefix] = []
+                flags[flag_prefix].append(flag)
 
             if target_class_name is None or target_slot_name is None:
                 continue
@@ -829,10 +836,14 @@ class WideColumnMapMaker:
                 info_slot_name=target_slot_name,
             )
 
-        # Add the expr to populate the group name to all class derivations
+        # Add expr to puplate all the flags (eg. the groups)
         for target_class in class_derivations:
             slot_derivations = class_derivations[target_class]["slot_derivations"]
-            slot_derivations[EXTRA_GROUP_TAG_SLOT] = {
-                "name": EXTRA_GROUP_TAG_SLOT,
-                "expr": f"'{group_name}'" if group_name else "''",
-            }
+            for flag_prefix, cur_flags in flags.items():
+                extra_slot = get_extra_slot_for_flag_prefix(flag_prefix)
+                cur_flags = list(dict.fromkeys(cur_flags))
+                cur_flags = ",".join(cur_flags)
+                slot_derivations[extra_slot] = {
+                    "name": extra_slot,
+                    "expr": f"'{cur_flags}'",
+                }
