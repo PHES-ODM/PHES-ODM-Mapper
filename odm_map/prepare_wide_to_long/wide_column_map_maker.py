@@ -60,6 +60,7 @@ from odm_map.utils.schema_utils import (
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     ConfigKeys,
     WideColumnValues,
+    RECOGNIZED_FLAG_PREFIXES,
     get_column_flags,
     get_flag_prefix,
     group_of_column,
@@ -836,11 +837,12 @@ class WideColumnMapMaker:
                 info_slot_name=target_slot_name,
             )
 
-        # Add expr to puplate all the flags (eg. the groups)
+        # Add expr to populate all the recognized flags (eg. the groups)
         for target_class in class_derivations:
             slot_derivations = class_derivations[target_class]["slot_derivations"]
-            for flag_prefix, cur_flags in flags.items():
+            for flag_prefix in RECOGNIZED_FLAG_PREFIXES:
                 extra_slot = get_extra_slot_for_flag_prefix(flag_prefix)
+                cur_flags = flags.get(flag_prefix, [])
                 cur_flags = list(dict.fromkeys(cur_flags))
                 cur_flags = ",".join(cur_flags)
                 slot_derivations[extra_slot] = {
