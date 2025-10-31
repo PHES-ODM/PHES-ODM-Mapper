@@ -10,6 +10,7 @@ class ConfigKeys:
     TABLES_TO_SHORTNAMES = "tables_to_shortnames"
     PARTID_TO_MMASET = "partid_to_mmaset"
     SEE_HEADERS = "see_headers"
+    ID_CODE = "id_code"
 
 
 class WideColumnValues:
