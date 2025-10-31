@@ -431,6 +431,28 @@ class IDGenerator(object):
 
             prev_class = linkage[LinkageKeys.TARGET_CLASS]
 
+    def rename_id_code_colums(self, id_code_df: pd.DataFrame):
+        """Rename the code columns in the specified DataFrame, so that they follow the correct naming
+        convention for code columns.
+
+        Code columns start with the string IDCodeColumns.CODE_PREFIX ("code"), then a 0-based integer
+        in the string format IDCodeColumns.CODE_SUFFIX (eg. "{:03d}), for example, code000, code001, etc.
+        The number assigned to the column increases from left to right in the order that the columns appear.
+
+        Args:
+            id_code_df (pd.DataFrame): The DataFrame to rename the columns. This DataFrame is modified
+                in place.
+        """
+        # Rename any column that starts with the word "code", so that they're in the form "code000" (maintaining the
+        # original order)
+        code_columns = [
+            c for c in id_code_df.columns if c.startswith(IDCodeColumns.CODE_PREFIX)
+        ]
+        code_columns_map = {
+            c: self.make_code_column_name(idx) for idx, c in enumerate(code_columns)
+        }
+        id_code_df.columns = [code_columns_map.get(c, c) for c in id_code_df.columns]
+
     def prepare_id_code(self, id_code_files: List[Dict]):
         """Load and prepare the ID generation code from the specified file. The file should contain all the
         columns found in IDCodeColumns.
@@ -465,6 +487,8 @@ class IDGenerator(object):
                     )
                 else:
                     cur_id_code_df = read_data_frame(id_code_file)
+
+            self.rename_id_code_colums(cur_id_code_df)
             id_code_df.append(cur_id_code_df)
 
         if len(id_code_df) == 0:
@@ -472,24 +496,15 @@ class IDGenerator(object):
 
         id_code_df = pd.concat(id_code_df)
 
-        # Rename any column that starts with the word "code", so that they're in the form "code000" (maintaining the
-        # original order)
-        code_columns = [
-            c for c in id_code_df.columns if c.startswith(IDCodeColumns.CODE_PREFIX)
-        ]
-        code_columns_map = {
-            c: self.make_code_column_name(idx) for idx, c in enumerate(code_columns)
-        }
-        id_code_df.columns = [code_columns_map.get(c, c) for c in id_code_df.columns]
-
         # Drop rows where either the class or slot are empty
         id_code_df = id_code_df.dropna(
             subset=[IDCodeColumns.CLASS, IDCodeColumns.SLOT], axis=0, how="any"
         )
         # Drop rows where all code columns are empty
-        id_code_df = id_code_df.dropna(
-            subset=code_columns_map.values(), axis=0, how="all"
-        )
+        code_columns = [
+            c for c in id_code_df.columns if c.startswith(IDCodeColumns.CODE_PREFIX)
+        ]
+        id_code_df = id_code_df.dropna(subset=code_columns, axis=0, how="all")
         # Drop duplicates where the class and slot are equal, keeping the last duplicate only
         id_code_df = id_code_df.drop_duplicates(
             subset=[IDCodeColumns.CLASS, IDCodeColumns.SLOT], keep="last"
@@ -509,20 +524,17 @@ class IDGenerator(object):
                 code selectors then the default None code selector is returned as [None].
         """
         return self.data[class_name].get_code_selectors_from_row(row_index)
-        # # If code selector column doesn't exist, then return the blank code selector [None]
-        # if not self.data[class_name].has_column(CODE_SELECTOR_SLOT):
-        #     return [None]
-
-        # code_selector = self.data[class_name].get_data_value(CODE_SELECTOR_SLOT, row_index)
-
-        # # If code selector value is empty, then return blank code selector [None]
-        # if pd.isna(code_selector) or code_selector == "":
-        #     return [None]
-
-        # # Return the code selectors
-        # return self.get_code_selectors_from_string(str(code_selector))
 
     def get_all_generated_slots_from_id_code(self) -> Dict[str, Dict[str, List[str]]]:
+        """Get a list of all slots (and their class) that have ID code, as well as the code
+        selector for the ID code if there is one.
+
+        Returns:
+            Dict[str, Dict[str, List[str]]]: A dictionary where the key is the class name
+                and the values are sub-dictionaries. In the sub-dictionaries the keys are
+                the code selectors (include the key None for code without a selector) and
+                the values are list of slots in the class that have ID code.
+        """
         # Determine all the ID slots that need to be calculated (in all classes).
         generated_slots = {}
         for _, row in self.id_code_df.iterrows():
