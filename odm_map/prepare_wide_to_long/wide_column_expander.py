@@ -71,7 +71,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     MeasureTableColumns,
     ProtocolStepsTableColumns,
     AND_VALUE_SEPARATOR,
-    COLUMN_GROUP_PREFIX,
+    GROUP_FLAG_PREFIX,
     group_of_column,
     column_without_flags,
     column_with_flags,
@@ -1222,14 +1222,12 @@ class WideColumnExpander:
             if column_group is None:
                 # Column group not available, generate a new one
                 explicit_group = False
-                column_group = (
-                    f"{COLUMN_GROUP_PREFIX}{column_index + first_group_number}"
-                )
+                column_group = f"{GROUP_FLAG_PREFIX}{column_index + first_group_number}"
             else:
                 explicit_group = True
 
             # Get all flags of the column (including the group flag)
-            column_flags = get_column_flags(col, ignore_prefixes=COLUMN_GROUP_PREFIX)
+            column_flags = get_column_flags(col, ignore_prefixes=GROUP_FLAG_PREFIX)
 
             if explicit_group:
                 self.explicit_groups.append(column_group)

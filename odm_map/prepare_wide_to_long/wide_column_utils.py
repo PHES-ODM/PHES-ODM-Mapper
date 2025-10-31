@@ -52,15 +52,15 @@ AND_VALUE_SEPARATOR = "."
 COLUMN_FLAG_SEPARATOR = "."
 
 # Group prefix, to group values together
-COLUMN_GROUP_PREFIX = "o"
+GROUP_FLAG_PREFIX = "g"
 
 # Linking prefix, to specify which value should be linked
-COLUMN_LINK_PREFIX = "l"
+LINK_FLAG_PREFIX = "l"
 
 # All prefixes that we currently recognize
 RECOGNIZED_FLAG_PREFIXES = [
-    COLUMN_GROUP_PREFIX,
-    COLUMN_LINK_PREFIX,
+    GROUP_FLAG_PREFIX,
+    LINK_FLAG_PREFIX,
 ]
 
 
@@ -86,7 +86,7 @@ def get_flag_prefix(flag_value: str) -> Optional[str]:
 def get_extra_slot_for_flag_prefix(flag_prefix: str) -> str:
     """Get the name of the extra slot that is populated with the value for the specified flag.
 
-    For example, the group flag with prefix COLUMN_GROUP_PREFIX will have an extra slot in the
+    For example, the group flag with prefix GROUP_FLAG_PREFIX will have an extra slot in the
     data containing the group for that row.
 
     Args:
@@ -194,7 +194,7 @@ def column_and_group_of_column(
             group is returned.
     """
     return column_and_flag_of_column(
-        col, flag_prefix=COLUMN_GROUP_PREFIX, remove_flag_prefix=remove_flag_prefix
+        col, flag_prefix=GROUP_FLAG_PREFIX, remove_flag_prefix=remove_flag_prefix
     )
 
 
