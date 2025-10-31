@@ -51,26 +51,71 @@ AND_VALUE_SEPARATOR = "."
 # Separates the flags from the column name. eg. with qr_qualityReports.o123, the dot is the separator.
 COLUMN_FLAG_SEPARATOR = "."
 
-# Group names (as a flag) start with this string
+# Group prefix, to group values together
 COLUMN_GROUP_PREFIX = "o"
 
-# The name of the extra slot in all mapping schemas that gets populated with the group name associated
-# with the mapping schema.
-EXTRA_GROUP_TAG_SLOT = f"{EXTRA_SLOT_PREFIX}group_flag{EXTRA_SLOT_SUFFIX}"
+# Linking prefix, to specify which value should be linked
+COLUMN_LINK_PREFIX = "l"
+
+# All prefixes that we currently recognize
+RECOGNIZED_FLAG_PREFIXES = [
+    COLUMN_GROUP_PREFIX,
+    COLUMN_LINK_PREFIX,
+]
 
 
-def column_flags(
+def get_flag_prefix(flag_value: str) -> Optional[str]:
+    """Given the flag value (eg. "o123"), return the flag prefix (eg. "o"). We will iterate over
+    all recognized flag prefixes (RECOGNIZED_FLAG_PREFIXES), and return the longest prefix that
+    flag_value starts with.
+
+    Args:
+        flag_value (str): The flag value to get the prefix of.
+
+    Returns:
+        Optional[str]: The flag prefix if one is found, or None if there is no recognized flag prefix.
+    """
+    recognized_prefix = None
+    for prefix in RECOGNIZED_FLAG_PREFIXES:
+        if flag_value.startswith(prefix):
+            if recognized_prefix is None or len(prefix) >= len(recognized_prefix):
+                recognized_prefix = prefix
+    return recognized_prefix
+
+
+def get_extra_slot_for_flag_prefix(flag_prefix: str) -> str:
+    """Get the name of the extra slot that is populated with the value for the specified flag.
+
+    For example, the group flag with prefix COLUMN_GROUP_PREFIX will have an extra slot in the
+    data containing the group for that row.
+
+    Args:
+        flag_prefix (str): The flag prefix to get the extra slot for.
+
+    Returns:
+        str: The name of the extra slot for the specified flag.
+    """
+    return f"{EXTRA_SLOT_PREFIX}{flag_prefix}_flag{EXTRA_SLOT_SUFFIX}"
+
+
+def get_column_flags(
     col: str,
     flag_prefix: Optional[Union[List[str], str]] = None,
+    ignore_prefixes: Optional[Union[List[str], str]] = None,
     remove_flag_prefix: bool = False,
 ) -> List[str]:
     """Get all flags associated with the column. Flags are separated by COLUMN_FLAGPSEPARATOR.
     For example, qr_qualityFlag.o123.t_sample has the flags o123 and t_sample.
 
+    Note that only recognized flags will be returned. These are the flags listed in the
+    global variable RECOGNIZED_FLAG_PREFIXES.
+
     Args:
         col (str): The column name to get the flags from.
         flag_prefix (Optional[Union[List[str], str]]): If set, then only return flags that begin
             with this string or begin with any of the strings (if a list).
+        ignore_prefixes (Optional[Union[List[str], str]]): If set, then ignore any flag that
+            begins with any of these prefixes.
         remove_flag_prefix (bool): If True then remove the prefix from all flags. For example,
             the prefix for a column group is "o", and the column is mr_measure.o123, then
             instead of returning ["o123"], ["123"] will be returned instead. If flag_prefix
@@ -82,31 +127,30 @@ def column_flags(
     if COLUMN_FLAG_SEPARATOR in col:
         if isinstance(flag_prefix, str):
             flag_prefix = [flag_prefix]
+        if isinstance(ignore_prefixes, str):
+            ignore_prefixes = [ignore_prefixes]
+
+        if not flag_prefix:
+            flag_prefix = RECOGNIZED_FLAG_PREFIXES
         # Get all flags that are not integers
         flags = col.split(COLUMN_FLAG_SEPARATOR)[1:]
         flags = [f for f in flags if not f.isdigit()]
+        # Get the flag prefix for all flags
+        flags = [(f, get_flag_prefix(f)) for f in flags]
+
         if flag_prefix:
+            # Only include the flag prefixes in flag_prefix
+            flags = [f for f in flags if f[1] in flag_prefix]
 
-            def _get_flag(flag: str) -> str:
-                # If flag_prefix is set then only get the flag if it starts with any of the prefixes.
-                # If flag_prefix is set but a flag doesn't match a prefix then None is returned.
-                # If flag_prefix is not set then all flags are returned.
-                # If remove_flag_prefix is set then remove the prefix (as matched by flag_prefix) from
-                # the flag. If flag_prefix is not set then the prefix is never removed.
-                if not flag_prefix:
-                    return flag
-                for cur_prefix in flag_prefix:
-                    if flag.startswith(cur_prefix):
-                        if remove_flag_prefix:
-                            return flag[len(cur_prefix) :]
-                        return flag
-                return None
+        if ignore_prefixes:
+            # Ignore prefixes in ignore_prefixes
+            flags = [f for f in flags if f[1] not in ignore_prefixes]
 
-            # Only get the flags that start with any of the prefixes in flag_prefix
-            # We will also remove the prefix if remove_flag_prefix is True.
-            flags = [_get_flag(f) for f in flags]
-            flags = [f for f in flags if f]
-
+        # Remove the flag prefix if remove_flag_prefix is True
+        if remove_flag_prefix:
+            flags = [f[0][len(f[1]) :] for f in flags if f[1]]
+        else:
+            flags = [f[0] for f in flags]
         return flags
     return []
 
@@ -179,7 +223,7 @@ def column_and_flag_of_column(
             is returned as None.
     """
     if COLUMN_FLAG_SEPARATOR in col:
-        flags = column_flags(
+        flags = get_column_flags(
             col, flag_prefix=flag_prefix, remove_flag_prefix=remove_flag_prefix
         )
         if flags:
