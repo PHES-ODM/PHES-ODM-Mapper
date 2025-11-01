@@ -200,7 +200,8 @@ def get_file_info(
                 return _return_error("File does not exist", orig_file)
 
             if schema is not None:
-                # Make sure the explicit class exists
+                # Make sure the explicit class exists. Since it is specified explicitly, we
+                # make it case-sensitive
                 class_name = get_class(orig_class_name, schema, ignore_case=False)
             else:
                 # No schema provided, so there's no way to know if the class is valid or not.
@@ -219,6 +220,14 @@ def get_file_info(
             class_name = find_class(
                 os.path.splitext(os.path.basename(file))[0], schema, ignore_case=True
             )
+            # If the class name can't be retrieved from the file name, and there is only one
+            # non-tree-root class in the schema, then assume the file is for that single class
+            # in the schema.
+            if class_name is None:
+                all_classes = all_classes_without_tree_root(schema)
+                if len(all_classes) == 1:
+                    class_name = all_classes[0]
+
             if class_name is None:
                 return _return_error(
                     "File name must match a table name, but none were found", file
