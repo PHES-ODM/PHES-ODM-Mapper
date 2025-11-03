@@ -776,8 +776,8 @@ class WideColumnMapMaker:
 
         # Make sure mapping from source slot to target slot doesn't already exist
         if target_slot_name in slot_derivations:
-            raise ValueError(
-                f"Slot derivation for {target_class_name}.{target_slot_name} (from {source_class_name}.{source_slot_name}) already exists."
+            logger.error(
+                f"Slot derivation for {target_class_name}.{target_slot_name} (from {source_class_name}.{source_slot_name}) already exists. Overwriting the derivation."
             )
 
         # Add mapping from source slot to target slot
@@ -810,15 +810,18 @@ class WideColumnMapMaker:
         flags = {}
         for col in columns:
             target_class_name, target_slot_name = self.get_class_and_slot(col)
-            cur_flags = get_column_flags(col)
-            for flag in cur_flags:
-                flag_prefix = get_flag_prefix(flag)
-                if flag_prefix not in flags:
-                    flags[flag_prefix] = []
-                flags[flag_prefix].append(flag)
 
             if target_class_name is None or target_slot_name is None:
                 continue
+
+            cur_flags = get_column_flags(col)
+            for flag in cur_flags:
+                flag_prefix = get_flag_prefix(flag)
+                if target_class_name not in flags:
+                    flags[target_class_name] = {}
+                if flag_prefix not in flags[target_class_name]:
+                    flags[target_class_name][flag_prefix] = []
+                flags[target_class_name][flag_prefix].append(flag)
 
             # Map from col to class_name.slot_name
             self.add_slot_derivation(
@@ -842,7 +845,7 @@ class WideColumnMapMaker:
             slot_derivations = class_derivations[target_class]["slot_derivations"]
             for flag_prefix in RECOGNIZED_FLAG_PREFIXES:
                 extra_slot = get_extra_slot_for_flag_prefix(flag_prefix)
-                cur_flags = flags.get(flag_prefix, [])
+                cur_flags = flags.get(target_class, {}).get(flag_prefix, [])
                 cur_flags = list(dict.fromkeys(cur_flags))
                 cur_flags = ",".join(cur_flags)
                 slot_derivations[extra_slot] = {
