@@ -13,7 +13,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     WideColumnValues,
     column_and_group_of_column,
     get_extra_slot_for_flag_prefix,
-    GROUP_FLAG_PREFIX,
+    FlagPrefixes,
 )
 from odm_map.utils.extra_and_tracking_slots import (
     is_tracking_slot,
@@ -190,11 +190,15 @@ class WideColumnIDCodeMaker:
                             class_linkages[class_name][target_class] = {
                                 "source_slot": [
                                     TrackingSlots.SOURCE_FILE_AND_ROW,
-                                    get_extra_slot_for_flag_prefix(GROUP_FLAG_PREFIX),
+                                    get_extra_slot_for_flag_prefix(
+                                        FlagPrefixes.GROUP_FLAG_PREFIX
+                                    ),
                                 ],
                                 "target_slot": [
                                     TrackingSlots.SOURCE_FILE_AND_ROW,
-                                    get_extra_slot_for_flag_prefix(GROUP_FLAG_PREFIX),
+                                    get_extra_slot_for_flag_prefix(
+                                        FlagPrefixes.GROUP_FLAG_PREFIX
+                                    ),
                                 ],
                             }
                         else:

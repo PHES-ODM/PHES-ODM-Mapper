@@ -17,6 +17,7 @@ class ConfigKeys:
     SEE_HEADERS_SLOT = "slot"
 
 
+# Various values used in wide column names
 class WideColumnValues:
     COLUMN_PART_SEPARATOR = "_"
     COLUMN_MEASURE_TAG = "mes"
@@ -27,7 +28,11 @@ class WideColumnValues:
     NR_TAG = "NR"
     VALUE_TAG = "value"
 
+    # Separates the flags from the column name. eg. with qr_qualityReports.o123, the dot is the separator.
+    COLUMN_FLAG_SEPARATOR = "."
 
+
+# Column names used in the expanded measures table
 class MeasureTableColumns:
     COMPARTMENT = "mr_compartment"
     SPECIMEN = "mr_specimen"
@@ -39,6 +44,7 @@ class MeasureTableColumns:
     VALUE = "mr_value"
 
 
+# Column names used in the expanded protocolSteps table
 class ProtocolStepsTableColumns:
     METHOD = "ps_method"
     MEASURE = "ps_measure"
@@ -48,25 +54,24 @@ class ProtocolStepsTableColumns:
     INDEX = "ps_index"
 
 
+# Recognized flag prefixes
+class FlagPrefixes:
+    # Group prefix, to group values together
+    GROUP_FLAG_PREFIX = "g"
+
+    # Linking prefix, to specify which value should be linked
+    LINK_FLAG_PREFIX = "l"
+
+
+# List of all recognized prefixes. These are all the values in class FlagPrefixes
+RECOGNIZED_FLAG_PREFIXES = [
+    getattr(FlagPrefixes, f) for f in dir(FlagPrefixes) if not f.startswith("_")
+]
+
 # For columns that have multiple values (eg. in_2_AND_name_insType), the value in the row for the
 # column has multiple sub-values, each separated by AND_VALUE_SEPARATOR (eg. 24.12 has the values
 # 24 and 12, if the AND_VALUE_SEPARATOR is ".")
 AND_VALUE_SEPARATOR = "."
-
-# Separates the flags from the column name. eg. with qr_qualityReports.o123, the dot is the separator.
-COLUMN_FLAG_SEPARATOR = "."
-
-# Group prefix, to group values together
-GROUP_FLAG_PREFIX = "g"
-
-# Linking prefix, to specify which value should be linked
-LINK_FLAG_PREFIX = "l"
-
-# All prefixes that we currently recognize
-RECOGNIZED_FLAG_PREFIXES = [
-    GROUP_FLAG_PREFIX,
-    LINK_FLAG_PREFIX,
-]
 
 
 def get_flag_prefix(flag_value: str) -> Optional[str]:
@@ -129,7 +134,7 @@ def get_column_flags(
     Returns:
         List[str]: A list of flags. If no flags then the empty array [] is returned.
     """
-    if COLUMN_FLAG_SEPARATOR in col:
+    if WideColumnValues.COLUMN_FLAG_SEPARATOR in col:
         if isinstance(flag_prefix, str):
             flag_prefix = [flag_prefix]
         if isinstance(ignore_prefixes, str):
@@ -138,7 +143,7 @@ def get_column_flags(
         if not flag_prefix:
             flag_prefix = RECOGNIZED_FLAG_PREFIXES
         # Get all flags that are not integers
-        flags = col.split(COLUMN_FLAG_SEPARATOR)[1:]
+        flags = col.split(WideColumnValues.COLUMN_FLAG_SEPARATOR)[1:]
         flags = [f for f in flags if not f.isdigit()]
         # Get the flag prefix for all flags
         flags = [(f, get_flag_prefix(f)) for f in flags]
@@ -199,7 +204,9 @@ def column_and_group_of_column(
             group is returned.
     """
     col, flags = column_and_flags_of_column(
-        col, flag_prefix=GROUP_FLAG_PREFIX, remove_flag_prefix=remove_flag_prefix
+        col,
+        flag_prefix=FlagPrefixes.GROUP_FLAG_PREFIX,
+        remove_flag_prefix=remove_flag_prefix,
     )
     if flags:
         return col, flags[0]
@@ -230,7 +237,7 @@ def column_and_flags_of_column(
             the flags of the column that starts with flag_prefix. If no flags are found in col
             then the flag is returned as None.
     """
-    if COLUMN_FLAG_SEPARATOR in col:
+    if WideColumnValues.COLUMN_FLAG_SEPARATOR in col:
         flags = get_column_flags(
             col, flag_prefix=flag_prefix, remove_flag_prefix=remove_flag_prefix
         )
@@ -250,8 +257,8 @@ def column_without_flags(col: str) -> str:
     Returns:
         str: The column with all flags removed.
     """
-    if COLUMN_FLAG_SEPARATOR in col:
-        return col.split(COLUMN_FLAG_SEPARATOR, maxsplit=1)[0]
+    if WideColumnValues.COLUMN_FLAG_SEPARATOR in col:
+        return col.split(WideColumnValues.COLUMN_FLAG_SEPARATOR, maxsplit=1)[0]
     return col
 
 
@@ -272,4 +279,4 @@ def column_with_flags(col: str, flags: Union[str, List[str]]) -> str:
         return col
     if isinstance(flags, str):
         flags = [flags]
-    return f"{col}{COLUMN_FLAG_SEPARATOR}{COLUMN_FLAG_SEPARATOR.join(flags)}"
+    return f"{col}{WideColumnValues.COLUMN_FLAG_SEPARATOR}{WideColumnValues.COLUMN_FLAG_SEPARATOR.join(flags)}"
