@@ -198,15 +198,18 @@ def column_and_group_of_column(
             If there is no group, then the group is returned as None. Only the first
             group is returned.
     """
-    return column_and_flag_of_column(
+    col, flags = column_and_flags_of_column(
         col, flag_prefix=GROUP_FLAG_PREFIX, remove_flag_prefix=remove_flag_prefix
     )
+    if flags:
+        return col, flags[0]
+    return col, None
 
 
-def column_and_flag_of_column(
+def column_and_flags_of_column(
     col: str, flag_prefix: str, remove_flag_prefix: bool = False
 ):
-    """Get the column name (without flags) and the flag with the specified flag_prefix
+    """Get the column name (without flags) and the flags with the specified flag_prefix
     of the specified column. For example, if flag_prefix is "o", then the column
     "qr_qualityFlag.o1" will return the tuple ("qr_qualityFlag", "o1"), and
     "qr_qualityFlag" will return the tuple ("qr_qualityFlag", None).
@@ -218,21 +221,21 @@ def column_and_flag_of_column(
         flag_prefix (str): The flag prefix of the type of flag to retrieve from the column.
             For example, if flag_prefix is "o" then the first flag that starts with "o" is
             returned.
-        remove_flag_prefix (bool): If True then remove the flag prefix from the returned
-            flag. For example, "mr_protocolID.o12" will return "12" if remove_flag_prefix is
+        remove_flag_prefix (bool): If True then remove the flag prefixes from the returned
+            flags. For example, "mr_protocolID.o12" will return "12" if remove_flag_prefix is
             True, but will return "o12" if remove_flag_prefix is False.
 
     Returns:
-        Tuple[str, Optional[str]]: The unflagged column name and the flag of col (where
-            the flag starts with flag_prefix). If no flag is found in col then the flag
-            is returned as None.
+        Tuple[str, Optional[List[str]]]: The column name with all flags removed and a list of
+            the flags of the column that starts with flag_prefix. If no flags are found in col
+            then the flag is returned as None.
     """
     if COLUMN_FLAG_SEPARATOR in col:
         flags = get_column_flags(
             col, flag_prefix=flag_prefix, remove_flag_prefix=remove_flag_prefix
         )
         if flags:
-            return column_without_flags(col), flags[0]
+            return column_without_flags(col), flags
     return column_without_flags(col), None
 
 
