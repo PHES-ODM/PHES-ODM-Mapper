@@ -89,6 +89,15 @@ class ColumnType(str, Enum):
     TRACKING_SLOT = auto()
 
 
+class SeeHeaders:
+    AGGREGATION = "aggregation"
+    COMPARTMENT = "compartment"
+    FRACTION = "fraction"
+    MEASURE = "measure"
+    SPECIMEN = "specimen"
+    UNIT = "unit"
+
+
 # Columns in a DataFrame that have duplicate names will have DUPLICATE_COLUMNS_SEPARATOR
 # in the name, followed by an integer. For example, "myColumn.1" has the same name as
 # "myColumn" (the ".1" was added when loading the data from disk)
@@ -419,21 +428,30 @@ class WideColumnExpander:
         )
 
     def get_resolved_single_part_at_index(
-        self, col_parts: List[List[str]], index: int, row: pd.Series
+        self,
+        col_parts: List[List[str]],
+        index: int,
+        row: pd.Series,
+        allowable_see_headers: Optional[Union[str, List[str]]],
     ) -> Any:
         """Get the value of the part at the index of the list of column parts (as returned
         by get_all_parts). If the part at the index has a list of values, then only the
         first value is returned.
 
         This function will also resolve to other values if required. If it is NR, then
-        None is retrieved. If it is a "see other header" part, such as hCo, hUn, hAg, etc.,
-        then it will retrieve the value at the header in the row.
+        None is returned. If it is a "see other header" part, such as hCo, hUn, hAg, etc.,
+        then it will retrieve the value at the other header in the row. If the other header
+        does not exist then None is returned.
 
         Args:
             col_parts (List[List[str]]): The list of parts, as retrieved from get_all_parts.
             index (int): The index in col_parts to get the value of.
             row (pd.Series): The input row, where we can retrieve values from if the
                 resulting part refers to another header (eg. if the part is hCo, hUn, hAg, etc.)
+            allowable_see_headers (Union[str, List[str]]): One or more allowable header types, from
+                the class SeeHeaders. If empty then we will not retrieve the value from a different
+                column, so the value will be returned unchanged except if it's something like
+                "NR", in which case None is returned.
 
         Returns:
             Any: The single value at the index in the column parts. This might be the string
@@ -442,9 +460,25 @@ class WideColumnExpander:
         val = col_parts[index][0]
         if val == WideColumnValues.NR_TAG:
             return None
-        see_column = self.config.get(ConfigKeys.SEE_HEADERS, {}).get(val, None)
-        if see_column:
-            return row.get(see_column, None)
+
+        # Get the headers config, for all allowable_see_headers
+        see_headers = self.config.get(ConfigKeys.SEE_HEADERS, {})
+        if isinstance(allowable_see_headers, str):
+            allowable_see_headers = [allowable_see_headers]
+        if allowable_see_headers:
+            see_headers = {
+                k: v for k, v in see_headers.items() if k in allowable_see_headers
+            }
+
+        # Get the slot that the see headers value points to (eg. hAg points to mr_aggregation)
+        see_headers = {
+            v[ConfigKeys.SEE_HEADERS_SHORT_NAME]: v[ConfigKeys.SEE_HEADERS_SLOT]
+            for v in see_headers.values()
+        }
+        if val in see_headers:
+            return row.get(see_headers[val], None)
+
+        # This is not a see headers value, so return the value unchanged.
         return val
 
     def get_and_values(self, val: Any, num_values: int) -> List[Any]:
@@ -652,9 +686,13 @@ class WideColumnExpander:
 
         table_short_name = col_parts[0][0]
         attribute = col_parts[6][0]
-        ps_unit = self.get_resolved_single_part_at_index(col_parts, 3, row)
-        ps_aggregation = self.get_resolved_single_part_at_index(col_parts, 4, row)
-        ps_index = self.get_resolved_single_part_at_index(col_parts, 5, row)
+        ps_unit = self.get_resolved_single_part_at_index(
+            col_parts, 3, row, SeeHeaders.UNIT
+        )
+        ps_aggregation = self.get_resolved_single_part_at_index(
+            col_parts, 4, row, SeeHeaders.AGGREGATION
+        )
+        ps_index = self.get_resolved_single_part_at_index(col_parts, 5, row, None)
 
         # Make sure the table short name is for protocolSteps
         if table_short_name != WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG:
@@ -701,7 +739,9 @@ class WideColumnExpander:
             ps_measure = self.select_matching_enum(value, candidate_enums)
         elif len(col_parts[2]) == 1:
             # Get the measure
-            ps_measure = self.get_resolved_single_part_at_index(col_parts, 2, row)
+            ps_measure = self.get_resolved_single_part_at_index(
+                col_parts, 2, row, SeeHeaders.MEASURE
+            )
         else:
             logger.warning(f"Measure part of protocol steps column is missing: {col}")
             return False
@@ -808,8 +848,8 @@ class WideColumnExpander:
             candidate_enums = col_parts[2][2:]
             ps_method = self.select_matching_enum(value, candidate_enums)
         elif len(col_parts[2]) == 1:
-            # Third part has only one aprt, get the method
-            ps_method = self.get_resolved_single_part_at_index(col_parts, 2, row)
+            # Third part has only one part, get the method
+            ps_method = self.get_resolved_single_part_at_index(col_parts, 2, row, None)
         else:
             logger.warning(f"Method part of protocol steps column is missing: {col}")
             return False
@@ -865,19 +905,31 @@ class WideColumnExpander:
         if col_parts is None:
             return False
 
-        mr_compartment = self.get_resolved_single_part_at_index(col_parts, 0, row)
-        mr_specimen = self.get_resolved_single_part_at_index(col_parts, 1, row)
-        mr_fraction = self.get_resolved_single_part_at_index(col_parts, 2, row)
+        mr_compartment = self.get_resolved_single_part_at_index(
+            col_parts, 0, row, SeeHeaders.COMPARTMENT
+        )
+        mr_specimen = self.get_resolved_single_part_at_index(
+            col_parts, 1, row, SeeHeaders.SPECIMEN
+        )
+        mr_fraction = self.get_resolved_single_part_at_index(
+            col_parts, 2, row, SeeHeaders.FRACTION
+        )
         mr_measure = None
-        mr_unit = self.get_resolved_single_part_at_index(col_parts, 4, row)
-        mr_aggregation = self.get_resolved_single_part_at_index(col_parts, 5, row)
-        mr_index = self.get_resolved_single_part_at_index(col_parts, 6, row)
-        attribute = self.get_resolved_single_part_at_index(col_parts, 7, row)
+        mr_unit = self.get_resolved_single_part_at_index(
+            col_parts, 4, row, SeeHeaders.UNIT
+        )
+        mr_aggregation = self.get_resolved_single_part_at_index(
+            col_parts, 5, row, SeeHeaders.AGGREGATION
+        )
+        mr_index = self.get_resolved_single_part_at_index(col_parts, 6, row, None)
+        attribute = self.get_resolved_single_part_at_index(col_parts, 7, row, None)
         table_short_name = self.get_table_short_name("measures")
 
         if len(col_parts[3]) == 1:
             # The measure part has a single value, so get the value
-            mr_measure = self.get_resolved_single_part_at_index(col_parts, 3, row)
+            mr_measure = self.get_resolved_single_part_at_index(
+                col_parts, 3, row, SeeHeaders.MEASURE
+            )
         else:
             # The measure part has multiple values, so it is a boolean part.
             bool_part = col_parts[3][1]
