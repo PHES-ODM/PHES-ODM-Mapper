@@ -24,17 +24,9 @@ from odm_map.utils.schema_utils import (
     all_classes_without_tree_root,
     get_primary_key,
 )
+from odm_map.id_generator.generator import IDCodeColumns
 
 logger = get_logger(__name__)
-
-
-# All columns that should be in the ID code generation config file
-class IDCodeColumns:
-    CLASS = "class"
-    SLOT = "slot"
-    # The code columns are in the format f"{CODE_PREFIX}{CODE_SUFFIX}".format(idx), eg "code000", "code001", etc
-    CODE_PREFIX = "code"
-    CODE_SUFFIX = "{:03d}"
 
 
 class MetaConfigKeys:
