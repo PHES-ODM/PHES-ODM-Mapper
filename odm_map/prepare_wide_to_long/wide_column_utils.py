@@ -228,8 +228,8 @@ def column_and_flag_of_column(
             col, flag_prefix=flag_prefix, remove_flag_prefix=remove_flag_prefix
         )
         if flags:
-            return col, flags[0]
-    return col, None
+            return column_without_flags(col), flags[0]
+    return column_without_flags(col), None
 
 
 def column_without_flags(col: str) -> str:
