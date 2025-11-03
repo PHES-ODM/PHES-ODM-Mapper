@@ -30,12 +30,24 @@ tables_to_shortnames:
     zones: zo
 
 see_headers:
-    hAg: mr_aggregation
-    hCo: mr_compartment
-    hFr: mr_fraction
-    hMe: mr_measure
-    hSp: mr_specimen
-    hUn: mr_unit
+    aggregation:
+        short_name: hAg
+        slot: mr_aggregation
+    compartment:
+        short_name: hCo
+        slot: mr_compartment
+    fraction:
+        short_name: hFr
+        slot: mr_fraction
+    measure:
+        short_name: hMe
+        slot: mr_measure
+    specimen:
+        short_name: hSp
+        slot: mr_specimen
+    unit:
+        short_name: hUn
+        slot: mr_unit
 
 custom_id_code:
     - class: qualityReports

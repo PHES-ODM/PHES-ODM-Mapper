@@ -12,6 +12,10 @@ class ConfigKeys:
     SEE_HEADERS = "see_headers"
     CUSTOM_ID_CODE = "custom_id_code"
 
+    # SEE_HEADERS sub-dictionaries
+    SEE_HEADERS_SHORT_NAME = "short_name"
+    SEE_HEADERS_SLOT = "slot"
+
 
 class WideColumnValues:
     COLUMN_PART_SEPARATOR = "_"
