@@ -137,8 +137,6 @@ class WideColumnIDCodeMaker:
                 dict.fromkeys(class_info[MetaConfigKeys.IMPLICIT_GROUPS_KEY])
             )
 
-        # Go through all classes, create both the ID generation code and the linkage rules between classes
-
         # Go through all classes, create the ID code and the linkage rules for all slots that are foreign keys.
         id_code_df = pd.DataFrame()
         class_linkages = {}
