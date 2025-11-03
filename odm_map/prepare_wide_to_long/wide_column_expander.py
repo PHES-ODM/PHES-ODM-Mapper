@@ -826,29 +826,6 @@ class WideColumnExpander:
 
         return True
 
-    # def get_aggregate_part(self, col_parts: List[List[str]]) -> Tuple[List[str], List[str]]:
-    #     # Return: bool_part, list of columns, list of values in column
-    #     bool_part = None
-
-    #     if len(col_parts[0]) == 1 and col_parts[0][0].isdigit():
-    #         num_aggregate_parts = int(col_parts[0][0])
-    #     else:
-    #         num_aggregate_parts = 0
-
-    #     if num_aggregate_parts > 0:
-    #         if len(col_parts)
-
-    #     if self.is_part_equal_at_index(col_parts, WideColumnValues.OR_TAG, 1):
-    #         bool_part = WideColumnValues.OR_TAG
-    #     elif self.is_part_equal_at_index(col_parts, WideColumnValues.AND_TAG, 1):
-    #         bool_part = WideColumnValues.AND_TAG
-
-    #     if bool_part == WideColumnValues.OR_TAG:
-    #         pass
-    #     elif bool_part == WideColumnValues.AND_TAG:
-    #         pass
-    #     else:
-
     def expand_column_type_measure(
         self,
         col: str,
