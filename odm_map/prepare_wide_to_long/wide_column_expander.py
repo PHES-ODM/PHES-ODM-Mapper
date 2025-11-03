@@ -135,6 +135,9 @@ class WideColumnExpander:
             return ColumnType.TRACKING_SLOT
 
         col_parts = self.get_all_parts(col)
+        if col_parts is None:
+            return None
+
         num_parts = len(col_parts)
 
         if num_parts == 0:
@@ -147,7 +150,8 @@ class WideColumnExpander:
             len(col_parts[0]) == 1
             and col_parts[0][0] in self.config[ConfigKeys.TABLES_TO_SHORTNAMES].values()
         ):
-            # Column starts with a table short name (eg. "sm_..."). Could be a protocol step (measure or method) or an attribute.
+            # Column starts with a table short name (eg. "sm_..."). Could be a protocol step (measure/ps_mes or method/ps_met)
+            # or an attribute.
             if num_parts <= 1:
                 logger.warning(
                     f"Column that starts with a table short name must have at least 2 parts, the column will be ignored: {col}"
@@ -161,25 +165,28 @@ class WideColumnExpander:
                 if self.is_part_equal_at_index(
                     col_parts, WideColumnValues.COLUMN_MEASURE_TAG, 1
                 ):
-                    if num_parts != 7 and num_parts != 8:
+                    if num_parts != 7:
                         logger.warning(
-                            f"Protocol steps measure must have 7 or 8 parts, instead {num_parts} parts were found: {col}"
+                            f"Protocol steps measure must have 7, instead {num_parts} parts were found. Column ignored: {col}"
                         )
+                        return None
                     return ColumnType.PROTOCOL_STEP_MEASURE
                 elif self.is_part_equal_at_index(
                     col_parts, WideColumnValues.COLUMN_METHOD_TAG, 1
                 ):
-                    if num_parts != 4 and num_parts != 5:
+                    if num_parts != 4:
                         logger.warning(
-                            f"Protocol steps measure must have 4 or 5 parts, instead {num_parts} parts were found: {col}"
+                            f"Protocol steps measure must have 4 parts, instead {num_parts} parts were found. Column ignored: {col}"
                         )
+                        return None
                     return ColumnType.PROTOCOL_STEP_METHOD
-
-            # This is an attribute column (eg. or_organizationID)
-            return ColumnType.ATTRIBUTE
-        elif num_parts == 8 or num_parts == 9:
+            if num_parts == 2:
+                # This is an attribute column (eg. or_organizationID)
+                return ColumnType.ATTRIBUTE
+        elif num_parts == 8:
             return ColumnType.MEASURE
 
+        logger.warning(f"Unrecognized column type. Ignoring column: {col}")
         return None
 
     def is_part_equal_at_index(
@@ -276,7 +283,7 @@ class WideColumnExpander:
             "implicit_groups": self.implicit_groups,
         }
 
-    def get_all_parts(self, col: str) -> List[List[str]]:
+    def get_all_parts(self, col: str) -> Optional[List[List[str]]]:
         """Get a list of all parts of the specified wide-name column. The parts are separated
         by commas, and can include #_AND and #_OR parts. Each part is a list of strings. Most
         parts will only have one string. #_AND and #_OR parts will contain multiple strings,
@@ -288,45 +295,17 @@ class WideColumnExpander:
             col (str): The wide column name to get all the parts of.
 
         Returns:
-            List[List[str]]: A list of lists of strings. Each sub-list is a separate part
+            Optional[List[List[str]]]: A list of lists of strings. Each sub-list is a separate part
                 of col. If the sub-list is for a part that has #_AND or #_OR, then the sub-list
-                will have 2+# strings, where # is the value preceding _AND or _OR.
+                will have 2+# strings, where # is the value preceding _AND or _OR. None is returned
+                if there is an error in the column, and the column should be ignored.
         """
         col = column_without_flags(col)
-        return list(self.get_next_part(col))
-
-    # def get_single_compound_part(self, col_parts: List[List[str]], idx: int) -> Tuple[List[str], int]:
-    #     parts = []
-    #     # If the current part is an integer, then it should be in the form "#_AND" or "#_OR"
-    #     if len(col_parts[idx]) == 1 and col_parts[idx].isdigit():
-    #         # Next part is an integer, so the whole part is [int, AND/OR]
-    #         parts.append(col_parts[idx])
-    #         idx += 1
-    #         if self.is_part_equal_at_index(col_parts, idx, WideColumnValues.OR_TAG) or self.is_part_equal_at_index(col_parts, idx, WideColumnValues.AND_TAG):
-    #             parts.append(col_parts[idx])
-    #             idx += 1
-    #             return parts, idx
-    #         return None, None
-
-    #     # The current part can't be an underscored part (eg. "_flowmeter_")
-    #     if self.is_part_equal_at_index(col_parts, "", idx):
-    #         return None, None
-
-    #     parts.append(col_parts[idx])
-    #     idx += 1
-
-    #     if self.is_part_equal_at_index(col_parts, "", idx):
-    #         # The next part is an underscored part
-    #         idx += 1
-    #         if self.is_part_equal_at_index(col_parts, "", idx):
-    #             return None, None
-    #         idx += 1
-    #         if not self.is_part_equal_at_index(col_parts, "", idx+1):
-    #             return None, None
-    #         parts.append(f"_{col_parts[idx]}_")
-    #         idx += 1
-
-    #     return parts, idx
+        try:
+            parts = list(self.get_next_part(col))
+        except Exception:
+            return None
+        return parts
 
     def get_next_part(self, col: str) -> Generator[List[str], None, None]:
         """Generator to retrieve all parts of the specified column. See get_all_parts for details.
@@ -336,7 +315,10 @@ class WideColumnExpander:
 
         Raises:
             ValueError: An error was found in the column. For example, if a #_OR or #_AND tag is found
-                but the specified number of parts (#) is not found after the tag.
+                but the specified number of parts (#) is not found after the tag, or an underscored
+                value (eg. "_myvalue_") is missing one of the underscores. In these cases an warning
+                is logged and the exception raised with the same warning. The caller does not need
+                to re-log the warning.
 
         Yields:
             Generator[List[str], None, None]: Returns each part in order. Each part is a list of strings.
@@ -365,9 +347,9 @@ class WideColumnExpander:
                         try:
                             expected_parts = int(cur_part)
                         except Exception:
-                            # @TODO: This should be an error
-                            expected_parts = 0
-                            pass
+                            msg = f"Boolean aggregation ({next_part}) must be preceded by a number, instead '{cur_part}' was found. Ignoring column: {col}"
+                            logger.warning(msg)
+                            raise ValueError(msg)
                         parts = [cur_part, next_part]
 
                         # Skip the number and the boolean part (ie. cur_part and next_part)
@@ -381,9 +363,16 @@ class WideColumnExpander:
                                 # This does not contribute to num_parts_added, it just represents the value that the previous part
                                 # should take on in the row
                                 idx += 1
-                                if col_parts[idx + 1] == "":
+                                if (
+                                    idx + 1 < len(col_parts)
+                                    and col_parts[idx + 1] == ""
+                                ):
                                     parts.append(f"_{col_parts[idx]}_")
                                     idx += 2
+                                else:
+                                    msg = f"The underscored value '{col_parts[idx]}' must have both a preceding and trailing underscore. Ignoring column: {col}"
+                                    logger.warning(msg)
+                                    raise ValueError(msg)
                             else:
                                 if num_parts_added >= expected_parts:
                                     break
@@ -428,24 +417,6 @@ class WideColumnExpander:
         return self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).get(
             table_long_name, None
         )
-
-    def get_row_index_from_col_parts(self, col_parts: List[List[str]]) -> Optional[int]:
-        """Get the row index from the list of column name parts (as returned by get_all_parts()).
-
-        The row index is the last part and should be a number. For example, sm_sampleID_2 has
-        the row index 2.
-
-        Args:
-            col_parts (List[List[str]]): A list of column parts, as returned by get_all_parts.
-
-        Returns:
-            Optional[int]: The row index, or None if there is no row index.
-        """
-        if len(col_parts[-1]) == 1 and col_parts[-1][0].isdigit():
-            row_index = col_parts[-1][0]
-            if row_index.isdigit():
-                return int(row_index)
-        return None
 
     def get_resolved_single_part_at_index(
         self, col_parts: List[List[str]], index: int, row: pd.Series
@@ -495,6 +466,11 @@ class WideColumnExpander:
         if val is None:
             return [None] * num_values
 
+        if num_values == 1:
+            return [val]
+        elif num_values == 0:
+            return []
+
         values = str(val).split(AND_VALUE_SEPARATOR)
         if len(values) < num_values:
             logger.warning(
@@ -539,12 +515,13 @@ class WideColumnExpander:
         value = row[col]
 
         col_parts = self.get_all_parts(col)
-        row_index = self.get_row_index_from_col_parts(col_parts)
+        if col_parts is None:
+            return False
 
         # First part must be of size 1 (ie. a single table short name)
         if len(col_parts[0]) != 1:
             logger.warning(
-                f"An attribute column must have exactly one value for the first part, instead the values {col_parts[0]} were found, column will not be expanded: {col}"
+                f"An attribute column must have exactly one value for the first part, instead the values {col_parts[0]} were found. Ignoring column: {col}"
             )
             return False
 
@@ -568,7 +545,7 @@ class WideColumnExpander:
                 slot_defn = None
             if not slot_defn:
                 logger.warning(
-                    f"The slot {col_parts[1][0]} does not exist in the table {table_long_name}, column will not be expanded: {col}"
+                    f"The slot {col_parts[1][0]} does not exist in the table {table_long_name}. Ignoring column: {col}"
                 )
 
             # Expand the attribute
@@ -576,7 +553,7 @@ class WideColumnExpander:
                 {
                     f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{col_parts[1][0]}": value,
                 },
-                row_index=row_index,
+                row_index=None,
                 column_flags=column_flags,
                 column_group=column_group if always_use_group else None,
             )
@@ -589,8 +566,8 @@ class WideColumnExpander:
 
             # For attribute columns, only the AND_TAG is allowed
             if bool_part != WideColumnValues.AND_TAG:
-                logger.error(
-                    f"Boolean in attribute column must be '{WideColumnValues.AND_TAG}': {col}"
+                logger.warning(
+                    f"Boolean in attribute column must be '{WideColumnValues.AND_TAG}'. Ignoring column: {col}"
                 )
                 return False
 
@@ -620,7 +597,7 @@ class WideColumnExpander:
 
             self.update_current_expanded_rows(
                 new_row,
-                row_index=row_index,
+                row_index=None,
                 column_flags=column_flags,
                 column_group=column_group if use_column_group else None,
             )
@@ -663,15 +640,16 @@ class WideColumnExpander:
         value = row[col]
 
         col_parts = self.get_all_parts(col)
+        if col_parts is None:
+            return False
 
         # First part must be of size 1 (ie. a single table short name)
         if len(col_parts[0]) != 1:
             logger.warning(
-                f"Protocol step measure column must have exactly one value for the first part, instead the values {col_parts[0]} were found, column will not be expanded: {col}"
+                f"Protocol step measure column must have exactly one value for the first part, instead the values {col_parts[0]} were found. Ignoring column: {col}"
             )
             return False
 
-        row_index = self.get_row_index_from_col_parts(col_parts)
         table_short_name = col_parts[0][0]
         attribute = col_parts[6][0]
         ps_unit = self.get_resolved_single_part_at_index(col_parts, 3, row)
@@ -700,8 +678,21 @@ class WideColumnExpander:
 
             # Only OR tags are allowed for protocolSteps measures
             if bool_part != WideColumnValues.OR_TAG:
-                logger.error(
-                    f"Protocol steps measure column with a boolean third part must be '{WideColumnValues.OR_TAG}': {col}"
+                logger.warning(
+                    f"Protocol steps measure column with a boolean third part must be '{WideColumnValues.OR_TAG}'. Ignoring column: {col}"
+                )
+                return False
+            if not col_parts[2][0].isdigit():
+                logger.warning(
+                    f"An OR aggregation requires a preceding integer value, instead '{col_parts[2][0]}' was found. Ignoring column: {col}"
+                )
+                return False
+
+            num_candidate_enums = int(col_parts[2][0])
+
+            if num_candidate_enums != len(col_parts[2]) - 2:
+                logger.warning(
+                    f"Specified OR aggregation must have {num_candidate_enums} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
                 )
                 return False
 
@@ -723,7 +714,7 @@ class WideColumnExpander:
                 ProtocolStepsTableColumns.INDEX: ps_index,
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
-            row_index=row_index,
+            row_index=None,
             column_flags=column_flags,
             column_group=column_group,
         )
@@ -766,15 +757,16 @@ class WideColumnExpander:
         value = row[col]
 
         col_parts = self.get_all_parts(col)
+        if col_parts is None:
+            return False
 
         # First part must be of size 1 (ie. a single table short name)
         if len(col_parts[0]) != 1:
             logger.warning(
-                f"Protocol step method column must have exactly one value for the first part, instead the values {col_parts[0]} were found, column will not be expanded: {col}"
+                f"Protocol step method column must have exactly one value for the first part, instead the values {col_parts[0]} were found. Ignoring column: {col}"
             )
             return False
 
-        row_index = self.get_row_index_from_col_parts(col_parts)
         table_short_name = col_parts[0][0]
         attribute = col_parts[3][0]
 
@@ -799,8 +791,16 @@ class WideColumnExpander:
 
             # Only OR tags are allowed for protocolSteps methods
             if bool_part != WideColumnValues.OR_TAG:
-                logger.error(
-                    f"Protocol steps method column with a boolean third part must be '{WideColumnValues.OR_TAG}': {col}"
+                logger.warning(
+                    f"Protocol steps method column with a boolean third part must be '{WideColumnValues.OR_TAG}'. Ignoring column: {col}"
+                )
+                return False
+
+            num_candidate_enums = int(col_parts[2][0])
+
+            if num_candidate_enums != len(col_parts[2]) - 2:
+                logger.warning(
+                    f"Specified OR aggregation must have {num_candidate_enums} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
                 )
                 return False
 
@@ -819,7 +819,7 @@ class WideColumnExpander:
                 ProtocolStepsTableColumns.METHOD: ps_method,
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
-            row_index=row_index,
+            row_index=None,
             column_flags=column_flags,
             column_group=column_group,
         )
@@ -885,7 +885,8 @@ class WideColumnExpander:
         value = row[col]
 
         col_parts = self.get_all_parts(col)
-        row_index = self.get_row_index_from_col_parts(col_parts)
+        if col_parts is None:
+            return False
 
         mr_compartment = self.get_resolved_single_part_at_index(col_parts, 0, row)
         mr_specimen = self.get_resolved_single_part_at_index(col_parts, 1, row)
@@ -906,8 +907,8 @@ class WideColumnExpander:
 
             # For measure columns, only the OR_TAG is allowed
             if bool_part != WideColumnValues.OR_TAG:
-                logger.error(
-                    f"Measure column with a boolean fourth part must be '{WideColumnValues.OR_TAG}': {col}"
+                logger.warning(
+                    f"Measure column with a boolean fourth part must be '{WideColumnValues.OR_TAG}'. Ignoring column: {col}"
                 )
                 return False
 
@@ -925,7 +926,7 @@ class WideColumnExpander:
                 MeasureTableColumns.INDEX: mr_index,
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
-            row_index=row_index,
+            row_index=None,
             column_flags=column_flags,
             column_group=column_group,
         )
@@ -1212,9 +1213,6 @@ class WideColumnExpander:
             # Get the type of the column
             column_type = self.get_column_type(col)
             if column_type is None:
-                logger.warning(
-                    f"Unrecognized column type, the column will be ignored: {col}"
-                )
                 continue
 
             # Get or generate the column group
@@ -1292,9 +1290,6 @@ class WideColumnExpander:
                         always_use_group=always_use_group,
                     )
                 else:
-                    logger.warning(
-                        f"Unrecognized column type, the column will be ignored: {col}"
-                    )
                     skip_column = True
 
                 if skip_column:
