@@ -11,7 +11,7 @@ from odm_map.utils.general_utils import read_data_frame, save_data_frame
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     ConfigKeys,
     WideColumnValues,
-    column_and_group_of_column,
+    column_and_groups_of_column,
     get_extra_slot_for_flag_prefix,
     FlagPrefixes,
 )
@@ -72,7 +72,7 @@ class WideColumnIDCodeMaker:
                 continue
 
             # Get the current class (class_name), slot (slot_name), and group (group_name)
-            col_no_group, group_name = column_and_group_of_column(col)
+            col_no_group, group_names = column_and_groups_of_column(col)
             parts = col_no_group.split(WideColumnValues.COLUMN_PART_SEPARATOR)
             if len(parts) != 2:
                 logger.warning(
@@ -82,7 +82,11 @@ class WideColumnIDCodeMaker:
             class_short_name, slot_name = parts
             class_name = self.get_table_long_name(class_short_name)
 
-            yield class_name, class_short_name, slot_name, group_name
+            if not group_names:
+                group_names = [group_names]
+
+            for group_name in group_names:
+                yield class_name, class_short_name, slot_name, group_name
 
     def make(
         self,

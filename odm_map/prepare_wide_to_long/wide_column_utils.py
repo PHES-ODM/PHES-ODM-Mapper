@@ -161,11 +161,15 @@ def get_column_flags(
             flags = [f[0][len(f[1]) :] for f in flags if f[1]]
         else:
             flags = [f[0] for f in flags]
+
+        # Remove duplicates
+        flags = list(dict.fromkeys(flags))
+
         return flags
     return []
 
 
-def group_of_column(col: str, remove_flag_prefix: bool = False) -> Optional[str]:
+def groups_of_column(col: str, remove_flag_prefix: bool = False) -> List[str]:
     """Get the group of the specified column.
 
     The group is the string that follows the colon in the column name. For example,
@@ -180,14 +184,15 @@ def group_of_column(col: str, remove_flag_prefix: bool = False) -> Optional[str]
             returned.
 
     Returns:
-        Optional[str]: The group of the column, or None if no group exists.
+        List[str]: The groups of the column. If no group exists then an empty
+            list is returned.
     """
-    return column_and_group_of_column(col, remove_flag_prefix=remove_flag_prefix)[1]
+    return column_and_groups_of_column(col, remove_flag_prefix=remove_flag_prefix)[1]
 
 
-def column_and_group_of_column(
+def column_and_groups_of_column(
     col: str, remove_flag_prefix: bool = False
-) -> Tuple[str, Optional[str]]:
+) -> Tuple[str, List[str]]:
     """Get the column name (without group) and the group of the specified column.
     For example, "qr_qualityFlag.o1" will return ("qr_qualityFlag", "o1"), and
     "qr_qualityFlag" will return ("qr_qualityFlag", None).
@@ -199,18 +204,14 @@ def column_and_group_of_column(
             True, but will return "o12" if remove_flag_prefix is False.
 
     Returns:
-        Tuple[str, Optional[str]]: The ungrouped column name and the group of col.
-            If there is no group, then the group is returned as None. Only the first
-            group is returned.
+        Tuple[str, List[str]]: The ungrouped column name and the groups of col.
+            If there is no group, then the group is returned as an empty list.
     """
-    col, flags = column_and_flags_of_column(
+    return column_and_flags_of_column(
         col,
         flag_prefix=FlagPrefixes.GROUP_FLAG_PREFIX,
         remove_flag_prefix=remove_flag_prefix,
     )
-    if flags:
-        return col, flags[0]
-    return col, None
 
 
 def column_and_flags_of_column(
@@ -235,7 +236,7 @@ def column_and_flags_of_column(
     Returns:
         Tuple[str, Optional[List[str]]]: The column name with all flags removed and a list of
             the flags of the column that starts with flag_prefix. If no flags are found in col
-            then the flag is returned as None.
+            then the flag is returned as an empty list.
     """
     if WideColumnValues.COLUMN_FLAG_SEPARATOR in col:
         flags = get_column_flags(
@@ -243,7 +244,7 @@ def column_and_flags_of_column(
         )
         if flags:
             return column_without_flags(col), flags
-    return column_without_flags(col), None
+    return column_without_flags(col), []
 
 
 def column_without_flags(col: str) -> str:

@@ -72,7 +72,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     ProtocolStepsTableColumns,
     AND_VALUE_SEPARATOR,
     FlagPrefixes,
-    group_of_column,
+    groups_of_column,
     column_without_flags,
     column_with_flags,
     get_column_flags,
@@ -1209,11 +1209,13 @@ class WideColumnExpander:
                 Using this group number, or any number greater than it, will result in group
                 names that are not already used in the DataFrame.
         """
-        columns = [group_of_column(c, remove_flag_prefix=True) for c in df.columns]
-        columns = [int(c) for c in columns if c and c.isdigit()]
-        if len(columns) == 0:
+        groups = [groups_of_column(c, remove_flag_prefix=True) for c in df.columns]
+        groups = [g for g in groups if g]
+        groups = [g for sub in groups for g in sub]
+        groups = [int(c) for c in groups if c and c.isdigit()]
+        if len(groups) == 0:
             return 0
-        return max(columns) + 1
+        return max(groups) + 1
 
     def expand_single(self, df: pd.DataFrame) -> pd.DataFrame:
         """Expand a single input/DataFrame.
@@ -1236,7 +1238,7 @@ class WideColumnExpander:
         # Implicit groups are those that are generated in code because the original data does not have a group in the column name (eg. qr_qualityFlags)
         self.implicit_groups = []
 
-        # For all columns, generate the some meta data for the column that is used for expanding the columns
+        # For all columns, generate the meta data for the column that is used for expanding the columns
         column_data = []
         for column_index, col in enumerate(df.columns):
             # Get the type of the column
@@ -1245,11 +1247,13 @@ class WideColumnExpander:
                 continue
 
             # Get or generate the column group
-            column_group = group_of_column(col)
-            if column_group is None:
+            column_groups = groups_of_column(col)
+            if not column_groups:
                 # Column group not available, generate a new one
                 explicit_group = False
-                column_group = f"{FlagPrefixes.GROUP_FLAG_PREFIX}{column_index + first_group_number}"
+                column_groups = [
+                    f"{FlagPrefixes.GROUP_FLAG_PREFIX}{column_index + first_group_number}"
+                ]
             else:
                 explicit_group = True
 
@@ -1259,14 +1263,14 @@ class WideColumnExpander:
             )
 
             if explicit_group:
-                self.explicit_groups.append(column_group)
+                self.explicit_groups.extend(column_groups)
             else:
-                self.implicit_groups.append(column_group)
+                self.implicit_groups.extend(column_groups)
 
             cur_data = {
                 "column": col,
                 "column_index": column_index,
-                "column_group": column_group,
+                "column_groups": column_groups,
                 "explicit_group": explicit_group,
                 "column_type": column_type,
                 "column_flags": column_flags,
@@ -1282,53 +1286,55 @@ class WideColumnExpander:
             for cur_data in column_data_copy:
                 col = cur_data["column"]
                 column_index = cur_data["column_index"]
-                column_group = cur_data["column_group"]
+                column_groups = cur_data["column_groups"]
                 column_flags = cur_data["column_flags"]
                 explicit_group = cur_data["explicit_group"]
                 column_type = cur_data["column_type"]
                 always_use_group = explicit_group
 
-                if column_type == ColumnType.ATTRIBUTE:
-                    skip_column = not self.expand_column_type_attribute(
-                        col,
-                        row,
-                        column_flags=column_flags,
-                        column_group=column_group,
-                        always_use_group=always_use_group,
-                    )
-                elif column_type == ColumnType.PROTOCOL_STEP_MEASURE:
-                    skip_column = not self.expand_column_type_protocol_step_measure(
-                        col,
-                        row,
-                        column_flags=column_flags,
-                        column_group=column_group,
-                        always_use_group=always_use_group,
-                    )
-                elif column_type == ColumnType.PROTOCOL_STEP_METHOD:
-                    skip_column = not self.expand_column_type_protocol_step_method(
-                        col,
-                        row,
-                        column_flags=column_flags,
-                        column_group=column_group,
-                        always_use_group=always_use_group,
-                    )
-                elif column_type == ColumnType.MEASURE:
-                    skip_column = not self.expand_column_type_measure(
-                        col,
-                        row,
-                        column_flags=column_flags,
-                        column_group=column_group,
-                        always_use_group=always_use_group,
-                    )
-                else:
-                    skip_column = True
-
-                if skip_column:
-                    if row_idx > 0:
-                        raise RuntimeError(
-                            f"The column {col} was marked to be skipped but should only be marked when processing the first row, instead it is being marked on row {row_idx}."
+                for column_group in column_groups:
+                    if column_type == ColumnType.ATTRIBUTE:
+                        skip_column = not self.expand_column_type_attribute(
+                            col,
+                            row,
+                            column_flags=column_flags,
+                            column_group=column_group,
+                            always_use_group=always_use_group,
                         )
-                    column_data.remove(cur_data)
+                    elif column_type == ColumnType.PROTOCOL_STEP_MEASURE:
+                        skip_column = not self.expand_column_type_protocol_step_measure(
+                            col,
+                            row,
+                            column_flags=column_flags,
+                            column_group=column_group,
+                            always_use_group=always_use_group,
+                        )
+                    elif column_type == ColumnType.PROTOCOL_STEP_METHOD:
+                        skip_column = not self.expand_column_type_protocol_step_method(
+                            col,
+                            row,
+                            column_flags=column_flags,
+                            column_group=column_group,
+                            always_use_group=always_use_group,
+                        )
+                    elif column_type == ColumnType.MEASURE:
+                        skip_column = not self.expand_column_type_measure(
+                            col,
+                            row,
+                            column_flags=column_flags,
+                            column_group=column_group,
+                            always_use_group=always_use_group,
+                        )
+                    else:
+                        skip_column = True
+
+                    if skip_column:
+                        if row_idx > 0:
+                            raise RuntimeError(
+                                f"The column {col} was marked to be skipped but should only be marked when processing the first row, instead it is being marked on row {row_idx}."
+                            )
+                        column_data.remove(cur_data)
+                        break
 
             # Copy over the tracking slots. We do this last to make sure all row indices
             # for the current expanded rows get populated with the tracking info.

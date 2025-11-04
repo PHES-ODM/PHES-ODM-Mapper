@@ -63,7 +63,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     RECOGNIZED_FLAG_PREFIXES,
     get_column_flags,
     get_flag_prefix,
-    group_of_column,
+    groups_of_column,
     column_without_flags,
     get_extra_slot_for_flag_prefix,
 )
@@ -220,7 +220,7 @@ class WideColumnMapMaker:
         global_columns = [
             c
             for c in self.df.columns
-            if group_of_column(c) is None and not is_tracking_slot(c)
+            if not groups_of_column(c) and not is_tracking_slot(c)
         ]
         self.make_derivations(
             self.global_class_derivations, global_columns, group_name=None
@@ -238,8 +238,8 @@ class WideColumnMapMaker:
         # For example, measure:10 has a group of "10". When mapping, all columns with the
         # same group get mapped together to a single long format row, and each group gets
         # its own LinkML-Map schema (with no overlap with other groups).
-        groups = [group_of_column(c) for c in self.df.columns]
-        groups = [c for c in groups if c is not None]
+        groups = [groups_of_column(c) for c in self.df.columns]
+        groups = [c for sub in groups for c in sub]
         # Remove duplicates
         groups = list(dict.fromkeys(groups))
 
@@ -250,7 +250,7 @@ class WideColumnMapMaker:
         for column_group in groups:
             cur_class_derivations = {}
             cur_columns = [
-                c for c in self.df.columns if group_of_column(c) == column_group
+                c for c in self.df.columns if column_group in groups_of_column(c)
             ]
             self.make_derivations(
                 cur_class_derivations, cur_columns, group_name=column_group
@@ -776,8 +776,11 @@ class WideColumnMapMaker:
 
         # Make sure mapping from source slot to target slot doesn't already exist
         if target_slot_name in slot_derivations:
+            prev_populated_from = slot_derivations[target_slot_name].get(
+                "populated_from"
+            )
             logger.error(
-                f"Slot derivation for {target_class_name}.{target_slot_name} (from {source_class_name}.{source_slot_name}) already exists. Overwriting the derivation."
+                f"Slot derivation for {target_class_name}.{target_slot_name} (from {source_class_name}.{source_slot_name}) already exists. Previously populated from {target_class_name}.{prev_populated_from}. Overwriting the derivation."
             )
 
         # Add mapping from source slot to target slot
