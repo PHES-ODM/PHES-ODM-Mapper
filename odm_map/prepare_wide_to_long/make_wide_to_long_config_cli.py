@@ -54,7 +54,9 @@ class MakeWideToLongConfig:
         # will determine which enumeration values protocolSteps.value can take on.
         # These enumeration sets (called mmaSets for "measure, method, attribute sets") are subsets
         # of the larger "methods" and "measurements" sets. The mapping partid_to_mmaset
-        # tells us which mmaSet to use for a given method/measure value.
+        # tells us which mmaSet to use for a given method/measure value. This is also
+        # the case in the measures table, where the value found in measures.measure
+        # determines which values measures.value can take on.
         # Select all rows in data dictionary where mmaSet is not NA
         mma_sets_df = self.df[~pd.isna(self.df["mmaSet"])]
         # Select the rows where partType is any of ["methods", "measurements"]

@@ -1009,22 +1009,25 @@ class WideColumnExpander:
     def select_measure_or_method_for_value(
         self, val: Any, candidate_partids: List[str]
     ) -> Optional[str]:
-        """Given the specified value (which is found in the slot protocolSteps.value), select the part ID
-        whose associated mmaSet contains the value. The returned part ID should be used to populate
-        protocolSteps.method or protocolSteps.measure.
+        """Given the specified value (which is found in the slot protocolSteps.value or measures.value),
+        select the part ID whose associated mmaSet contains the value. The returned part ID should be
+        used to populate protocolSteps.method, protocolSteps.measure, or measures.measure (while the
+        passed in val parameter is used to populated protocolSteps.value or measures.value).
 
-        Each mmaSet is a subset of the methods/measurements enumeration set. When a protocolSteps.method or
-        a protocolSteps.measure value is set, then the protocolSteps.value slot for the row can only take on
-        the values from the mmaSet associated with that measure/method.
+        Each mmaSet is a subset of the methods/measurements enumeration set. When a protocolSteps.method,
+        a protocolSteps.measure, or a measures.measure value is set, then the
+        protocolSteps.value/measures.value slot for the row can only take on the values from the mmaSet
+        associated with that measure/method.
 
         Args:
             val (Any): The enumeration value to find the enumeration for.
-            candidate_partids (List[str]): A list of enumeration names to test. These enumerations must be
-                present in the target schema as passed to the constructor.
+            candidate_partids (List[str]): A list of partIDs that are candidates for setting the
+                protocolSteps.method, protocolSteps.measure, or measures.measure to. The partid we
+                return is the one whose associated mmaSet contains the value val.
 
         Returns:
-            Optional[str]: The enumeration in candidate_partids that val belongs to. If val does not belong
-                to any of the enumerations then None is returned.
+            Optional[str]: The part ID in candidate_partids whose mmaSet val belongs to. If val does not
+                belong to any of the mmaSets then None is returned.
         """
         for check_enum in candidate_partids:
             candidate_set = self.config.get(ConfigKeys.PARTID_TO_MMASET, {}).get(
