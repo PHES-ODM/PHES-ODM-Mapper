@@ -780,7 +780,7 @@ class WideColumnMapMaker:
                 "populated_from"
             )
             logger.error(
-                f"Slot derivation for {target_class_name}.{target_slot_name} (from {source_class_name}.{source_slot_name}) already exists. Previously populated from {target_class_name}.{prev_populated_from}. Overwriting the derivation."
+                f"Slot derivation for {target_class_name}.{target_slot_name} already exists. New populated from {source_class_name}.{source_slot_name}. Previously populated from {target_class_name}.{prev_populated_from}. Overwriting the derivation with the new value."
             )
 
         # Add mapping from source slot to target slot
