@@ -56,10 +56,14 @@ class ProtocolStepsTableColumns:
 
 # Recognized flag prefixes
 class FlagPrefixes:
-    # Group prefix, to group values together
+    # Group prefix, to group values together. All columns that have the same group will be grouped
+    # together in single output rows. This is a special flag that has special handling in code.
     GROUP_FLAG_PREFIX = "g"
 
-    # Linking prefix, to specify which value should be linked
+    # Linking prefix, to specify which value should be linked. For example, l_sampleID will indicate that
+    # the qualityReport should be linked to the sampleID (as opposed to the measureRepID or measureSetRepID).
+    # It is used in ID generation code (eg. in custom ID code specified in the configuration file used
+    # by wide_column_idcode_maker.py)
     LINK_FLAG_PREFIX = "l"
 
 

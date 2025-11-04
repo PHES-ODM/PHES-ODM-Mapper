@@ -757,9 +757,6 @@ class WideColumnMapMaker:
             source_slot_name (str): The source slot (in the source class) to copy from.
             target_class_name (str): The target class to copy to.
             target_slot_name (str): The target slot (in the target class) to copy to.
-
-        Raises:
-            ValueError: A slot derivation for the target class/slot already exists.
         """
         # Add top-level class derivation for class_name if not present
         if target_class_name not in class_derivations:
