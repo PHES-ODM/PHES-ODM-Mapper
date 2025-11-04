@@ -726,17 +726,19 @@ class WideColumnExpander:
                 )
                 return False
 
-            num_candidate_enums = int(col_parts[2][0])
+            num_candidate_measures = int(col_parts[2][0])
 
-            if num_candidate_enums != len(col_parts[2]) - 2:
+            if num_candidate_measures != len(col_parts[2]) - 2:
                 logger.warning(
-                    f"Specified OR aggregation must have {num_candidate_enums} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
+                    f"Specified OR aggregation must have {num_candidate_measures} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
                 )
                 return False
 
-            # Get the measure to use, out of the candidate_enums
-            candidate_enums = col_parts[2][2:]
-            ps_measure = self.select_matching_enum(value, candidate_enums)
+            # Get the measure to use, from candidate_measures
+            candidate_measures = col_parts[2][2:]
+            ps_measure = self.select_measure_or_method_for_value(
+                value, candidate_measures
+            )
         elif len(col_parts[2]) == 1:
             # Get the measure
             ps_measure = self.get_resolved_single_part_at_index(
@@ -836,17 +838,19 @@ class WideColumnExpander:
                 )
                 return False
 
-            num_candidate_enums = int(col_parts[2][0])
+            num_candidate_methods = int(col_parts[2][0])
 
-            if num_candidate_enums != len(col_parts[2]) - 2:
+            if num_candidate_methods != len(col_parts[2]) - 2:
                 logger.warning(
-                    f"Specified OR aggregation must have {num_candidate_enums} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
+                    f"Specified OR aggregation must have {num_candidate_methods} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
                 )
                 return False
 
-            # Get the method to use, out of the candidate_enums
-            candidate_enums = col_parts[2][2:]
-            ps_method = self.select_matching_enum(value, candidate_enums)
+            # Get the method to use, from candidate_methods
+            candidate_methods = col_parts[2][2:]
+            ps_method = self.select_measure_or_method_for_value(
+                value, candidate_methods
+            )
         elif len(col_parts[2]) == 1:
             # Third part has only one part, get the method
             ps_method = self.get_resolved_single_part_at_index(col_parts, 2, row, None)
@@ -941,8 +945,19 @@ class WideColumnExpander:
                 )
                 return False
 
-            candidate_enums = col_parts[3][2:]
-            mr_measure = self.select_matching_enum(value, candidate_enums)
+            num_candidate_measures = int(col_parts[3][0])
+
+            if num_candidate_measures != len(col_parts[3]) - 2:
+                logger.warning(
+                    f"Specified OR aggregation must have {num_candidate_measures} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
+                )
+                return False
+
+            # Get the measure to use, from candidate_measures
+            candidate_measures = col_parts[3][2:]
+            mr_measure = self.select_measure_or_method_for_value(
+                value, candidate_measures
+            )
 
         self.update_current_expanded_rows(
             {
@@ -991,21 +1006,27 @@ class WideColumnExpander:
             )
         return True
 
-    def select_matching_enum(
-        self, val: Any, candidate_enums: List[str]
+    def select_measure_or_method_for_value(
+        self, val: Any, candidate_partids: List[str]
     ) -> Optional[str]:
-        """Given the specified value, find the enumeration in candidate_enums that contains the value.
+        """Given the specified value (which is found in the slot protocolSteps.value), select the part ID
+        whose associated mmaSet contains the value. The returned part ID should be used to populate
+        protocolSteps.method or protocolSteps.measure.
+
+        Each mmaSet is a subset of the methods/measurements enumeration set. When a protocolSteps.method or
+        a protocolSteps.measure value is set, then the protocolSteps.value slot for the row can only take on
+        the values from the mmaSet associated with that measure/method.
 
         Args:
             val (Any): The enumeration value to find the enumeration for.
-            candidate_enums (List[str]): A list of enumeration names to test. These enumerations must be
+            candidate_partids (List[str]): A list of enumeration names to test. These enumerations must be
                 present in the target schema as passed to the constructor.
 
         Returns:
-            Optional[str]: The enumeration in candidate_enums that val belongs to. If val does not belong
+            Optional[str]: The enumeration in candidate_partids that val belongs to. If val does not belong
                 to any of the enumerations then None is returned.
         """
-        for check_enum in candidate_enums:
+        for check_enum in candidate_partids:
             candidate_set = self.config.get(ConfigKeys.PARTID_TO_MMASET, {}).get(
                 check_enum, None
             )
