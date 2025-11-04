@@ -1,34 +1,6 @@
 # Configuration template for ODM v3 wide to long configuration for make_wide_to_long_config_cli.py.
 # To build the final configuration, it uses this config and adds additional keys/values to it.
 
-tables_to_shortnames:
-    accessions: ac
-    addresses: ad
-    calculations: cl
-    contacts: co
-    countries: cu
-    datasets: ds
-    instruments: in
-    languages: la
-    measures: mr
-    measureSets: ms
-    organizations: or
-    parts: pa
-    phActions: pha
-    polygonRelationships: por
-    polygons: po
-    protocolRelationships: pr
-    protocols: pro
-    protocolSteps: ps
-    qualityReports: qr
-    sampleRelationships: sar
-    samples: sas
-    sets: se
-    sites: si
-    translations: tr
-    wideNames: wn
-    zones: zo
-
 see_headers:
     aggregation:
         short_name: hAg
