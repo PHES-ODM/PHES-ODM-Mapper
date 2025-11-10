@@ -32,14 +32,14 @@ expander = WideColumnExpander(
     config="wide_column_config.yaml", source_class_name="odm_wide", target_schema="odm_v3.yaml"
 )
 data_frames = [b for a in data_frames.values() for b in a]
-df = expander.expand(data_files=None, data_frames=[df], output_file=None)
+df, meta_info = expander.expand(data_files=None, data_frames=[df], output_dir=None)
 data_frames = {"odm_wide": [df]}
 
 # Create the LinkML-Map schemas and the LinkML schema for the prepared data in data_frames.
 maker = WideColumnMapMaker(
     config="wide_column_config.yaml", source_class_name="odm_wide", target_schema="odm_v3.yaml"
 )
-input_data_frame = data_frames[SOURCE_CLASS_NAME][0]
+input_data_frame = data_frames["odm_wide"][0]
 maker.make(data_file=None, data_frame=input_data_frame, output_dir="wide_to_long_mappers")
 
 # The directory "wide_to_long_mappers" contains the LinkML-Map schemas for mapping the expanded
