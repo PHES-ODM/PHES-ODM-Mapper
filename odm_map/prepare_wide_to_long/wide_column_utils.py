@@ -51,7 +51,6 @@ class ProtocolStepsTableColumns:
     VALUE = "ps_value"
     UNIT = "ps_unit"
     AGGREGATION = "ps_aggregation"
-    INDEX = "ps_index"
 
 
 # Recognized flag prefixes
