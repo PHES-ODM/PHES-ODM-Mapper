@@ -56,6 +56,7 @@ import yaml
 from enum import Enum, auto
 from tqdm import tqdm
 import os
+from datetime import datetime
 
 from linkml_runtime import SchemaView
 
@@ -249,6 +250,8 @@ class WideColumnExpander:
                 This configuration includes information such as which groups in the expanded DataFrame are explicitly
                 specified in the input data file and which are implicitly (and generated at runtime).
         """
+        tic = datetime.now()
+
         # Load the data to expand
         input_df: List[pd.DataFrame] = []
         if data_frames:
@@ -276,6 +279,8 @@ class WideColumnExpander:
             logger.info(f"Saving expanded data configuration to {output_config_file}")
             with open(output_config_file, "w") as f:
                 yaml.safe_dump(output_config, f)
+
+        logger.info(f"Expanded in {datetime.now() - tic}")
 
         return expanded_df, output_config
 
@@ -433,6 +438,7 @@ class WideColumnExpander:
         index: int,
         row: pd.Series,
         allowable_see_headers: Optional[Union[str, List[str]]],
+        column_group: Optional[str],
     ) -> Any:
         """Get the value of the part at the index of the list of column parts (as returned
         by get_all_parts). If the part at the index has a list of values, then only the
@@ -452,6 +458,10 @@ class WideColumnExpander:
                 the class SeeHeaders. If empty then we will not retrieve the value from a different
                 column, so the value will be returned unchanged except if it's something like
                 "NR", in which case None is returned.
+            column_group (Optional[str]): If we resolve to a "see header" (eg. hAg, hMe) then
+                we first try to get the column that has this group flag (eg. mr_aggregation.column_group).
+                If the column with the group does not exist, then we get the column without a group
+                (eg. mr_aggregation).
 
         Returns:
             Any: The single value at the index in the column parts. This might be the string
@@ -476,7 +486,26 @@ class WideColumnExpander:
             for v in see_headers.values()
         }
         if val in see_headers:
-            return row.get(see_headers[val], None)
+            target_column = see_headers[val]
+
+            # Get all columns that have the name target_column (eg. mr_aggregation)
+            matching_columns = [
+                c for c in row.index if column_without_flags(c) == target_column
+            ]
+            if column_group:
+                # Get the column with the group
+                matching_columns_with_group = [
+                    c for c in matching_columns if column_group in groups_of_column(c)
+                ]
+                if len(matching_columns_with_group) > 0:
+                    return row.get(matching_columns_with_group[0])
+            # Get the column without the group
+            matching_columns_without_group = [
+                c for c in matching_columns if not groups_of_column(c)
+            ]
+            if len(matching_columns_without_group) > 0:
+                return row.get(matching_columns_without_group[0])
+            return row.get(target_column, None)
 
         # This is not a see headers value, so return the value unchanged.
         return val
@@ -559,7 +588,6 @@ class WideColumnExpander:
             )
             return False
 
-        use_column_group = always_use_group
         table_short_name = col_parts[0][0]
         if len(col_parts[1]) == 1:
             # The column is in the format tableShortName_column[_#]
@@ -596,7 +624,6 @@ class WideColumnExpander:
         else:
             # The column has an AND tag (ie. tableShortName_#_AND_a_b_c[_#])
             bool_part = col_parts[1][1]
-            use_column_group = True
 
             # For attribute columns, only the AND_TAG is allowed
             if bool_part != WideColumnValues.AND_TAG:
@@ -633,7 +660,7 @@ class WideColumnExpander:
                 new_row,
                 row_index=None,
                 column_flags=column_flags,
-                column_group=column_group if use_column_group else None,
+                column_group=column_group,
             )
 
             return True
@@ -687,12 +714,12 @@ class WideColumnExpander:
         table_short_name = col_parts[0][0]
         attribute = col_parts[6][0]
         ps_unit = self.get_resolved_single_part_at_index(
-            col_parts, 3, row, SeeHeaders.UNIT
+            col_parts, 3, row, SeeHeaders.UNIT, column_group=column_group
         )
         ps_aggregation = self.get_resolved_single_part_at_index(
-            col_parts, 4, row, SeeHeaders.AGGREGATION
+            col_parts, 4, row, SeeHeaders.AGGREGATION, column_group=column_group
         )
-        ps_index = self.get_resolved_single_part_at_index(col_parts, 5, row, None)
+        # ps_index = self.get_resolved_single_part_at_index(col_parts, 5, row, None, column_group=column_group)
 
         # Make sure the table short name is for protocolSteps
         if table_short_name != WideColumnValues.COLUMN_PROTOCOL_STEPS_TAG:
@@ -742,7 +769,7 @@ class WideColumnExpander:
         elif len(col_parts[2]) == 1:
             # Get the measure
             ps_measure = self.get_resolved_single_part_at_index(
-                col_parts, 2, row, SeeHeaders.MEASURE
+                col_parts, 2, row, SeeHeaders.MEASURE, column_group=column_group
             )
         else:
             logger.warning(f"Measure part of protocol steps column is missing: {col}")
@@ -753,7 +780,6 @@ class WideColumnExpander:
                 ProtocolStepsTableColumns.MEASURE: ps_measure,
                 ProtocolStepsTableColumns.UNIT: ps_unit,
                 ProtocolStepsTableColumns.AGGREGATION: ps_aggregation,
-                ProtocolStepsTableColumns.INDEX: ps_index,
                 f"{table_short_name}{WideColumnValues.COLUMN_PART_SEPARATOR}{attribute}": value,
             },
             row_index=None,
@@ -853,7 +879,9 @@ class WideColumnExpander:
             )
         elif len(col_parts[2]) == 1:
             # Third part has only one part, get the method
-            ps_method = self.get_resolved_single_part_at_index(col_parts, 2, row, None)
+            ps_method = self.get_resolved_single_part_at_index(
+                col_parts, 2, row, None, column_group=column_group
+            )
         else:
             logger.warning(f"Method part of protocol steps column is missing: {col}")
             return False
@@ -910,29 +938,33 @@ class WideColumnExpander:
             return False
 
         mr_compartment = self.get_resolved_single_part_at_index(
-            col_parts, 0, row, SeeHeaders.COMPARTMENT
+            col_parts, 0, row, SeeHeaders.COMPARTMENT, column_group=column_group
         )
         mr_specimen = self.get_resolved_single_part_at_index(
-            col_parts, 1, row, SeeHeaders.SPECIMEN
+            col_parts, 1, row, SeeHeaders.SPECIMEN, column_group=column_group
         )
         mr_fraction = self.get_resolved_single_part_at_index(
-            col_parts, 2, row, SeeHeaders.FRACTION
+            col_parts, 2, row, SeeHeaders.FRACTION, column_group=column_group
         )
         mr_measure = None
         mr_unit = self.get_resolved_single_part_at_index(
-            col_parts, 4, row, SeeHeaders.UNIT
+            col_parts, 4, row, SeeHeaders.UNIT, column_group=column_group
         )
         mr_aggregation = self.get_resolved_single_part_at_index(
-            col_parts, 5, row, SeeHeaders.AGGREGATION
+            col_parts, 5, row, SeeHeaders.AGGREGATION, column_group=column_group
         )
-        mr_index = self.get_resolved_single_part_at_index(col_parts, 6, row, None)
-        attribute = self.get_resolved_single_part_at_index(col_parts, 7, row, None)
+        mr_index = self.get_resolved_single_part_at_index(
+            col_parts, 6, row, None, column_group=column_group
+        )
+        attribute = self.get_resolved_single_part_at_index(
+            col_parts, 7, row, None, column_group=column_group
+        )
         table_short_name = self.get_table_short_name("measures")
 
         if len(col_parts[3]) == 1:
             # The measure part has a single value, so get the value
             mr_measure = self.get_resolved_single_part_at_index(
-                col_parts, 3, row, SeeHeaders.MEASURE
+                col_parts, 3, row, SeeHeaders.MEASURE, column_group=column_group
             )
         else:
             # The measure part has multiple values, so it is a boolean part.
@@ -1083,10 +1115,10 @@ class WideColumnExpander:
         # Add all the columns (along with the flags) to the current row
         for key, val in data.items():
             key = column_with_flags(key, flags)
-            if key in current_row:
-                logger.warning(
-                    f"The column {key} has already been populated in the expanded row for row index {row_index} with value '{current_row[key]}'. This value will be overwritten with the value '{val}'."
-                )
+            # if key in current_row:
+            #     logger.warning(
+            #         f"The column {key} has already been populated in the expanded row for row index {row_index} with value '{current_row[key]}'. This value will be overwritten with the value '{val}'."
+            #     )
             current_row[key] = val
 
     def new_current_expanded_rows(self):
