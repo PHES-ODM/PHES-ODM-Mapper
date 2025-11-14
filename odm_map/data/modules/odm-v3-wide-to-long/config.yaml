@@ -5,7 +5,7 @@ source_schema: schemas/odm_v3_wide.yaml
 steps:
   - action: prepare_wide_to_long
     params:
-      config: "{shared}/wide_to_long/wide_to_long_odm_v3.yaml"
+      config: "wide_to_long/wide_to_long_odm_v3.yaml"
       target_schema: "{shared}/schemas/odm_v3.yaml"
       output_dir: "{temp}/wide_to_long/"
   - action: map
