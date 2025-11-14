@@ -20,6 +20,11 @@ steps:
       source_schema: "{shared}/schemas/odm_v1.yaml"
       target_schema: "{shared}/schemas/odm_v3.yaml"
       mappers_dir: mappers
+  - action: clean
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      operations:
+        - correct_enums: True
   - action: save
     if: "{debug_mode}"
     params:
