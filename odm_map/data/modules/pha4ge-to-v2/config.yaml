@@ -28,6 +28,11 @@ steps:
       source_schema: schemas/pha4ge.yaml
       target_schema: "{shared}/schemas/odm_v3.yaml"
       mappers_dir: mappers
+  - action: clean
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      operations:
+        - correct_enums: True
   - action: expand
     params:
       config: expander/expander_config.yaml
