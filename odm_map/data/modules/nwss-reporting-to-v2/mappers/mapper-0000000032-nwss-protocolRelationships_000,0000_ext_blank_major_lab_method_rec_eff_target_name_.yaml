@@ -21,11 +21,11 @@ class_derivations:
       protocolRelationships[000,0000=ext_blank-major_lab_method-rec_eff_target_name]:
         populated_from: nwss
 enum_derivations:
-  vs_rec_eff_target_name[=not_mirrored=]:
-    name: vs_rec_eff_target_name[=not_mirrored=]
-    mirror_source: false
+  vs_rec_eff_target_name[=mirrored=]:
+    name: vs_rec_eff_target_name[=mirrored=]
+    mirror_source: true
     populated_from: vs_rec_eff_target_name
-  vs_yne[ext_blank][=not_mirrored=]:
-    name: vs_yne[ext_blank][=not_mirrored=]
-    mirror_source: false
+  vs_yne[ext_blank][=mirrored=]:
+    name: vs_yne[ext_blank][=mirrored=]
+    mirror_source: true
     populated_from: vs_yne[ext_blank]

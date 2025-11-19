@@ -27,11 +27,11 @@ class_derivations:
       protocolSteps[000,0000=num_no_target_control]:
         populated_from: nwss
 enum_derivations:
-  vs_reporting_jurisdiction[=not_mirrored=]:
-    name: vs_reporting_jurisdiction[=not_mirrored=]
-    mirror_source: false
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
     populated_from: vs_reporting_jurisdiction
-  vs_num_no_target_control[=not_mirrored=]:
-    name: vs_num_no_target_control[=not_mirrored=]
-    mirror_source: false
+  vs_num_no_target_control[=mirrored=]:
+    name: vs_num_no_target_control[=mirrored=]
+    mirror_source: true
     populated_from: vs_num_no_target_control

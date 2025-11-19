@@ -21,9 +21,9 @@ class_derivations:
       protocolSteps[000,0000=concentration_method]:
         populated_from: nwss
 enum_derivations:
-  vs_reporting_jurisdiction[=not_mirrored=]:
-    name: vs_reporting_jurisdiction[=not_mirrored=]
-    mirror_source: false
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
     populated_from: vs_reporting_jurisdiction
   ODMv3_enum_from_vs_concentration_method:
     name: ODMv3_enum_from_vs_concentration_method

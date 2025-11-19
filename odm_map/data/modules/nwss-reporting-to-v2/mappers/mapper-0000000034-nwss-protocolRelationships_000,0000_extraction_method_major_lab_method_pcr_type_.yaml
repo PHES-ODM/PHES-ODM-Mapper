@@ -21,11 +21,11 @@ class_derivations:
       protocolRelationships[000,0000=extraction_method-major_lab_method-pcr_type]:
         populated_from: nwss
 enum_derivations:
-  vs_extraction_method[=not_mirrored=]:
-    name: vs_extraction_method[=not_mirrored=]
-    mirror_source: false
+  vs_extraction_method[=mirrored=]:
+    name: vs_extraction_method[=mirrored=]
+    mirror_source: true
     populated_from: vs_extraction_method
-  vs_pcr_type[=not_mirrored=]:
-    name: vs_pcr_type[=not_mirrored=]
-    mirror_source: false
+  vs_pcr_type[=mirrored=]:
+    name: vs_pcr_type[=mirrored=]
+    mirror_source: true
     populated_from: vs_pcr_type

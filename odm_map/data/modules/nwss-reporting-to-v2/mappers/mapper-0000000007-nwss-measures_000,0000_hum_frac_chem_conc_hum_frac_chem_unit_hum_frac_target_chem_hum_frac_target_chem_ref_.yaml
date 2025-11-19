@@ -48,9 +48,9 @@ class_derivations:
       measures[000,0000=hum_frac_chem_conc-hum_frac_chem_unit-hum_frac_target_chem-hum_frac_target_chem_ref]:
         populated_from: nwss
 enum_derivations:
-  vs_reporting_jurisdiction[=not_mirrored=]:
-    name: vs_reporting_jurisdiction[=not_mirrored=]
-    mirror_source: false
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
     populated_from: vs_reporting_jurisdiction
   ODMv3_enum_from_vs_hum_frac_target_chem:
     name: ODMv3_enum_from_vs_hum_frac_target_chem
