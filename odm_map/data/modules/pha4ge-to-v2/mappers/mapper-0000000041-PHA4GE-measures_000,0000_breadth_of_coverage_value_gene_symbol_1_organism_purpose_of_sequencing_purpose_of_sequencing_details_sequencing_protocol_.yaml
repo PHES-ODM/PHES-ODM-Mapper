@@ -86,13 +86,13 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  GeneSymbolMenu[=not_mirrored=]:
-    name: GeneSymbolMenu[=not_mirrored=]
-    mirror_source: false
+  GeneSymbolMenu[=mirrored=]:
+    name: GeneSymbolMenu[=mirrored=]
+    mirror_source: true
     populated_from: GeneSymbolMenu
-  OrganismMenu[=not_mirrored=]:
-    name: OrganismMenu[=not_mirrored=]
-    mirror_source: false
+  OrganismMenu[=mirrored=]:
+    name: OrganismMenu[=mirrored=]
+    mirror_source: true
     populated_from: OrganismMenu
   ODMv3_enum_from_PurposeOfSequencingMenu:
     name: ODMv3_enum_from_PurposeOfSequencingMenu
