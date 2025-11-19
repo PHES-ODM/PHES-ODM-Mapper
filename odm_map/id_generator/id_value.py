@@ -52,6 +52,9 @@ class IDValue(object):
             index_in_progress (bool, optional): Set to True if the caller is currently calculating the index for
                 this object, False if the caller isn't calculating the index. Defaults to False.
         """
+        if isinstance(root_id, (list, tuple)):
+            root_id = str(root_id)
+
         self._root_id: Optional[str] = root_id
         self._index: int = index
         # _str_value is the value returned by str(self)
