@@ -42,8 +42,8 @@ class_derivations:
       sites:
         populated_from: Site
 enum_derivations:
-  ODMv2_enum_from_SiteType:
-    name: ODMv2_enum_from_SiteType
+  ODMv3_enum_from_SiteType:
+    name: ODMv3_enum_from_SiteType
     mirror_source: false
     populated_from: SiteType
     permissible_value_derivations:

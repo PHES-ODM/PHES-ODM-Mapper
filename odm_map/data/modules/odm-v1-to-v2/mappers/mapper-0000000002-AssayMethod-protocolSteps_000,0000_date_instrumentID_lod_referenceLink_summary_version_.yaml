@@ -30,9 +30,6 @@ class_derivations:
       value:
         name: value
         populated_from: lod
-      method:
-        name: method
-        expr: ''''''
   Container:
     name: Container
     slot_derivations:

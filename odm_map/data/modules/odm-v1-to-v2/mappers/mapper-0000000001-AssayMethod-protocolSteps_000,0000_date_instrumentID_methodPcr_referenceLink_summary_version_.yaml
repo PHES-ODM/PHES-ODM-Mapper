@@ -3,18 +3,12 @@ class_derivations:
     name: protocolSteps[000,0000=date-instrumentID-methodPcr-referenceLink-summary-version]
     populated_from: AssayMethod
     slot_derivations:
-      aggregation:
-        name: aggregation
-        expr: ''''''
       instrumentID:
         name: instrumentID
         populated_from: instrumentID
       lastEdited:
         name: lastEdited
         populated_from: date
-      measure:
-        name: measure
-        expr: ''''''
       refLink:
         name: refLink
         populated_from: referenceLink
@@ -24,9 +18,6 @@ class_derivations:
       summ:
         name: summ
         populated_from: summary
-      unit:
-        name: unit
-        expr: ''''''
       value:
         name: value
         populated_from: methodPcr
