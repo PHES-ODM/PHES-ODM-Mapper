@@ -16,6 +16,7 @@ import yaml
 from linkml_runtime import SchemaView
 from linkml_runtime.linkml_model.meta import EnumDefinition
 
+from odm_map.utils.schema_caster import SchemaCaster
 from odm_map.utils.general_utils import (
     read_data_frame,
     save_data_frame,
@@ -301,10 +302,12 @@ class DataCleaner(object):
             source_value_formatter = _mirror_value
 
         def _get_mapped_value(v) -> str:
+            return_first_element = False
             if slot_defn.multivalued:
                 v = make_multivalued(v)
-            else:
+            elif not isinstance(v, (list, tuple)):
                 v = [v]
+                return_first_element = True
             for v_idx in range(len(v)):
                 old_v = v[v_idx]
                 try:
@@ -336,7 +339,7 @@ class DataCleaner(object):
                     pass
             if slot_defn.multivalued:
                 return v
-            return v[0]
+            return v[0] if return_first_element else v
 
         # Perform the cleaning, by mapping from source_values[idx] to target_values[idx]
         df_column = df_column.map(_get_mapped_value)
@@ -512,6 +515,10 @@ class DataCleaner(object):
                 keep_default_na=False,
                 na_values=None,  # [""],
             )
+
+            # Cast all columns to correct type, according to the schema
+            caster = SchemaCaster(self.schema)
+            caster.cast_df(df, class_name)
         else:
             df = data_frame
 
