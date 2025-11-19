@@ -200,7 +200,7 @@ class ArrayExpander(object):
             logger.error("Config for ArrayExpander is empty or missing")
             return data_files, data_frames
 
-        logger.info("Expanding data")
+        logger.info("Expanding data...")
 
         if not data_frames:
             data_frames = {}
