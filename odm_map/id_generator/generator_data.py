@@ -406,7 +406,11 @@ class GeneratorData:
                 slots_without_code = [s for s in slots if s not in slots_with_code]
                 self.orig_df.loc[idx, slots_without_code] = self.orig_df.loc[
                     idx, slots_without_code
-                ].map(lambda x: IDValue("" if pd.isna(x) else x, 0))
+                ].map(
+                    lambda x: IDValue(
+                        "" if not isinstance(x, (list, tuple)) and pd.isna(x) else x, 0
+                    )
+                )
 
         # Remove duplicates (and retain original order)
         self.initial_value_columns = list(dict.fromkeys(self.initial_value_columns))
