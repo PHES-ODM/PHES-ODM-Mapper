@@ -25,7 +25,6 @@ class WideColumnValues:
     COLUMN_PROTOCOL_STEPS_TAG = "ps"
     AND_TAG = "AND"
     OR_TAG = "OR"
-    NR_TAG = "NR"
     VALUE_TAG = "value"
 
     # Separates the flags from the column name. eg. with qr_qualityReports.o123, the dot is the separator.

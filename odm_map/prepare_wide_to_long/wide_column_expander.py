@@ -456,8 +456,7 @@ class WideColumnExpander:
                 resulting part refers to another header (eg. if the part is hCo, hUn, hAg, etc.)
             allowable_see_headers (Union[str, List[str]]): One or more allowable header types, from
                 the class SeeHeaders. If empty then we will not retrieve the value from a different
-                column, so the value will be returned unchanged except if it's something like
-                "NR", in which case None is returned.
+                column, so the value will be returned unchanged.
             column_group (Optional[str]): If we resolve to a "see header" (eg. hAg, hMe) then
                 we first try to get the column that has this group flag (eg. mr_aggregation.column_group).
                 If the column with the group does not exist, then we get the column without a group
@@ -468,8 +467,6 @@ class WideColumnExpander:
                 value in the column part, or another value retrieved from the row.
         """
         val = col_parts[index][0]
-        if val == WideColumnValues.NR_TAG:
-            return None
 
         # Get the headers config, for all allowable_see_headers
         see_headers = self.config.get(ConfigKeys.SEE_HEADERS, {})
