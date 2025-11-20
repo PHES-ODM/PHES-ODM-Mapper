@@ -90,10 +90,14 @@ enum_derivations:
     name: GeneSymbolMenu[=mirrored=]
     mirror_source: true
     populated_from: GeneSymbolMenu
-  OrganismMenu[=mirrored=]:
-    name: OrganismMenu[=mirrored=]
-    mirror_source: true
+  ODMv3_enum_from_OrganismMenu:
+    name: ODMv3_enum_from_OrganismMenu
+    mirror_source: false
     populated_from: OrganismMenu
+    permissible_value_derivations:
+      sarsCov2:
+        name: sarsCov2
+        populated_from: Severe acute respiratory syndrome coronavirus 2  [NCBITaxon:2697049]
   ODMv3_enum_from_PurposeOfSequencingMenu:
     name: ODMv3_enum_from_PurposeOfSequencingMenu
     mirror_source: false

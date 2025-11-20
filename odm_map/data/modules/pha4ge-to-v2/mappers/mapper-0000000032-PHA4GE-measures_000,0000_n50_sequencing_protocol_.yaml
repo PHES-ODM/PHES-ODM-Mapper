@@ -41,7 +41,7 @@ class_derivations:
         expr: '''sa'''
       measure:
         name: measure
-        expr: '''N50'''
+        expr: '''n50'''
       value:
         name: value
         populated_from: n50

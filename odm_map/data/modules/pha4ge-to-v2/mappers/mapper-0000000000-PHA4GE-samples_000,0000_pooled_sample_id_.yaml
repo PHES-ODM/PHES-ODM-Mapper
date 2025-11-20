@@ -182,8 +182,8 @@ enum_derivations:
     mirror_source: false
     populated_from: ExperimentalSpecimenRoleTypeMenu
     permissible_value_derivations:
-      posCon:
-        name: posCon
+      pos:
+        name: pos
         populated_from: Positive experimental control [GENEPIO:0101018]
       negCon:
         name: negCon

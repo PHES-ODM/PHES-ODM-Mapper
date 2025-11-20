@@ -15,8 +15,8 @@ class_derivations:
       _extra_protocolID_tag:
         name: _extra_protocolID_tag
         expr: '''serotyping protocol'''
-      measure:
-        name: measure
+      method:
+        name: method
         expr: '''seroMeth'''
       value:
         name: value
