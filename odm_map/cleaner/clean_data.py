@@ -310,6 +310,8 @@ class DataCleaner(object):
                 return_first_element = True
             for v_idx in range(len(v)):
                 old_v = v[v_idx]
+                if not pd.isna(old_v):
+                    old_v = str(old_v)
                 try:
                     source_v = source_value_formatter(old_v)
                     idx = source_values.index(source_v)
