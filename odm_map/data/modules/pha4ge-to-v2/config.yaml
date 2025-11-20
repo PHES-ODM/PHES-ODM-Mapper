@@ -53,6 +53,10 @@ steps:
       id_config:
         - "{shared}/ids/general_v2_id_code.yaml"
         - ids/pha4ge_to_v2_id_code.yaml
+  # IMPORTANT: clean action must be after generate_ids action: Some enum values are purposely invalid after the map action, and
+  # get further processed by generate_ids, eg: sampleShed: and siteType: values in sites.sampleShed (eg. sampleShed:corFcil and
+  # siteType:ocean get processed to sites.sampleShed=corFcil and sites.siteType=ocean). The clean action would remove these
+  # invalid enum values, resulting in generate_ids not having access to the values.
   - action: clean
     params:
       schema: "{shared}/schemas/odm_v3.yaml"
