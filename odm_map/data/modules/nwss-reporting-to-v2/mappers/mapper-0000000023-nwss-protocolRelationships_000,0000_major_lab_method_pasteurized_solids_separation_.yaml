@@ -9,12 +9,18 @@ class_derivations:
       stepIDObj:
         name: stepIDObj
         populated_from: pasteurized
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''pasteurized'''
       relationshipID:
         name: relationshipID
         expr: '''before'''
       stepIDSub:
         name: stepIDSub
         populated_from: solids_separation
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''solids_separation'''
   Container:
     name: Container
     slot_derivations:

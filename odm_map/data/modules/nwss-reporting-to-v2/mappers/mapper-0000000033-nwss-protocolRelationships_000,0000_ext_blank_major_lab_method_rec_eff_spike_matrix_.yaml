@@ -9,12 +9,18 @@ class_derivations:
       stepIDObj:
         name: stepIDObj
         populated_from: rec_eff_spike_matrix
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''rec_eff_spike_matrix'''
       relationshipID:
         name: relationshipID
         expr: '''specifies'''
       stepIDSub:
         name: stepIDSub
         populated_from: ext_blank
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''ext_blank'''
   Container:
     name: Container
     slot_derivations:

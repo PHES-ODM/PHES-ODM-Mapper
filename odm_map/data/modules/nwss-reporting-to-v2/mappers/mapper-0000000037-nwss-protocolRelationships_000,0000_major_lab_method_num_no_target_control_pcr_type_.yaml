@@ -9,12 +9,18 @@ class_derivations:
       stepIDObj:
         name: stepIDObj
         populated_from: num_no_target_control
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''num_no_target_control'''
       relationshipID:
         name: relationshipID
         expr: '''specifies'''
       stepIDSub:
         name: stepIDSub
         populated_from: pcr_type
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''pcr_type'''
   Container:
     name: Container
     slot_derivations:

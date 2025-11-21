@@ -9,12 +9,18 @@ class_derivations:
       stepIDObj:
         name: stepIDObj
         populated_from: concentration_method
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''concentration_method'''
       relationshipID:
         name: relationshipID
         expr: '''before'''
       stepIDSub:
         name: stepIDSub
         populated_from: pre_ext_storage_time
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''pre_ext_storage_time'''
   Container:
     name: Container
     slot_derivations:

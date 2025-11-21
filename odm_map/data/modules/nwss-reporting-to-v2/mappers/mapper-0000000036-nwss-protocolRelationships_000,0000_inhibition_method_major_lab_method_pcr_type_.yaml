@@ -9,12 +9,18 @@ class_derivations:
       stepIDObj:
         name: stepIDObj
         populated_from: inhibition_method
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''inhibition_method'''
       relationshipID:
         name: relationshipID
         expr: '''specifies'''
       stepIDSub:
         name: stepIDSub
         populated_from: pcr_type
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''pcr_type'''
   Container:
     name: Container
     slot_derivations:

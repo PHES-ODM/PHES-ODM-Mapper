@@ -9,6 +9,9 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: lab_id
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''num_no_target_control'''
       method:
         name: method
         expr: '''numNTC'''

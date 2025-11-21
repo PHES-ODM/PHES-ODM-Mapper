@@ -9,6 +9,9 @@ class_derivations:
       organizationID:
         name: organizationID
         populated_from: lab_id
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''pre_conc_storage_temp'''
       measure:
         name: measure
         expr: '''preConcTemp'''
