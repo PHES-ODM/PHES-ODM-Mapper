@@ -36,6 +36,12 @@ steps:
         - ids/nwss_reporting_to_v2_id_code.xlsx
       id_config: 
         - "{shared}/ids/general_v2_id_code.yaml"
+        - "ids/nwss_reporting_to_v2_id_code.yaml"
+  - action: clean
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      operations:
+        - correct_enums: True
   - action: save
     params:
       output_dir: "{output_dir}"
