@@ -124,7 +124,29 @@ enum_derivations:
       testing:
         name: testing
         populated_from: Protocol testing experiment [GENEPIO:0100024]
-  DiagnosticMeasurementUnitMenu[=mirrored=]:
-    name: DiagnosticMeasurementUnitMenu[=mirrored=]
-    mirror_source: true
+  ODMv3_enum_from_DiagnosticMeasurementUnitMenu:
+    name: ODMv3_enum_from_DiagnosticMeasurementUnitMenu
+    mirror_source: false
     populated_from: DiagnosticMeasurementUnitMenu
+    permissible_value_derivations:
+      gcL:
+        name: gcL
+        populated_from: gene copies per liter (GC/L)
+      ctcq:
+        name: ctcq
+        populated_from: cycle threshold (Ct) / quantification cycle (Cq)
+      cfumL:
+        name: cfumL
+        populated_from: colony forming units per milliliter (CFU/mL) [UO:0000213]
+      cfu100:
+        name: cfu100
+        populated_from: colony forming units per 100 milliliter (CFU/100 mL)
+      cfugTS:
+        name: cfugTS
+        populated_from: colony forming units per grams total solids (CFU/gTS)
+      mpnmL:
+        name: mpnmL
+        populated_from: most probable number per milliliter (MPN/mL)
+      mpn100mL:
+        name: mpn100mL
+        populated_from: most probable number per 100 milliliter (MPN/100 mL)
