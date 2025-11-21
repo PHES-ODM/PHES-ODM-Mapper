@@ -222,7 +222,9 @@ class DataCleaner(object):
                         changes_items.append(cur_changes)
                 changes_items = sorted(changes_items, key=lambda x: str(x).lower())
                 changes_str = make_logger_bullet_list(changes_items)
-                changes_str = f"{clean_title}: class '{class_name}', slot '{slot_name}':\n{changes_str}"
+                changes_str = (
+                    f"{clean_title} in slot {class_name}.{slot_name}:\n{changes_str}"
+                )
                 self.add_to_log("warning", changes_str)
 
     def general_map_slot(
