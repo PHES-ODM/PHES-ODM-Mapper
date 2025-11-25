@@ -105,11 +105,11 @@ def get_slot_definition(
     """
     if exception_on_error:
         return asdict(schema.induced_slot(slot, cls))
-
-    class_definition = schema.induced_class(cls)
-    if slot in class_definition.attributes:
-        return asdict(class_definition.attributes[slot])
-    return None
+    else:
+        try:
+            return asdict(schema.induced_slot(slot, cls))
+        except Exception:
+            return None
 
 
 def get_ranges_of_slot(
