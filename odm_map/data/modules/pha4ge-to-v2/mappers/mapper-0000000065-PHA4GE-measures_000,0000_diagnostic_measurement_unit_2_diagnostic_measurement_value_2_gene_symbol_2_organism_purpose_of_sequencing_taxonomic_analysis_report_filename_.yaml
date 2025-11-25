@@ -134,7 +134,7 @@ enum_derivations:
         populated_from: gene copies per liter (GC/L)
       ctcq:
         name: ctcq
-        populated_from: cycle threshold (Ct) / quantification cycle (Cq)
+        populated_from: cycle threshold (Ct)  [GENEPIO:0100657]
       cfumL:
         name: cfumL
         populated_from: colony forming units per milliliter (CFU/mL) [UO:0000213]

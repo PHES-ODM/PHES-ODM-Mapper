@@ -29,8 +29,8 @@ enum_derivations:
       open:
         name: open
         populated_from: Available [GENEPIO:0100993]
-      NR:
-        name: NR
+      nr:
+        name: nr
         populated_from: Unknown [GENEPIO:0100995]
   ODMv3_enum_from_NullValueMenu:
     name: ODMv3_enum_from_NullValueMenu

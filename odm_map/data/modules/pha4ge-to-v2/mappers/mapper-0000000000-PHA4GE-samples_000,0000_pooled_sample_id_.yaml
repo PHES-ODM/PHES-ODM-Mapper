@@ -72,8 +72,8 @@ enum_derivations:
       vac:
         name: vac
         populated_from: Vacuum sludge sampling device [GENEPIO:0100944]
-      one:
-        name: one
+      cone:
+        name: cone
         populated_from: Cone-shaped sampling device [GENEPIO:0100945]
       horGrb:
         name: horGrb

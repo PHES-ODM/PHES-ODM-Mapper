@@ -85,8 +85,8 @@ enum_derivations:
       uSCm:
         name: uSCm
         populated_from: "microSiemen per centimeter (\u03BCS/cm)"
-      Sm:
-        name: Sm
+      sm:
+        name: sm
         populated_from: Siemen per meter (S/m)
       mmhocm:
         name: mmhocm

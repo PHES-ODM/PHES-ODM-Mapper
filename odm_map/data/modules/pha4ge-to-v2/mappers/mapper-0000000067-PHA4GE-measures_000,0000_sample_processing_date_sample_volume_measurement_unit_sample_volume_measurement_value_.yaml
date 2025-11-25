@@ -73,8 +73,8 @@ enum_derivations:
     mirror_source: false
     populated_from: SampleVolumeMeasurementUnitMenu
     permissible_value_derivations:
-      ul:
-        name: ul
+      uL:
+        name: uL
         populated_from: microliter (uL) [UO:0000101]
       ml:
         name: ml
