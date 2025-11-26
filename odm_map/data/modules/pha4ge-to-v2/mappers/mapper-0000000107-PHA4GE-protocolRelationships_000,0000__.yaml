@@ -5,10 +5,10 @@ class_derivations:
     slot_derivations:
       _extra_protocolIDContainer_tag:
         name: _extra_protocolIDContainer_tag
-        expr: '''amr ascertainment protocol'''
+        expr: '''serotyping protocol'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
-        expr: '''AMR analysis software name'''
+        expr: '''serotyping method'''
       relationshipID:
         name: relationshipID
         expr: '''relNR'''

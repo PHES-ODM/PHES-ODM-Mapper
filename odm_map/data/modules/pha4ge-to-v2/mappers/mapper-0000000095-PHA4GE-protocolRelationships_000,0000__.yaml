@@ -8,7 +8,7 @@ class_derivations:
         expr: '''sequencing protocol'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
-        expr: '''consensus sequence software name'''
+        expr: '''deduplication method'''
       relationshipID:
         name: relationshipID
         expr: '''relNR'''

@@ -29,7 +29,7 @@ class_derivations:
         expr: '''sample collected by'''
       specimen:
         name: specimen
-        expr: '''si'''
+        expr: '''sit'''
       measure:
         name: measure
         expr: '''popAreaType'''

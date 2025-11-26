@@ -8,7 +8,7 @@ class_derivations:
         expr: '''sequencing protocol'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
-        expr: '''diagnostic measurement method 2'''
+        expr: '''diagnostic measurement method 3'''
       relationshipID:
         name: relationshipID
         expr: '''relNR'''

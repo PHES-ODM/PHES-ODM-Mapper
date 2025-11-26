@@ -5,7 +5,7 @@ class_derivations:
     slot_derivations:
       insType:
         name: insType
-        expr: '"sequencer"'
+        expr: '"ngsInst"'
       name:
         name: name
         expr: target = [v.split("[")[0].strip() for v in src.sequencing_instrument]

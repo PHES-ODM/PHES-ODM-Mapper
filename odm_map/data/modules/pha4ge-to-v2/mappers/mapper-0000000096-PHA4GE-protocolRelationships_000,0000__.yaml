@@ -8,7 +8,7 @@ class_derivations:
         expr: '''sequencing protocol'''
       _extra_stepIDObj_tag:
         name: _extra_stepIDObj_tag
-        expr: '''deduplication method'''
+        expr: '''dehosting method'''
       relationshipID:
         name: relationshipID
         expr: '''relNR'''
