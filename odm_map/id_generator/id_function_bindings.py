@@ -74,6 +74,10 @@ class FunctionBindings:
     def class_shortname(self) -> str:
         return self.generator.get_class_short_name(self.generator.current_class)
 
+    @property
+    def class_name(self) -> str:
+        return self.generator.current_class
+
     def makeid(self, *args) -> str:
         """Create an ID out of the list of values.
 
@@ -90,6 +94,8 @@ class FunctionBindings:
         if not args:
             return None
 
+        num_args = len(args)
+
         # We only use the unindexed_value of IDValues. This is because it's possible that
         # the index has not been calculated yet (it gets calculated in the generator when
         # group_primary_key is called to ensure that the primary keys are unique when
@@ -104,7 +110,7 @@ class FunctionBindings:
         args = [re.sub("[^A-Za-z0-9]+", "_", str(v)) for v in args]
         args = [v for v in args if len(v)]
 
-        if len(args) > 1:
+        if num_args > 1:
             # Make first character of each element uppercase. The first element has a first character that is
             # lowercase unless firstcap is True (in which case we uppercase it)
             args = [
