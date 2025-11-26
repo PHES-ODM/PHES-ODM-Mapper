@@ -12,15 +12,15 @@ class_derivations:
       _extra_stepID_tag:
         name: _extra_stepID_tag
         expr: '''tot_conc_vol'''
-      method:
-        name: method
+      measure:
+        name: measure
         expr: '''concVol'''
       value:
         name: value
         populated_from: tot_conc_vol
       unit:
         name: unit
-        expr: '''mL'''
+        expr: '''ml'''
       aggregation:
         name: aggregation
         expr: '''sin'''

@@ -26,7 +26,7 @@ class_derivations:
         expr: '"wat"'
       specimen:
         name: specimen
-        expr: '''si'''
+        expr: '''sit'''
       measure:
         name: measure
         expr: '''indusIn'''
