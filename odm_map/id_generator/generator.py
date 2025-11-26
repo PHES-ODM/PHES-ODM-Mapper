@@ -189,6 +189,15 @@ class IDGenerator(object):
                 self.config[ConfigKeys.NAMED_CLASS_LINKAGES].update(
                     cur_config[ConfigKeys.NAMED_CLASS_LINKAGES]
                 )
+                
+            # Merge table short names
+            if ConfigKeys.TABLES_TO_SHORTNAMES in cur_config:
+                if ConfigKeys.TABLES_TO_SHORTNAMES not in self.config:
+                    self.config[ConfigKeys.TABLES_TO_SHORTNAMES] = {}
+                self.config[ConfigKeys.TABLES_TO_SHORTNAMES].update(
+                    cur_config[ConfigKeys.TABLES_TO_SHORTNAMES]
+                )
+                
 
     def get_class_lookup_slots(self, class_name: str) -> List[str]:
         def _get_slots_for_class(linkages: Union[Dict, List[Dict]]) -> List[str]:
@@ -1456,6 +1465,17 @@ class IDGenerator(object):
                 if the source file and row could not be retrieved.
         """
         return self.get_source_file_and_row(self.current_class, self.current_row_index)
+    
+    def get_class_short_name(self, class_name: str) -> Optional[str]:
+        """Get the short name of the specified class name, according to the configuration file.
+
+        Args:
+            class_name (str): The class name to get the short name of (eg. "sampels" -> "sm")
+
+        Returns:
+            Optional[str]: The short name of the class, or None if no short name is defined.
+        """
+        return self.config[ConfigKeys.TABLES_TO_SHORTNAMES].get(class_name, None)
 
     def save_all(
         self,
