@@ -69,7 +69,7 @@ class FunctionBindings:
     @property
     def sourcerow(self) -> int:
         return self.generator.get_current_source_class_and_row()[1]
-    
+
     @property
     def class_shortname(self) -> str:
         return self.generator.get_class_short_name(self.generator.current_class)
@@ -103,7 +103,7 @@ class FunctionBindings:
         ]
         args = [re.sub("[^A-Za-z0-9]+", "_", str(v)) for v in args]
         args = [v for v in args if len(v)]
-        
+
         if len(args) > 1:
             # Make first character of each element uppercase. The first element has a first character that is
             # lowercase unless firstcap is True (in which case we uppercase it)
@@ -115,12 +115,12 @@ class FunctionBindings:
         # Remove leading and trailing underscores (usually they were added when converting non-alphanumeric
         # characters to underscores)
         v = re.sub("^_+|_+$", "", v)
-        
+
         # If the ID doesn't start with an alphabetic character, then prefix it with the table shortname
         # to force it to start with an alphabetic character
         if v and not v[0].isalpha():
             v = f"{self.class_shortname}{v}"
-        
+
         return v
 
     def _customtz(self, val: str) -> datetime.datetime:
