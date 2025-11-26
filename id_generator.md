@@ -441,10 +441,30 @@ integers.
 
 #### fn.makeid(*args)
 
-Concatenate all arguments into a single string with spaces removed. The first
-character of args[0] is lowercased, while the first character of all other args
-are uppercased. Typically, each argument is usually a result of accessing
-values through `datEmpty`. For example:
+Concatenate all arguments into a single string and format to be a valid primary
+key ID. All characters that are not alphanumeric or underscores are replaced
+with underscores. After character replacement, leading and trailing underscores
+are returned.
+
+If only one argument is passed to `fn.makeid` then the capitalization is left
+unchanged. If more than one argument is passed then the first character of the
+first non-empty argument (typically args[0]) is lowercased, while the first
+character of all other args are uppercased. For example, the following will
+result in the string "MyID" (ie. with no changes in capitalization):
+
+```python
+fn.makeid("MyID")
+```
+
+The following will result in the string "myIDSecond" (ie. with changes in
+capitalization):
+
+```python
+fn.makeid("MyID", "second")
+```
+
+In practice, each argument is often a result of accessing values through
+`datEmpty`, but this is not a requirement. For example:
 
 ```python
 fn.makeid(datEmpty.addresses.country, datEmpty.addresses.pCode, datEmpty.addresses.city[:3])
@@ -455,7 +475,8 @@ then the ID's index will be removed. The ID's index is an extra number added to
 the end of an ID to differentiate it from other IDs that have the same value
 (eg. If two rows have a primary key equal to `ott`, but the rows are different,
 then an index will be added at the end of the second ID, eg. `ott001`, to make
-sure that all primary key IDs are unique).
+sure that all primary key IDs are unique). If the unchanged full ID along with
+its index is required, then do not pass it to `fn.makeid`.
 
 #### fn.rownum
 
@@ -498,6 +519,19 @@ which would result in the output string `2022-11-16T07:00:00-0400`. If the time
 is empty, then just the date is returned (eg. `2022-11-16`). If the date is
 empty, then just the time is returned (eg. `07:00:00-0400`). If both are empty,
 then an empty string is returned. The timezone can also be omitted.
+
+#### fn.class_name and fn.class_shortname
+
+These return the current class and class short name (as strings), respectively.
+The class is equivalent to the table name. The class short names are shorter
+versions of the full class name. For example, in ODM v3 the `measures` table
+has the short name `sas`. The class shortnames are defined in the ID generator
+config file. See the `tables_to_shortnames` key in the config file
+[odm_map/data/modules/_shared/ids/general_v2_id_code.yaml](general_v2_id_code.yaml)
+for an example of how it is configured for ODM v3.
+
+The short names are also used to prefix IDs passed to fn.makeid if the
+generated ID does not begin with an alphabetic character.
 
 ## Code Selectors
 
