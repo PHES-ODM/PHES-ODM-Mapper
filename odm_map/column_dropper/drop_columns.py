@@ -60,6 +60,47 @@ class DropColumns:
         max_rows: Optional[int] = None,
         schema: Optional[Union[SchemaView, Path, str]] = None,
     ) -> Dict[str, List[pd.DataFrame]]:
+        """Drop columns from the specified DataFrames or data files according to the rules specified by the
+        parameters. This can include dropping extra columns (ie. columns starting with "_extra_"), dropping
+        tracking columns (ie. columns that specify which file and row number each row was loaded from), and
+        dropping columns not recognized by a LinkML schema.
+
+        Args:
+            data_files (Dict[str, List[Union[str, Path, Dict]]]): Dictionary of files to load and drop columns
+                from. The keys are the class names and the values are lists of files for the class. If a file
+                is a dictionary, then it is an Excel file with a file path and a sheet name to load from the
+                Excel file:
+                    {
+                        general_utils.EXCEL_FILE_KEY: "path/to/myfile.xlsx",
+                        general_utils.EXCEL_SHEET_KEY: "mysheet",
+                    }
+            data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of DataFrames to drop columns from. The keys
+                are the class names and the values are lists of DataFrames for the class.
+            drop_extra_columns (bool, optional): If True then drop all extra columns from the DataFrames. Extra
+                columns are the columns that begin with the string '_extra_'. Defaults to False.
+            drop_tracking_columns (bool, optional): If True then drop all tracking columns from the DataFrames.
+                Tracking columns are the columns that specify which source row number and class/table the row
+                in the DataFrame was populated from. These are added during an upstream mapping operation.
+                Defaults to False.
+            keep_columns_in_schema_only (bool, optional): If True then only keep the columns that are recognized
+                as valid columns for the class according to the LinkML schema (specified by the schema parameter).
+                Defaults to False.
+            output_dir (Optional[Union[str, Path]], optional): Optional directory to save the resulting data to.
+                The file names are in the form "{class_name}.csv". Defaults to None.
+            max_rows (Optional[int], optional): When loading the files in data_files, the maximum number of rows
+                to load for each file. If None then all rows are loaded. Defaults to None.
+            schema (Optional[Union[SchemaView, Path, str]], optional): If keep_columns_in_schema_only is True, then
+                this is either the SchemaView or the path to the LinkML schema file. Only the columns
+                recognized for the class in the schema are retained, all other columns are dropped. Defaults to None.
+
+        Raises:
+            ValueError: Exception raised if keep_columns_in_schema_only is True but not schema is specified.
+
+        Returns:
+            Dict[str, List[pd.DataFrame]]: Dictionary of all DataFrames with the columns dropped according to the
+                parameters. The keys are the class names and the values are lists of DataFrames belonging to the
+                class.
+        """
         if isinstance(schema, (Path, str)):
             sv: SchemaView = SchemaView(schema)
         else:
