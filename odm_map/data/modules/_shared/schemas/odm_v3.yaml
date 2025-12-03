@@ -4077,12 +4077,7 @@ enums:
       unique:
         description: A unique sample, not duplicated.
         title: Unique sample
-      pos:
-        description: A sample or experimental condition where the expected outcome
-          is known to occur, intended to confirm that the experimental setup is working
-          properly. An example would be a wastewater sample spiked with a known quantity
-          of SARS-CoV-2 virus.
-        title: Positive experimental control
+      pos: {}
       negCon:
         description: A sample or experimental condition where the expected outcome
           should not occur, intended to check the original sample matrix for contamination,
@@ -8125,6 +8120,90 @@ enums:
       zika:
         description: Zika
         title: Zika
+      covM:
+        description: SARS-CoV-2 M gene (orf5)
+        title: SARS-CoV-2 M Gene target
+      spikeGene:
+        description: SARS-CoV-2 Spike gene (orf2)
+        title: SARS-CoV-2 Spike gene (orf2)
+      nsp11:
+        description: SARS-CoV-2 nsp11 Gene target
+        title: SARS-CoV-2 nsp11 Gene target
+      nsp1:
+        description: "SARS-CoV-2 nsp1\_Gene target"
+        title: "SARS-CoV-2 nsp1\_Gene target"
+      nsp2:
+        description: SARS-CoV-2 nsp2 Gene target
+        title: SARS-CoV-2 nsp2 Gene target
+      nsp3:
+        description: SARS-CoV-2 nsp3 Gene target
+        title: SARS-CoV-2 nsp3 Gene target
+      nsp4:
+        description: SARS-CoV-2 nsp4 Gene target
+        title: SARS-CoV-2 nsp4 Gene target
+      nsp5:
+        description: SARS-CoV-2 nsp5 Gene target
+        title: SARS-CoV-2 nsp5 Gene target
+      nsp6:
+        description: SARS-CoV-2 nsp6 Gene target
+        title: SARS-CoV-2 nsp6 Gene target
+      nsp7:
+        description: SARS-CoV-2 nsp7 Gene target
+        title: SARS-CoV-2 nsp7 Gene target
+      nsp8:
+        description: SARS-CoV-2 nsp8 Gene target
+        title: SARS-CoV-2 nsp8 Gene target
+      nsp9:
+        description: SARS-CoV-2 nsp9 Gene target
+        title: SARS-CoV-2 nsp9 Gene target
+      nsp10:
+        description: SARS-CoV-2 nsp10 Gene target
+        title: SARS-CoV-2 nsp10 Gene target
+      hel:
+        description: SARS-CoV-2 hel gene (nsp13)
+        title: SARS-CoV-2 hel gene (nsp13)
+      exoNnsp14:
+        description: SARS-CoV-2 exoN gene (nsp14)
+        title: SARS-CoV-2 exoN gene (nsp14)
+      nsp15:
+        description: SARS-CoV-2 nsp15 Gene target
+        title: SARS-CoV-2 nsp15 Gene target
+      nsp16:
+        description: SARS-CoV-2 nsp16 Gene target
+        title: SARS-CoV-2 nsp16 Gene target
+      orf3a:
+        description: SARS-CoV-2 orf3a Gene target
+        title: SARS-CoV-2 orf3a Gene target
+      orf3b:
+        description: SARS-CoV-2 orf3b Gene target
+        title: SARS-CoV-2 orf3b Gene target
+      orf6:
+        description: SARS-CoV-2 orf6 (ns6) Gene target
+        title: SARS-CoV-2 orf6 (ns6) Gene target
+      orf7a:
+        description: SARS-CoV-2 orf7a Gene target
+        title: SARS-CoV-2 orf7a Gene target
+      orf7b:
+        description: SARS-CoV-2 orf7b (ns7b) Gene target
+        title: SARS-CoV-2 orf7b (ns7b) Gene target
+      orf8:
+        description: SARS-CoV-2 orf8 (ns8) Gene target
+        title: SARS-CoV-2 orf8 (ns8) Gene target
+      orf9b:
+        description: SARS-CoV-2 orf9b Gene target
+        title: SARS-CoV-2 orf9b Gene target
+      orf9c:
+        description: SARS-CoV-2 orf9c Gene target
+        title: SARS-CoV-2 orf9c Gene target
+      orf10:
+        description: SARS-CoV-2 orf10 Gene target
+        title: SARS-CoV-2 orf10 Gene target
+      orf14:
+        description: SARS-CoV-2 orf14 Gene target
+        title: SARS-CoV-2 orf14 Gene target
+      covUTR5:
+        description: SARS-COV-2 5' UTR Gene target
+        title: SARS-COV-2 5' UTR Gene target
   methods:
     description: Procedures or steps for collecting samples or performing measures.
       For example, `methodExtract` is a method that describes the how a sample was
