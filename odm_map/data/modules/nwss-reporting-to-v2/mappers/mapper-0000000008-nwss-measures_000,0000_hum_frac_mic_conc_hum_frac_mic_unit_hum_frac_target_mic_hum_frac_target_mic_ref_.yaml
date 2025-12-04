@@ -68,8 +68,8 @@ enum_derivations:
       hf183:
         name: hf183
         populated_from: hf183
-      fRNA:
-        name: fRNA
+      fRNAColi:
+        name: fRNAColi
         populated_from: f+ rna coliphage
       fDNA:
         name: fDNA

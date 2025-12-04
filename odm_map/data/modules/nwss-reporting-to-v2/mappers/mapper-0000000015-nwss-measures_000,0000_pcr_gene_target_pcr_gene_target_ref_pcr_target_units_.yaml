@@ -107,8 +107,8 @@ enum_derivations:
       n:
         name: n
         populated_from: n
-      sGene:
-        name: sGene
+      covS:
+        name: covS
         populated_from: s
       orf1a:
         name: orf1a
@@ -310,26 +310,26 @@ enum_derivations:
       y505h:
         name: y505h
         populated_from: y505h
-      e9lNVAR:
-        name: e9lNVAR
+      mpxe9lNVAR:
+        name: mpxe9lNVAR
         populated_from: "E9L\u200B-NVAR"
-      g2rG:
-        name: g2rG
+      mpxG2RG:
+        name: mpxG2RG
         populated_from: "G2R_G\u200B"
-      g2rWA:
-        name: g2rWA
+      mpxG2RWA:
+        name: mpxG2RWA
         populated_from: "G2R_WA\u200B"
-      c3l:
-        name: c3l
+      mpxC3L:
+        name: mpxC3L
         populated_from: "C3L\u200B"
-      e9lOPX3:
-        name: e9lOPX3
+      mpxe9lOPX3:
+        name: mpxe9lOPX3
         populated_from: "E9L-OPX\u200B3"
-      b6r:
-        name: b6r
+      mpxB6R:
+        name: mpxB6R
         populated_from: B6R
-      gtmolMPox:
-        name: gtmolMPox
+      mpxGTmol:
+        name: mpxGTmol
         populated_from: gtmol_hMPXV
       mcr11:
         name: mcr11
