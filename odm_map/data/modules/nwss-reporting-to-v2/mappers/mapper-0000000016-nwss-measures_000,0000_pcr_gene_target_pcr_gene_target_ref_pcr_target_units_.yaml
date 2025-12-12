@@ -35,7 +35,7 @@ class_derivations:
         populated_from: pcr_target_units
       aggregation:
         name: aggregation
-        expr: '''se'''
+        expr: '''stEr'''
       refLink:
         name: refLink
         populated_from: pcr_gene_target_ref
