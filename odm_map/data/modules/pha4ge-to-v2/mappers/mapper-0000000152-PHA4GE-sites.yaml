@@ -8,7 +8,9 @@ class_derivations:
         populated_from: sampling_site_id
       sampleShed:
         name: sampleShed
-        populated_from: environmental_site
+        expr: "target = emap.environmental_site\nif len([v for v in src.environmental_material\
+          \ if \"bar screen\" in str(v).lower()]) > 0:\n    target.append(\"siteType:barScreen\"\
+          )"
       geoLat:
         name: geoLat
         populated_from: geo_loc_latitude
@@ -33,8 +35,8 @@ class_derivations:
       sites:
         populated_from: PHA4GE
 enum_derivations:
-  shedSet:
-    name: shedSet
+  ODMv3_enum_from_EnvironmentalSiteMenu:
+    name: ODMv3_enum_from_EnvironmentalSiteMenu
     mirror_source: false
     populated_from: EnvironmentalSiteMenu
     permissible_value_derivations:

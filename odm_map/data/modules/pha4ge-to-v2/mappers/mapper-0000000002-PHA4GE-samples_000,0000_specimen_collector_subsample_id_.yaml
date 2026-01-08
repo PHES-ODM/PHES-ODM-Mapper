@@ -180,6 +180,9 @@ enum_derivations:
       sEfflu:
         name: sEfflu
         populated_from: Secondary wastewater effluent [GENEPIO:0100893]
+      ? ''
+      : name: ''
+        populated_from: Bar screen [ENVO:03501474]
   collAppxSet:
     name: collAppxSet
     mirror_source: false
