@@ -134,6 +134,25 @@ followed by checking the length with `max_length`.
 If `select_items` is specified, then `max_length` is performed before selecting
 the items.
 
+## expand Option
+
+The `expand` option (which defaults to True) will perform the actual expanding
+of the rows and is performed after all other options are applied. If set to False,
+then no new rows are created, but the array values are still processed (ie.
+`remove_nulls`, `max_length`, and `select_items` are still applied). Setting
+`expand` to False is useful if you just want to clean up the array values
+without expanding them into multiple rows. Below is an example configuration:
+
+```yaml
+expand_columns:
+    sites:
+        - sampleShed:
+            remove_nulls: True
+            expand: False
+```
+
+The above will remove null values from the `sampleShed` column arrays, but will not
+create any new rows and instead keep all the non-null values in the array.
 """
 
 from typing import Union, List, Dict, Any, Optional, Tuple
@@ -155,6 +174,7 @@ class ConfigKeys:
     SELECT_ITEMS = "select_items"
     MAX_LENGTH = "max_length"
     REMOVE_NULLS_KEY = "remove_nulls"
+    EXPAND = "expand"
 
 
 EXPAND_BARID = "Expanding"
@@ -353,11 +373,16 @@ class ArrayExpander(object):
 
             # Go through each expanded value and create the row for it. The first expanded
             # value will be assigned to the original row already in the DataFrame.
-            df.loc[idx, column] = expanded_values[0] if len(expanded_values) else None
-            for expanded_value in expanded_values[1:]:
-                new_row = row.copy()
-                new_row[column] = expanded_value
-                new_rows.append(new_row)
+            if config and config.get(ConfigKeys.EXPAND, True):
+                df.loc[idx, column] = (
+                    expanded_values[0] if len(expanded_values) else None
+                )
+                for expanded_value in expanded_values[1:]:
+                    new_row = row.copy()
+                    new_row[column] = expanded_value
+                    new_rows.append(new_row)
+            else:
+                df.at[idx, column] = expanded_values
 
         # Drop all rows in drop_rows (drop_rows is an array of row indices to drop)
         if len(drop_rows) > 0:
