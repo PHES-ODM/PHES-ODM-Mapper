@@ -15,9 +15,13 @@ class_derivations:
       method:
         name: method
         expr: '''inhibMeth'''
+      summ:
+        name: summ
+        populated_from: inhibition_method
       value:
         name: value
-        populated_from: inhibition_method
+        expr: case(((inhibition_method == "") + (inhibition_method == None), ""),
+          (True, "null"))
   Container:
     name: Container
     slot_derivations:
