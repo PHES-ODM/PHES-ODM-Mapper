@@ -70,6 +70,7 @@ def main(
             },
             {"correct_enums": True},
             {"remove_unknown_columns": True},
+            {"check_patterns": True},
         ],
     )
 

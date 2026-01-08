@@ -37,6 +37,11 @@ CLEAN_BARID = "Cleaning Data"
 logger = get_logger(__name__)
 
 
+class ChangeHistoryKeys:
+    COUNT = "count"
+    ROWS = "rows"
+
+
 class DataCleaner(object):
     def __init__(
         self,
@@ -193,6 +198,7 @@ class DataCleaner(object):
         slot_name: str,
         old_value: str,
         new_value: str,
+        row: int,
     ):
         if new_value is None:
             new_value = ""
@@ -205,20 +211,49 @@ class DataCleaner(object):
         if old_value not in change_history[class_name][slot_name]:
             change_history[class_name][slot_name][old_value] = {}
         if new_value not in change_history[class_name][slot_name][old_value]:
-            change_history[class_name][slot_name][old_value][new_value] = 0
-        change_history[class_name][slot_name][old_value][new_value] += 1
+            change_history[class_name][slot_name][old_value][new_value] = {}
+        cur_dict = change_history[class_name][slot_name][old_value][new_value]
+        if ChangeHistoryKeys.ROWS not in cur_dict:
+            cur_dict[ChangeHistoryKeys.ROWS] = set()
+        if ChangeHistoryKeys.COUNT not in cur_dict:
+            cur_dict[ChangeHistoryKeys.COUNT] = 0
+        cur_dict[ChangeHistoryKeys.ROWS].add(row)
+        cur_dict[ChangeHistoryKeys.COUNT] += 1
 
     def report_change_history(self, change_history: Dict, clean_title: str):
+        """Report the change history to the user by printing the changes nicely.
+
+        Args:
+            change_history (Dict): Dictionary of all the changes that were made.
+                It is in the form change_history[class_name][slot_name][old_value][new_value] = {
+                    ChangeHistoryKeys.COUNT: num      # Number of times this change was made
+                    ChangeHistoryKeys.ROWS: set       # The rows in the dataset that were affected
+                }
+            clean_title (str): A descriptive title to include in the output, such as "Added ontology IDs".
+        """
         # Report changes history
         for class_name, class_data in change_history.items():
             for slot_name, slot_data in class_data.items():
                 changes_items = []
                 for old_val, old_val_data in slot_data.items():
-                    for new_val, num_changes in old_val_data.items():
+                    for new_val, cur_data in old_val_data.items():
+                        # We changed old_val to new_val, for the slot class_name.slot_name.
+                        num_changes = cur_data.get(ChangeHistoryKeys.COUNT, 0)
                         if new_val is not None and new_val != "":
-                            cur_changes = f"{old_val} -> {new_val} ({num_changes} time{'' if num_changes == 1 else 's'})"
+                            cur_changes = f"{old_val} -> {new_val}"
                         else:
-                            cur_changes = f"{old_val if old_val else '<empty>'} ({num_changes} time{'' if num_changes == 1 else 's'})"
+                            cur_changes = f"{old_val if old_val else '<empty>'}"
+
+                        # Add number of times this change occurred
+                        cur_changes = f"{cur_changes} ({num_changes} time{'' if num_changes == 1 else 's'})"
+
+                        # Add which rows were affected
+                        # rows = cur_data.get(ChangeHistoryKeys.ROWS, [])
+                        # rows = sorted([r for r in rows if r is not None])
+                        # if rows:
+                        #     rows = [str(r) for r in rows]
+                        #     cur_changes = f"{cur_changes} (row{'' if len(rows) == 1 else 's'} {','.join(rows)})"
+
                         changes_items.append(cur_changes)
                 changes_items = sorted(changes_items, key=lambda x: str(x).lower())
                 changes_str = make_logger_bullet_list(changes_items)
@@ -303,7 +338,7 @@ class DataCleaner(object):
 
             source_value_formatter = _mirror_value
 
-        def _get_mapped_value(v) -> str:
+        def _get_mapped_value(idx, v) -> str:
             return_first_element = False
             if slot_defn.multivalued:
                 v = make_multivalued(v)
@@ -323,7 +358,7 @@ class DataCleaner(object):
                         # Add the class name, slot name, original value, new value to the changes history
                         # We report this to the user
                         self.add_to_change_history(
-                            change_history, class_name, slot_name, old_v, new_v
+                            change_history, class_name, slot_name, old_v, new_v, idx
                         )
                 except Exception:
                     if not can_be_anything:
@@ -339,6 +374,7 @@ class DataCleaner(object):
                                 slot_name,
                                 old_v,
                                 None,
+                                idx,
                             )
                     pass
             if slot_defn.multivalued:
@@ -346,9 +382,69 @@ class DataCleaner(object):
             return v[0] if return_first_element else v
 
         # Perform the cleaning, by mapping from source_values[idx] to target_values[idx]
-        df_column = df_column.map(_get_mapped_value)
+        for idx, val in df_column.items():
+            df_column[idx] = _get_mapped_value(idx, val)
+        # df_column = df_column.apply(_get_mapped_value)
 
         return df_column
+
+    def check_patterns(self, df: pd.DataFrame, class_name: str):
+        """Check that all values in the DataFrame conform to the pattern specified in the schema for each slot.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to check.
+            class_name (str): The class name that the DataFrame belongs to.
+        """
+        if class_name not in all_classes_without_tree_root(self.schema):
+            logger.debug(
+                f"Skipping 'Check Patterns' for class {class_name} since class is not recognized"
+            )
+            return
+
+        logger.debug(f"Checking patterns for class {class_name}")
+
+        change_history = {}
+        patterns = {}
+
+        class_defn = self.schema.induced_class(class_name)
+        for slot_name in df.columns:
+            if slot_name not in class_defn.attributes:
+                continue
+
+            slot_defn = self.schema.induced_slot(slot_name, class_name)
+            pattern = slot_defn.pattern
+            if pattern is None:
+                continue
+
+            regex = re.compile(pattern)
+            for idx, value in df[slot_name].items():
+                if pd.isna(value):
+                    continue
+                str_value = str(value)
+                if not regex.fullmatch(str_value):
+                    if class_name not in change_history:
+                        change_history[class_name] = {}
+                    if slot_name not in change_history[class_name]:
+                        change_history[class_name][slot_name] = {}
+                    patterns[f"{class_name}.{slot_name}"] = pattern
+                    self.add_to_change_history(
+                        change_history[class_name][slot_name],
+                        class_name,
+                        slot_name,
+                        str_value,
+                        None,
+                        idx,
+                    )
+                    # logger.warning(
+                    #     f"Value '{str_value}' in class '{class_name}', slot '{slot_name}' does not match pattern '{pattern}'"
+                    # )
+
+        for class_name, class_data in change_history.items():
+            for slot_name, slot_data in class_data.items():
+                pattern = patterns.get(f"{class_name}.{slot_name}", "<unknown>")
+                self.report_change_history(
+                    slot_data, f"Values do not match pattern {pattern}"
+                )
 
     def general_map_class(
         self,
@@ -595,6 +691,8 @@ class DataCleaner(object):
                     )
                 elif clean_name == "remove_unknown_columns":
                     df = self.clean_remove_unknown_columns(df, class_name)
+                elif clean_name == "check_patterns":
+                    self.check_patterns(df, class_name)
 
         # Save to disk
         if output_file is not None:
