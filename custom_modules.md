@@ -48,6 +48,7 @@ steps:
             match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
         - correct_enums: True
         - remove_unknown_columns: True
+        - check_patterns: True
   - action: save
     if: "{debug_mode}"
     params:
@@ -149,6 +150,7 @@ Example:
           match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
       - correct_enums: True
       - remove_unknown_columns: True
+      - check_patterns: True
 ```
 
 | Parameter      | Required/Optional | Description |
@@ -232,15 +234,26 @@ capitalization is ignored, and sequences of multiple spaces are replaced with
 single spaces when trying to match (but the resulting enum value has the same
 capitalization and spacing as found in the LinkML schema).
 
-#### Clean Operation: expand
+#### Clean Operation: check_patterns
+
+This operation does not make any changes to the data, but instead checks
+that all the values in the data match the regex pattern found in the
+LinkML schema for each of the slots. It will report any value that does
+not match the pattern.
+
+```yaml
+operations:
+  - check_patterns: True
+```
+
+### Action: expand
 
 Example:
 
 ```yaml
-operations:
-  - action: expand
-    params:
-      config: expander/expander_config.yaml
+- action: expand
+  params:
+    config: expander/expander_config.yaml
 ```
 
 | Parameter                   | Required/Optional | Description |
@@ -325,7 +338,7 @@ above), then the rows in that slot are expanded using all values in the arrays.
 
 Additional configuration options can be specified, as described below
 
-##### select_items Option
+#### Expand select_items Option
 
 If instead it is a key-dictionary pair (as in the `saMaterial` and `collType`
 slots in the `samples` table above), then the array index values to select
@@ -366,7 +379,7 @@ select_items: [0, 1, 2]
 This is done on a per-row basis; since each row might have a different number
 of items in an array, the selected indices might vary for each row.
 
-#### remove_nulls Option
+#### Expand remove_nulls Option
 
 All Null items and empty strings can be removed from the array before selecting
 and expanding. This is specified by setting the `remove_nulls` key to True:
@@ -391,7 +404,7 @@ Removing the null values will result in:
 |--------------------|
 | ['hosptl', 'dorm'] |
 
-##### max_length Option
+#### Expand max_length Option
 
 The `max_length` option does not modify any data. Instead, it logs an error message
 to tell the user that an array has too many elements. A common example is if you
@@ -412,6 +425,21 @@ followed by checking the length with `max_length`.
 
 If `select_items` is specified, then `max_length` is performed before selecting
 the items.
+
+#### Expand expand Option
+
+The `expand` option does the actual expanding of the row as described above and
+has a default value of `True`. If you want to perform all the other options
+but skip the actual expanding of the row, then set this value to False:
+
+```yaml
+expand_columns:
+  sites:
+        - sampleShed:
+            remove_nulls: True
+            max_length: 1
+            expand: False
+```
 
 ### Action: drop_columns
 
