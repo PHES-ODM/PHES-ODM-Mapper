@@ -16,6 +16,9 @@ import logging
 # Set to True for detailed logging output. Typically used for debugging.
 DETAILED_LOGGER = False
 
+# Default level for logging
+DEFAULT_LEVEL = logging.INFO
+
 if DETAILED_LOGGER:
     # Default logging format
     DEFAULT_LOGGER_FORMAT = (
@@ -31,7 +34,7 @@ else:
 
 LOGGER_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-# Change the logging level of the Transformer and others to avoid unwanted logging.
+# Change the logging level of the LinkML Transformer and others to avoid unwanted logging.
 for logger_name in [
     "linkml_map.transformer.object_transformer",
     "linkml_map.transformer.transformer",
@@ -73,7 +76,7 @@ class MultiFormatter(logging.Formatter):
         return result
 
 
-def get_logger(name: str, level: Optional[str] = logging.INFO) -> logging.Logger:
+def get_logger(name: str, level: Optional[str] = DEFAULT_LEVEL) -> logging.Logger:
     """Get the logger with the specified name, setting is configuration as well as output format.
     The name can be any arbitrary string. For example:
 
@@ -82,7 +85,7 @@ def get_logger(name: str, level: Optional[str] = logging.INFO) -> logging.Logger
     Args:
         name (str): The name to give to the logger. This can be any arbitrary string and is
             typically the name of the caller.
-        level (Optional[str], optional): The logging level of the logger. Defaults to logging.INFO.
+        level (Optional[str], optional): The logging level of the logger. Defaults to DEFAULT_LEVEL.
 
     Returns:
         logging.Logger: The logging object.
