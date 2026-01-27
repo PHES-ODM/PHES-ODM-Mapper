@@ -42,12 +42,12 @@ steps:
   - action: clean
     params:
       schema: schemas/nwss_reporting.yaml
+      log_file: "{output_dir}/change_log_input.xlsx"
       operations:
-        - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
+        - format_and_match_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
         - add_ontology_ids_to_enums:
             match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
         - correct_enums: True
-        - remove_unknown_columns: True
         - check_patterns: True
   - action: save
     if: "{debug_mode}"
@@ -144,23 +144,63 @@ Example:
 - action: clean
   params:
     schema: schemas/nwss_reporting.yaml
+    log_file: "{output_dir}/change_log_input.xlsx"
     operations:
-      - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
+      - format_and_match_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
       - add_ontology_ids_to_enums:
           match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
       - correct_enums: True
-      - remove_unknown_columns: True
       - check_patterns: True
 ```
 
 | Parameter      | Required/Optional | Description |
 | :--------------| :---------------- | :---------- |
 | schema         | Required          | The path to the LinkML schema that the cleaning is based on. This path is relative to the root directory of the module. |
+| log_file       | Optional          | If specified, then the changes made to the data will be reported in this log file. The file must be an Excel .xlsx file. |
 | operations     | Required          | Specify a list of cleaning operations to perform. Each list item is a dictionary with a single key, where the key is the operation name to perform and the value is the parameter(s) to pass to the operation |
 
 Clean the data using the specified LinkML schema. The schema should be for the
 current format that the data is in (eg. NWSS, PHA4GE, ODM v1, ODM v2, etc).
 Available operations are:
+
+#### Clean Operation: format_and_match_columns
+
+Format the column names of the DataFrame and match them to valid column names
+in the schema, drop unrecognized columns, and add missing columns (according to
+the schema). Matching columns is performed after formatting the columns, and is
+case-insensitive. If a column can't be matched then it is dropped. If a column
+exists in the schema but not in the DataFrame then it is added with `None`
+values (Tracking and extra slots are always retained and not formatted). This
+clean operation should usually be performed first, as other clean operations
+may depend on having correct column names.
+
+```yaml
+operations:
+  - format_and_match_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
+```
+
+The value is a list of formatting operations to perform:
+
+- **lowercase**: Make all column names lowercase.
+- **uppercase**: Make all column names uppercase.
+- **alpha_numeric_underscore**: Replace any non-alphanumeric characters with an
+  underscore.
+- **single_underscores**: Replace any sequence of multiple underscores to a
+  single underscore (eg. "column__name" becomes "column_name")
+- **trim_trailing_underscores**: Remove all trailing underscores (eg.
+  "_column_name__" becomes "_column_name")
+- **{ remove_chars: "chars" }**: Remove all characters found in the string
+  "chars" in the column names.
+
+If no formatting operations are desired but we still want to match (in a
+case-insensitive way) existing columns with valid columns in the schema, as
+well as drop unrecognized columns and add missing columns, then
+`format_and_match_columns` can be set to True, as below:
+
+```yaml
+operations:
+  - format_and_match_columns: True
+```
 
 #### Clean Operation: correct_enums
 
@@ -176,37 +216,6 @@ For example, if the data has a value "degrees celsius" in a column that is an
 enumeration, and the enumeration in the schema has a permissible value of
 "Degrees Celsius", then the value in the data will be replaced with "Degrees
 Celsius".
-
-#### Clean Operations: remove_unknown_columns
-
-Remove any column in the data that is not found in the schema.
-
-```yaml
-operations:
-  - remove_unknown_columns: True
-```
-
-#### Clean Operation: format_columns
-
-Format the column names of the DataFrame.
-
-```yaml
-operations:
-  - format_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
-```
-
-The value is a list of formatting operations to perform:
-
-- **lowercase**: Make all column names lowercase.
-- **uppercase**: Make all column names uppercase.
-- **alpha_numeric_underscore**: Replace any non-alphanumeric characters with an
-  underscore.
-- **single_underscores**: Replace any sequence of multiple underscores to a
-  single underscore (eg. "column__name" becomes "column_name")
-- **trim_trailing_underscores**: Remove all trailing underscores (eg.
-  "_column_name__" becomes "_column_name")
-- **{ remove_chars: "chars" }**: Remove all characters found in the string
-  "chars" in the column names.
 
 #### Clean Operation: add_ontology_ids_to_enums
 
