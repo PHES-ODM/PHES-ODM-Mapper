@@ -11,6 +11,7 @@ import datetime
 import dateutil.parser
 import pytz
 import re
+import pandas as pd
 
 from odm_map.utils.logger import get_logger
 from odm_map.id_generator.id_value import IDValue
@@ -411,3 +412,45 @@ class FunctionBindings:
             return int(v)
         except Exception:
             return v
+
+    def _has_str_value(
+        self, arr: Any, value: str, exact_match: bool, ignore_case: bool
+    ) -> bool:
+        if not isinstance(value, str):
+            return False
+        if arr is None:
+            return False
+        if not isinstance(arr, (list, tuple, set)):
+            arr = [arr]
+        if ignore_case:
+            value = value.lower()
+        for cur_v in arr:
+            if pd.isna(cur_v):
+                continue
+            cur_v = str(cur_v)
+            if ignore_case:
+                cur_v = cur_v.lower()
+            if exact_match and value == cur_v:
+                return True
+            if not exact_match and value in cur_v:
+                return True
+        return False
+
+    def has_partial_str_value(
+        self, arr: Any, value: str, ignore_case: bool = False
+    ) -> bool:
+        return self._has_str_value(
+            arr, value, exact_match=False, ignore_case=ignore_case
+        )
+
+    def has_exact_str_value(
+        self, arr: Any, value: str, ignore_case: bool = False
+    ) -> bool:
+        return self._has_str_value(
+            arr, value, exact_match=True, ignore_case=ignore_case
+        )
+
+    def has_nonempty_value(self, arr: Any) -> bool:
+        if isinstance(arr, (list, tuple, set)):
+            return len([i for i in arr if self.has_nonempty_value(i)]) > 0
+        return not pd.isna(arr) and arr != ""
