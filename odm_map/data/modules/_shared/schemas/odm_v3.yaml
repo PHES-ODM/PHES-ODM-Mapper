@@ -10153,9 +10153,11 @@ classes:
           should allow any person who generates environment surveillance data to know
           how to identify how to record their data elements in the ODM. partReference
           can be used to further describe a part.
-        range: string
         required: true
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       source:
         description: The database or table sourced for the wide name.
         title: Wide name source
@@ -10276,8 +10278,10 @@ classes:
       index:
         description: Index number in case the measurement was taken multiple times.
         title: Index
-        range: string
         pattern: ^.{0,50}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       attributeName:
         description: The attribute referenced for the wide name.
         title: Attribute name (wide table)
@@ -10309,9 +10313,11 @@ classes:
           is affiliated.
         title: Organization ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,100}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -10320,8 +10326,10 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       descr:
         description: A detailed description of a measure, method, or attribute.
         title: Description
@@ -10331,21 +10339,25 @@ classes:
           should allow any person who generates environment surveillance data to know
           how to identify how to record their data elements in the ODM. partReference
           can be used to further describe a part.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       addressID:
         description: A unique identifier for an address.
         title: Address ID
-        range: addresses
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: addresses
+        - range: genMissingnessSet
       orgType:
         description: Specifies the type or purpose of a given organization.
         title: Organization Type
         pattern: ^.{0,30}$
         any_of:
         - range: orgTypeSet
-        - range: genMissingnessSet
+        - range: nrNAMissingnessSet
       orgLevel:
         description: The geographic level of an organization.
         title: Organization level
@@ -10355,14 +10367,14 @@ classes:
         pattern: ^.{0,30}$
         any_of:
         - range: orgLevelSet
-        - range: genMissingnessSet
+        - range: nrNAMissingnessSet
       orgSector:
         description: The sector of an organization
         title: Organization sector
         pattern: ^.{0,30}$
         any_of:
         - range: orgSectorSet
-        - range: genMissingnessSet
+        - range: nrNAMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -10379,16 +10391,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   qualityReports:
     description: The table for recording the various quality metrics and indicators
       for samples and measures. The short name for the table (partID) can be found
@@ -10409,28 +10425,36 @@ classes:
         description: A unique identifier for a given quality report.
         title: Quality report ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       measureRepID:
         description: Unique identifier for a measurement.
         title: Report ID
         notes:
         - Report IDs cannot be repeated.
-        range: measures
         pattern: ^.{0,30}$
+        any_of:
+        - range: measures
+        - range: genMissingnessSet
       sampleID:
         description: Unique identifier for a sample.
         title: Sample ID
         notes:
         - Suggestion:siteID-date-index.
-        range: samples
         pattern: ^.{0,30}$
+        any_of:
+        - range: samples
+        - range: genMissingnessSet
       measureSetRepID:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
-        range: measureSets
         pattern: ^.{0,30}$
+        any_of:
+        - range: measureSets
+        - range: genMissingnessSet
       qualityFlag:
         description: A field for reporting any quality concerns - of lack thereof
           - for a sample or measure.
@@ -10466,16 +10490,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   translations:
     description: Look up table for translations of the description, label, and instruction
       for all parts. The default language if a translation is not specified is English.
@@ -10499,9 +10527,11 @@ classes:
           and primary key for each row of the translations table.
         title: Synthetic ID for the translations table
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,50}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lang:
         description: Language code for translation purposes. Specifies the langage
           for each translation, other than the default English. Uses the ISO-6393
@@ -10509,9 +10539,11 @@ classes:
         title: Language ID
         notes:
         - Follow the ISO639-3 codes for now.
-        range: languages
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: languages
+        - range: genMissingnessSet
       partID:
         description: The unique identify of any entity within the dictionary.
         title: Part identifier
@@ -10585,8 +10617,10 @@ classes:
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   languages:
     description: Look up table for all languages, used to give structure to the translation
       table. The short name for the table (partID) can be found in the instructions
@@ -10613,36 +10647,44 @@ classes:
         notes:
         - Follow the ISO639-3 codes for now.
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       langFam:
         description: Specifies the language family of a given language for translation
           and language tracking purposes.
         title: Language family
         notes:
         - Part of the metedata for a languageID.
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       langName:
         description: Specifies the name of the language in roman alphabet characters
           for translation and language tracking purposes.
         title: Language name
         notes:
         - Part of the metedata for a languageID.
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       natName:
         description: The native name of the language, i.e. what the language is called
           by its speakers.
         title: Native Name
         notes:
         - Part of the metedata for a languageID.
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       iso6391:
         description: The first part of the ISO 639 series of international standards
           for language codes. Part 1 covers the registration of two-letter codes.
@@ -10651,9 +10693,11 @@ classes:
         title: ISO639-1
         notes:
         - Part of the metedata for a languageID.
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       iso6392T:
         description: A set of international standards that lists short codes for language
           names. These ISO639-2 are the three-letter codes defined in part two (ISO
@@ -10662,9 +10706,11 @@ classes:
         title: ISO639-2T
         notes:
         - Part of the metedata for a languageID.
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       firstReleased:
         description: The version in which a part was first released
         title: First released version
@@ -10693,8 +10739,10 @@ classes:
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   Container:
     from_schema: https://onto.phes-odm.org/odm/v3
     slots:
@@ -10861,13 +10909,17 @@ classes:
         title: Report ID
         notes:
         - Report IDs cannot be repeated.
-        range: measures
         pattern: ^.{0,30}$
+        any_of:
+        - range: measures
+        - range: genMissingnessSet
       measureSetRepID:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
-        range: measureSets
         pattern: ^.{0,30}$
+        any_of:
+        - range: measureSets
+        - range: genMissingnessSet
       phActionID:
         description: Unique identifier for public health actions.
         title: Public Health Action ID
@@ -10884,8 +10936,10 @@ classes:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       accessNum:
         description: The accession number for the data entry in the given data repository
           or hosting platform.
@@ -10915,16 +10969,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   protocolSteps:
     description: The table for collecting metadata on individual steps in a protocol,
       methodological process, or assay. The short name for the table (partID) can
@@ -10955,14 +11013,18 @@ classes:
         - Protocol Steps are the component parts of a larger protocols, the latter
           being linked to specific measure reports.
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       method:
         description: A procedure for collecting a sample or performing a measure.
         title: Method
-        range: methods
         pattern: ^.{0,30}$
+        any_of:
+        - range: methods
+        - range: genMissingnessSet
       measure:
         description: A measurement or observation of any substance including a biological,
           physical or chemical substance.
@@ -10970,29 +11032,37 @@ classes:
         notes:
         - An measurement is recorded from a specimen (i.e. a site, sample, person
           or population). Measures are organized into groups and classes (sub-groups).
-        range: measurements
         pattern: ^.{0,100}$
+        any_of:
+        - range: measurements
+        - range: genMissingnessSet
       summ:
         description: Short description of the assay and how it is different from the
           other assay methods.
         title: Summary
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       sourceStep:
         description: Specifies the protocol step which serves as a basis for a given
           protocol step.
         title: Protocol step source ID
         notes:
         - Populate with a protocol step ID (stepID).
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       stepVer:
         description: Specifies the version of a given protocol step.
         title: Protocol step version
         notes:
         - Version of the method step. Semantic versioning is recommended.
-        range: string
         pattern: ^.{0,50}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       refLink:
         description: Link to the reference material for a part. May link to literature
           on a method, measure, etc.
@@ -11001,24 +11071,32 @@ classes:
         - Link to standard operating procedure for a measure or part. Part reference
           is a reference to a technical document that describes the part in detail.
           The reference could be a URL, DOI, or reference to a techincal report.
-        range: string
         pattern: ^.{0,255}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: contacts
         pattern: ^.{0,30}$
+        any_of:
+        - range: contacts
+        - range: genMissingnessSet
       instrumentID:
         description: A unique identifier for an instrument.
         title: Instrument ID
-        range: instruments
         pattern: ^.{0,30}$
+        any_of:
+        - range: instruments
+        - range: genMissingnessSet
       value:
         description: Value of a measure, observation or attribute.
         title: Value
@@ -11033,16 +11111,20 @@ classes:
         - Different units that are used to describe measurement values. Units are
           combined into UnitSetIDs. Please requests new units by creating an issue
           in the ODM repository.
-        range: units
         pattern: ^.{0,30}$
+        any_of:
+        - range: units
+        - range: genMissingnessSet
       aggregation:
         description: Statistical measures used to report a measure. Each aggregation
           has a corresponding value.
         title: Aggregation
         notes:
         - The default aggregation is `single`, which corresponds to a single measurement.
-        range: aggregations
         pattern: ^.{0,30}$
+        any_of:
+        - range: aggregations
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -11059,16 +11141,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   protocolRelationships:
     description: The table that contains the organizational information and details
       (such as order) about a given protocol, recorded as a series of protocol steps
@@ -11096,18 +11182,22 @@ classes:
           and primary key for each row of the protocolRelationships table.
         title: Synthetic ID for the protocolRelationships table
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,50}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       protocolIDContainer:
         description: Unique identifier for the protocol and the steps and other protocols
           that make it up.
         title: Protocol ID container
         notes:
         - Protocol ID Container in popuated by a protocolID (partID = protocolID)
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       protocolIDObj:
         description: The object of the relationship between one protocol and another
           protocol or step, within a given protocol ID container.
@@ -11117,8 +11207,10 @@ classes:
           `protocolIDSub` or `stepIDSub` and `relationshipID`, the protocol relationship
           is defined as: [protocolIDSubject or stepIDSubject]  [relationshipID] [protocolIDObject
           or stepIDObject]. Ex: stepIDSubject  precedes protocolIDObject.'
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       stepIDObj:
         description: The object of the relationship between one protocol step and
           another step or protocol, within a given protocol ID container.
@@ -11128,8 +11220,10 @@ classes:
           with `protocolIDSub` or `stepIDSub` and `relationshipID` the row of `protocolRelationships`
           should say: [protocolIDSubject or stepIDSubject]  [relationshipID] [protocolIDObject
           or stepIDObject]. Ex: stepIDSubject  precedes protocolIDObject.'
-        range: integer
         minimum_value: 1
+        any_of:
+        - range: integer
+        - range: genMissingnessSet
       relationshipID:
         description: Attribute for specifying the relationship between a sample subject
           and object.
@@ -11137,9 +11231,11 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
-        range: relSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: relSet
+        - range: genMissingnessSet
       protocolIDSub:
         description: The subject of the relationship between one protocol and another
           protocol or step, within a given protocol ID container.
@@ -11149,8 +11245,10 @@ classes:
           `protocolIDObj` or `stepIDObj` and `relationshipID` the row of `protocolRelationships`
           should say: [protocolIDSubject or stepIDSubject]  [relationshipID] [protocolIDObject
           or stepIDObject]. Ex: stepIDSubject  precedes protocolIDObject.'
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       stepIDSub:
         description: The subject of the relationship between one protocol step and
           another step or protocol, within a given protocol ID container.
@@ -11160,8 +11258,10 @@ classes:
           `protocolIDSub` or `stepIDSub` and `relationshipID` the row of `protocolRelationships`
           should say: [protocolIDSubject or stepIDSubject]  [relationshipID] [protocolIDObject
           or stepIDObject]. Ex: stepIDSubject  precedes protocolIDObject.'
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -11178,16 +11278,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   samples:
     description: The table that contains information about a sample. A sample is defined
       as a representative volume of wastewater (or other forms of water or liquid),
@@ -11232,31 +11336,41 @@ classes:
         notes:
         - Suggestion:siteID-date-index.
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
-        range: protocols
         pattern: ^.{0,30}$
+        any_of:
+        - range: protocols
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: string
         pattern: ^.{0,100}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: contacts
         pattern: ^.{0,30}$
+        any_of:
+        - range: contacts
+        - range: genMissingnessSet
       siteID:
         description: Unique identifier for the location where a sample was taken.
         title: Site ID
-        range: sites
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: sites
+        - range: genMissingnessSet
       purpose:
         description: The reason the measure or sample was taken.
         title: Purpose
@@ -11282,8 +11396,10 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: datasets
         pattern: ^.{0,30}$
+        any_of:
+        - range: datasets
+        - range: genMissingnessSet
       origin:
         description: An attribute of a sample specifying the origin.
         title: Sample origin
@@ -11313,41 +11429,53 @@ classes:
         title: Collection period
         notes:
         - 'Examples: 1 hour, 6 hours, 24 hours'
-        range: float
         required: true
         minimum_value: 1
+        any_of:
+        - range: float
+        - range: genMissingnessSet
       collNum:
         description: The number of subsamples that were combined to create the sample.
           Use NA for continuous, proportional or passive sampling.
         title: Collection number
-        range: integer
         required: true
         minimum_value: 1
+        any_of:
+        - range: integer
+        - range: genMissingnessSet
       pooled:
         description: Is this a pooled sample, and therefore composed of multiple child
           samples obtained at different sites
         title: Pooled
-        range: booleanSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: booleanSet
+        - range: genMissingnessSet
       collDT:
         description: For grab samples this is the date, time and timezone the sample
           was taken.
         title: Collection date time
-        range: datetime
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       collDTStart:
         description: For integrated time averaged samples this is the date, time and
           timezone the sample was started being taken.
         title: Collection date time start
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       collDTEnd:
         description: For integrated time average samples this is the date, time and
           timezone the sample was finished being taken.
         title: Collection date time end
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       collDate:
         description: Sample collection date, where time is reported in a separate
           field.
@@ -11363,8 +11491,10 @@ classes:
         title: Collection Approximate Time Period
         notes:
         - used when exact time in unknown.
-        range: collAppxSet
         pattern: ^.{0,50}$
+        any_of:
+        - range: collAppxSet
+        - range: genMissingnessSet
       epiWeekStart:
         description: Start date of a given epi week. Noted that not all epi weeks
           use the same start dates, despite being a standard, so including the start
@@ -11393,19 +11523,25 @@ classes:
         description: Date that the sample was sent from the collection site to the
           lab.
         title: Date sample was sent
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       recDate:
         description: The date the sample was received at the laboratory for analysis.
         title: Date sample recieved
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       reportable:
         description: Flag for whether a measure is reportable or not, based on confidence
           in the measure and methods applied.
         title: Reportable
-        range: booleanSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: booleanSet
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -11422,16 +11558,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   polygonRelationships:
     description: Table for recording the relationships between polygons. The short
       name for the table (partID) can be found in the instructions field.
@@ -11470,8 +11610,10 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
-        range: relSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: relSet
+        - range: genMissingnessSet
       polygonIDObject:
         description: The polygon ID Object in a polygon relationship.
         title: Polygon ID Object
@@ -11497,16 +11639,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   measures:
     description: The table that contains information and details about a given measure.
       The short name for the table (partID) can be found in the instructions field.
@@ -11557,22 +11703,28 @@ classes:
         notes:
         - Report IDs cannot be repeated.
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
-        range: protocols
         pattern: ^.{0,30}$
+        any_of:
+        - range: protocols
+        - range: genMissingnessSet
       sampleID:
         description: Unique identifier for a sample.
         title: Sample ID
         notes:
         - Suggestion:siteID-date-index.
-        range: samples
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: samples
+        - range: genMissingnessSet
       purpose:
         description: The reason the measure or sample was taken.
         title: Purpose
@@ -11588,13 +11740,17 @@ classes:
         notes:
         - A polygon is a geographic are representing the capment area of an environmental
           sample.
-        range: polygons
         pattern: ^.{0,30}$
+        any_of:
+        - range: polygons
+        - range: genMissingnessSet
       siteID:
         description: Unique identifier for the location where a sample was taken.
         title: Site ID
-        range: sites
         pattern: ^.{0,30}$
+        any_of:
+        - range: sites
+        - range: genMissingnessSet
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
@@ -11603,13 +11759,17 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: datasets
         pattern: ^.{0,30}$
+        any_of:
+        - range: datasets
+        - range: genMissingnessSet
       measureSetRepID:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
-        range: measureSets
         pattern: ^.{0,30}$
+        any_of:
+        - range: measureSets
+        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -11618,19 +11778,25 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       aDateStart:
         description: Date the measurement or analysis was started.
         title: Analysis date start
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       aDateEnd:
         description: Date the measurement or analysis was completed.
         title: Analysis date end
-        range: datetime
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       epiWeekStart:
         description: Start date of a given epi week. Noted that not all epi weeks
           use the same start dates, despite being a standard, so including the start
@@ -11675,8 +11841,10 @@ classes:
           findings to the public health or other enity who ordered the measure or
           is responsible for action. Use the analyses end date if the measure is part
           of a research study or other purpose that does not have a reporting entity.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       compartment:
         description: The attribute identifying the substance from which where a sample
           was taken. For more information, see partID = compartment.
@@ -11735,9 +11903,11 @@ classes:
         notes:
         - An measurement is recorded from a specimen (i.e. a site, sample, person
           or population). Measures are organized into groups and classes (sub-groups).
-        range: measurements
         required: true
         pattern: ^.{0,100}$
+        any_of:
+        - range: measurements
+        - range: genMissingnessSet
       value:
         description: Value of a measure, observation or attribute.
         title: Value
@@ -11753,18 +11923,22 @@ classes:
         - Different units that are used to describe measurement values. Units are
           combined into UnitSetIDs. Please requests new units by creating an issue
           in the ODM repository.
-        range: units
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: units
+        - range: genMissingnessSet
       aggregation:
         description: Statistical measures used to report a measure. Each aggregation
           has a corresponding value.
         title: Aggregation
         notes:
         - The default aggregation is `single`, which corresponds to a single measurement.
-        range: aggregations
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: aggregations
+        - range: genMissingnessSet
       valTreat:
         description: A field which specifies what kinds of data treatments or the
           nature of the measurement value.
@@ -11797,32 +11971,42 @@ classes:
       index:
         description: Index number in case the measurement was taken multiple times.
         title: Index
-        range: string
         pattern: ^.{0,50}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       measureLic:
         description: Specifies the access and use licensing for a given single measurement.
         title: Measure license
         notes:
         - Populated by partID = licenseID
-        range: licSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: licSet
+        - range: genMissingnessSet
       reportable:
         description: Flag for whether a measure is reportable or not, based on confidence
           in the measure and methods applied.
         title: Reportable
-        range: booleanSet
         pattern: ^.{0,30}$
+        any_of:
+        - range: booleanSet
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: contacts
         pattern: ^.{0,30}$
+        any_of:
+        - range: contacts
+        - range: genMissingnessSet
       refLink:
         description: Link to the reference material for a part. May link to literature
           on a method, measure, etc.
@@ -11831,8 +12015,10 @@ classes:
         - Link to standard operating procedure for a measure or part. Part reference
           is a reference to a technical document that describes the part in detail.
           The reference could be a URL, DOI, or reference to a techincal report.
-        range: string
         pattern: ^.{0,255}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -11849,16 +12035,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   parts:
     description: Look up table containing all parts in of the data model. Contains
       all parts, including self-referential parts. The short name for the table (partID)
@@ -12043,23 +12233,29 @@ classes:
         notes:
         - The domain ID that corresponds to a given part. Mostly applicable for measures,
           methods, units, and aggregations.
-        range: domains
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: domains
+        - range: genMissingnessSet
       specimenSet:
         description: An idenfication of a set of specimens that can be applied for
           a measure or method.
         title: Specimen Set Header
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       compartmentSet:
         description: An idenfication of a set of compartments that can be applied
           for a measure or method.
         title: Compartment Set Header
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       group:
         description: Unique identifier for a group of measures. Mostly applicable
           for measures, methods, units, and aggregations.
@@ -12119,40 +12315,52 @@ classes:
         description: The set for a measure, method, or attribute. Only applicable
           for categorical fields, and the categories that populate them.
         title: Measure, Method, or Attribute Set Header
-        range: mmaSets
         pattern: ^.{0,30}$
+        any_of:
+        - range: mmaSets
+        - range: genMissingnessSet
       unitSet:
         description: An idenfication of a set of units that can be used for a measure
           or method.
         title: Unit set
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       aggragationScale:
         description: A scale used for an aggregation. Only applicable for measures
           and units.
         title: Aggregation scale
-        range: aggregationScales
         pattern: ^.{0,30}$
+        any_of:
+        - range: aggregationScales
+        - range: genMissingnessSet
       aggregationSet:
         description: The aggregation set for a unit.
         title: Aggregation set
-        range: aggregationSets
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: aggregationSets
+        - range: genMissingnessSet
       qualityIndSet:
         description: The quality set that corresponds to a given part. Only applicable
           for samples and measures.
         title: Quality Indicator Set Header
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       missingnessSet:
         description: Missingness sets for measures, methods or attributes.
         title: Missingness Set
         notes:
         - Inputted data into an ODM field may have missing data. The missingness set
           lists valid missing categories for the measure, method, or attribute.
-        range: missingnessSets
         pattern: ^.{0,30}$
+        any_of:
+        - range: missingnessSets
+        - range: genMissingnessSet
       status:
         description: Whether the part is still active and can be used in the most
           current ODM version. Values are 'active' or 'inactive'.
@@ -12711,8 +12919,10 @@ classes:
         - Link to standard operating procedure for a measure or part. Part reference
           is a reference to a technical document that describes the part in detail.
           The reference could be a URL, DOI, or reference to a techincal report.
-        range: string
         pattern: ^.{0,255}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       dataTypes:
         description: 'The data type for a part. Data types used in the ODM include:
           varchar, booleen, float, category, date, time, datetime, url, email. dataType
@@ -12809,8 +13019,10 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       calcType:
         description: A field to explain the purpose/nature of a single calculation/data
           treatment.
@@ -12852,8 +13064,10 @@ classes:
         - Link to standard operating procedure for a measure or part. Part reference
           is a reference to a technical document that describes the part in detail.
           The reference could be a URL, DOI, or reference to a techincal report.
-        range: string
         pattern: ^.{0,255}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       sourceCode:
         description: The source code for the calculation/data treatment, more applicable
           for algorithms/more complex steps.
@@ -12879,16 +13093,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   phActions:
     description: Table for recording information on public health actions. The short
       name for the table (partID) can be found in the instructions field.
@@ -12926,24 +13144,32 @@ classes:
         title: Report ID
         notes:
         - Report IDs cannot be repeated.
-        range: measures
         pattern: ^.{0,30}$
+        any_of:
+        - range: measures
+        - range: genMissingnessSet
       measureSetRepID:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
-        range: measureSets
         pattern: ^.{0,30}$
+        any_of:
+        - range: measureSets
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       siteID:
         description: Unique identifier for the location where a sample was taken.
         title: Site ID
-        range: sites
         pattern: ^.{0,30}$
+        any_of:
+        - range: sites
+        - range: genMissingnessSet
       actionType:
         description: The type of public health action being taken.
         title: Public health action type
@@ -12986,16 +13212,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   protocols:
     description: The table for protocols. The short name for the table (partID) can
       be found in the instructions field.
@@ -13020,15 +13250,19 @@ classes:
         title: Source Protocol ID
         notes:
         - Populate with protocolID.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -13037,14 +13271,18 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       summ:
         description: Short description of the assay and how it is different from the
           other assay methods.
         title: Summary
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       refLink:
         description: Link to the reference material for a part. May link to literature
           on a method, measure, etc.
@@ -13053,26 +13291,34 @@ classes:
         - Link to standard operating procedure for a measure or part. Part reference
           is a reference to a technical document that describes the part in detail.
           The reference could be a URL, DOI, or reference to a techincal report.
-        range: string
         pattern: ^.{0,255}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: contacts
         pattern: ^.{0,30}$
+        any_of:
+        - range: contacts
+        - range: genMissingnessSet
       protocolVersion:
         description: Specifies the version of a method set.
         title: Protocol version
         notes:
         - Version of the method set. Semantic versioning is recommended.
-        range: integer
         minimum_value: 1
+        any_of:
+        - range: integer
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -13089,16 +13335,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   sets:
     description: Look up table for all sets, managing how categorical inputs for various
       methods and attributes are grouped together. This table manages many-to-many
@@ -13125,18 +13375,22 @@ classes:
           robust relational database structure.
         title: Composite Set ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,60}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       setID:
         description: The unique identifier of a value set.
         title: Set ID
         notes:
         - A set is a group of units, attributes, categories, specimens, or compartments
           that can be used for a measure, method or attribute.
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       setType:
         description: The type of set. i.e. quality set, aggregation set, unit set
         title: Set type
@@ -13178,10 +13432,12 @@ classes:
         description: The numeric value that corresponds to a given value in a set,
           defined in the sets table.
         title: Enumeration for set values
-        range: integer
         required: true
         minimum_value: 0
         maximum_value: 100
+        any_of:
+        - range: integer
+        - range: genMissingnessSet
       status:
         description: Whether the part is still active and can be used in the most
           current ODM version. Values are 'active' or 'inactive'.
@@ -13221,8 +13477,10 @@ classes:
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   polygons:
     description: The table that contains information about the geometry of a geographic
       area. The short name for the table (partID) can be found in the instructions
@@ -13252,9 +13510,11 @@ classes:
         - A polygon is a geographic are representing the capment area of an environmental
           sample.
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
@@ -13263,8 +13523,10 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: datasets
         pattern: ^.{0,30}$
+        any_of:
+        - range: datasets
+        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -13273,8 +13535,10 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       descr:
         description: A detailed description of a measure, method, or attribute.
         title: Description
@@ -13284,8 +13548,10 @@ classes:
           should allow any person who generates environment surveillance data to know
           how to identify how to record their data elements in the ODM. partReference
           can be used to further describe a part.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       geoType:
         description: Type of geography that is represented by the polygon.
         title: Type of geography
@@ -13297,22 +13563,28 @@ classes:
       geoEPSG:
         description: The unique EPSG code specifying a given geospatial area.
         title: European Petroleum Survey Group Coordinates
-        range: float
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: float
+        - range: genMissingnessSet
       geoWKT:
         description: Well-known text of the polygon
         title: Well-known text
-        range: string
         required: true
         pattern: ^.{0,63}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       fileLocation:
         description: The location of the file containing the geometry of the polygon.
         title: File location of polygon
         notes:
         - File path specified, or a URL
-        range: string
         pattern: ^.{0,65535}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       refLink:
         description: Link to the reference material for a part. May link to literature
           on a method, measure, etc.
@@ -13321,14 +13593,18 @@ classes:
         - Link to standard operating procedure for a measure or part. Part reference
           is a reference to a technical document that describes the part in detail.
           The reference could be a URL, DOI, or reference to a techincal report.
-        range: string
         pattern: ^.{0,255}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       poLic:
         description: The license for the availability of the polygon shapefile.
         title: Polygon License
@@ -13337,8 +13613,10 @@ classes:
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: contacts
         pattern: ^.{0,30}$
+        any_of:
+        - range: contacts
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -13355,16 +13633,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   datasets:
     description: A report table for capturing details about data's parental data set
       and data custodians. Supplying attribution for data collectors. The short name
@@ -13391,8 +13673,10 @@ classes:
       parDatasetID:
         description: The datasetID that is a parent to another datasetID.
         title: Parent dataset ID
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
@@ -13402,14 +13686,18 @@ classes:
           responsible for generating environmental data. (suggestion for a default
           name convention.)
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       datasetDate:
         description: Specifies the date a given dataset was created.
         title: Dataset creation date
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -13418,8 +13706,10 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       license:
         description: The license of a dataset.
         title: License
@@ -13427,9 +13717,11 @@ classes:
         - Specify the dataset's license name or provide a description of the license.
           Individual measures may possess their own licenses, which take precedence
           over the overall database license.
-        range: licSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: licSet
+        - range: genMissingnessSet
       descr:
         description: A detailed description of a measure, method, or attribute.
         title: Description
@@ -13439,8 +13731,10 @@ classes:
           should allow any person who generates environment surveillance data to know
           how to identify how to record their data elements in the ODM. partReference
           can be used to further describe a part.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       refLink:
         description: Link to the reference material for a part. May link to literature
           on a method, measure, etc.
@@ -13449,8 +13743,10 @@ classes:
         - Link to standard operating procedure for a measure or part. Part reference
           is a reference to a technical document that describes the part in detail.
           The reference could be a URL, DOI, or reference to a techincal report.
-        range: string
         pattern: ^.{0,255}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lang:
         description: Language code for translation purposes. Specifies the langage
           for each translation, other than the default English. Uses the ISO-6393
@@ -13458,35 +13754,45 @@ classes:
         title: Language ID
         notes:
         - Follow the ISO639-3 codes for now.
-        range: languages
         pattern: ^.{0,30}$
+        any_of:
+        - range: languages
+        - range: genMissingnessSet
       funderCont:
         description: A unique identifier for a funder.
         title: Funder contact ID
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       custodyCont:
         description: A unique identifier for data custodians.
         title: Custody Contact ID
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       funderID:
         description: The funding agency of the dataset.
         title: Funding agency ID
         notes:
         - Use Organization ID to populate this field, and the organizations table
           to describe contact information and other details for the funding agency.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       custodyID:
         description: The data custodian of a database.
         title: Data custodian ID
         notes:
         - Use Organization ID to populate this field, and the organizations table
           to describe contact information and other details for the data custodian.
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       originalFormat:
         description: The original structure or model used to record and store the
           data. This helps indicate if data have been transformed or mapped into the
@@ -13510,16 +13816,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   addresses:
     description: The table that contains information about addresses. Addresses can
       recorded for sites, organizations or contacts (indivduals). The Sites, Organizations,
@@ -13542,47 +13852,61 @@ classes:
         description: A unique identifier for an address.
         title: Address ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       addL1:
         description: Line 1 (the street name, number and direction) for a given address.
         title: Address Line 1
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       addL2:
         description: Line 2 (the unit number) for a given address.
         title: Address Line 2
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       city:
         description: The city where a site or organization is located; part of the
           address.
         title: City
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       stateProvReg:
         description: The state, province, or region where a site or organization is
           located; part of the address.
         title: State, Province, or Region
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       pCode:
         description: The zip code or postal code for a given address, specifying a
           specifc geographic area.
         title: Postal or Zip Code
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       country:
         description: The country where a site or organization is located; part of
           the address.
         title: Country
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -13599,16 +13923,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   sampleRelationships:
     description: Table for recording the relationships between samples.Samples can
       be pooled or split. The sample relationships table holds information on parent-child
@@ -13630,9 +13958,11 @@ classes:
           and primary key for each row of the sampleRelationships table.
         title: Synthetic ID for the sampleRelationships table
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,50}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       sampleIDSubject:
         description: Populated by `sampleID` - this specifies the subject of a sample
           relationship.
@@ -13641,9 +13971,11 @@ classes:
         - 'Use `sampleID` for this field. Together with `sampleIDSub` and `relationshipID`
           the row of the `sampleRelationships` should say: [sampleIDSubject] is a[relationshipID]
           of [sampleIDObject]'
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       relationshipID:
         description: Attribute for specifying the relationship between a sample subject
           and object.
@@ -13651,9 +13983,11 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
-        range: relSet
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: relSet
+        - range: genMissingnessSet
       sampleIDObject:
         description: Populated by `sampleID` - this specifies the object of a sample
           relationship.
@@ -13662,9 +13996,11 @@ classes:
         - 'Use `sampleID` for this field. Together with `sampleIDSub` and `relationshipID`
           the row of the `sampleRelationships` should say: [sampleIDSubject] is a[relationshipID]
           of [sampleIDObject]'
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -13681,16 +14017,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   instruments:
     description: The table that contains information about instruments. The short
       name for the table (partID) can be found in the instructions field.
@@ -13713,9 +14053,11 @@ classes:
         description: A unique identifier for an instrument.
         title: Instrument ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -13724,19 +14066,25 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       model:
         description: Model number or version of the instrument.
         title: Model
-        range: string
         required: true
         pattern: ^.{0,100}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       manufacturer:
         description: Manufacturer of an instrument.
         title: Manufacturer
-        range: string
         pattern: ^.{0,100}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       descr:
         description: A detailed description of a measure, method, or attribute.
         title: Description
@@ -13746,8 +14094,10 @@ classes:
           should allow any person who generates environment surveillance data to know
           how to identify how to record their data elements in the ODM. partReference
           can be used to further describe a part.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       refLink:
         description: Link to the reference material for a part. May link to literature
           on a method, measure, etc.
@@ -13756,8 +14106,10 @@ classes:
         - Link to standard operating procedure for a measure or part. Part reference
           is a reference to a technical document that describes the part in detail.
           The reference could be a URL, DOI, or reference to a techincal report.
-        range: string
         pattern: ^.{0,255}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       insType:
         description: Type of instrument used to perform the measurement.
         title: Instrument Type
@@ -13769,13 +14121,17 @@ classes:
       insTypeOth:
         description: Description of the instrument in case it is not listed in instrumentType.
         title: Describe other instrument type, if applicable
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       index:
         description: Index number in case the measurement was taken multiple times.
         title: Index
-        range: string
         pattern: ^.{0,50}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -13792,16 +14148,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   sites:
     description: The table that contains information about a site; the location where
       an environmental sample was taken. The site of an eviromental sample. Information
@@ -13839,15 +14199,19 @@ classes:
         - An example would be surface testing in a LTC facility. The LTC facility
           would be the parentSiteID, and the various rooms/surfaces would be the sub-sites,
           or child-sites.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       siteID:
         description: Unique identifier for the location where a sample was taken.
         title: Site ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
@@ -13856,16 +14220,20 @@ classes:
         - Where possible, datasetID name should correspond the orignial data custodian
           responsible for generating environmental data. (suggestion for a default
           name convention.)
-        range: datasets
         pattern: ^.{0,30}$
+        any_of:
+        - range: datasets
+        - range: genMissingnessSet
       polygonID:
         description: Unique identifier for the polygon.
         title: Polygon ID
         notes:
         - A polygon is a geographic are representing the capment area of an environmental
           sample.
-        range: polygons
         pattern: ^.{0,30}$
+        any_of:
+        - range: polygons
+        - range: genMissingnessSet
       siteType:
         description: Type of site or institution where sample was taken.
         title: Site Type
@@ -13889,20 +14257,26 @@ classes:
       addressID:
         description: A unique identifier for an address.
         title: Address ID
-        range: addresses
         pattern: ^.{0,30}$
+        any_of:
+        - range: addresses
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: contacts
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: contacts
+        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -13911,8 +14285,10 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       descr:
         description: A detailed description of a measure, method, or attribute.
         title: Description
@@ -13922,8 +14298,10 @@ classes:
           should allow any person who generates environment surveillance data to know
           how to identify how to record their data elements in the ODM. partReference
           can be used to further describe a part.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       repOrg1:
         description: The primary or most responsible authority for rountine surveillance
           reports or findings, or where the site is located.
@@ -13937,8 +14315,10 @@ classes:
           defined as 'The public health department or region where the site is located.
           See also `healthReg` if there is a separate regional health care delivery
           authority.`
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       repOrg2:
         description: The secondary, additional or alternative authority for rountine
           surveillance reports or findings, or where the site is located.
@@ -13951,33 +14331,43 @@ classes:
           If the attributes are not specified, the default is version 1.1.0 `healthRegion`,
           The health planning authority where is site is located. defined as 'The
           public health department or region where the site is located.'
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       healthRegion:
         description: A free-text variable for listing the health region for a given
           site.
         title: Health Region for a Site
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       geoLat:
         description: 'Geographical location, latitude in decimal coordinates, ie.:
           (45.424721)'
         title: Latitude
-        range: float
         minimum_value: -90
         maximum_value: 90
+        any_of:
+        - range: float
+        - range: genMissingnessSet
       geoLong:
         description: 'Geographical location, longitude in decimal coordinates, ie.:
           (-75.695000)'
         title: Longitude
-        range: float
         minimum_value: -180
         maximum_value: 180
+        any_of:
+        - range: float
+        - range: genMissingnessSet
       geoEPSG:
         description: The unique EPSG code specifying a given geospatial area.
         title: European Petroleum Survey Group Coordinates
-        range: float
         pattern: ^.{0,30}$
+        any_of:
+        - range: float
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -13994,16 +14384,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   contacts:
     description: The table that contains information about a contact; a person who
       is the contact of a site or laboratory. The short name for the table (partID)
@@ -14025,42 +14419,56 @@ classes:
         description: A unique identifier for a given contact person.
         title: Contact ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         required: true
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       firstName:
         description: Specifies the first name of a given contact.
         title: First name of contact
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lastName:
         description: Specifies the last name of a given contact.
         title: Last name of contact
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       email:
         description: Contact e-mail address, for the lab.
         title: Contact email
-        range: string
         required: true
         pattern: ^.{0,100}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       coPhone:
         description: Contact phone number, for the lab.
         title: Contact phone
-        range: string
         pattern: ^.{10,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       role:
         description: Specifies the organizational role of a given contact.
         title: Role of contact
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -14077,16 +14485,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   measureSets:
     description: The table that identifies sets of measures. Examples of measure sets
       include a set of replicates, dilutions (used to generate a Ct curve) or varients
@@ -14107,14 +14519,18 @@ classes:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
         identifier: true
-        range: string
         required: true
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
-        range: protocols
         pattern: ^.{0,30}$
+        any_of:
+        - range: protocols
+        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -14123,19 +14539,25 @@ classes:
         - Name of any entity. Use a prefix to distinguish names from different report
           tables. See fully specified name (FSN) list.  i.e. Si-name = Site name,
           Po-name = Polygon name, Or-name = Organization name, Me-name = Method-name.
-        range: string
         pattern: ^.{0,30}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-        range: organizations
         pattern: ^.{0,100}$
+        any_of:
+        - range: organizations
+        - range: genMissingnessSet
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
-        range: contacts
         pattern: ^.{0,30}$
+        any_of:
+        - range: contacts
+        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -14152,16 +14574,20 @@ classes:
           delete-and-replace approach where the original entry is deleted and replaced
           by a new entry. In this approach, the 'lastEdited' field indicates the delete
           and replace occurred.
-        range: datetime
         pattern: ^.{0,30}$
+        any_of:
+        - range: datetime
+        - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
           attributes
         title: Notes
         notes:
         - There is no recommended structure of a note. Use notes as needed.
-        range: string
         pattern: ^.{0,1000}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   countries:
     description: Look up table for the possible country inputs. The short name for
       the table (partID) can be found in the instructions field.
