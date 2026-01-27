@@ -25,6 +25,8 @@ ignored."""
 
 OUTPUT_DIR_HELP = """Directory to save all the cleaned data to."""
 
+LOG_FILE_HELP = """The Excel file to save the log of changes to."""
+
 MAX_ROWS_HELP = """The maximum number of rows to clean from each input data
 file. If 0 then map all rows."""
 
@@ -39,6 +41,7 @@ performed"""
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
+    log_file: Annotated[str, typer.Option(show_default=False, help=LOG_FILE_HELP)],
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
     schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
 ):
@@ -51,11 +54,12 @@ def main(
         data_files=data_files,
         data_frames=None,
         output_dir=output_dir,
+        log_file=log_file,
         max_rows=max_rows,
         # @TODO: Do not hardcode these!
         clean_operations=[
             {
-                "format_columns": [
+                "format_and_match_columns": [
                     "lowercase",
                     {"remove_chars": "-"},
                     "alpha_numeric_underscore",
@@ -65,11 +69,10 @@ def main(
             },
             {
                 "add_ontology_ids_to_enums": {
-                    "match_ontology_id": r"\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\]$",
+                    "match_ontology_id": "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$",
                 }
             },
             {"correct_enums": True},
-            {"remove_unknown_columns": True},
             {"check_patterns": True},
         ],
     )
