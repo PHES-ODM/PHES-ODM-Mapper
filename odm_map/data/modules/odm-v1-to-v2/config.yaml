@@ -6,9 +6,10 @@ steps:
   - action: clean
     params:
       schema: "{shared}/schemas/odm_v1.yaml"
+      log_file: "{output_dir}/logs/change_log_input.xlsx"
       operations:
+        - format_and_match_columns: True
         - correct_enums: True
-        - remove_unknown_columns: True
   - action: save
     if: "{debug_mode}"
     params:
