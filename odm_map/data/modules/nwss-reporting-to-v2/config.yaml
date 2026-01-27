@@ -6,9 +6,10 @@ steps:
   - action: clean
     params:
       schema: schemas/nwss_reporting.yaml
+      log_file: "{output_dir}/logs/change_log_input.xlsx"
       operations:
+        - format_and_match_columns: True
         - correct_enums: True
-        - remove_unknown_columns: True
   - action: save
     if: "{debug_mode}"
     params:
@@ -42,6 +43,15 @@ steps:
       schema: "{shared}/schemas/odm_v3.yaml"
       operations:
         - correct_enums: True
+  - action: filter
+    params:
+      filters: "{shared}/filters/odm_vx_filter_required_values.csv"
+      mark_instead_of_drop: "{debug_mode}"
+  - action: drop_columns
+    if: "{not_debug_mode}"
+    params:
+      keep_columns_in_schema_only: True
+      schema: "{shared}/schemas/odm_v3.yaml"
   - action: save
     params:
       output_dir: "{output_dir}"
