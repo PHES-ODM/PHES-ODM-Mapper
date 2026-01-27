@@ -189,9 +189,11 @@ class Pipeline(object):
             if action == "clean":
                 schema = self.module.get_module_path(params.get("schema"))
                 clean_operations = params.get("operations", [])
+                log_file = self.get_formatted_string_key(params, "log_file")
                 data_frames = action_clean_data(
                     data_frames=data_frames,
                     schema=schema,
+                    log_file=log_file,
                     clean_operations=clean_operations,
                 )
             elif action == "drop_columns":
