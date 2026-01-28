@@ -25,7 +25,14 @@ ignored."""
 
 OUTPUT_DIR_HELP = """Directory to save all the cleaned data to."""
 
-LOG_FILE_HELP = """The Excel file to save the log of changes to."""
+LOG_FILE_HELP = """The Excel or CSV file to save the log of changes to. For
+CSV files, since there may be multiple logs to save, the file name must
+have the string '{log_name}' in it. This will be replaced with the name for
+each log. For example, for log-file = 'clean_log-{log_name}.csv' and for
+the log named 'Unrecognized enum values', the saved CSV file will be named
+'clean_log-unrecognized_enum_values.csv'. For Excel files, '{log_name}'
+should not be included.
+"""
 
 MAX_ROWS_HELP = """The maximum number of rows to clean from each input data
 file. If 0 then map all rows."""
