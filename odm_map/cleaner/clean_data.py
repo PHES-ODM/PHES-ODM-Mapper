@@ -109,21 +109,34 @@ class DataCleaner(object):
             # Remove empty reports
             reports = {r: df for r, df in reports.items() if len(df) > 0}
 
-            with pd.ExcelWriter(self.log_file) as xl:
-                if len(reports) > 0:
-                    for sheet_name, df in reports.items():
-                        sort_columns = [
-                            LogColumns.CLASS_NAME,
-                            LogColumns.SLOT_NAME,
-                            LogColumns.ROW,
-                        ]
-                        sort_columns = [c for c in sort_columns if c in df.columns]
-                        if sort_columns:
-                            df = df.sort_values(sort_columns)
-                        df.to_excel(xl, sheet_name=sheet_name, index=False)
-                else:
-                    df = pd.DataFrame({"log": ["Nothing to report"]})
-                    df.to_excel(xl, header=False, sheet_name="log", index=False)
+            if len(reports) > 0:
+                # Sort by columns
+                for sheet_name, df in reports.items():
+                    sort_columns = [
+                        LogColumns.CLASS_NAME,
+                        LogColumns.SLOT_NAME,
+                        LogColumns.ROW,
+                    ]
+                    sort_columns = [c for c in sort_columns if c in df.columns]
+                    if sort_columns:
+                        df = df.sort_values(sort_columns)
+                        reports[sheet_name] = df
+
+            if len(reports) == 0:
+                # If there is no report, then create a single report that says "Nothing to report"
+                reports["empty"] = pd.DataFrame({"log": ["Nothing to report"]})
+            if os.path.splitext(self.log_file)[1].lower() == ".csv":
+                # For CSV files, format the string self.log_file with log_name. Make a separate
+                # log file for each log name.
+                for log_name, df in reports.items():
+                    log_name = re.sub("[^A-Za-z0-9]", "_", log_name.lower())
+                    output_file = self.log_file.format(log_name=log_name)
+                    df.to_csv(output_file, index=False)
+            else:
+                # For Excel file, each log gets its own tab
+                with pd.ExcelWriter(self.log_file) as xl:
+                    for log_name, df in reports.items():
+                        df.to_excel(xl, sheet_name=log_name, index=False)
 
             total_rows = sum([len(df) for df in reports.values()])
             logger.info(
@@ -464,7 +477,7 @@ class DataCleaner(object):
                                 LogColumns.SLOT_NAME: slot_name,
                                 LogColumns.VALUE: old_v,
                                 LogColumns.NEW_VALUE: new_v,
-                                LogColumns.ROW: row_idx,
+                                LogColumns.ROW: row_idx + 1,
                                 LogColumns.NOTES: log_note,
                             },
                         )
@@ -484,7 +497,7 @@ class DataCleaner(object):
                                     LogColumns.CLASS_NAME: class_name,
                                     LogColumns.SLOT_NAME: slot_name,
                                     LogColumns.VALUE: old_v,
-                                    LogColumns.ROW: row_idx,
+                                    LogColumns.ROW: row_idx + 1,
                                     LogColumns.NOTES: "Unrecognized enum values",
                                 },
                             )
@@ -536,7 +549,7 @@ class DataCleaner(object):
                             LogColumns.CLASS_NAME: class_name,
                             LogColumns.SLOT_NAME: slot_name,
                             LogColumns.VALUE: str_value,
-                            LogColumns.ROW: idx,
+                            LogColumns.ROW: idx + 1,
                             LogColumns.NOTES: f"Values do not match pattern {pattern}",
                         },
                     )
