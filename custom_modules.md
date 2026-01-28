@@ -156,7 +156,7 @@ Example:
 | Parameter      | Required/Optional | Description |
 | :--------------| :---------------- | :---------- |
 | schema         | Required          | The path to the LinkML schema that the cleaning is based on. This path is relative to the root directory of the module. |
-| log_file       | Optional          | If specified, then the changes made to the data will be reported in this log file. The file must be an Excel .xlsx file. |
+| log_file       | Optional          | If specified, then the changes made to the data will be reported in this log file. This must either be an Excel (.xlsx) or CSV file. For CSV files, since there may be multiple logs to save, the file name must have the string '{log_name}' in it. This will be replaced with the name for each log. For example, for log-file = 'clean_log-{log_name}.csv' and for the log named 'Unrecognized enum values', the saved CSV file will be named 'clean_log-unrecognized_enum_values.csv'. For Excel files, '{log_name}' should not be included. |
 | operations     | Required          | Specify a list of cleaning operations to perform. Each list item is a dictionary with a single key, where the key is the operation name to perform and the value is the parameter(s) to pass to the operation |
 
 Clean the data using the specified LinkML schema. The schema should be for the
