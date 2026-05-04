@@ -383,6 +383,9 @@ enums:
         description: A measure or observation made from a substance in the water,
           including wastewater.
         title: Water compartment
+      hum:
+        description: A measure or observation made about a human.
+        title: Human compartment
   anySpecimenSet:
     description: A specimen set that inculdes any specimen.
     title: Any specimen set
@@ -986,7 +989,6 @@ enums:
       resFinderDtbase:
         description: nomenclaturre from the National Center for Biotechnology Information
         title: ResFinder Database
-      argannotDtbase: {}
       megares:
         description: A comprehensive database of antimicrobial resistance genes.
         title: "MEGARes\_database"
@@ -1000,7 +1002,6 @@ enums:
         description: Database that hosts resistance gene annotations within their
           microbial genome data resources.
         title: PATRIC/RAST Database
-      resistome: {}
       bacMet:
         description: Database of antibacterial biocide and metal resistance genes.
         title: "BacMet\_Database"
@@ -1774,6 +1775,16 @@ enums:
         description: An indicator to show in a wide-name that unit information is
           located in a different column.
         title: See Header for Unit
+      cpWell:
+        description: Gene or variant copies per well.
+        title: Gene copies per well
+      gcRx:
+        description: Gene or variant copies per reaction in PCR
+        title: Gene copies per Reaction
+      percRec:
+        description: Percent of the surrogate recovery for a recovery efficiency control
+          assay (as a unit).
+        title: Percent recovery
   geoTypeSet:
     description: set for different type of geographic components.
     title: Geographic set
@@ -3098,6 +3109,30 @@ enums:
       pop:
         description: An measure or observation for a geographic area or population.
         title: Population
+  polyRelSet:
+    description: Value set for polygon relationships.
+    title: Polygon Relationship Set
+    from_schema: https://onto.phes-odm.org/odm/v3
+    permissible_values:
+      child:
+        description: Indicated that this is a sample generated from (an)other sample(s)
+          either because of pooling or sub-sampling.
+        title: Child relationship
+      colocated:
+        description: Second or multiples samples collected  at or near (one-half to
+          three feet away) from the same selected sample location to determine local
+          variability of a given analyte. Analytical results from co-located samples
+          can be used to assess site variation, but only in the immediate sampling
+          area. Samples at the same location but using different media (i.e. water
+          and air samples, soil and sediment samples) are also classified as co-located
+          samples.
+        title: Co-located relationship
+      overlap:
+        description: Locations/polygon have overlapping portions.
+        title: Overlapping relationship
+      neighbour:
+        description: Locations/polygon are neighbouring eachother.
+        title: Neighbouring relationship
   polySiSpecimenSet:
     description: A specimen set that inculdes polygon or site specimen.
     title: Polygon or site specimen set
@@ -4020,7 +4055,7 @@ enums:
           area. Samples at the same location but using different media (i.e. water
           and air samples, soil and sediment samples) are also classified as co-located
           samples.
-        title: Co-located sample
+        title: Co-located relationship
       fieldReplicate:
         description: A sample divided into two or more homogeneous parts.
         title: Field sample replicate
@@ -4056,7 +4091,7 @@ enums:
           area. Samples at the same location but using different media (i.e. water
           and air samples, soil and sediment samples) are also classified as co-located
           samples.
-        title: Co-located sample
+        title: Co-located relationship
       fieldReplicate:
         description: A sample divided into two or more homogeneous parts.
         title: Field sample replicate
@@ -4077,7 +4112,12 @@ enums:
       unique:
         description: A unique sample, not duplicated.
         title: Unique sample
-      pos: {}
+      posCon:
+        description: A sample or experimental condition where the expected outcome
+          is known to occur, intended to confirm that the experimental setup is working
+          properly. An example would be a wastewater sample spiked with a known quantity
+          of SARS-CoV-2 virus.
+        title: Positive experimental control
       negCon:
         description: A sample or experimental condition where the expected outcome
           should not occur, intended to check the original sample matrix for contamination,
@@ -4316,7 +4356,7 @@ enums:
           area. Samples at the same location but using different media (i.e. water
           and air samples, soil and sediment samples) are also classified as co-located
           samples.
-        title: Co-located sample
+        title: Co-located relationship
       fieldReplicate:
         description: A sample divided into two or more homogeneous parts.
         title: Field sample replicate
@@ -5003,6 +5043,15 @@ enums:
         description: A large commercial complex with multiple retail stores, services,
           and restaurants.
         title: Shopping mall
+      region:
+        description: Specifies a region that combines multiple urban areas, and/or
+          large rural areas.
+        title: Region
+      hotel:
+        description: A building which 1) contains multiple dwellings of pre-furnished
+          accomodation and 2) is rented for lodging on a short term and/or longer-term
+          basis.
+        title: Hotel or motel
   shrtNameSet:
     description: The abbreviated short name used to reference the The table that contains
       information about addresses. Addresses can recorded for sites, organizations
@@ -5152,6 +5201,42 @@ enums:
       sit:
         description: A measure made on a compartment or property at a site.
         title: Site
+  siteLevelSet:
+    description: The category set containing all valid entries for the siteLevel field.
+    title: Site Level Category Set
+    from_schema: https://onto.phes-odm.org/odm/v3
+    permissible_values:
+      countLevel:
+        description: Specifies that a sewershed/site represents an entire nation or
+          country.
+        title: Country-level Aggregation at Site
+      provLevel:
+        description: Specifies that a sewershed/site represents a sub-national state,
+          province, or region.
+        title: Province-level Aggregation at Site
+      aRegLevel:
+        description: Specifies that a sewershed/site represents an entire region -
+          where region here is an "A-Tier" region and refers to large, dense urban
+          areas made up of multiple overlapping cities/boroughs. This would be a greater
+          metropolitan area.
+        title: A-Tier Region-level Aggregation at Site
+      bRegLevel:
+        description: Specifies that a sewershed/site represents an entire region -
+          where region here is an "B-Tier" region, and thus a region within a greater
+          metropolitan area and larger than a single municipality, but smaller than
+          the entire metropolitan area.
+        title: B-Tier Region-level Aggregation at Site
+      muniLevel:
+        description: Specifies that a sewershed/site represents an entire municipality.
+        title: Municipality-level Aggregation at Site
+      neighLevel:
+        description: Specifies that a sewershed/site represents an entire neighbourhood,
+          or a zone within a municipaility.
+        title: Neighbourhood-level Aggregation at Site
+      fnmiLevel:
+        description: "Specifies that a sewershed/site represents the entirety of a\
+          \ First Nations territory or reservation, or a M\xE9tis settlement."
+        title: "First Nation Territory/M\xE9tis Settlement-level Aggregation at Site"
   siteTypeSet:
     description: set for the type of sampling site.
     title: Site set
@@ -5184,7 +5269,9 @@ enums:
         description: Ocean, natural water body
         title: Ocean, natural water body
       pStat:
-        description: Pumping station
+        description: Pumping station - these stations transport sewage or various
+          types of water from one place to another, to facilitate its movement toward
+          treatment plants. Sometimes also referred to as "lift stations".
         title: Pumping station
       retPond:
         description: Retention pond
@@ -5301,8 +5388,8 @@ enums:
           inorganic particles (e.g., sand, gravel) before biological treatment.
         title: Grit chamber
       infPump:
-        description: A facility that lifts and transports raw wastewater from collection
-          systems to treatment plants.
+        description: A facility that ransports raw wastewater from collection systems
+          to treatment plants.
         title: Influent pump station
       primClar:
         description: A large settling tank that removes solids and floating materials
@@ -6998,6 +7085,9 @@ enums:
       covE:
         description: SARS-CoV-2 E gene.
         title: SARS-CoV-2-E
+      covM:
+        description: SARS-CoV-2 M gene (orf5)
+        title: SARS-CoV-2 M Gene target
       covN1:
         description: SARS-CoV-2 nucleocapsid gene, allele 1.
         title: SARS-CoV-2-N1
@@ -7019,6 +7109,9 @@ enums:
       covS:
         description: S sars-cov-2 gene target
         title: SARS-CoV-2 S Gene Target
+      covUTR5:
+        description: SARS-COV-2 5' UTR Gene target
+        title: SARS-COV-2 5' UTR Gene target
       cPerfrigens:
         description: Clostridium perfringens
         title: Clostridium perfringens
@@ -7189,6 +7282,9 @@ enums:
       etec:
         description: Enterotoxigenic Escherichia coli (ETEC)
         title: Enterotoxigenic Escherichia coli (ETEC)
+      exoNnsp14:
+        description: SARS-CoV-2 exoN gene (nsp14)
+        title: SARS-CoV-2 exoN gene (nsp14)
       expec:
         description: Extraintestinal pathogenic Escherichia coli (ExPEC)
         title: Extraintestinal pathogenic Escherichia coli (ExPEC)
@@ -7302,6 +7398,9 @@ enums:
       hDucreyi:
         description: Haemophilus ducreyi
         title: Haemophilus ducreyi
+      hel:
+        description: SARS-CoV-2 hel gene (nsp13)
+        title: SARS-CoV-2 hel gene (nsp13)
       hepA:
         description: Hepatitis A
         title: Hepatitis A
@@ -7639,6 +7738,45 @@ enums:
       nSarbec:
         description: Sarbecovirus-specific N sars-cov-2 gene target
         title: Sarbecovirus-specific N sars-cov-2 gene target
+      nsp1:
+        description: "SARS-CoV-2 nsp1\_Gene target"
+        title: "SARS-CoV-2 nsp1\_Gene target"
+      nsp10:
+        description: SARS-CoV-2 nsp10 Gene target
+        title: SARS-CoV-2 nsp10 Gene target
+      nsp11:
+        description: SARS-CoV-2 nsp11 Gene target
+        title: SARS-CoV-2 nsp11 Gene target
+      nsp15:
+        description: SARS-CoV-2 nsp15 Gene target
+        title: SARS-CoV-2 nsp15 Gene target
+      nsp16:
+        description: SARS-CoV-2 nsp16 Gene target
+        title: SARS-CoV-2 nsp16 Gene target
+      nsp2:
+        description: SARS-CoV-2 nsp2 Gene target
+        title: SARS-CoV-2 nsp2 Gene target
+      nsp3:
+        description: SARS-CoV-2 nsp3 Gene target
+        title: SARS-CoV-2 nsp3 Gene target
+      nsp4:
+        description: SARS-CoV-2 nsp4 Gene target
+        title: SARS-CoV-2 nsp4 Gene target
+      nsp5:
+        description: SARS-CoV-2 nsp5 Gene target
+        title: SARS-CoV-2 nsp5 Gene target
+      nsp6:
+        description: SARS-CoV-2 nsp6 Gene target
+        title: SARS-CoV-2 nsp6 Gene target
+      nsp7:
+        description: SARS-CoV-2 nsp7 Gene target
+        title: SARS-CoV-2 nsp7 Gene target
+      nsp8:
+        description: SARS-CoV-2 nsp8 Gene target
+        title: SARS-CoV-2 nsp8 Gene target
+      nsp9:
+        description: SARS-CoV-2 nsp9 Gene target
+        title: SARS-CoV-2 nsp9 Gene target
       nTotRead:
         description: The total number of non-unique reads generated by the sequencing
           process.
@@ -7671,6 +7809,12 @@ enums:
       ophos:
         description: Ortho-phosphate concentration.
         title: Orthophosphates
+      orf10:
+        description: SARS-CoV-2 orf10 Gene target
+        title: SARS-CoV-2 orf10 Gene target
+      orf14:
+        description: SARS-CoV-2 orf14 Gene target
+        title: SARS-CoV-2 orf14 Gene target
       orf1a:
         description: ORF1a sars-cov-2 gene target
         title: ORF1a sars-cov-2 gene target
@@ -7680,6 +7824,30 @@ enums:
       orf1b:
         description: ORF1b sars-cov-2 gene target
         title: ORF1b sars-cov-2 gene target
+      orf3a:
+        description: SARS-CoV-2 orf3a Gene target
+        title: SARS-CoV-2 orf3a Gene target
+      orf3b:
+        description: SARS-CoV-2 orf3b Gene target
+        title: SARS-CoV-2 orf3b Gene target
+      orf6:
+        description: SARS-CoV-2 orf6 (ns6) Gene target
+        title: SARS-CoV-2 orf6 (ns6) Gene target
+      orf7a:
+        description: SARS-CoV-2 orf7a Gene target
+        title: SARS-CoV-2 orf7a Gene target
+      orf7b:
+        description: SARS-CoV-2 orf7b (ns7b) Gene target
+        title: SARS-CoV-2 orf7b (ns7b) Gene target
+      orf8:
+        description: SARS-CoV-2 orf8 (ns8) Gene target
+        title: SARS-CoV-2 orf8 (ns8) Gene target
+      orf9b:
+        description: SARS-CoV-2 orf9b Gene target
+        title: SARS-CoV-2 orf9b Gene target
+      orf9c:
+        description: SARS-CoV-2 orf9c Gene target
+        title: SARS-CoV-2 orf9c Gene target
       orp:
         description: Oxidation-reduction potential (ORP) measures the ability of a
           lake or river to cleanse itself or break down waste products, such as contaminants
@@ -7946,6 +8114,9 @@ enums:
         description: Concentration of the recovery efficiency target in a spike matrix
           and recovery assay.
         title: Spike Concentration
+      spikeGene:
+        description: SARS-CoV-2 Spike gene (orf2)
+        title: SARS-CoV-2 Spike gene (orf2)
       stec:
         description: Shiga-toxin-producing Escheria coli (STEC).
         title: Shiga-toxin-producing Escheria coli (STEC)
@@ -8120,90 +8291,6 @@ enums:
       zika:
         description: Zika
         title: Zika
-      covM:
-        description: SARS-CoV-2 M gene (orf5)
-        title: SARS-CoV-2 M Gene target
-      spikeGene:
-        description: SARS-CoV-2 Spike gene (orf2)
-        title: SARS-CoV-2 Spike gene (orf2)
-      nsp11:
-        description: SARS-CoV-2 nsp11 Gene target
-        title: SARS-CoV-2 nsp11 Gene target
-      nsp1:
-        description: "SARS-CoV-2 nsp1\_Gene target"
-        title: "SARS-CoV-2 nsp1\_Gene target"
-      nsp2:
-        description: SARS-CoV-2 nsp2 Gene target
-        title: SARS-CoV-2 nsp2 Gene target
-      nsp3:
-        description: SARS-CoV-2 nsp3 Gene target
-        title: SARS-CoV-2 nsp3 Gene target
-      nsp4:
-        description: SARS-CoV-2 nsp4 Gene target
-        title: SARS-CoV-2 nsp4 Gene target
-      nsp5:
-        description: SARS-CoV-2 nsp5 Gene target
-        title: SARS-CoV-2 nsp5 Gene target
-      nsp6:
-        description: SARS-CoV-2 nsp6 Gene target
-        title: SARS-CoV-2 nsp6 Gene target
-      nsp7:
-        description: SARS-CoV-2 nsp7 Gene target
-        title: SARS-CoV-2 nsp7 Gene target
-      nsp8:
-        description: SARS-CoV-2 nsp8 Gene target
-        title: SARS-CoV-2 nsp8 Gene target
-      nsp9:
-        description: SARS-CoV-2 nsp9 Gene target
-        title: SARS-CoV-2 nsp9 Gene target
-      nsp10:
-        description: SARS-CoV-2 nsp10 Gene target
-        title: SARS-CoV-2 nsp10 Gene target
-      hel:
-        description: SARS-CoV-2 hel gene (nsp13)
-        title: SARS-CoV-2 hel gene (nsp13)
-      exoNnsp14:
-        description: SARS-CoV-2 exoN gene (nsp14)
-        title: SARS-CoV-2 exoN gene (nsp14)
-      nsp15:
-        description: SARS-CoV-2 nsp15 Gene target
-        title: SARS-CoV-2 nsp15 Gene target
-      nsp16:
-        description: SARS-CoV-2 nsp16 Gene target
-        title: SARS-CoV-2 nsp16 Gene target
-      orf3a:
-        description: SARS-CoV-2 orf3a Gene target
-        title: SARS-CoV-2 orf3a Gene target
-      orf3b:
-        description: SARS-CoV-2 orf3b Gene target
-        title: SARS-CoV-2 orf3b Gene target
-      orf6:
-        description: SARS-CoV-2 orf6 (ns6) Gene target
-        title: SARS-CoV-2 orf6 (ns6) Gene target
-      orf7a:
-        description: SARS-CoV-2 orf7a Gene target
-        title: SARS-CoV-2 orf7a Gene target
-      orf7b:
-        description: SARS-CoV-2 orf7b (ns7b) Gene target
-        title: SARS-CoV-2 orf7b (ns7b) Gene target
-      orf8:
-        description: SARS-CoV-2 orf8 (ns8) Gene target
-        title: SARS-CoV-2 orf8 (ns8) Gene target
-      orf9b:
-        description: SARS-CoV-2 orf9b Gene target
-        title: SARS-CoV-2 orf9b Gene target
-      orf9c:
-        description: SARS-CoV-2 orf9c Gene target
-        title: SARS-CoV-2 orf9c Gene target
-      orf10:
-        description: SARS-CoV-2 orf10 Gene target
-        title: SARS-CoV-2 orf10 Gene target
-      orf14:
-        description: SARS-CoV-2 orf14 Gene target
-        title: SARS-CoV-2 orf14 Gene target
-      covUTR5:
-        description: SARS-COV-2 5' UTR Gene target
-        title: SARS-COV-2 5' UTR Gene target
   methods:
     description: Procedures or steps for collecting samples or performing measures.
       For example, `methodExtract` is a method that describes the how a sample was
@@ -8561,6 +8648,10 @@ enums:
       shedSet:
         description: The set for all valid values of sampleshed.
         title: Sampleshed set
+      siteLevelSet:
+        description: The category set containing all valid entries for the siteLevel
+          field.
+        title: Site Level Category Set
       siteTypeSet:
         description: set for the type of sampling site.
         title: Site set
@@ -8613,6 +8704,9 @@ enums:
       wideFractionSet:
         description: Fraction set for wide names.
         title: Fraction set for wide names
+      polyRelSet:
+        description: Value set for polygon relationships.
+        title: Polygon Relationship Set
   nomenclatures:
     description: A classification system to report the measure class. See partID =
       nomenclatureID.
@@ -8919,10 +9013,6 @@ enums:
           amplification - ie. The NTCs in qPCR show a Ct value less than 40, or NTCs
           in a ddPCR have 3 or more positive droplets.
         title: NTC Amplification Detected
-      ntcFlag:
-        description: quality indicator for when there is observed amplicifation in
-          the non-template controls (NTCs) of a PCR reaction.
-        title: Control-plate Flag - NTCs
       oor:
         description: Value is outside of the allowable range for quality control.
         title: Value out of range
@@ -10029,6 +10119,8 @@ slots:
     from_schema: https://onto.phes-odm.org/odm/v3
   sampleShed:
     from_schema: https://onto.phes-odm.org/odm/v3
+  siteLevel:
+    from_schema: https://onto.phes-odm.org/odm/v3
   repOrg1:
     from_schema: https://onto.phes-odm.org/odm/v3
   repOrg2:
@@ -10432,7 +10524,7 @@ classes:
         - range: genMissingnessSet
       measureRepID:
         description: Unique identifier for a measurement.
-        title: Report ID
+        title: Measure Report ID
         notes:
         - Report IDs cannot be repeated.
         pattern: ^.{0,30}$
@@ -10906,7 +10998,7 @@ classes:
         pattern: ^.{0,30}$
       measureRepID:
         description: Unique identifier for a measurement.
-        title: Report ID
+        title: Measure Report ID
         notes:
         - Report IDs cannot be repeated.
         pattern: ^.{0,30}$
@@ -11699,7 +11791,7 @@ classes:
     slot_usage:
       measureRepID:
         description: Unique identifier for a measurement.
-        title: Report ID
+        title: Measure Report ID
         notes:
         - Report IDs cannot be repeated.
         identifier: true
@@ -13123,6 +13215,8 @@ classes:
     - action
     - threatTarget
     - actionDT
+    - relDateStart
+    - relDateEnd
     - lastEdited
     - notes
     slot_usage:
@@ -13141,7 +13235,7 @@ classes:
         pattern: ^.{0,30}$
       measureRepID:
         description: Unique identifier for a measurement.
-        title: Report ID
+        title: Measure Report ID
         notes:
         - Report IDs cannot be repeated.
         pattern: ^.{0,30}$
@@ -13196,6 +13290,18 @@ classes:
         description: The date and Time of the public health action.
         title: Public health action datetime
         range: datetime
+      relDateStart:
+        description: The start date of the relevancy period of a measure - mostly
+          for time-varrying metrics for sites or polygons.
+        title: Measure relevance start date
+        range: datetime
+        pattern: ^.{0,30}$
+      relDateEnd:
+        description: The end date of the relevancy period of a measure - mostly for
+          time-varrying metrics for sites or polygons.
+        title: Measure relevance end date
+        range: datetime
+        pattern: ^.{0,30}$
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -13498,8 +13604,8 @@ classes:
     - fileLocation
     - refLink
     - organizationID
-    - poLic
     - contactID
+    - poLic
     - lastEdited
     - notes
     slot_usage:
@@ -13605,11 +13711,6 @@ classes:
         any_of:
         - range: organizations
         - range: genMissingnessSet
-      poLic:
-        description: The license for the availability of the polygon shapefile.
-        title: Polygon License
-        range: licSet
-        pattern: ^.{0,50}$
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
@@ -13617,6 +13718,11 @@ classes:
         any_of:
         - range: contacts
         - range: genMissingnessSet
+      poLic:
+        description: The license for the availability of the polygon shapefile.
+        title: Polygon License
+        range: licSet
+        pattern: ^.{0,50}$
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -14177,6 +14283,7 @@ classes:
     - polygonID
     - siteType
     - sampleShed
+    - siteLevel
     - addressID
     - organizationID
     - contactID
@@ -14253,6 +14360,17 @@ classes:
         pattern: ^.{0,30}$
         any_of:
         - range: shedSet
+        - range: genMissingnessSet
+      siteLevel:
+        description: Specifies the level of aggregation that occurs at the site -
+          essentially, what size and type of region is represented by the base sewershed.
+          This can be used to pool together or average results across similar sewersheds,
+          and avoid trying to average different scales of sewershed together without
+          a correction for size.
+        title: Level of Aggregation of a Sampling Site
+        pattern: ^.{0,30}$
+        any_of:
+        - range: siteLevelSet
         - range: genMissingnessSet
       addressID:
         description: A unique identifier for an address.
