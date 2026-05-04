@@ -362,7 +362,9 @@ def add_source_tracking_columns(
     max_row_digits = len(str(df[TrackingSlots.SOURCE_ROW].max()))
     if len(df):
         df[TrackingSlots.SOURCE_FILE_AND_ROW] = df.apply(
-            lambda x: f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]:0{max_row_digits}d}",
+            lambda x: (
+                f"{x[TrackingSlots.SOURCE_FILE]}/{x[TrackingSlots.SOURCE_ROW]:0{max_row_digits}d}"
+            ),
             axis=1,
         )
     else:

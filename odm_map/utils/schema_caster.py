@@ -121,9 +121,9 @@ class SchemaCaster:
                     order = ["float", "int", "*"]
                     rng = sorted(
                         rng,
-                        key=lambda x: order.index(x)
-                        if x in order
-                        else order.index("*"),
+                        key=lambda x: (
+                            order.index(x) if x in order else order.index("*")
+                        ),
                     )
                     cur_cast_functions[slot_name] = partial(
                         self._cast_types, multivalued=multivalued, cast_types=rng
