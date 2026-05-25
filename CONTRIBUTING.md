@@ -28,7 +28,7 @@ Thank you for your interest in contributing to the PHES-ODM Mapper. This guide c
 1. Clone the repository:
 
     ```console
-    git clone git@github.com:Big-Life-Lab/PHES-ODM-Mapper.git
+    git clone git@github.com:PHES-ODM/PHES-ODM-Mapper.git
     cd PHES-ODM-Mapper
     ```
 
