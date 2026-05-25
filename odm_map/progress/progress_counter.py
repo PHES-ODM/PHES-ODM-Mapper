@@ -207,6 +207,7 @@ class ProgressCounter(BaseCounter):
     def __enter__(self):
         self.entered = True
         self._install_hooks()
+        return self
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
         self.close()

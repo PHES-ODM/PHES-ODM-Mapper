@@ -69,7 +69,7 @@ class SingleBar(object):
             inc (int): The number of increments to increase the bar count by. This is passed to tqdm.update(inc)
         """
         self.count += inc
-        self.percent_complete = self.count / self.total * 100
+        self.percent_complete = (self.count / self.total * 100) if self.total else 0
         if self.bar is not None:
             self.bar.update(inc)
             if self.count >= self.total:

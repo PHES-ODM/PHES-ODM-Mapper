@@ -397,16 +397,23 @@ class GeneratorData:
             orig_values_slots = [f"{INITIAL_ID_PREFIX}{s}" for s in slots]
             self.orig_df[orig_values_slots] = self.orig_df[slots]
             self.initial_value_columns.extend(orig_values_slots)
-            for idx in self.orig_df.index:
-                selectors = self.orig_df.loc[idx, CODE_SELECTOR_SLOT]
-                # selectors = get_code_selectors_from_string(selectors)
-                slots_with_code = self.get_slots_with_code_for_selectors(selectors)
-                self.orig_df.loc[idx, slots_with_code] = None
-                self.number_of_ids_to_calculate += len(slots_with_code)
-                slots_without_code = [s for s in slots if s not in slots_with_code]
-                self.orig_df.loc[idx, slots_without_code] = self.orig_df.loc[
-                    idx, slots_without_code
-                ].map(
+            # Build per-row slots_with_code, then apply column-wise to avoid per-row loc overhead
+            slots_with_code_per_row = [
+                self.get_slots_with_code_for_selectors(sel)
+                for sel in self.orig_df[CODE_SELECTOR_SLOT]
+            ]
+            self.number_of_ids_to_calculate += sum(
+                len(swc) for swc in slots_with_code_per_row
+            )
+            has_code_mask = pd.DataFrame(
+                [{s: (s in swc) for s in slots} for swc in slots_with_code_per_row],
+                index=self.orig_df.index,
+                columns=slots,
+            )
+            for s in slots:
+                mask = has_code_mask[s]
+                self.orig_df.loc[mask, s] = None
+                self.orig_df.loc[~mask, s] = self.orig_df.loc[~mask, s].map(
                     lambda x: IDValue(
                         "" if not isinstance(x, (list, tuple)) and pd.isna(x) else x, 0
                     )

@@ -391,7 +391,8 @@ class ArrayExpander(object):
             df = df.loc[keep_rows]
 
         # Append the new rows and sort
-        new_rows_df = pd.DataFrame(new_rows)
-        df = pd.concat([df, new_rows_df]).sort_index().reset_index(drop=True)
+        if new_rows:
+            new_rows_df = pd.DataFrame(new_rows)
+            df = pd.concat([df, new_rows_df]).sort_index().reset_index(drop=True)
 
         return df

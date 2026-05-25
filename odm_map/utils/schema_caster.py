@@ -167,6 +167,8 @@ class SchemaCaster:
         """
         if not inline:
             df = df.copy()
+        if class_name not in self.cast_functions:
+            raise ValueError(f"Unknown class '{class_name}' in schema caster")
         cur_cast_functions = self.cast_functions[class_name]
         for col, cast_func in cur_cast_functions.items():
             if col in df.columns:
@@ -188,5 +190,9 @@ class SchemaCaster:
             Any: The casted value. If the value can't be cast then the value is returned
                 unchanged.
         """
+        if class_name not in self.cast_functions:
+            raise ValueError(f"Unknown class '{class_name}' in schema caster")
+        if slot_name not in self.cast_functions[class_name]:
+            raise ValueError(f"Unknown slot '{slot_name}' for class '{class_name}' in schema caster")
         cur_cast_function = self.cast_functions[class_name][slot_name]
         return cur_cast_function(v)

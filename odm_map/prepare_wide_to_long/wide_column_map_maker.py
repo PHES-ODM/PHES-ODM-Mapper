@@ -518,7 +518,7 @@ class WideColumnMapMaker:
         # Get the class name
         class_name = [
             k
-            for k, v in self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES).items()
+            for k, v in self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).items()
             if v == parts[0]
         ]
         if len(class_name) == 0:
