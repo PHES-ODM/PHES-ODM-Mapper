@@ -13,12 +13,31 @@ for questions.
 
 This repository provides all tools required for mapping between various
 wastewater reporting database formats and the [Public Health Environmental
-Surveillance Open Data Model (PHES-ODM)](https://phes-odm.org). Currently
-supported are conversion from NWSS Reporting to ODM v2 and ODM v1 to ODM v2.
+Surveillance Open Data Model (PHES-ODM)](https://phes-odm.org). Conversion is
+available for the following source formats:
+
+| Module | Source Format | Target Format |
+| :------- | :------------ | :------------- |
+| `odm-v1-to-v2` | ODM v1 | ODM v2 / v3 |
+| `nwss-reporting-to-v2` | NWSS Reporting | ODM v2 / v3 |
+| `pha4ge-to-v2` | PHA4GE | ODM v2 / v3 |
+| `odm-v3-wide-to-long` | ODM v3 wide format | ODM v3 long format |
+
 More database formats will be provided as needed, and custom conversions can be
 created. To add support for other databases, see [Custom
 Modules](#custom-modules) below. If you require help in creating custom
 modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
+
+## Documentation
+
+| Document | Description |
+| :--------- | :----------- |
+| [README.md](README.md) | Installation, CLI usage, and quick-start examples |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Developer setup, code structure, and contribution guide |
+| [custom_modules.md](custom_modules.md) | Complete reference for creating custom conversion modules |
+| [filters.md](filters.md) | Filter system reference — how to remove unwanted rows |
+| [id_generator.md](id_generator.md) | ID generator reference — how to create primary and foreign keys |
+| [merging_spec.md](merging_spec.md) | Design spec for merging separately-mapped datasets (developer reference) |
 
 ## Access to Repository
 
@@ -274,6 +293,53 @@ be mapped in a matter of minutes. For large datasets, a considerable amount of
 RAM or a large RAM disk is required. The most time consuming steps are the
 "Initial Mapping" and "Generating IDs" steps.
 
+## Python API
+
+The mapper can also be used programmatically from Python. The main entry point
+is the `Pipeline` class in `odm_map.pipeline`:
+
+```python
+from odm_map.pipeline import Pipeline
+
+pipeline = Pipeline(
+    module="odm-v1-to-v2",  # use a built-in module name
+    module_path=None,
+)
+
+result = pipeline.run(
+    data_files={
+        "WWMeasure": ["path/to/wwmeasure.csv"],
+        "Sample":    ["path/to/sample.csv"],
+    },
+    output_dir="path/to/output",
+)
+```
+
+To use a custom module instead of a built-in one, pass `module=None` and set
+`module_path` to the directory (or ZIP file) containing the module:
+
+```python
+pipeline = Pipeline(
+    module=None,
+    module_path="path/to/my-module",
+)
+```
+
+### `Pipeline.run()` Parameters
+
+| Parameter | Type | Default | Description |
+|:----------|:-----|:--------|:------------|
+| `data_files` | `Dict[str, List[str \| Path]]` | required | Dictionary of source table name → list of file paths to load. For Excel files, use a dict with keys `"file"` and `"sheet"`. |
+| `output_dir` | `str` | required | Directory to save output CSV files to. |
+| `temp_dir` | `str \| Path` | `None` | Directory for intermediate files. If `None`, a temporary directory is created and deleted when done. Set this for debugging. |
+| `max_rows` | `int` | `None` | Maximum rows to load per input file. `None` or `0` loads all rows. |
+| `max_processes` | `int` | `1` | Number of parallel processes for the mapping step. |
+| `multi_bar_progress` | `bool` | `True` | Show multiple simultaneous progress bars. Set to `False` in Jupyter notebooks. |
+| `debug_mode` | `bool` | `False` | If `True`, retains extra tracking columns and duplicate rows in the output, and saves intermediate files to `temp_dir`. |
+
+`pipeline.run()` returns a `Dict[str, List[pd.DataFrame]]` containing the final
+mapped DataFrames (keyed by output table name).
+
 ## Custom Modules
 
 Mapping modules specify all the rules for mapping from a source database (eg.
@@ -281,3 +347,8 @@ NWSS) to a target database (eg. ODM v2). A module consists of a directory
 containing various configuration files. Modules for mapping between custom
 source and target database formats can be created. For detailed instructions,
 please see the [Custom Modules](custom_modules.md) documentation.
+
+## Contributing
+
+To set up a development environment, understand the codebase structure, or
+submit a pull request, see [CONTRIBUTING.md](CONTRIBUTING.md).

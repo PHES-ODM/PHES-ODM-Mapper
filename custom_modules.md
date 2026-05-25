@@ -1,9 +1,5 @@
 # Custom Modules
 
-## Important Note
-
-This document is a work in progress.
-
 ## Introduction
 
 A module is a collection of rules and configuration options, split up into
@@ -498,9 +494,9 @@ Example:
 | Parameter             | Required/Optional | Description |
 | :---------------------| :---------------- | :---------- |
 | schema                | Required          | The path to the LinkML schema that the data belongs to. |
-| id_code               | Required          | The path to the file containing all the ID generation rules/code. This can be an Excel spreadsheet or a CSV file. If it is an Excel spreadsheet that has more than one sheet/tab, then the sheet to use within the spreadsheet can be specified by `id_code_sheet`. |
-| id_code_sheet         | Optional          | If `id_code` is an Excel file, then `id_code_sheet` can optionally be specified to indicate which sheet within the spreadsheet should be used. If `id_code_sheet` is empty then the first sheet within the Excel file is used. |
-| id_config             | Required          | The configuration file for ID code generation. This config file specifies configurations such as the primary key for each of the input tables. |
+| id_code               | Required          | The path to the file (or a list of file paths) containing all the ID generation rules/code. Each file can be an Excel spreadsheet or a CSV file. If it is an Excel spreadsheet that has more than one sheet/tab, then the sheet to use within the spreadsheet can be specified by `id_code_sheet`. When a list is provided, the rules from all files are combined. |
+| id_code_sheet         | Optional          | If `id_code` is an Excel file (not a list), then `id_code_sheet` can optionally be specified to indicate which sheet within the spreadsheet should be used. If `id_code_sheet` is empty then the first sheet within the Excel file is used. |
+| id_config             | Required          | The configuration file (or a list of configuration file paths) for ID code generation. Each config file specifies settings such as the primary key for each of the input tables. When a list is provided, the settings from all files are combined. |
 
 Generate all the IDs within the DataFrame tables, using the specified
 configuration and rules. Primary and foreign keys will be created, allowing
@@ -567,6 +563,12 @@ Example:
     target_schema: "{shared}/schemas/odm_v3.yaml"
     mappers_dir: "{temp}/wide_to_long/"
 ```
+
+| Parameter     | Required/Optional | Description |
+| :------------ | :---------------- | :---------- |
+| config        | Required          | The configuration file for the wide-to-long mapping. This path is relative to the root directory of the module. |
+| target_schema | Required          | The LinkML schema for the target long-format dataset (eg. ODM v3 long format). This path is relative to the root directory of the module. |
+| output_dir    | Required          | Directory to save all generated mapping artifacts, including the LinkML-Map mapper schemas (written directly to `output_dir`) and a generated LinkML schema for the prepared data (written to `{output_dir}/schema/schema.yaml`). These paths are used as `mappers_dir` and `source_schema` in the downstream `map` action. Supports `{temp}` and `{output_dir}` interpolation. |
 
 The `prepare_wide_to_long` action is used to prepare data that is in wide
 format (eg. ODM v3 wide) to be mapped to long format. It will modify the wide
