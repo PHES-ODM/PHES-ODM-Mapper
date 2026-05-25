@@ -92,7 +92,7 @@ class Pipeline(object):
     def get_formatted_bool_key(self, d: Dict, key: str, default: Any = None) -> bool:
         val = self.get_formatted_string_key(d, key, default)
         if isinstance(val, str):
-            return str(val).lower() == "true"
+            return str(val).lower() in ("true", "1", "yes")
         return bool(int(val))
 
     def get_formatted_string_key(

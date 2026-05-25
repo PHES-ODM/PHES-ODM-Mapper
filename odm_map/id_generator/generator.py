@@ -1317,9 +1317,9 @@ class IDGenerator(object):
                     except Exception as e:
                         # format_exc() will provide extra traceback information related to the exception that occurred
                         # when executing the code string.
-                        print("*" * 100)
-                        print(traceback.format_exc())
-                        print("=" * 100)
+                        logger.error("*" * 100)
+                        logger.error(traceback.format_exc())
+                        logger.error("=" * 100)
                         raise ValueError(
                             f"Error when calculating ID for '{class_name}.{slot}:{row_index}': {e}\nCode: {code}"
                         )

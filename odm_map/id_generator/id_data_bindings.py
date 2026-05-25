@@ -84,9 +84,9 @@ class DataBindings:
 
         try:
             v = self.get_first_linked_value(name)
-        except Exception as e:
-            print(traceback.format_exc())
-            raise e
+        except Exception:
+            logger.error(traceback.format_exc())
+            raise
 
         return v
 
@@ -111,7 +111,7 @@ class DataBindings:
         )
         if not linkage_path:
             raise ValueError(
-                f"Named linkage path '{linkage_path}' exists but no path from soure class '{source_class}' to target class '{self.root_class}' in config file"
+                f"Named linkage path '{linkage_path_name}' exists but no path from soure class '{source_class}' to target class '{self.root_class}' in config file"
             )
         return linkage_path
 

@@ -16,7 +16,7 @@ def action_save_data(
     output_dir: Union[str, Path],
     progress_barid: Optional[str] = None,
     name_format: str = "{class_name}.csv",
-    name_format_kwargs: Dict = {},
+    name_format_kwargs: Optional[Dict] = None,
     keep_extra_columns: bool = False,
     keep_tracking_columns: bool = False,
     exception_if_exists: bool = False,
@@ -35,7 +35,7 @@ def action_save_data(
         name_format_kwargs (Dict, optional): A dictionary of values that contain some additional arguments for
             string interpolation of name_format. This could include arguments such as "temp" that can be
             used in formating name_format (eg. "{temp}/file.csv"). These arguments are used in addition
-            to arguments that this function calculates such as "class_name". Defaults to {}.
+            to arguments that this function calculates such as "class_name". Defaults to None.
         exception_if_exists (bool, optional): If True then raise an exception if a file already exists with the same
             name as a file we are trying to save. If False then overwrite the file. Defaults to False.
 
@@ -63,7 +63,7 @@ def action_save_data(
             df = pd.concat(dfs, ignore_index=True, axis=0)
 
             # Determine the output file name, based on name_format and name_format_kwargs
-            kwargs = name_format_kwargs.copy()
+            kwargs = (name_format_kwargs or {}).copy()
             kwargs.update({"class_name": class_name})
             output_data_file = os.path.join(output_dir, name_format.format(**kwargs))
 

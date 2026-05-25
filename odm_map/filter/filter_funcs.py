@@ -111,6 +111,7 @@ def do_drop_duplicates(
     else:
         raise ValueError(f"Unrecognized value for drop_duplicates: '{value}'")
     new_filt = ~df[slot][filt].duplicated(keep=keep)
+    new_filt = new_filt.reindex(filt.index, fill_value=False)
     filt = filt & new_filt
 
     set_named_filter(filt, output_name, filters)

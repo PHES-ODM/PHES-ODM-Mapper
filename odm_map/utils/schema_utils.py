@@ -32,7 +32,12 @@ def all_primary_keys(schema: SchemaView) -> Dict[str, str]:
     all_classes = all_classes_without_tree_root(schema)
     primary_keys = {}
     for cur_class in all_classes:
-        primary_keys[cur_class] = get_primary_key(cur_class, schema=schema)
+        try:
+            primary_keys[cur_class] = get_primary_key(cur_class, schema=schema)
+        except ValueError as e:
+            raise ValueError(
+                f"Failed to build primary key map: {e}"
+            ) from e
 
     # Sort the keys
     primary_keys = dict(sorted(primary_keys.items()))
@@ -168,6 +173,7 @@ def get_ranges_of_slot_defn(
         if not isinstance(cur_defn, dict):
             cur_defn = asdict(cur_defn)
         # Try getting the range
+        cur_ranges = []
         range_defn = cur_defn.get("range", None)
         if range_defn is not None:
             # range_defn is of type linkml_runtime.linkml_model.meta.ElementName

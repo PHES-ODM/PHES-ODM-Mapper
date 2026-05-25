@@ -80,6 +80,8 @@ class DataCleaner(object):
         # at self.log_dfs[log_key]. We only convert to DataFrames by calling move_log_lines_to_dfs(log_key), this
         # is much faster than appending to the DataFrame each time a single log line is added.
         self.log_dfs = {}
+        # The location of the log file, set in clean_data
+        self.log_file = None
 
         if isinstance(schema, (str, Path)):
             self.schema = SchemaView(schema)
@@ -506,8 +508,11 @@ class DataCleaner(object):
             return v[0] if return_first_element else v
 
         # Perform the cleaning, by mapping from source_values[idx] to target_values[idx]
-        for idx, val in df_column.items():
-            df_column[idx] = _get_mapped_value(idx, val)
+        df_column = pd.Series(
+            [_get_mapped_value(idx, val) for idx, val in df_column.items()],
+            index=df_column.index,
+            name=df_column.name,
+        )
 
         return df_column
 
@@ -535,24 +540,21 @@ class DataCleaner(object):
             if pattern is None:
                 continue
 
-            regex = re.compile(pattern)
-            # Make sure all the values in the slot match the regex pattern
-            for idx, value in df[slot_name].items():
-                if pd.isna(value):
-                    continue
-                str_value = str(value)
-                if not regex.fullmatch(str_value):
-                    # Pattern does not match, so add it to the log
-                    self.add_to_log(
-                        Logs.MISMATCH_PATTERN,
-                        {
-                            LogColumns.CLASS_NAME: class_name,
-                            LogColumns.SLOT_NAME: slot_name,
-                            LogColumns.VALUE: str_value,
-                            LogColumns.ROW: idx + 1,
-                            LogColumns.NOTES: f"Values do not match pattern {pattern}",
-                        },
-                    )
+            # Vectorise the fullmatch check; only iterate the (typically rare) mismatches
+            non_null = df[slot_name].dropna()
+            str_col = non_null.astype(str)
+            mismatches = str_col[~str_col.str.fullmatch(pattern)]
+            for idx, str_value in mismatches.items():
+                self.add_to_log(
+                    Logs.MISMATCH_PATTERN,
+                    {
+                        LogColumns.CLASS_NAME: class_name,
+                        LogColumns.SLOT_NAME: slot_name,
+                        LogColumns.VALUE: str_value,
+                        LogColumns.ROW: idx + 1,
+                        LogColumns.NOTES: f"Values do not match pattern {pattern}",
+                    },
+                )
 
     def general_map_class(
         self,
@@ -905,7 +907,10 @@ class DataCleaner(object):
                     for data in sub_data:
                         data_file = data if not isinstance(data, pd.DataFrame) else None
                         data_frame = data if isinstance(data, pd.DataFrame) else None
-                        assert (data_file is None) != (data_frame is None)
+                        if not ((data_file is None) != (data_frame is None)):
+                            raise ValueError(
+                                f"Expected exactly one of data_file or data_frame to be set, got data_file={data_file!r}, data_frame={type(data_frame)}"
+                            )
 
                         # Determine the output_file
                         if output_dir is not None:

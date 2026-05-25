@@ -149,9 +149,15 @@ class WideColumnIDCodeMaker:
                     # We want to link from the slot to the primary key of the target_class
                     # The ID code will be dat.target_class.primary_key.
                     # Get the primary key
-                    target_primary_key = get_primary_key(
-                        target_class, self.target_schema
-                    )
+                    try:
+                        target_primary_key = get_primary_key(
+                            target_class, self.target_schema
+                        )
+                    except ValueError:
+                        logger.warning(
+                            f"Skipping ID code for {class_name}.{slot_defn.name} → {target_class}: target class has no primary key"
+                        )
+                        continue
 
                     # Create the ID code
                     code_column_name = f"{IDCodeColumns.CODE_PREFIX}{IDCodeColumns.CODE_SUFFIX}".format(
