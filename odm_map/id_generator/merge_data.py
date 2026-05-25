@@ -202,29 +202,17 @@ class MergeData:
         The resulting code gets saved in memory in self.pk_id_code_df and can be used by
         the IDGenerator.
         """
-        df = pd.DataFrame(
-            {
-                CodeColumns.CLASS: [],
-                CodeColumns.SLOT: [],
-                CodeColumns.CODE0: [],
-            }
-        )
-
-        # Add custom code for all primary keys
+        rows = []
         for class_name, slot_name in self.primary_keys:
-            # Is a primary key, add the custom code
-            # The ID code for slot class_name.slot_name is dat.class_name.__slot_name
             code = f"dat.{class_name}.__{slot_name}"
-            row = pd.DataFrame(
-                {
-                    CodeColumns.CLASS: [class_name],
-                    CodeColumns.SLOT: [slot_name],
-                    CodeColumns.CODE0: [code],
-                }
-            )
-            df = pd.concat([df, row], axis=0, ignore_index=True)
-
-        self.pk_id_code_df = df
+            rows.append({
+                CodeColumns.CLASS: class_name,
+                CodeColumns.SLOT: slot_name,
+                CodeColumns.CODE0: code,
+            })
+        self.pk_id_code_df = pd.DataFrame(
+            rows, columns=[CodeColumns.CLASS, CodeColumns.SLOT, CodeColumns.CODE0]
+        )
 
     def make_fk_id_code(self):
         """Generate the custom ID code that specifies how all foreign keys get generated.
@@ -232,15 +220,7 @@ class MergeData:
         The resulting code gets saved in memory in self.fk_id_code_df and can be used by
         the IDGenerator.
         """
-        df = pd.DataFrame(
-            {
-                CodeColumns.CLASS: [],
-                CodeColumns.SLOT: [],
-                CodeColumns.CODE0: [],
-            }
-        )
-
-        # Add custom code for all foreign keys
+        rows = []
         for class_name, slot_name in self.foreign_keys:
             # Add the custom code for the slot
             # For a foreign key class_name.slot_name that points to the primary key
@@ -257,16 +237,14 @@ class MergeData:
                 class_name, slot_name, target_class_name, target_slot_name
             )
             code = f'dat.{target_class_name}.get_first_linked_value("{target_slot_name}", linkage_path="{linkage_path_name}")'
-            row = pd.DataFrame(
-                {
-                    CodeColumns.CLASS: [class_name],
-                    CodeColumns.SLOT: [slot_name],
-                    CodeColumns.CODE0: [code],
-                }
-            )
-            df = pd.concat([df, row], axis=0, ignore_index=True)
-
-        self.fk_id_code_df = df
+            rows.append({
+                CodeColumns.CLASS: class_name,
+                CodeColumns.SLOT: slot_name,
+                CodeColumns.CODE0: code,
+            })
+        self.fk_id_code_df = pd.DataFrame(
+            rows, columns=[CodeColumns.CLASS, CodeColumns.SLOT, CodeColumns.CODE0]
+        )
 
     def get_fk_target(self, class_name: str, slot_name: str) -> Tuple[str, str]:
         """Get the target class and slot that the specified slot points to. The specified
@@ -403,10 +381,10 @@ class MergeData:
                         target_value = target_df.loc[target_idx, linkage_slot_name]
                         if target_value:
                             # A match value already exists, so use it instead
-                            df.loc[idx, linkage_slot_name] = target_value
+                            df.iloc[idx, linkage_slot_name] = target_value
                         else:
                             target_df.loc[target_idx, linkage_slot_name] = match_value
-                            df.loc[idx, linkage_slot_name] = match_value
+                            df.iloc[idx, linkage_slot_name] = match_value
 
     def combine_datasets(self):
         """Combine the loaded and processed datasets, so that we have a single DataFrame per class.

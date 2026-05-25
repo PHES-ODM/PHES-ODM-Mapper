@@ -171,9 +171,11 @@ class EnumHierarchySelector:
             slot_defn (SlotDefinition): The slot definition for the slot to select from.
         """
         ranges = get_ranges_of_slot_defn(slot_defn)
-        for row_idx, row in df.iterrows():
+        # Cache ancestor lookups: same enum value appearing in many rows is only resolved once.
+        ancestor_cache: dict = {}
+        for row_idx, cell in df[slot_defn.name].items():
             # Get the values for the current row in the slot (orig_vals), we will replace them with new_vals
-            orig_vals = make_multivalued(row[slot_defn.name])
+            orig_vals = make_multivalued(cell)
             new_vals = orig_vals.copy()
             # Iterate over all the values in the current row for the slot, remove any of the values that appear as
             # an ancestor of any of the other values
@@ -182,11 +184,14 @@ class EnumHierarchySelector:
                     # Remove all values in new_vals that is an ancestor for the current val. Note that
                     # permissible_value_ancestors will return val as well, which is why we need to not
                     # include val in ancestors
-                    ancestors = [
-                        str(a)
-                        for a in self.schema.permissible_value_ancestors(val, rng)
-                        if str(a) != val
-                    ]
+                    cache_key = (val, rng)
+                    if cache_key not in ancestor_cache:
+                        ancestor_cache[cache_key] = [
+                            str(a)
+                            for a in self.schema.permissible_value_ancestors(val, rng)
+                            if str(a) != val
+                        ]
+                    ancestors = ancestor_cache[cache_key]
                     new_vals = [v for v in new_vals if v not in ancestors]
             if new_vals != orig_vals:
                 logger.info(

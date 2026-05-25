@@ -169,13 +169,8 @@ class DataMapper(object):
 
                     # Reorient the data to a format recognized by the mapper (an array of rows, where
                     # each row is a dictionary of the form {column_name:value, ...})
-                    cur_data = [
-                        {
-                            col: schema_caster.cast_value(v, class_name, col)
-                            for col, v in r.items()
-                        }
-                        for _, r in df.iterrows()
-                    ]
+                    df = schema_caster.cast_df(df, class_name, inline=False)
+                    cur_data = df.to_dict(orient="records")
                     if class_name not in data:
                         data[class_name] = []
                     data[class_name].extend(cur_data)
