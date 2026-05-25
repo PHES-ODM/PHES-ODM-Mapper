@@ -1,4 +1,4 @@
-# <img src="img/ODM-logo.png" align="right" alt="" width="180"/> PHES-ODM Mapper
+# <img src="docs/img/ODM-logo.png" align="right" alt="" width="180"/> PHES-ODM Mapper
 
 ## Important Notice
 
@@ -34,10 +34,10 @@ modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
 | :--------- | :----------- |
 | [README.md](README.md) | Installation, CLI usage, and quick-start examples |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Developer setup, code structure, and contribution guide |
-| [custom_modules.md](custom_modules.md) | Complete reference for creating custom conversion modules |
-| [filters.md](filters.md) | Filter system reference — how to remove unwanted rows |
-| [id_generator.md](id_generator.md) | ID generator reference — how to create primary and foreign keys |
-| [merging_spec.md](merging_spec.md) | Design spec for merging separately-mapped datasets (developer reference) |
+| [custom_modules.md](docs/custom_modules.md) | Complete reference for creating custom conversion modules |
+| [filters.md](docs/filters.md) | Filter system reference — how to remove unwanted rows |
+| [id_generator.md](docs/id_generator.md) | ID generator reference — how to create primary and foreign keys |
+| [merging_spec.md](docs/merging_spec.md) | Design spec for merging separately-mapped datasets (developer reference) |
 
 ## Access to Repository
 
@@ -346,7 +346,7 @@ Mapping modules specify all the rules for mapping from a source database (eg.
 NWSS) to a target database (eg. ODM v2). A module consists of a directory
 containing various configuration files. Modules for mapping between custom
 source and target database formats can be created. For detailed instructions,
-please see the [Custom Modules](custom_modules.md) documentation.
+please see the [Custom Modules](docs/custom_modules.md) documentation.
 
 ## Contributing
 

@@ -1,4 +1,4 @@
-# <img src="img/ODM-logo.png" align="right" alt="" width="180"/> PHES-ODM Mapper
+# <img src="../docs/img/ODM-logo.png" align="right" alt="" width="180"/> PHES-ODM Mapper
 
 ## Important Notice
 

@@ -101,10 +101,14 @@ PHES-ODM-Mapper/
 │           └── pha4ge-to-v2/              # PHA4GE → ODM v2
 ├── README.md                              # Main documentation
 ├── CONTRIBUTING.md                        # This file
-├── custom_modules.md                      # Full reference for creating custom modules
-├── filters.md                             # Filter system reference
-├── id_generator.md                        # ID generator reference
-├── merging_spec.md                        # Design spec for merging separately-mapped datasets
+├── docs/                                  # Documentation
+│   ├── custom_modules.md                  # Full reference for creating custom modules
+│   ├── filters.md                         # Filter system reference
+│   ├── id_generator.md                    # ID generator reference
+│   ├── merging_spec.md                    # Design spec for merging separately-mapped datasets
+│   ├── wide_to_long_spec.md               # Implementation spec for wide-to-long mapping
+│   ├── long_to_wide_spec.md               # Implementation spec for long-to-wide mapping (in development)
+│   └── img/                               # Images used in documentation
 ├── pyproject.toml                         # Package metadata and build configuration
 └── requirements.txt                       # Python dependencies
 ```
@@ -165,7 +169,7 @@ A module is a self-contained directory with a `config.yaml` and all supporting f
 
 1. Create a new directory under `odm_map/data/modules/` using a descriptive kebab-case name, such as `my-source-to-v3`.
 
-2. Write a `config.yaml` that defines the full transformation pipeline. See [custom_modules.md](custom_modules.md) for the complete configuration reference and all available actions.
+2. Write a `config.yaml` that defines the full transformation pipeline. See [custom_modules.md](docs/custom_modules.md) for the complete configuration reference and all available actions.
 
     At a minimum, the config requires:
     - `title`: A short human-readable description of the conversion.
@@ -201,7 +205,7 @@ To add a new action type that can be used in a module `config.yaml`:
 
 2. Import and dispatch the new action in `odm_map/pipeline.py` by adding a new `elif action == "<name>":` branch in the `run` method.
 
-3. Document the new action in [custom_modules.md](custom_modules.md) under the **Actions** section, including a YAML example and a parameter table.
+3. Document the new action in [custom_modules.md](docs/custom_modules.md) under the **Actions** section, including a YAML example and a parameter table.
 
 ## Submitting a Pull Request
 
