@@ -691,38 +691,6 @@ class GeneratorData:
         hash_value = hash(val)
         return hash_value
 
-    # @TODO: Remove find_matching_primary_key (no longer used)
-    def find_matching_primary_key(self, row_index: int) -> Optional[IDValue]:
-        # Find a matching row based on the hash at row_index
-        row = self.data[row_index, self.match_columns]
-        hash_value = self.make_row_hash(row)
-        match_indices = self.lookup.get_indices(HASH_COLUMN, hash_value)
-        if len(match_indices) == 0:
-            return None
-
-        # Find an identical row from the returned matching rows. It's possible (but unlikely)
-        # that a returned row based on the hash is NOT identical to the current row, which is
-        # why we search for an explicit matching row here.
-        identical_row_idx = None
-        for i in match_indices[::-1]:
-            if i == row_index:
-                continue
-
-            cur_row = self.data[i, self.match_columns]
-            if np.equal(cur_row, row).all():
-                identical_row_idx = i
-                break
-
-        # No identical match found
-        if identical_row_idx is None:
-            return None
-
-        pk: IDValue = self.data[
-            identical_row_idx, self.get_column_index(self.primary_key)
-        ]
-
-        return self.set_row_pk_and_finalize(row_index, pk.unindexed_value, pk.index)
-
     def set_row_pk_and_finalize(
         self, row_index: int, unindexed_pk: str, pk_index: int
     ) -> IDValue:

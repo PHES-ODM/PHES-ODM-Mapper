@@ -42,6 +42,7 @@ from copy import deepcopy
 from dataclasses import asdict
 
 from linkml_runtime import SchemaView
+from linkml_runtime.dumpers import yaml_dumper
 from linkml.utils.schema_builder import SchemaBuilder
 from linkml_runtime.linkml_model import SlotDefinition
 
@@ -482,7 +483,7 @@ class WideColumnMapMaker:
         if os.path.dirname(self.source_schema_file):
             os.makedirs(os.path.dirname(self.source_schema_file), exist_ok=True)
         with open(self.source_schema_file, "w") as f:
-            yaml.safe_dump(self.source_schema.schema, f)
+            f.write(yaml_dumper.dumps(self.source_schema.schema))
 
         # Save all LinkML-Map schemas
         self.map_schemas_path = Path(output_dir)
@@ -548,7 +549,7 @@ class WideColumnMapMaker:
     ) -> str:
         """Get the base type of the specified slot.
 
-        Enumerations are assuemd to be strings.
+        Enumerations are assumed to be strings.
 
         Args:
             class_name (str): The class the slot belongs to.

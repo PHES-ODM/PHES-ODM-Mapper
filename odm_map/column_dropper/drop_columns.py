@@ -129,7 +129,7 @@ class DropColumns:
                         )
                     slot_defns = sv.class_induced_slots(class_name)
                     slots = [s.name for s in slot_defns]
-                    df = df[slots]
+                    df = df[[s for s in slots if s in df.columns]]
                 else:
                     # Gather all columns to drop in drop_cols (extra and/or tracking columns)
                     drop_cols = []

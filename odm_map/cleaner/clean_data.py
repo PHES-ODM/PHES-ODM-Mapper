@@ -64,7 +64,7 @@ class Logs:
 
 
 # Maximum length of a log key. These keys are used as either file names or Excel tab names. Excel tabs
-# must havve length 31 or less.
+# must have length 31 or less.
 MAX_LOG_KEY_LENGTH = 31
 
 

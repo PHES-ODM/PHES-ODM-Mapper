@@ -83,7 +83,7 @@ class WideColumnIDCodeMaker:
             class_name = self.get_table_long_name(class_short_name)
 
             if not group_names:
-                group_names = [group_names]
+                group_names = [None]
 
             for group_name in group_names:
                 yield class_name, class_short_name, slot_name, group_name

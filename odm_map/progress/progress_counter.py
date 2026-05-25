@@ -209,7 +209,6 @@ class ProgressCounter(BaseCounter):
         self._install_hooks()
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
-        exception_type, exception_value, exception_traceback
         self.close()
         self.entered = False
 

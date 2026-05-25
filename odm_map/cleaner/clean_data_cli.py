@@ -1,5 +1,6 @@
-from typing import List, Annotated
+from typing import List, Annotated, Optional
 import typer
+import yaml
 
 from linkml_runtime import SchemaView
 
@@ -37,6 +38,29 @@ should not be included.
 MAX_ROWS_HELP = """The maximum number of rows to clean from each input data
 file. If 0 then map all rows."""
 
+CLEAN_OPERATIONS_FILE_HELP = """Optional YAML file specifying the list of clean
+operations to perform. If not provided, a default set of operations is used.
+See the DataCleaner.clean_data documentation for the expected format."""
+
+DEFAULT_CLEAN_OPERATIONS = [
+    {
+        "format_and_match_columns": [
+            "lowercase",
+            {"remove_chars": "-"},
+            "alpha_numeric_underscore",
+            "single_underscores",
+            "trim_trailing_underscores",
+        ]
+    },
+    {
+        "add_ontology_ids_to_enums": {
+            "match_ontology_id": "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$",
+        }
+    },
+    {"correct_enums": True},
+    {"check_patterns": True},
+]
+
 SCHEMA_HELP = """Schema file that the data conforms to. We will do some basic
 cleanup to the data based on this schema (eg. correcting capitalization of
 classes and enums). We assume the file name of the file being cleaned is the
@@ -51,9 +75,16 @@ def main(
     log_file: Annotated[str, typer.Option(show_default=False, help=LOG_FILE_HELP)],
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
     schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
+    clean_operations_file: Annotated[Optional[str], typer.Option(help=CLEAN_OPERATIONS_FILE_HELP)] = None,
 ):
     if not isinstance(schema, SchemaView) and schema is not None:
         schema = SchemaView(schema)
+
+    if clean_operations_file is not None:
+        with open(clean_operations_file, "r") as f:
+            clean_operations = yaml.safe_load(f)
+    else:
+        clean_operations = DEFAULT_CLEAN_OPERATIONS
 
     data_files = get_input_data_files(inputs, schema=schema)
     cleaner = DataCleaner(schema=schema)
@@ -63,25 +94,7 @@ def main(
         output_dir=output_dir,
         log_file=log_file,
         max_rows=max_rows,
-        # @TODO: Do not hardcode these!
-        clean_operations=[
-            {
-                "format_and_match_columns": [
-                    "lowercase",
-                    {"remove_chars": "-"},
-                    "alpha_numeric_underscore",
-                    "single_underscores",
-                    "trim_trailing_underscores",
-                ]
-            },
-            {
-                "add_ontology_ids_to_enums": {
-                    "match_ontology_id": "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$",
-                }
-            },
-            {"correct_enums": True},
-            {"check_patterns": True},
-        ],
+        clean_operations=clean_operations,
     )
 
 

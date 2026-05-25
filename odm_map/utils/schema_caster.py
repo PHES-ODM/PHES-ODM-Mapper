@@ -170,7 +170,7 @@ class SchemaCaster:
         cur_cast_functions = self.cast_functions[class_name]
         for col, cast_func in cur_cast_functions.items():
             if col in df.columns:
-                df[col] = df[col].apply(lambda v: cast_func(v))
+                df[col] = df[col].apply(cast_func)
         return df
 
     def cast_value(self, v: Any, class_name: str, slot_name: str) -> Any:

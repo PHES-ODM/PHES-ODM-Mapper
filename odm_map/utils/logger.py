@@ -90,20 +90,17 @@ def get_logger(name: str, level: Optional[str] = DEFAULT_LEVEL) -> logging.Logge
     Returns:
         logging.Logger: The logging object.
     """
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(
-        MultiFormatter(
-            fmt=DEFAULT_LOGGER_FORMAT,
-            alternate_fmts=ALTERNATE_LOGGER_FORMATS,
-            datefmt=LOGGER_DATE_FORMAT,
-        )
-    )
-    logging.basicConfig(
-        handlers=[handler],
-        level=level,
-    )
-
     logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(
+            MultiFormatter(
+                fmt=DEFAULT_LOGGER_FORMAT,
+                alternate_fmts=ALTERNATE_LOGGER_FORMATS,
+                datefmt=LOGGER_DATE_FORMAT,
+            )
+        )
+        logger.addHandler(handler)
     if level:
         logger.setLevel(level)
     return logger

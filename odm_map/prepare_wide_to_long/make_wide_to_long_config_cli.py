@@ -66,7 +66,7 @@ class MakeWideToLongConfig:
         # Each partID (which are enumeration values) gets mapped onto the mmaSet
         partid_to_mmaset = {}
         for _, row in mma_sets_df[["partID", "mmaSet"]].iterrows():
-            partid_to_mmaset[row[row.index[0]]] = row[row.index[1]]
+            partid_to_mmaset[row["partID"]] = row["mmaSet"]
         self.config[ConfigKeys.PARTID_TO_MMASET] = partid_to_mmaset
 
         # Get all the tables, and their shortcodes stored in partInstr

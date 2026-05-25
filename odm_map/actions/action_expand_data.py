@@ -9,7 +9,7 @@ def action_expand_data(
     data_frames: Dict[str, List[pd.DataFrame]],
     config: Union[str, Path],
 ) -> Dict[str, List[pd.DataFrame]]:
-    """Clean the data in the specified data files and DataFrames.
+    """Expand the data in the specified data files and DataFrames.
 
     Args:
         data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of DataFrames, where the keys are the class names
