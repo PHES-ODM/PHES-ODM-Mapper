@@ -35,9 +35,7 @@ def all_primary_keys(schema: SchemaView) -> Dict[str, str]:
         try:
             primary_keys[cur_class] = get_primary_key(cur_class, schema=schema)
         except ValueError as e:
-            raise ValueError(
-                f"Failed to build primary key map: {e}"
-            ) from e
+            raise ValueError(f"Failed to build primary key map: {e}") from e
 
     # Sort the keys
     primary_keys = dict(sorted(primary_keys.items()))

@@ -75,7 +75,9 @@ def main(
     log_file: Annotated[str, typer.Option(show_default=False, help=LOG_FILE_HELP)],
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
     schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
-    clean_operations_file: Annotated[Optional[str], typer.Option(help=CLEAN_OPERATIONS_FILE_HELP)] = None,
+    clean_operations_file: Annotated[
+        Optional[str], typer.Option(help=CLEAN_OPERATIONS_FILE_HELP)
+    ] = None,
 ):
     if not isinstance(schema, SchemaView) and schema is not None:
         schema = SchemaView(schema)

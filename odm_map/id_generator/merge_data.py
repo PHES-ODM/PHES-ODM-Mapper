@@ -205,11 +205,13 @@ class MergeData:
         rows = []
         for class_name, slot_name in self.primary_keys:
             code = f"dat.{class_name}.__{slot_name}"
-            rows.append({
-                CodeColumns.CLASS: class_name,
-                CodeColumns.SLOT: slot_name,
-                CodeColumns.CODE0: code,
-            })
+            rows.append(
+                {
+                    CodeColumns.CLASS: class_name,
+                    CodeColumns.SLOT: slot_name,
+                    CodeColumns.CODE0: code,
+                }
+            )
         self.pk_id_code_df = pd.DataFrame(
             rows, columns=[CodeColumns.CLASS, CodeColumns.SLOT, CodeColumns.CODE0]
         )
@@ -237,11 +239,13 @@ class MergeData:
                 class_name, slot_name, target_class_name, target_slot_name
             )
             code = f'dat.{target_class_name}.get_first_linked_value("{target_slot_name}", linkage_path="{linkage_path_name}")'
-            rows.append({
-                CodeColumns.CLASS: class_name,
-                CodeColumns.SLOT: slot_name,
-                CodeColumns.CODE0: code,
-            })
+            rows.append(
+                {
+                    CodeColumns.CLASS: class_name,
+                    CodeColumns.SLOT: slot_name,
+                    CodeColumns.CODE0: code,
+                }
+            )
         self.fk_id_code_df = pd.DataFrame(
             rows, columns=[CodeColumns.CLASS, CodeColumns.SLOT, CodeColumns.CODE0]
         )

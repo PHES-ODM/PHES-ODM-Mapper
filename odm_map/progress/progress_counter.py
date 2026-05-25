@@ -226,7 +226,9 @@ class ProgressCounter(BaseCounter):
             inc (int): Amount to increase the bar's count by.
         """
         if barid == TOTAL_BARID:
-            raise ValueError(f"barid must not be '{TOTAL_BARID}' (reserved for internal use)")
+            raise ValueError(
+                f"barid must not be '{TOTAL_BARID}' (reserved for internal use)"
+            )
         if not self.entered:
             raise RuntimeError(
                 "ProgressCounter has not been entered with __enter__() (be sure code is wrapped in 'with progress_counter:')"

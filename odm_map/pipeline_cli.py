@@ -158,7 +158,8 @@ def main(
             max_processes=max_processes,
             multi_bar_progress=not (
                 "IPython" in sys.modules
-                and getattr(sys.modules["IPython"], "get_ipython", lambda: None)() is not None
+                and getattr(sys.modules["IPython"], "get_ipython", lambda: None)()
+                is not None
             ),
             debug_mode=debug,
         )
