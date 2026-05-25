@@ -847,7 +847,7 @@ class WideColumnExpander:
             col_parts, WideColumnValues.COLUMN_METHOD_TAG, 1
         ):
             logger.warning(
-                f"Protocol steps method column must have a second part equal to '{WideColumnValues.COLUMN_MEASURE_TAG}', instead '{col_parts[1][0]}' was found. Ignoring column: {col}"
+                f"Protocol steps method column must have a second part equal to '{WideColumnValues.COLUMN_METHOD_TAG}', instead '{col_parts[1][0]}' was found. Ignoring column: {col}"
             )
             return False
 

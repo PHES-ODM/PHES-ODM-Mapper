@@ -230,7 +230,7 @@ class ArrayExpander(object):
 
         # If config has no columns to expand then return the data_frames unchanged
         if ConfigKeys.EXPAND_COLUMNS not in self.config:
-            return data_frames
+            return data_files, data_frames
 
         # Count total expand operation to perform
         # total = (# of classes) * (# DataFrames in class) # (# columns to expand)

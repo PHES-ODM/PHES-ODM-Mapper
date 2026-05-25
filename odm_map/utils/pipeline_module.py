@@ -129,7 +129,7 @@ class PipelineModule(object):
             self.original_module_path = module_path
             if os.path.splitext(module_path)[1].lower() == ".zip":
                 self.extract_module(module_path)
-            elif os.isdir(module_path):
+            elif os.path.isdir(module_path):
                 self.module_dir = Path(module_path).resolve()
                 self.module_name = os.path.basename(self.module_dir)
             else:

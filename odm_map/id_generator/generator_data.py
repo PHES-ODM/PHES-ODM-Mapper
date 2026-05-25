@@ -267,7 +267,7 @@ class GeneratorData:
                 )
 
         # Create a list of all original columns found in the dataset (excluding the tracking columns)
-        columns = list(df.columns)
+        columns = list(self.orig_df.columns)
         columns = [c for c in columns if not is_extra_or_tracking_slot(c)]
         self.orig_columns = columns
 
@@ -637,7 +637,7 @@ class GeneratorData:
             # of indices that were merged, so we need to sort them. If only one value
             # matched, then they are already in order, so no sorting is required.
             if len(all_indices) > 1:
-                indices = list(set(indices)).sort()
+                indices = sorted(set(indices))
             if max_rows:
                 indices = indices[:max_rows]
 

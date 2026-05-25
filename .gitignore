@@ -1,6 +1,8 @@
 .DS_Store
 .vscode
 
+odm_map/test
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
