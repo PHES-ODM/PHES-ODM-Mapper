@@ -381,10 +381,10 @@ class MergeData:
                         target_value = target_df.loc[target_idx, linkage_slot_name]
                         if target_value:
                             # A match value already exists, so use it instead
-                            df.iloc[idx, linkage_slot_name] = target_value
+                            df.at[idx, linkage_slot_name] = target_value
                         else:
                             target_df.loc[target_idx, linkage_slot_name] = match_value
-                            df.iloc[idx, linkage_slot_name] = match_value
+                            df.at[idx, linkage_slot_name] = match_value
 
     def combine_datasets(self):
         """Combine the loaded and processed datasets, so that we have a single DataFrame per class.

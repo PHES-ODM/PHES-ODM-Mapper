@@ -151,7 +151,7 @@ def do_exclude_equals(
         # Treat NAs and "" as the same
         cur_filt = pd.isna(df[slot]) | (df[slot] == "")
     else:
-        cur_filt = pd.Series([False] * len(filt))
+        cur_filt = pd.Series(False, index=df.index)
     cur_filt = cur_filt | df[slot].isin(value)
 
     # Apply the filter
@@ -199,7 +199,7 @@ def do_include_equals(
         # Treat NAs and "" as the same
         cur_filt = pd.isna(df[slot]) | (df[slot] == "")
     else:
-        cur_filt = pd.Series([False] * len(filt))
+        cur_filt = pd.Series(False, index=df.index)
     cur_filt = cur_filt | df[slot].isin(value)
 
     # Apply the filter

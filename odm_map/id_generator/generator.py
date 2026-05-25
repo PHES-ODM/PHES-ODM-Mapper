@@ -1453,7 +1453,7 @@ class IDGenerator(object):
         Returns:
             Optional[str]: The short name of the class, or None if no short name is defined.
         """
-        return self.config[ConfigKeys.TABLES_TO_SHORTNAMES].get(class_name, None)
+        return self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).get(class_name, None)
 
     def save_all(
         self,

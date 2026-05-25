@@ -311,6 +311,7 @@ class DataMapper(object):
         convert_barid: str = "Processing Data",
         keep_extra_columns: bool = True,
         keep_tracking_columns: bool = True,
+        unrestricted_eval: bool = True,
     ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List[Path]]]:
         """Map all the data specified in data_frames using all mapper files found in the specified mapper directory.
 
@@ -457,7 +458,7 @@ class DataMapper(object):
                     "data": split,
                     "mapper_spec": mapper_spec,
                     "source_schema": source_schema,
-                    "unrestricted_eval": True,
+                    "unrestricted_eval": unrestricted_eval,
                 }
                 for file_num, mapper_spec in enumerate(mapper_specs)
             ]
@@ -481,17 +482,20 @@ class DataMapper(object):
                     run_mapper_progress.update(map_barid, 1)
             else:
                 pool = Pool(processes=max_processes)
-                results = []
-                results = [
-                    pool.apply_async(
-                        run_mapper,
-                        (),
-                        map_arg,
-                        callback=lambda _: run_mapper_progress.update(map_barid, 1),
-                    )
-                    for map_arg in map_args
-                ]
-                results = [r.get() for r in results]
+                try:
+                    results = [
+                        pool.apply_async(
+                            run_mapper,
+                            (),
+                            map_arg,
+                            callback=lambda _: run_mapper_progress.update(map_barid, 1),
+                        )
+                        for map_arg in map_args
+                    ]
+                    results = [r.get() for r in results]
+                finally:
+                    pool.close()
+                    pool.join()
 
         # Convert mapped data to DataFrames
         all_mapped_data = {}

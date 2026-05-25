@@ -8,7 +8,7 @@ class EmptyCounter(BaseCounter):
         pass
 
     def __enter__(self):
-        pass
+        return self
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
         pass

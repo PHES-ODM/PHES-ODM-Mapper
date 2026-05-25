@@ -16,6 +16,7 @@ def action_map_data(
     convert_barid: str = "Processing Data",
     keep_extra_columns: bool = True,
     keep_tracking_columns: bool = True,
+    unrestricted_eval: bool = True,
 ) -> Dict[str, List[pd.DataFrame]]:
     """Map all the data specified in data_frames using all mapper files found in the specified mapper directory.
 
@@ -63,5 +64,6 @@ def action_map_data(
         convert_barid=convert_barid,
         keep_extra_columns=keep_extra_columns,
         keep_tracking_columns=keep_tracking_columns,
+        unrestricted_eval=unrestricted_eval,
     )
     return data

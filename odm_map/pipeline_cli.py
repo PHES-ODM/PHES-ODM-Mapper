@@ -15,6 +15,7 @@ python3 pipeline_cli.py \
 
 from typing import List, Annotated
 from datetime import datetime
+import sys
 import typer
 from click.exceptions import UsageError, ClickException
 
@@ -155,7 +156,10 @@ def main(
             temp_dir=temp_dir,
             max_rows=max_rows,
             max_processes=max_processes,
-            multi_bar_progress="get_ipython" not in globals(),
+            multi_bar_progress=not (
+                "IPython" in sys.modules
+                and getattr(sys.modules["IPython"], "get_ipython", lambda: None)() is not None
+            ),
             debug_mode=debug,
         )
     except CleanExitError as e:

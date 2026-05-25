@@ -150,9 +150,10 @@ class RowIndexLookup:
         prev_value = self._get_value_key(prev_value)
         new_value = self._get_value_key(new_value)
         if prev_value != new_value or (isna(prev_value) != isna(new_value)):
-            self.data[slot][prev_value].remove(idx)
-            if len(self.data[slot][prev_value]) == 0:
-                del self.data[slot][prev_value]
+            if prev_value in self.data[slot]:
+                self.data[slot][prev_value].remove(idx)
+                if len(self.data[slot][prev_value]) == 0:
+                    del self.data[slot][prev_value]
             if new_value not in self.data[slot]:
                 self.data[slot][new_value] = SortedList() if USE_SORTED_LIST else []
             if USE_SORTED_LIST:

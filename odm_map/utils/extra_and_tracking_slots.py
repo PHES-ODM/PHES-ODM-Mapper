@@ -408,25 +408,6 @@ def load_data_with_source_tracking_columns(
         Dict[str, List[pd.DataFrame]]: Keys are the class names (matching the keys in data_file) and the
             values are lists of loaded DataFrames for the class with source tracking columns added.
     """
-
-    """Load all data from disk (as DataFrames) and add the tracking columns that specify which source rows and
-    files the data was loaded from.
-
-    Args:
-        data_files (Dict[str, List[Union[str, Path, Dict[str, str]]]]): Dictionary of all files to load. The
-            keys are the class names and the values are lists of files belonging to that class or dictionaries
-            specifying an Excel file and a sheet, in the form
-            { EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name" }.
-        source_schema_file (Union[str, Path]): The source schema that contains the classes that the data_files
-            should belong to. Only files belonging to recognized classes are loaded.
-        max_rows (Optional[int], optional): Maximum number of rows to load from each file. If 0 or None then all
-            rows are loaded. Defaults to 0.
-
-    Returns:
-        Dict[str, List[pd.DataFrame]]: The loaded DataFrames. The keys are the class names and the values
-            are lists of DataFrames belonging to that class. The order of the DataFrames within each class are the
-            same as the order of the files in data_files for the same class.
-    """
     if not data_files:
         raise CleanExitError("No input data found.")
 
@@ -550,8 +531,11 @@ def load_data_with_source_tracking_columns(
 
     # Raise an exception if no data was loaded.
     if len(data_frames) == 0:
-        tables = ", ".join(sorted(recognized_classes))
-        msg = f"No recognized tables loaded. Allowable tables are: {tables}"
+        if recognized_classes is not None:
+            tables = ", ".join(sorted(recognized_classes))
+            msg = f"No recognized tables loaded. Allowable tables are: {tables}"
+        else:
+            msg = "No recognized tables loaded."
         raise CleanExitError(msg)
 
     return data_frames

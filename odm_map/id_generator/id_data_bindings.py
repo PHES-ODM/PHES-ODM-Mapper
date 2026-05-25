@@ -80,7 +80,10 @@ class DataBindings:
 
     def __getattr__(self, name) -> Any:
         if self.sub_classes:
-            return self.sub_classes[name]
+            try:
+                return self.sub_classes[name]
+            except KeyError:
+                raise AttributeError(f"No sub-class named '{name}'")
 
         try:
             v = self.get_first_linked_value(name)

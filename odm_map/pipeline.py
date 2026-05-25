@@ -89,6 +89,13 @@ class Pipeline(object):
         all_classes = ", ".join(all_classes)
         logger.info(f"Recognized input tables are: {all_classes}")
 
+        self.temp_dir_obj = None
+
+    def __del__(self):
+        if self.temp_dir_obj is not None:
+            self.temp_dir_obj.cleanup()
+            self.temp_dir_obj = None
+
     def get_formatted_bool_key(self, d: Dict, key: str, default: Any = None) -> bool:
         val = self.get_formatted_string_key(d, key, default)
         if isinstance(val, str):
@@ -224,12 +231,12 @@ class Pipeline(object):
                 progress_bar_title = self.get_formatted_string_key(
                     params, "progress_bar_title", None
                 )
-                output_dir = self.get_formatted_string_key(params, "output_dir")
+                step_output_dir = self.get_formatted_string_key(params, "output_dir")
                 # Do not format output_name, it will be format for tags like {class_name} in action_save_data.
                 output_name = params.get("output_name")
                 _ = action_save_data(
                     data_frames=data_frames,
-                    output_dir=output_dir,
+                    output_dir=step_output_dir,
                     progress_barid=progress_bar_title,
                     name_format=output_name,
                     name_format_kwargs=self.top_level_kwargs,
@@ -333,12 +340,12 @@ class Pipeline(object):
             elif action == "prepare_wide_to_long":
                 config = self.module.get_module_path(params.get("config"))
                 target_schema = self.module.get_module_path(params.get("target_schema"))
-                output_dir = self.get_formatted_string_key(params, "output_dir")
+                step_output_dir = self.get_formatted_string_key(params, "output_dir")
                 data_frames = action_prepare_wide_to_long(
                     data_frames=data_frames,
                     config=config,
                     target_schema=target_schema,
-                    output_dir=output_dir,
+                    output_dir=step_output_dir,
                     debug_mode=debug_mode,
                 )
             else:

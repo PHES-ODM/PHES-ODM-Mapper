@@ -115,8 +115,7 @@ class DataFilter(object):
         """
         output_files = {}
         output_dir = Path(output_dir)
-        if not output_dir.exists():
-            output_dir.mkdir()
+        output_dir.mkdir(parents=True, exist_ok=True)
         for cur_class, cur_data in data.items():
             output_file = output_dir / f"{cur_class}.csv"
             logger.debug(f"Saving data to {output_file}")

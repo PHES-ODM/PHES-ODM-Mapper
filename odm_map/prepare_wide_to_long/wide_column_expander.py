@@ -754,7 +754,7 @@ class WideColumnExpander:
 
             if num_candidate_measures != len(col_parts[2]) - 2:
                 logger.warning(
-                    f"Specified OR aggregation must have {num_candidate_measures} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
+                    f"Specified OR aggregation must have {num_candidate_measures} parts, instead {len(col_parts[2]) - 2} were given. Ignoring column: {col}"
                 )
                 return False
 
@@ -865,7 +865,7 @@ class WideColumnExpander:
 
             if num_candidate_methods != len(col_parts[2]) - 2:
                 logger.warning(
-                    f"Specified OR aggregation must have {num_candidate_methods} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
+                    f"Specified OR aggregation must have {num_candidate_methods} parts, instead {len(col_parts[2]) - 2} were given. Ignoring column: {col}"
                 )
                 return False
 
@@ -978,7 +978,7 @@ class WideColumnExpander:
 
             if num_candidate_measures != len(col_parts[3]) - 2:
                 logger.warning(
-                    f"Specified OR aggregation must have {num_candidate_measures} parts, instead {len(col_parts[2] - 2)} were given. Ignoring column: {col}"
+                    f"Specified OR aggregation must have {num_candidate_measures} parts, instead {len(col_parts[3]) - 2} were given. Ignoring column: {col}"
                 )
                 return False
 
