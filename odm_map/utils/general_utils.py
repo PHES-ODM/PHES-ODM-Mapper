@@ -260,7 +260,8 @@ def parse_numeric(value: str) -> Any:
         if str(float_v) == value:
             return float(value)
     except (TypeError, ValueError, OverflowError):
-        return value
+        pass
+    return value
 
 
 def select_func_kwargs(func: Callable, kwargs: Dict[str, Any]) -> Dict[str, Any]:
