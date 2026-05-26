@@ -17,8 +17,6 @@ def action_save_data(
     progress_barid: Optional[str] = None,
     name_format: str = "{class_name}.csv",
     name_format_kwargs: Optional[Dict] = None,
-    keep_extra_columns: bool = False,
-    keep_tracking_columns: bool = False,
     exception_if_exists: bool = False,
 ) -> Dict[str, List[str]]:
     """Save the specified DataFrames to disk.
