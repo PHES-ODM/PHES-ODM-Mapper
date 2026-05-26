@@ -1,5 +1,10 @@
 # <img src="docs/img/ODM-logo.png" align="right" alt="" width="180"/> PHES-ODM Mapper
 
+<!-- badges: start -->
+[![lint.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/lint.yaml/badge.svg)](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/lint.yaml)
+[![pytest.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/pytest.yaml/badge.svg)](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/pytest.yaml)
+<!-- badges: end -->
+
 ## Important Notice
 
 This repository currently uses custom features in
