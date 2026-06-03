@@ -346,7 +346,9 @@ def add_source_tracking_columns(
     tracking_slots = get_tracking_slots()
     existing_tracking_slots = [c for c in df.columns if c in tracking_slots]
     if len(existing_tracking_slots) > 0:
-        logger.error(
+        # Overwriting these would silently destroy the user's data, so fail loudly (as the
+        # docstring promises) rather than logging and continuing.
+        raise ValueError(
             f"Loaded data already has one or more columns with the same name as a tracking column: {existing_tracking_slots}"
         )
 

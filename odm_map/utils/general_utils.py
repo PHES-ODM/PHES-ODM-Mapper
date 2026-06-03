@@ -104,8 +104,9 @@ def read_data_frame(
     else:
         sheet_name = 0
         if kwargs is not None and "sheet_name" in kwargs:
-            sheet_name = kwargs.get("sheet_name")
-            del kwargs["sheet_name"]
+            # Copy before removing so the caller's kwargs dict is not mutated.
+            kwargs = dict(kwargs)
+            sheet_name = kwargs.pop("sheet_name")
 
     ext = os.path.splitext(file)[1].lower()
     if ext in [".tsv", ".txt", ".csv"]:

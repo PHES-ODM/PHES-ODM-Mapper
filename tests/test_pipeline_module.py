@@ -126,6 +126,42 @@ class TestPipelineModuleInitFromZip:
         with pytest.raises(CleanExitError):
             PipelineModule(module=None, module_path=str(zip_path))
 
+    def test_zip_with_path_traversal_member_raises(self, tmp_path):
+        zip_path = tmp_path / "evil.zip"
+        with zipfile.ZipFile(zip_path, "w") as zf:
+            zf.writestr(CONFIG_FILE, yaml.dump({MODULE_TITLE_KEY: "Evil"}))
+            # A member that would extract outside the destination directory.
+            zf.writestr("../evil.txt", "pwned")
+        with pytest.raises(CleanExitError):
+            PipelineModule(module=None, module_path=str(zip_path))
+
+    def _make_zip_module(self, tmp_path, name):
+        module_dir = tmp_path / f"{name}_contents"
+        module_dir.mkdir()
+        (module_dir / CONFIG_FILE).write_text(yaml.dump({MODULE_TITLE_KEY: name}))
+        zip_path = tmp_path / f"{name}.zip"
+        with zipfile.ZipFile(zip_path, "w") as zf:
+            zf.write(module_dir / CONFIG_FILE, CONFIG_FILE)
+        return zip_path
+
+    def test_cleanup_removes_temp_dir(self, tmp_path):
+        zip_path = self._make_zip_module(tmp_path, "cleanup_module")
+        pm = PipelineModule(module=None, module_path=str(zip_path))
+        temp_dir_path = Path(pm.module_temp_dir_obj.name)
+        assert temp_dir_path.exists()
+        pm.cleanup()
+        assert not temp_dir_path.exists()
+        assert pm.module_temp_dir_obj is None
+        # cleanup is idempotent.
+        pm.cleanup()
+
+    def test_context_manager_cleans_up(self, tmp_path):
+        zip_path = self._make_zip_module(tmp_path, "ctx_module")
+        with PipelineModule(module=None, module_path=str(zip_path)) as pm:
+            temp_dir_path = Path(pm.module_temp_dir_obj.name)
+            assert temp_dir_path.exists()
+        assert not temp_dir_path.exists()
+
 
 # ---------------------------------------------------------------------------
 # config property
@@ -182,6 +218,12 @@ class TestGetModulePath:
         results = pm.get_module_path(["a.yaml", "b.yaml"])
         assert isinstance(results, list)
         assert len(results) == 2
+
+    def test_path_traversal_raises(self, tmp_path):
+        module_dir = make_module_dir(tmp_path, "my_module")
+        pm = PipelineModule(module=None, module_path=str(module_dir))
+        with pytest.raises(CleanExitError):
+            pm.get_module_path("../../etc/passwd")
 
     def test_temp_dir_tag_resolved(self, tmp_path):
         module_dir = make_module_dir(tmp_path, "my_module")

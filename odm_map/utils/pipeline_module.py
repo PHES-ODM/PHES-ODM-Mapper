@@ -1,4 +1,5 @@
 import os
+import stat
 from typing import List, Union, Dict, Optional
 from pathlib import Path
 import yaml
@@ -144,10 +145,25 @@ class PipelineModule(object):
             return self.module_name
         return str(self.original_module_path)
 
-    def __del__(self):
-        if self.module_temp_dir_obj:
+    def cleanup(self):
+        """Delete the temporary directory used for an extracted zip module, if any.
+
+        Safe to call multiple times. Prefer calling this explicitly (or using the module as a
+        context manager) over relying on __del__, which is not guaranteed to run promptly.
+        """
+        if self.module_temp_dir_obj is not None:
             self.module_temp_dir_obj.cleanup()
             self.module_temp_dir_obj = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.cleanup()
+        return False
+
+    def __del__(self):
+        self.cleanup()
 
     def extract_module(self, module_path: Union[str, Path]):
         """Extract the zip module at the specified path to a temporary directory.
@@ -158,7 +174,20 @@ class PipelineModule(object):
                 directory module.
         """
         temp_dir = tempfile.TemporaryDirectory()
+        dest_root = Path(temp_dir.name).resolve()
         with zipfile.ZipFile(module_path, "r") as z:
+            for member in z.infolist():
+                # Reject symlink members; extracting/following them could escape dest_root.
+                if stat.S_ISLNK(member.external_attr >> 16):
+                    raise CleanExitError(
+                        f"Refusing to extract symlink '{member.filename}' from module zip: {module_path}"
+                    )
+                # Reject members whose path would land outside the destination directory.
+                target = (dest_root / member.filename).resolve()
+                if target != dest_root and dest_root not in target.parents:
+                    raise CleanExitError(
+                        f"Refusing to extract '{member.filename}' outside the module directory from zip: {module_path}"
+                    )
             z.extractall(temp_dir.name)
 
         self.module_temp_dir_obj = temp_dir
@@ -245,10 +274,29 @@ class PipelineModule(object):
         if relative_path.startswith(SHARED_DIR_TAG):
             shared_dir = (MODULE_DIR / SHARED_MODULE).resolve()
             relative_path = relative_path[len(SHARED_DIR_TAG) + 1 :]
-            return shared_dir / relative_path
+            return self._join_within_base(shared_dir, relative_path)
 
         if relative_path.startswith(TEMP_DIR_TAG):
             relative_path = relative_path[len(TEMP_DIR_TAG) + 1 :]
-            return self.temp_dir / relative_path
+            return self._join_within_base(self.temp_dir, relative_path)
 
-        return self.module_dir / relative_path
+        return self._join_within_base(self.module_dir, relative_path)
+
+    @staticmethod
+    def _join_within_base(base: Union[str, Path], relative_path: str) -> Path:
+        """Join relative_path onto base, ensuring the result does not escape base via path
+        traversal (eg. "../.."). Returns the joined (unresolved) path so existing path
+        semantics are preserved; raises CleanExitError if the path escapes base.
+        """
+        base = Path(base)
+        target = base / relative_path
+        base_resolved = base.resolve()
+        target_resolved = target.resolve()
+        if (
+            target_resolved != base_resolved
+            and base_resolved not in target_resolved.parents
+        ):
+            raise CleanExitError(
+                f"Path '{relative_path}' resolves outside its base directory '{base}'"
+            )
+        return target

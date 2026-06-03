@@ -318,23 +318,20 @@ def schema_view():
 
 
 # ---------------------------------------------------------------------------
-# add_source_tracking_columns — duplicate tracking columns logs error
+# add_source_tracking_columns — duplicate tracking columns raise
 # ---------------------------------------------------------------------------
 
 
 class TestAddSourceTrackingColumnsConflict:
-    def test_existing_tracking_slot_logs_error(self, caplog):
-        import logging
-
+    def test_existing_tracking_slot_raises(self):
         df = pd.DataFrame(
             {
                 "siteID": ["s1"],
                 TrackingSlots.SOURCE_ROW: [99],
             }
         )
-        with caplog.at_level(logging.ERROR):
+        with pytest.raises(ValueError, match=TrackingSlots.SOURCE_ROW):
             add_source_tracking_columns(df, "sites", "sites.csv")
-        assert any(TrackingSlots.SOURCE_ROW in msg for msg in caplog.messages)
 
 
 # ---------------------------------------------------------------------------

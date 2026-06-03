@@ -138,7 +138,6 @@ def get_ranges_of_slot(
         slot_name = [slot_name]
     ranges = []
     for cur_slot in slot_name:
-        # slot_defn = schema.induced_slot(cur_slot, class_name)
         slot_defn = get_slot_definition(
             class_name, cur_slot, schema, exception_on_error=exception_on_error
         )
