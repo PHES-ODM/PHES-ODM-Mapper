@@ -251,10 +251,15 @@ def do_apply_filter(
     filt = get_named_filter(input_name, filters)
     init_num_rows = len(data[cls])
     if debug_mode:
-        data[cls].loc[~filt, DROP_COLUMN] = True
+        # Mark (rather than drop) the excluded rows. Copy first so the caller's input
+        # DataFrame is not mutated; the marked copy is stored back in the data dict.
+        marked = data[cls].copy()
+        marked.loc[~filt, DROP_COLUMN] = True
+        data[cls] = marked
+        num_rows = len(marked)
     else:
-        data[value] = data[cls][filt]
-    num_rows = len(data[value])
+        data[value] = data[cls][filt].copy()
+        num_rows = len(data[value])
     logger.debug(
         f"Saved data from filter {input_name} to class {cls}, number of rows changed from {init_num_rows} to {num_rows} (Change: {num_rows - init_num_rows})"
     )
@@ -338,6 +343,10 @@ def do_or_filters(
         cls (str): The class the filter applies to.
     """
     filts = [get_named_filter(str(f), filters) for f in value]
+    if not filts:
+        raise ValueError(
+            f"or_filters requires at least one filter name in value, got: {value}"
+        )
     filt = reduce(lambda x, y: x | y, filts)
     set_named_filter(filt, output_name, filters)
 
@@ -358,6 +367,10 @@ def do_and_filters(
         cls (str): The class the filter applies to.
     """
     filts = [get_named_filter(str(f), filters) for f in value]
+    if not filts:
+        raise ValueError(
+            f"and_filters requires at least one filter name in value, got: {value}"
+        )
     filt = reduce(lambda x, y: x & y, filts)
     set_named_filter(filt, output_name, filters)
 
@@ -385,7 +398,7 @@ def do_create_filter(
         raise ValueError(
             f"value must be a boolean for the create_filter operation. Found '{value}' (of type {type(value)})"
         )
-    filters[output_name] = pd.Series([value] * len(data[cls].index))
+    filters[output_name] = pd.Series(value, index=data[cls].index)
 
 
 def do_requires_any(
@@ -416,7 +429,7 @@ def do_requires_any(
         slots = [slots]
 
     # Calculate requires any filter
-    any_filt = pd.Series([False] * len(data[cls].index))
+    any_filt = pd.Series(False, index=data[cls].index)
     for slot in slots:
         cur_filt = ~(pd.isna(df[slot]) | (df[slot] == ""))
         any_filt = any_filt | cur_filt
@@ -461,7 +474,7 @@ def do_requires_all(
         slots = [slots]
 
     # Calculate requires any filter
-    all_filt = pd.Series([True] * len(data[cls].index))
+    all_filt = pd.Series(True, index=data[cls].index)
     for slot in slots:
         cur_filt = pd.isna(df[slot]) | (df[slot] == "")
         all_filt = all_filt & ~cur_filt
