@@ -668,6 +668,37 @@ class TestExpandColumnTypeAttribute:
         )
         assert result is False
 
+    def test_unknown_slot_returns_false_and_skips_column(self, expander):
+        # induced_slot returns None when the slot does not exist in the target schema.
+        expander.target_schema.induced_slot.return_value = None
+        row = pd.Series({"sm_notaslot": "val"})
+        expander.new_current_expanded_rows()
+        result = expander.expand_column_type_attribute(
+            col="sm_notaslot",
+            row=row,
+            column_flags=None,
+            column_group=None,
+            always_use_group=False,
+        )
+        assert result is False
+        # The bogus column must not be added to the expanded rows.
+        assert "sm_notaslot" not in expander.current_expanded_rows[None]
+
+    def test_unknown_slot_when_induced_slot_raises(self, expander):
+        # induced_slot raising is treated the same as a missing slot.
+        expander.target_schema.induced_slot.side_effect = ValueError("no such slot")
+        row = pd.Series({"sm_notaslot": "val"})
+        expander.new_current_expanded_rows()
+        result = expander.expand_column_type_attribute(
+            col="sm_notaslot",
+            row=row,
+            column_flags=None,
+            column_group=None,
+            always_use_group=False,
+        )
+        assert result is False
+        assert "sm_notaslot" not in expander.current_expanded_rows[None]
+
     def test_and_column_expansion(self, expander):
         row = pd.Series({"sm_2_AND_collPer_collNum": "A.B"})
         expander.new_current_expanded_rows()

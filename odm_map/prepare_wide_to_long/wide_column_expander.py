@@ -82,7 +82,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
 logger = get_logger(__name__)
 
 
-class ColumnType(str, Enum):
+class ColumnType(Enum):
     ATTRIBUTE = auto()
     PROTOCOL_STEP_MEASURE = auto()
     PROTOCOL_STEP_METHOD = auto()
@@ -261,7 +261,6 @@ class WideColumnExpander:
                 dfs = load_data_with_source_tracking_columns(
                     {self.source_class_name: [f]}, max_rows=max_rows
                 )
-                # df = read_data_frame(f, keep_default_na=False, na_values=None)
                 cur_dfs = dfs[self.source_class_name]
                 input_df.extend(cur_dfs)
         input_df = pd.concat(input_df, ignore_index=True)
@@ -317,7 +316,8 @@ class WideColumnExpander:
         col = column_without_flags(col)
         try:
             parts = list(self.get_next_part(col))
-        except Exception:
+        except ValueError:
+            # get_next_part raises ValueError (with a logged warning) for a malformed column.
             return None
         return parts
 
@@ -595,7 +595,9 @@ class WideColumnExpander:
                 )
                 return False
 
-            # Make sure value is an actual slot for the table in the target schema
+            # Make sure value is an actual slot for the table in the target schema. induced_slot
+            # is a third-party (LinkML) call whose exception type for a missing slot varies by
+            # version, so we guard broadly here and treat any failure as "slot not found".
             try:
                 slot_defn = self.target_schema.induced_slot(
                     col_parts[1][0], table_long_name
@@ -606,6 +608,7 @@ class WideColumnExpander:
                 logger.warning(
                     f"The slot {col_parts[1][0]} does not exist in the table {table_long_name}. Ignoring column: {col}"
                 )
+                return False
 
             # Expand the attribute
             self.update_current_expanded_rows(
@@ -1065,6 +1068,13 @@ class WideColumnExpander:
             if candidate_set is None:
                 continue
             enum_defn = self.target_schema.get_enum(candidate_set)
+            if enum_defn is None:
+                # The mmaSet names an enum that does not exist in the target schema.
+                logger.warning(
+                    f"Enum '{candidate_set}' (from partid_to_mmaset for '{check_enum}') "
+                    f"does not exist in the target schema. Ignoring."
+                )
+                continue
             if val in enum_defn.permissible_values:
                 return check_enum
         return None
@@ -1330,6 +1340,9 @@ class WideColumnExpander:
             }
             column_data.append(cur_data)
 
+        # The set of tracking columns is the same for every row, so compute it once.
+        tracking_columns = [c for c in df.columns if is_tracking_slot(c)]
+
         # Iterate over all rows and all columns
         for row_idx, row in tqdm(df.iterrows(), total=len(df.index)):
             self.new_current_expanded_rows()
@@ -1391,7 +1404,7 @@ class WideColumnExpander:
 
             # Copy over the tracking slots. We do this last to make sure all row indices
             # for the current expanded rows get populated with the tracking info.
-            for col in [c for c in df.columns if is_tracking_slot(c)]:
+            for col in tracking_columns:
                 self.expand_column_type_tracking(col, row)
 
             self.save_current_expanded_rows()

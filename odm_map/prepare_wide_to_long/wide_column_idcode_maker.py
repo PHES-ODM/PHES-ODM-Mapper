@@ -134,7 +134,12 @@ class WideColumnIDCodeMaker:
             )
 
         # Go through all classes, create the ID code and the linkage rules for all slots that are foreign keys.
-        id_code_df = pd.DataFrame()
+        # Collect the ID code rows in a list and build the DataFrame once at the end (rather than
+        # concatenating one row at a time, which is quadratic).
+        id_code_rows = []
+        code_column_name = (
+            f"{IDCodeColumns.CODE_PREFIX}{IDCodeColumns.CODE_SUFFIX}".format(0)
+        )
         class_linkages = {}
         all_classes = sorted(all_classes_without_tree_root(self.target_schema))
         for class_name in all_classes:
@@ -160,19 +165,14 @@ class WideColumnIDCodeMaker:
                         continue
 
                     # Create the ID code
-                    code_column_name = f"{IDCodeColumns.CODE_PREFIX}{IDCodeColumns.CODE_SUFFIX}".format(
-                        0
-                    )
                     code = f"dat.{target_class}.{target_primary_key}"
-                    cur_id_code = pd.DataFrame(
+                    id_code_rows.append(
                         {
                             IDCodeColumns.CLASS: class_name,
                             IDCodeColumns.SLOT: slot_defn.name,
                             code_column_name: code,
-                        },
-                        index=[0],
+                        }
                     )
-                    id_code_df = pd.concat([id_code_df, cur_id_code], ignore_index=True)
 
                     # Create the linkage rule from class_name to target_class, if it doesn't already exist
                     if (
@@ -206,6 +206,10 @@ class WideColumnIDCodeMaker:
                                 "source_slot": [TrackingSlots.SOURCE_FILE_AND_ROW],
                                 "target_slot": [TrackingSlots.SOURCE_FILE_AND_ROW],
                             }
+        # Build the ID code DataFrame from the collected rows (empty rows -> empty DataFrame,
+        # matching the previous behavior).
+        id_code_df = pd.DataFrame(id_code_rows)
+
         # If there is custom ID code in the config file then add it
         if custom_id_code := self.config.get(ConfigKeys.CUSTOM_ID_CODE, None):
             custom_id_code_df = pd.DataFrame(custom_id_code)
