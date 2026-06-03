@@ -79,6 +79,40 @@ def run_mapper(
     return file_index, mapped_data
 
 
+# Per-worker cache of the (already-mutated) source schema. It is populated once per worker
+# process by the Pool initializer below, so the SchemaView is pickled and sent across the
+# process boundary once per worker instead of once per mapping task (tasks = data splits x
+# mapper files, which can be in the hundreds).
+_WORKER_SOURCE_SCHEMA = None
+
+
+def _init_map_worker(source_schema: SchemaView) -> None:
+    """Pool initializer: store the source schema in a module global for this worker process.
+
+    The source schema is mutated in memory before mapping (extra/tracking slots are added),
+    so the in-memory object must be passed here rather than re-loaded from file in the worker.
+    """
+    global _WORKER_SOURCE_SCHEMA
+    _WORKER_SOURCE_SCHEMA = source_schema
+
+
+def _run_mapper_worker(
+    file_index: Optional[int],
+    data: Dict[str, List],
+    mapper_spec: Dict,
+    unrestricted_eval: bool = False,
+) -> Tuple[Optional[int], Dict[str, List[Dict]]]:
+    """Worker entry point that reads the source schema from the per-worker global set by
+    _init_map_worker, so the schema is not re-pickled for every task."""
+    return run_mapper(
+        data=data,
+        mapper_spec=mapper_spec,
+        source_schema=_WORKER_SOURCE_SCHEMA,
+        file_index=file_index,
+        unrestricted_eval=unrestricted_eval,
+    )
+
+
 class DataMapper(object):
     def __init__(self): ...
 
@@ -132,7 +166,6 @@ class DataMapper(object):
         schema_caster = SchemaCaster(schema)
 
         data = {}
-        # cast_functions = self.get_cast_functions(schema)
         # Only process data that belong to a recognized class
         all_classes = all_classes_without_tree_root(schema)
         data_frames = {
@@ -159,13 +192,13 @@ class DataMapper(object):
                         for s in class_definition.attributes
                         if s not in df.columns and not is_extra_or_tracking_slot(s)
                     ]
-                    df[missing_slots] = ""
-
-                    # Only keep recognized slots
+                    # Only keep recognized slots. Subset (which copies) before adding the
+                    # missing slot columns so the caller's DataFrame is not mutated.
                     recognized_slots = [
                         s for s in df.columns if s in class_definition.attributes
                     ]
-                    df = df[recognized_slots]
+                    df = df[recognized_slots].copy()
+                    df[missing_slots] = ""
 
                     # Reorient the data to a format recognized by the mapper (an array of rows, where
                     # each row is a dictionary of the form {column_name:value, ...})
@@ -435,21 +468,29 @@ class DataMapper(object):
 
             # Add all extra/tracking slot derivations to the mapper spec, and keep track of which
             # tracking slots were added. We will add all these extra/tracking slots to the target_schema
-            # once we're done
-            cur_extra_slots = add_extra_and_tracking_slot_derivations(
-                data, mapper_spec, target_schema
-            )
-            all_extra_slots = merge_dicts_of_lists([all_extra_slots, cur_extra_slots])
+            # once we're done. This requires a target schema to resolve target class names, so it is
+            # skipped when no target schema was provided.
+            if target_schema is not None:
+                cur_extra_slots = add_extra_and_tracking_slot_derivations(
+                    data, mapper_spec, target_schema
+                )
+                all_extra_slots = merge_dicts_of_lists(
+                    [all_extra_slots, cur_extra_slots]
+                )
 
             mapper_specs.append(mapper_spec)
 
         # Add all the mapped extra/tracking slots to the target schema
-        for class_name, cur_tracking_slots in all_extra_slots.items():
-            add_extra_and_tracking_slots_to_schema_class(
-                cur_tracking_slots, class_name, target_schema
-            )
+        if target_schema is not None:
+            for class_name, cur_tracking_slots in all_extra_slots.items():
+                add_extra_and_tracking_slots_to_schema_class(
+                    cur_tracking_slots, class_name, target_schema
+                )
 
         # Create arguments to pass to run_mapper for each data split and each mapper config file.
+        # Note: source_schema is intentionally not included in the per-task args. In the
+        # multiprocessing path it is sent once per worker via the Pool initializer (see below)
+        # to avoid pickling the SchemaView for every task.
         map_args = []
         for split_num, split in enumerate(split_data):
             cur_args = [
@@ -457,7 +498,6 @@ class DataMapper(object):
                     "file_index": split_num + file_num * len(mapper_files),
                     "data": split,
                     "mapper_spec": mapper_spec,
-                    "source_schema": source_schema,
                     "unrestricted_eval": unrestricted_eval,
                 }
                 for file_num, mapper_spec in enumerate(mapper_specs)
@@ -478,14 +518,18 @@ class DataMapper(object):
             if max_processes == 1:
                 results = []
                 for kwargs in map_args:
-                    results.append(run_mapper(**kwargs))
+                    results.append(run_mapper(source_schema=source_schema, **kwargs))
                     run_mapper_progress.update(map_barid, 1)
             else:
-                pool = Pool(processes=max_processes)
+                pool = Pool(
+                    processes=max_processes,
+                    initializer=_init_map_worker,
+                    initargs=(source_schema,),
+                )
                 try:
                     results = [
                         pool.apply_async(
-                            run_mapper,
+                            _run_mapper_worker,
                             (),
                             map_arg,
                             callback=lambda _: run_mapper_progress.update(map_barid, 1),

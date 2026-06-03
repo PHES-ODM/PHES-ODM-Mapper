@@ -175,6 +175,65 @@ class TestRunMapper:
         mock_session.transform.assert_called_once_with(data)
 
 
+class TestRunMapperWorker:
+    def test_init_sets_worker_schema(self, source_schema):
+        from odm_map.mapper import map_data as md
+
+        md._init_map_worker(source_schema)
+        assert md._WORKER_SOURCE_SCHEMA is source_schema
+
+    def test_worker_uses_initialized_schema(self, source_schema):
+        from odm_map.mapper import map_data as md
+
+        # The worker must read the schema from the per-worker global (set by the Pool
+        # initializer) rather than receiving it as a per-task argument.
+        md._init_map_worker(source_schema)
+        with patch("odm_map.mapper.map_data.Session") as MockSession:
+            mock_session = MockSession.return_value
+            mock_session.transform.return_value = {"OutputData": []}
+            idx, _ = md._run_mapper_worker(
+                file_index=5,
+                data={"SampleData": [{"sampleId": "s1"}]},
+                mapper_spec={},
+                unrestricted_eval=False,
+            )
+        assert idx == 5
+        mock_session.set_source_schema.assert_called_once_with(source_schema)
+
+
+class TestRunWithNoTargetSchema:
+    def test_run_without_target_schema_does_not_crash(
+        self, source_schema_path, tmp_path
+    ):
+        # A target schema is optional. When none is supplied, run() must not try to add
+        # tracking-slot derivations (which require a target schema) and must not crash.
+        mappers_dir = tmp_path / "mappers"
+        mappers_dir.mkdir()
+        # The mapper file only needs to be valid YAML here; run_mapper is patched out.
+        (mappers_dir / "m.yaml").write_text("class_derivations: {}\n")
+        output_dir = tmp_path / "out"
+
+        data_frames = {
+            "SampleData": [pd.DataFrame({"sampleId": ["S1"], "value": ["10"]})]
+        }
+
+        with patch("odm_map.mapper.map_data.run_mapper") as mock_run:
+            mock_run.return_value = (0, {})
+            dm = DataMapper()
+            result, _ = dm.run(
+                data_files=None,
+                data_frames=data_frames,
+                output_dir=str(output_dir),
+                source_schema_file=str(source_schema_path),
+                target_schema_file=None,
+                mappers_dir=str(mappers_dir),
+            )
+
+        # run_mapper was invoked (mapping proceeded) and no exception was raised.
+        assert mock_run.called
+        assert result == {}
+
+
 # ---------------------------------------------------------------------------
 # TestSortMappedData
 # ---------------------------------------------------------------------------
@@ -467,6 +526,14 @@ class TestPrepareData:
         result = dm.prepare_data({"SampleData": [df]}, source_schema)
         row = result["SampleData"][0]
         assert "nonExistentCol" not in row
+
+    def test_input_dataframe_not_mutated(self, source_schema):
+        # prepare_data must not add the missing slot columns to the caller's DataFrame.
+        dm = DataMapper()
+        df = pd.DataFrame({"sampleId": ["s1"]})
+        original_columns = list(df.columns)
+        dm.prepare_data({"SampleData": [df]}, source_schema)
+        assert list(df.columns) == original_columns
 
     def test_empty_dataframe_skipped(self, source_schema):
         dm = DataMapper()
