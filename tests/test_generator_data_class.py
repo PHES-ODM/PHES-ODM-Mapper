@@ -128,6 +128,15 @@ class TestGetColumnIndex:
         assert result[0] == idx_single_a
         assert result[1] == idx_single_b
 
+    def test_index_matches_column_position(self, gd_no_gen):
+        # The precomputed index map must agree with the actual column order.
+        for col in gd_no_gen.columns:
+            assert gd_no_gen.get_column_index(col) == gd_no_gen.columns.index(col)
+
+    def test_unknown_column_raises_value_error(self, gd_no_gen):
+        with pytest.raises(ValueError):
+            gd_no_gen.get_column_index("no_such_column")
+
 
 # ---------------------------------------------------------------------------
 # get_data_value

@@ -279,6 +279,13 @@ class GeneratorData:
         self.orig_df[HASH_COLUMN] = None
 
         self.columns = list(self.orig_df.columns)
+        # Map of column name -> 0-based index for O(1) lookups in get_column_index (this is
+        # on the hot path, called for every cell access during ID generation). First
+        # occurrence wins, matching list.index() semantics for duplicate column names.
+        self.column_to_index = {}
+        for i, name in enumerate(self.columns):
+            if name not in self.column_to_index:
+                self.column_to_index[name] = i
 
         if USE_PRIMARY_KEY_LIST:
             self.used_primary_keys = {}
@@ -484,7 +491,10 @@ class GeneratorData:
         """
 
         def _get_index(c: str) -> int:
-            return self.columns.index(c)
+            idx = self.column_to_index.get(c)
+            if idx is None:
+                raise ValueError(f"Column '{c}' does not exist in the data")
+            return idx
 
         # col is a single column name (string), return a single index
         if isinstance(col, str):
@@ -792,15 +802,16 @@ class GeneratorData:
         match_indices = self.lookup.get_indices(HASH_COLUMN, current_hash)
 
         def _is_row_equal(row_a: np.ndarray, row_b: np.ndarray, row_idx: int) -> bool:
+            # row_a is 1-D and row_b is 2-D (1, n); broadcasting compares them element-wise.
+            # Use .all() (not .all(axis=1)) and bool() so a plain Python bool is returned.
+            eq = bool(np.equal(row_a, row_b).all())
             if self.for_merging:
-                eq = np.equal(row_a, row_b).all(axis=1)
                 return (
                     eq
                     and unindexed_pk_value
                     == self.data[row_idx, self.get_column_index(UNINDEXED_PK_SLOT)]
                 )
-            else:
-                return np.equal(row_a, row_b).all(axis=1)
+            return eq
 
         # Go through all rows that have the same hash, and find an identical match. We need to do the
         # identical match test because of the way that a hash is made, by concatenating the cells of a
