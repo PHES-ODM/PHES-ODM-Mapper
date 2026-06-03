@@ -60,7 +60,9 @@ class SingleBar(object):
         Args:
             title (str): The new title/description of the bar.
         """
-        self.bar.set_description(title)
+        self.title = title
+        if self.bar is not None:
+            self.bar.set_description(title)
 
     def update(self, inc: int):
         """Update the bar count by increasing the progress by inc.
