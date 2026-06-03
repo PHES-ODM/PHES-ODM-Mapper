@@ -247,6 +247,24 @@ class TestCleanFormatAndMatchColumns:
         )
         assert TrackingSlots.SOURCE_CLASS in result.columns
 
+    def test_duplicate_normalized_columns_keep_first(self, cleaner):
+        # "Status" and "status" both lowercase to the schema column "status".
+        df = pd.DataFrame({"Status": ["first"], "status": ["second"]})
+        result = cleaner.clean_format_and_match_columns(df, CLASS_NAME, "lowercase")
+        # No duplicate labels: exactly one "status" column.
+        assert list(result.columns).count("status") == 1
+        # The first matching column is the one that is kept.
+        assert result["status"].iloc[0] == "first"
+
+    def test_column_formatting_to_empty_string_dropped(self, cleaner):
+        # "!!!" with remove_special becomes "" — it must be dropped, not crash.
+        df = pd.DataFrame({"!!!": ["x"], "status": ["y"]})
+        result = cleaner.clean_format_and_match_columns(
+            df, CLASS_NAME, "remove_special"
+        )
+        assert "status" in result.columns
+        assert "" not in result.columns
+
     def test_unrecognized_class_returns_df_unchanged(self, cleaner):
         df = self._df("status")
         result = cleaner.clean_format_and_match_columns(df, "NoSuchClass", "lowercase")

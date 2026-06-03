@@ -186,7 +186,12 @@ class DataCleaner(object):
         lowercase_recognized_columns = [c.lower() for c in recognized_columns]
 
         columns = []
-        for val in df.columns:
+        # Schema columns that have already been claimed by a previous source column, and a
+        # map of {source column index: schema column it duplicates} for columns dropped
+        # because they duplicate an already-claimed schema column.
+        claimed_columns = set()
+        duplicate_indices = {}
+        for idx, val in enumerate(df.columns):
             if is_extra_or_tracking_slot(val):
                 columns.append(val)
                 continue
@@ -220,22 +225,41 @@ class DataCleaner(object):
                                 f"Unrecognized format_and_match_columns option: {option}"
                             )
             # Once the column is formatted we try to convert it to the correct name as found
-            # in the schema
-            if val and val.lower() not in lowercase_recognized_columns:
+            # in the schema. An empty name (eg. a column formatted away to "") is treated as
+            # unrecognized.
+            if not val or val.lower() not in lowercase_recognized_columns:
                 val = None
             else:
                 val = recognized_columns[
                     lowercase_recognized_columns.index(val.lower())
                 ]
+                # Two source columns can normalize to the same schema column. Keep the
+                # first one and drop later duplicates so we don't create duplicate
+                # column labels (which would make later df[...] selection ambiguous).
+                if val in claimed_columns:
+                    duplicate_indices[idx] = val
+                    val = None
+                else:
+                    claimed_columns.add(val)
             columns.append(val)
 
         # Add all the changes to the log files. Note that we are mapping df.columns[idx] to
         # the new values at columns[idx]. If columns[idx] is None then it's because the
         # column at that index is not a valid column name in the schema (or it's a
         # tracking/extra slot)
-        for orig_column, new_column in zip(df.columns, columns):
+        for idx, (orig_column, new_column) in enumerate(zip(df.columns, columns)):
             if orig_column != new_column:
-                if new_column is None:
+                if idx in duplicate_indices:
+                    self.add_to_log(
+                        Logs.COLUMN_REMOVED,
+                        {
+                            LogColumns.CLASS_NAME: class_name,
+                            LogColumns.SLOT_NAME: orig_column,
+                            LogColumns.NEW_SLOT_NAME: duplicate_indices[idx],
+                            LogColumns.NOTES: "Column duplicates an already-matched column and removed",
+                        },
+                    )
+                elif new_column is None:
                     self.add_to_log(
                         Logs.COLUMN_REMOVED,
                         {
@@ -483,7 +507,10 @@ class DataCleaner(object):
                                 LogColumns.NOTES: log_note,
                             },
                         )
-                except Exception:
+                # ValueError: the (formatted) value is not in source_values (an unknown enum).
+                # AttributeError: the value is NaN, so the string formatter (eg. .lower()) fails.
+                # Both mean the value cannot be mapped; other exceptions are real bugs and propagate.
+                except (ValueError, AttributeError):
                     if not can_be_anything:
                         # Add the class name, slot name, original value to the log of unknown enum values.
                         # If the original value (old_v) is empty and the slot is not required then an empty
