@@ -13,7 +13,7 @@ python3 pipeline_cli.py \
 ```
 """
 
-from typing import List, Annotated
+from typing import List, Annotated, Optional
 from datetime import datetime
 import sys
 import typer
@@ -99,9 +99,9 @@ which case the row would be dropped when not in debug mode."""
 def main(
     inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
-    module: Annotated[str, typer.Option(help=MODULE_HELP)] = None,
-    module_path: Annotated[str, typer.Option(help=MODULE_PATH_HELP)] = None,
-    temp_dir: Annotated[str, typer.Option(help=TEMP_DIR_HELP)] = None,
+    module: Annotated[Optional[str], typer.Option(help=MODULE_HELP)] = None,
+    module_path: Annotated[Optional[str], typer.Option(help=MODULE_PATH_HELP)] = None,
+    temp_dir: Annotated[Optional[str], typer.Option(help=TEMP_DIR_HELP)] = None,
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
     max_processes: Annotated[int, typer.Option(help=MAX_PROCESSES_HELP)] = 1,
     debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
