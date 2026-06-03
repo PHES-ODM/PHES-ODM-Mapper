@@ -780,6 +780,14 @@ class_derivations:
         populated_from: WWMeasure
 ```
 
+> **⚠️ Security note:** Mapper files may use LinkML-Map `expr` slot derivations,
+> and the Mapper evaluates these expressions in _unrestricted_ mode by default.
+> This means an `expr` string can execute arbitrary Python code while mapping.
+> Only run modules you trust. Treat a module directory or ZIP (including any
+> module supplied via `--module-path`) as executable code, not just
+> configuration — never run a module from an untrusted source without
+> reviewing its mapper files first.
+
 ## Filters
 
 All tables/classes can be optionally filtered to remove various rows. For
