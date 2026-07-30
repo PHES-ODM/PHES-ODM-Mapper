@@ -17,22 +17,21 @@ selector.select(data_files=data_files, output_dir="/output/dir", output_fmt="{cl
 """
 
 import os
-from typing import Union, List, Dict, Optional
+from datetime import datetime
 from pathlib import Path
+
 import pandas as pd
 import yaml
-from datetime import datetime
-
 from linkml_runtime import SchemaView
 from linkml_runtime.linkml_model import SlotDefinition
 
-from odm_map.utils.schema_utils import get_ranges_of_slot_defn
-from odm_map.utils.logger import get_logger
 from odm_map.utils.general_utils import (
     load_data_frames_for_classes,
     make_multivalued,
     save_data_frame,
 )
+from odm_map.utils.logger import get_logger
+from odm_map.utils.schema_utils import get_ranges_of_slot_defn
 
 logger = get_logger(__name__)
 
@@ -44,7 +43,7 @@ class ConfigKeys:
 
 class EnumHierarchySelector:
     def __init__(
-        self, schema: Union[str, Path, SchemaView], config: Union[str, Path] = None
+        self, schema: str | Path | SchemaView, config: str | Path | None = None
     ):
         if isinstance(schema, SchemaView):
             self.schema = schema
@@ -59,37 +58,37 @@ class EnumHierarchySelector:
 
     def select(
         self,
-        data_files: Dict[str, List[Union[str, Path]]] = None,
-        data_frames: Dict[str, List[pd.DataFrame]] = None,
-        output_dir: Union[str, Path] = None,
-        output_fmt: Optional[str] = "{class_name}.csv",
-        max_rows: Optional[int] = None,
-    ) -> Dict[str, List[pd.DataFrame]]:
+        data_files: dict[str, list[str | Path]] | None = None,
+        data_frames: dict[str, list[pd.DataFrame]] | None = None,
+        output_dir: str | Path | None = None,
+        output_fmt: str | None = "{class_name}.csv",
+        max_rows: int | None = None,
+    ) -> dict[str, list[pd.DataFrame]]:
         """From the specified data files and frames, select all the deepest enumeration values from
         the DataFrames for all slots that are multivalued and that have enumeration ranges.
 
         Results can optionally be saved to disk.
 
         Args:
-            data_files (Dict[str, List[Union[str, Path]]], optional): A dictionary of files and/or
+            data_files (dict[str, list[str | Path]] | None, optional): A dictionary of files and/or
                 directories to load the data from, in addition to the data in data_frames. The keys
                 are the class names and the values are all data files/directories to load for that
                 class name. Defaults to None.
-            data_frames (Dict[str, List[pd.DataFrame]], optional): A dictionary of DataFrames
+            data_frames (dict[str, list[pd.DataFrame]] | None, optional): A dictionary of DataFrames
                 to apply the selector to. They keys are the class names and the values are
                 lists of DataFrames belonging to that class. This dictionary and the DataFrames
                 might be modified in-place. Defaults to None.
-            output_dir (Union[str, Path], optional): If not empty then the directory to save
+            output_dir (str | Path | None, optional): If not empty then the directory to save
                 the resulting data to. Defaults to None.
-            output_fmt (Optional[str], optional): If output_dir is specified then the file name
+            output_fmt (str | None, optional): If output_dir is specified then the file name
                 to save to the output dir, with the string interpolation tag {class_name} available.
                 eg. if "{class_name}-sel.csv", then the file name for the "measures" class will be
                 "measures-sel.csv". Defaults to "{class_name}.csv".
-            max_rows (Optional[int], optional): Maximum number of rows to load from the files in
+            max_rows (int | None, optional): Maximum number of rows to load from the files in
                 data_files. Defaults to None.
 
         Returns:
-            Dict[str, List[pd.DataFrame]]: The DataFrames after selection is performed. The keys
+            dict[str, list[pd.DataFrame]]: The DataFrames after selection is performed. The keys
                 are the class names and the values are lists of DataFrames belonging to that class,
                 after selection is performed. Some of the DataFrames might be the same as the
                 ones originally passed in with the data_frames parameter, and the returned
@@ -100,7 +99,7 @@ class EnumHierarchySelector:
             data_frames = {}
         load_data_frames_for_classes(data_files, data_frames, max_rows=max_rows)
 
-        tic = datetime.now()
+        tic = datetime.now().astimezone()
         for class_name, dfs in data_frames.items():
             logger.info(f"Selecting from enum hierarchy for class {class_name}")
             class_defn = self.schema.induced_class(class_name)
@@ -142,7 +141,9 @@ class EnumHierarchySelector:
                 for slot_defn in slots:
                     self.select_from_df(df, class_name, slot_defn)
 
-        logger.info(f"Finished all enum hierarchy selection: {datetime.now() - tic}")
+        logger.info(
+            f"Finished all enum hierarchy selection: {datetime.now().astimezone() - tic}"
+        )
 
         if output_dir and output_fmt:
             if output_dir:

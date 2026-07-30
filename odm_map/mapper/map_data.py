@@ -1,71 +1,70 @@
-from typing import Dict, List, Tuple, Optional, Union
-import os
-from pathlib import Path
-import yaml
-import pandas as pd
 import math
+import os
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
+from pathlib import Path
 
-from linkml_runtime import SchemaView
+import pandas as pd
+import yaml
 from linkml_map.session import Session
+from linkml_runtime import SchemaView
 
-from odm_map.utils.schema_caster import SchemaCaster
-from odm_map.utils.logger import get_logger
-from odm_map.utils.schema_utils import (
-    all_classes_without_tree_root,
-    find_class,
-)
 from odm_map.progress import ProgressCounter
 from odm_map.utils.extra_and_tracking_slots import (
+    TrackingSlots,
+    add_extra_and_tracking_slot_derivations,
     add_extra_and_tracking_slots_to_schema,
     add_extra_and_tracking_slots_to_schema_class,
-    is_extra_or_tracking_slot,
-    add_extra_and_tracking_slot_derivations,
-    load_data_with_source_tracking_columns,
     drop_extra_slots,
     drop_tracking_slots,
-    TrackingSlots,
+    is_extra_or_tracking_slot,
+    load_data_with_source_tracking_columns,
 )
 from odm_map.utils.general_utils import (
     merge_dicts_of_lists,
     order_columns,
     save_data_frames_for_classes,
 )
+from odm_map.utils.logger import get_logger
+from odm_map.utils.schema_caster import SchemaCaster
+from odm_map.utils.schema_utils import (
+    all_classes_without_tree_root,
+    find_class,
+)
 
 logger = get_logger(__name__)
 
 
 def run_mapper(
-    data: Dict[str, List],
-    mapper_spec: Dict,
+    data: dict[str, list],
+    mapper_spec: dict,
     source_schema: SchemaView,
-    file_index: Optional[int] = None,
+    file_index: int | None = None,
     unrestricted_eval: bool = False,
-) -> Dict[str, List[Dict]]:
+) -> dict[str, list[dict]]:
     """Run the mapper on the specified data using the specified mapper YAML file and save the
     results to disk.
 
     This is a global function to make it easier to run as a thread. Class objects and threads can be messy.
 
     Args:
-        data (Dict): The input data to map. The keys specify the table/class names and the values are lists of rows of
+        data (dict[str, list]): The input data to map. The keys specify the table/class names and the values are lists of rows of
             the tables. The rows are dictionaries.
         session (Session): The linkml_map.session.Session object to use for running the mapper.
-        data_output_dir (Union[str, Path]): Directory to save the output to. The outputs are CSV files
+        data_output_dir (str | Path): Directory to save the output to. The outputs are CSV files
             with a name based on the mapper_file name.
-        mapper_spec (Dict): The LinkML-Map schema to use for mapping.
+        mapper_spec (dict): The LinkML-Map schema to use for mapping.
         source_schema (SchemaView): The SchemaView of the source schema.
-        file_index (Optional[int]): Optional file index to add to the output file name. It's just an extra number
+        file_index (int | None): Optional file index to add to the output file name. It's just an extra number
             so that we can differentiate between different runs of the mapper when using the same
             mapper_file. It is required if we run the mapper more than once with the same
             mapper_file, as it ensures that the filename of the output is different for each run
             (assuming we properly use unique file_index values for each run).
-        unrestricted_eval (Optional[bool]): If True then run expr code in slot derivations in unrestricted mode
+        unrestricted_eval (bool): If True then run expr code in slot derivations in unrestricted mode
             (ie. allow any Python code to execute).
 
     Returns:
-        Dict[str, List[Dict]]: The mapped data, where the keys are the output class names and the
+        dict[str, list[dict]]: The mapped data, where the keys are the output class names and the
             values are the rows. The rows are dictionaries.
     """
     session = Session()
@@ -97,11 +96,11 @@ def _init_map_worker(source_schema: SchemaView) -> None:
 
 
 def _run_mapper_worker(
-    file_index: Optional[int],
-    data: Dict[str, List],
-    mapper_spec: Dict,
+    file_index: int | None,
+    data: dict[str, list],
+    mapper_spec: dict,
     unrestricted_eval: bool = False,
-) -> Tuple[Optional[int], Dict[str, List[Dict]]]:
+) -> tuple[int | None, dict[str, list[dict]]]:
     """Worker entry point that reads the source schema from the per-worker global set by
     _init_map_worker, so the schema is not re-pickled for every task."""
     return run_mapper(
@@ -113,7 +112,7 @@ def _run_mapper_worker(
     )
 
 
-class DataMapper(object):
+class DataMapper:
     def __init__(self): ...
 
     def sort_mapped_data(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -142,21 +141,21 @@ class DataMapper(object):
 
     def prepare_data(
         self,
-        data_frames: Dict[str, List[pd.DataFrame]],
-        schema: Union[str, Path, SchemaView],
+        data_frames: dict[str, list[pd.DataFrame]],
+        schema: str | Path | SchemaView,
         prepare_barid: str = "Preparing IDs",
-    ) -> Dict[str, List[Dict]]:
+    ) -> dict[str, list[dict]]:
         """Parse all data in a format compatible with the LinkML Mapper.
 
         Args:
-            data_frames (Dict[str, List[pd.DataFrame]]): A DataFrames to parse. Keys are the source class
+            data_frames (dict[str, list[pd.DataFrame]]): A DataFrames to parse. Keys are the source class
                 name and values are lists of DataFrames that belong to the class. The tracking columns
                 should have already been added by calling add_source_tracking_columns on each DataFrame.
-            schema (Union[str, SchemaView]): The schema that the data should conform to. We will only use
+            schema (str | Path | SchemaView): The schema that the data should conform to. We will only use
                 DataFrames of a recognized class and cast all values to the correct type.
 
         Returns:
-            Dict[str, List[Dict]]: Dictionary of all data. Keys are the class/table names and values are
+            dict[str, list[dict]]: Dictionary of all data. Keys are the class/table names and values are
                 the rows.
         """
         logger.debug("Preparing all data...")
@@ -216,14 +215,14 @@ class DataMapper(object):
         return data
 
     def make_data_splits(
-        self, data: Dict[str, List], num_splits: int, min_split_size: int = 100
-    ) -> List[Dict[str, List[Dict]]]:
+        self, data: dict[str, list], num_splits: int, min_split_size: int = 100
+    ) -> list[dict[str, list[dict]]]:
         """Split the data into multiple smaller data splits, to make it easier to use for multiprocessing.
         Each split can be used by run_mapper. Each table is split into up to num_splits splits, depending
         on how many rows are in each table.
 
         Args:
-            data (Dict[str, List]): The data to split. The keys are the source table names and the values
+            data (dict[str, list]): The data to split. The keys are the source table names and the values
                 are the rows of the data.
             num_splits (int): The number of splits to create.
             min_split_size (int, optional): If all tables when split will result in splits less
@@ -231,7 +230,7 @@ class DataMapper(object):
                 Defaults to 100.
 
         Returns:
-            List[Dict[str, List[Dict]]]: The data splits. Each element of the array is in the same format
+            list[dict[str, list[dict]]]: The data splits. Each element of the array is in the same format
                 as the passed in data parameter, but will possibly have missing tables (due to the table
                 being fully included in earlier tables in the split) and will have possibly have fewer
                 rows per table (from making the splits).
@@ -259,23 +258,23 @@ class DataMapper(object):
         return data_splits
 
     def convert_mapped_data_to_dataframes(
-        self, mapped_data: Dict[str, List[Dict]], target_schema: Optional[SchemaView]
-    ) -> Dict[str, List[pd.DataFrame]]:
+        self, mapped_data: dict[str, list[dict]], target_schema: SchemaView | None
+    ) -> dict[str, list[pd.DataFrame]]:
         """Convert the specified data that has already been mapped to DataFrames.
 
         Args:
-            mapped_data (Dict[str, List[Dict]]): The data to convert to DataFrames. The
+            mapped_data (dict[str, list[dict]]): The data to convert to DataFrames. The
                 keys are class names and the values are lists of rows for that class.
                 A row is a dictionary where the keys are the column names and the values
                 are the value of that column.
-            target_schema (Optional[SchemaView]): The schema that the data conforms to.
+            target_schema (SchemaView | None): The schema that the data conforms to.
                 This is used to get the correct class names and to add any missing
                 columns in the data. If None then we cannot guarantee if a class name
                 is correct (but we do clean the class name by removing everything after the
                 first opening square or round bracket), and we cannot add missing columns.
 
         Returns:
-            Dict[str, List[pd.DataFrame]]: Dictionary of all DataFrames. The keys are the
+            dict[str, list[pd.DataFrame]]: Dictionary of all DataFrames. The keys are the
                 class names and the values are lists of DataFrames belonging to the class.
         """
         # Convert the data to a DataFrame, store in all_mapped_data, and save to disk
@@ -331,40 +330,40 @@ class DataMapper(object):
 
     def run(
         self,
-        data_files: Dict[str, List[Union[str, Path, Dict]]],
-        data_frames: Dict[str, List[pd.DataFrame]],
-        output_dir: Union[str, Path],
-        source_schema_file: Union[str, Path],
-        target_schema_file: Optional[Union[str, Path]],
-        mappers_dir: Union[str, Path],
-        max_rows: Optional[int] = 0,
-        max_processes: Optional[int] = 1,
+        data_files: dict[str, list[str | Path | dict]],
+        data_frames: dict[str, list[pd.DataFrame]],
+        output_dir: str | Path,
+        source_schema_file: str | Path,
+        target_schema_file: str | Path | None,
+        mappers_dir: str | Path,
+        max_rows: int | None = 0,
+        max_processes: int | None = 1,
         prepare_barid: str = "Preparing Data",
         map_barid: str = "Mapping",
         convert_barid: str = "Processing Data",
         keep_extra_columns: bool = True,
         keep_tracking_columns: bool = True,
         unrestricted_eval: bool = True,
-    ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List[Path]]]:
+    ) -> tuple[dict[str, pd.DataFrame], dict[str, list[Path]]]:
         """Map all the data specified in data_frames using all mapper files found in the specified mapper directory.
 
         Args:
-            data_files (Dict[str, List[Union[str, Path, Dict]]]): Dictionary of source data files to map. The keys
+            data_files (dict[str, list[str | Path | dict]]): Dictionary of source data files to map. The keys
                 are the source class names and the values are lists of file paths belonging to the class, which
                 should each be mapped.
-            data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of source DataFrames to map. The keys are the
+            data_frames (dict[str, list[pd.DataFrame]]): Dictionary of source DataFrames to map. The keys are the
                 source class names and the values are lists of DataFrames belonging to the class, which should each
                 be mapped.
-            output_dir (Union[str, Path]): Directory to save all final mapped data to. If empty then the data
+            output_dir (str | Path): Directory to save all final mapped data to. If empty then the data
                 is not saved to disk.
-            source_schema_file (Union[str, Path]): The LinkML schema for the source database.
-            target_schema_file (Optional[Union[str, Path]], optional): The LinkML schema for the target database.
+            source_schema_file (str | Path): The LinkML schema for the source database.
+            target_schema_file (str | Path | None, optional): The LinkML schema for the target database.
                 Can be None.
-            mappers_dir (Union[str, Path]): The directory containing all LinkML Mapper configuration (YAML)
+            mappers_dir (str | Path): The directory containing all LinkML Mapper configuration (YAML)
                 files. All config files will be used for mapping all the loaded data.
-            max_rows (Optional[int], optional): Maximum number of rows to load from the files in data_files.
+            max_rows (int | None, optional): Maximum number of rows to load from the files in data_files.
                 If 0 or None then all rows are loaded. Defaults to 0.
-            max_processes (Optional[int], optional): Maximum number of processes to use for multi-processing.
+            max_processes (int | None, optional): Maximum number of processes to use for multi-processing.
                 If 1 then no multi-processing will be performed. If None or 0 then the maximum number
                 (as obtained by cpu_count()) will be used. Note that for mapping small tables multi-processing
                 might be slower. Defaults to 1.
@@ -384,18 +383,18 @@ class DataMapper(object):
                 dropped. Defaults to True.
 
         Returns:
-            Tuple[Dict[str, pd.DataFrame], Dict[str, Path]]: Tuple in the form (data_frames, output_files).
-                data_frames (Dict[str, pd.DataFrame]): The mapped data, where they keys are the classes and the values are the
+            tuple[dict[str, pd.DataFrame], dict[str, list[Path]]]: Tuple in the form (data_frames, output_files).
+                data_frames(dict[str, pd.DataFrame]): The mapped data, where they keys are the classes and the values are the
                     final mapped DataFrames.
-                output_files (Dict[str, List[Path]]): If output_dir was specified, then a dictionary where
+                output_files(dict[str, list[Path]]): If output_dir was specified, then a dictionary where
                     the keys are the class names saved and the values are lists of output fitered files saved for the class.
                     If output_dir was not specified then an empty dictionary is returned.
         """
-        tic = datetime.now()
+        tic = datetime.now().astimezone()
 
         logger.debug(f"Beginning mapping at {tic}")
 
-        map_tic = datetime.now()
+        map_tic = datetime.now().astimezone()
 
         if not max_processes or max_processes <= 0:
             max_processes = cpu_count()
@@ -573,6 +572,8 @@ class DataMapper(object):
         output_files = save_data_frames_for_classes(all_mapped_data, output_dir)
 
         logger.info(f"Total output rows: {total_rows}")
-        logger.info(f"Finished initial mapping in {datetime.now() - map_tic}")
+        logger.info(
+            f"Finished initial mapping in {datetime.now().astimezone() - map_tic}"
+        )
 
         return all_mapped_data, output_files

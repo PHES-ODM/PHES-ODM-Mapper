@@ -1,18 +1,18 @@
 """Tests for odm_map.utils.cli_utils"""
 
-import pytest
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+import pytest
 from linkml_runtime import SchemaView
 
+from odm_map.utils.clean_exit_error import CleanExitError
 from odm_map.utils.cli_utils import (
     CLASS_PREFIX_SEPARATOR,
     get_file_info,
     get_input_data_files,
     get_input_data_files_from_dir,
 )
-from odm_map.utils.clean_exit_error import CleanExitError
-
 
 SCHEMA_YAML = """\
 id: https://example.org/test

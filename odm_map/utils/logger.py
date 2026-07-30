@@ -9,9 +9,8 @@ logger.info("This is a logging message")
 ```
 """
 
-from typing import Optional, Dict, List
-import sys
 import logging
+import sys
 
 # Set to True for detailed logging output. Typically used for debugging.
 DETAILED_LOGGER = False
@@ -48,20 +47,20 @@ for logger_name in [
 class MultiFormatter(logging.Formatter):
     def __init__(
         self,
-        fmt: Optional[str] = None,
-        alternate_fmts: Dict[int, str] = None,
-        datefmt: Optional[str] = None,
+        fmt: str | None = None,
+        alternate_fmts: dict[int, str] | None = None,
+        datefmt: str | None = None,
         **kwargs,
     ):
         """Allow different logging formats for different logging levels.
 
         Args:
-            fmt (Optional[str], optional): The default logging format. Defaults to None.
-            alternate_fmts (Dict[int, str], optional): Dictionary specifying alternate
+            fmt (str | None, optional): The default logging format. Defaults to None.
+            alternate_fmts (dict[int, str] | None, optional): Dictionary specifying alternate
                 loggin formats to use for different logging levels. The keys are the
                 logging levels (eg. logging.INFO, logging.ERROR, ...) and the values
                 are the formats used for that logging level. Defaults to None.
-            datefmt (Optional[str], optional): Format to use for dates. Defaults to None.
+            datefmt (str | None, optional): Format to use for dates. Defaults to None.
         """
         self.alternate_fmts = alternate_fmts
         super().__init__(fmt=fmt, datefmt=datefmt, **kwargs)
@@ -76,7 +75,7 @@ class MultiFormatter(logging.Formatter):
         return result
 
 
-def get_logger(name: str, level: Optional[str] = DEFAULT_LEVEL) -> logging.Logger:
+def get_logger(name: str, level: str | None = DEFAULT_LEVEL) -> logging.Logger:
     """Get the logger with the specified name, setting is configuration as well as output format.
     The name can be any arbitrary string. For example:
 
@@ -85,7 +84,7 @@ def get_logger(name: str, level: Optional[str] = DEFAULT_LEVEL) -> logging.Logge
     Args:
         name (str): The name to give to the logger. This can be any arbitrary string and is
             typically the name of the caller.
-        level (Optional[str], optional): The logging level of the logger. Defaults to DEFAULT_LEVEL.
+        level (str | None, optional): The logging level of the logger. Defaults to DEFAULT_LEVEL.
 
     Returns:
         logging.Logger: The logging object.
@@ -107,7 +106,7 @@ def get_logger(name: str, level: Optional[str] = DEFAULT_LEVEL) -> logging.Logge
 
 
 def make_logger_bullet_list(
-    items: List,
+    items: list,
     bullet: str = "- ",
     end: str = "\n",
     last_end: str = "",
@@ -116,7 +115,7 @@ def make_logger_bullet_list(
     """Make a bullet list string consisting of the specified items.
 
     Args:
-        items (List): The items to make a list of. Each item will be indented on a new
+        items (list): The items to make a list of. Each item will be indented on a new
             line and have an optional bullet string.
         bullet (str, optional): The string to use as a bullet, which immediately precedes
             each item in the output string. Can be set to "" if no bullet is desired.

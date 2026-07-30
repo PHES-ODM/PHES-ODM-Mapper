@@ -10,11 +10,12 @@ But if we replace all NAs with EMPTY_OBJ, we would get:
 EMPTY_OBJ == EMPTY_OBJ is True
 """
 
-import pandas as pd
 from typing import Any
 
+import pandas as pd
 
-class EmptyObject(object):
+
+class EmptyObject:
     def __init__(self):
         pass
 

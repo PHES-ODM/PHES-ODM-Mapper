@@ -2,10 +2,9 @@
 
 import numpy as np
 
-from odm_map.id_generator.row_index_lookup import RowIndexLookup
 from odm_map.id_generator.id_na import EMPTY_OBJ
 from odm_map.id_generator.id_value import IDValue
-
+from odm_map.id_generator.row_index_lookup import RowIndexLookup
 
 # ---------------------------------------------------------------------------
 # Constructor and all_lookup_slots / is_lookup_slot

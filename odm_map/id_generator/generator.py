@@ -6,36 +6,37 @@ Generate IDs in database tables and columns. The ID generator can also be used t
 See [/docs/id_generator.md](/docs/id_generator.md) for details.
 """
 
-from typing import Any, List, Dict, Union, Optional, Tuple
+import contextlib
 import os
-import yaml
-from collections.abc import Iterable
-from pathlib import Path
-import pandas as pd
-from datetime import datetime
-from asteval import Interpreter
-import numpy as np
 import traceback
+from collections.abc import Iterable
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
+import numpy as np
+import pandas as pd
+import yaml
+from asteval import Interpreter
 from linkml_runtime import SchemaView
 
-from odm_map.utils.logger import get_logger
-from odm_map.utils.general_utils import (
-    read_data_frame,
-    merge_dicts_of_lists,
-)
-from odm_map.utils.extra_and_tracking_slots import TrackingSlots
-from odm_map.progress import ProgressCounter, EmptyCounter
-from odm_map.id_generator.id_function_bindings import FunctionBindings
-from odm_map.id_generator.id_data_bindings import DataBindings
+from odm_map.id_generator.generator_config_keys import ConfigKeys
 from odm_map.id_generator.generator_data import (
     GeneratorData,
     IDValue,
-    get_slot_and_selectors_from_slot,
     add_code_selector_to_slot,
+    get_slot_and_selectors_from_slot,
 )
-from odm_map.id_generator.id_na import isna, EMPTY_OBJ
-from odm_map.id_generator.generator_config_keys import ConfigKeys
+from odm_map.id_generator.id_data_bindings import DataBindings
+from odm_map.id_generator.id_function_bindings import FunctionBindings
+from odm_map.id_generator.id_na import EMPTY_OBJ, isna
+from odm_map.progress import EmptyCounter, ProgressCounter
+from odm_map.utils.extra_and_tracking_slots import TrackingSlots
+from odm_map.utils.general_utils import (
+    merge_dicts_of_lists,
+    read_data_frame,
+)
+from odm_map.utils.logger import get_logger
 from odm_map.utils.schema_utils import all_primary_keys
 
 PREPARING_BARID = "Preparing IDS"
@@ -72,30 +73,30 @@ MAKE_ROW_INDEX_LOOKUPS = {
 }
 
 
-class IDGenerator(object):
+class IDGenerator:
     def __init__(
         self,
-        data_files: Dict[str, List[Union[str, Path]]],
-        data_frames: Dict[str, List[pd.DataFrame]],
-        schema: Union[str, Path, SchemaView],
-        config_file: Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]],
-        id_code_files: List[Dict],
+        data_files: dict[str, list[str | Path]],
+        data_frames: dict[str, list[pd.DataFrame]],
+        schema: str | Path | SchemaView,
+        config_file: str | Path | dict | list[str | Path | dict],
+        id_code_files: list[dict],
         multi_bar_progress: bool = True,
         for_merging: bool = False,
     ):
         """Constructor for IDGenerator.
 
         Args:
-            data_files (Dict[str, List[Union[str, Path]]]): All input data files to load for adding IDs to (in addition to the DataFrames in
+            data_files (dict[str, list[str | Path]]): All input data files to load for adding IDs to (in addition to the DataFrames in
                 data_frames). The keys are the class name and the values are lists of files belonging to that class. These can be CSV, TSV,
                 TXT, YAML, or YML files.
-            data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
+            data_frames (dict[str, list[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
                 and the values are lists of DataFrames belonging to the class.
-            schema (Union[str, Path, SchemaView]): The path to the LinkML schema that we are generating IDs for.
-            config_file (Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]]): The configuration file(s) and/or dictionaries. If
+            schema (str | Path | SchemaView): The path to the LinkML schema that we are generating IDs for.
+            config_file (str | Path | dict | list[str | Path | dict]): The configuration file(s) and/or dictionaries. If
                 multiple values are specified then they are merged together. Dictionaries are treated as
                 config files that have already been loaded into memory.
-            id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code. The
+            id_code_files (list[dict]): List of dictionaries specifying the files containing the ID code. The
                 dictionaries are in one of the following forms:
                     1) {"id_code_file": "file.xlsx", "id_code_sheet": "sheet"}. id_code_file
                        can be a CSV, TSV, or XLSX file. If an XLSX file then "id_code_sheet" specifies which
@@ -107,7 +108,7 @@ class IDGenerator(object):
                 generating IDs for. If False then only one progress bar is shown at a time (for the class name we are currently
                 generating IDs for).
         """
-        self.tic = datetime.now()
+        self.tic = datetime.now().astimezone()
 
         if isinstance(schema, (str, Path)):
             schema = SchemaView(schema)
@@ -138,9 +139,7 @@ class IDGenerator(object):
         self.interpreter = Interpreter(usersyms=self.bindings)
         self.interpreter_clean_symtable = self.interpreter.symtable.copy()
 
-    def load_configs(
-        self, config_files: Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]]
-    ):
+    def load_configs(self, config_files: str | Path | dict | list[str | Path | dict]):
         """Load and merge all the specified configuration file(s) and/or dictionaries.
 
         The following rules are applied when merging for each key in the config file:
@@ -152,7 +151,7 @@ class IDGenerator(object):
                 with the same name get replaced.
 
         Args:
-            config_files (Union[Union[str, Path, Dict], List[Union[str, Path, Dict]]]): Path(s) to YAML
+            config_files (str | Path | dict | list[str | Path | dict]): Path(s) to YAML
                 configuration files and/or dictionaries. If dictionaries then they are treated
                 as files that have already been loaded into memory. If a list of configurations is
                 provided then they are merged together.
@@ -198,19 +197,19 @@ class IDGenerator(object):
                     cur_config[ConfigKeys.TABLES_TO_SHORTNAMES]
                 )
 
-    def get_class_lookup_slots(self, class_name: str) -> List[str]:
-        def _get_slots_for_class(linkages: Union[Dict, List[Dict]]) -> List[str]:
+    def get_class_lookup_slots(self, class_name: str) -> list[str]:
+        def _get_slots_for_class(linkages: dict | list[dict]) -> list[str]:
             """Get all the slots for class_name that are referenced in the linkages.
 
             Args:
-                linkages (Union[Dict, List[Dict]]): The linkages to retrieve the referenced slots
+                linkages (dict | list[dict]): The linkages to retrieve the referenced slots
                     from. Dictionaries should have all the LinkageKeys set.
 
             Raises:
                 ValueError: The linkages are not in the correct format.
 
             Returns:
-                List[str]: List of all slots for class_name referenced in the linkages.
+                list[str]: List of all slots for class_name referenced in the linkages.
             """
             slots = []
             if isinstance(linkages, dict):
@@ -234,7 +233,9 @@ class IDGenerator(object):
                 for cur_linkage in linkages:
                     slots += _get_slots_for_class(cur_linkage)
             else:
-                raise ValueError(
+                # ValueError, not TypeError: this validates a value read from the ID
+                # config file, consistent with the rest of the config validation.
+                raise ValueError(  # noqa: TRY004
                     f"Linkages must be a dict or list, but is of type {type(linkages)}: {linkages}"
                 )
             return slots
@@ -262,19 +263,19 @@ class IDGenerator(object):
 
     def load_all(
         self,
-        data_files: Dict[str, List[Union[str, Path]]],
-        data_frames: Dict[str, List[pd.DataFrame]],
+        data_files: dict[str, list[str | Path]],
+        data_frames: dict[str, list[pd.DataFrame]],
     ):
         """Load all data from disk and create a GeneratorData object for all the data.
 
         Args:
-            data_files (Dict[str, List[Union[str, Path]]]): All input data files to load for adding IDs to (in addition to the DataFrames in
+            data_files (dict[str, list[str | Path]]): All input data files to load for adding IDs to (in addition to the DataFrames in
                 data_frames). The keys are the class name and the values are lists of files belonging to that class. These can be CSV, TSV,
                 TXT, YAML, or YML files.
-            data_frames (Dict[str, List[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
+            data_frames (dict[str, list[pd.DataFrame]]): All input DataFrames that we want to generate IDs for. The keys are the class names
                 and the values are lists of DataFrames belonging to the class.
         """
-        self.data: Dict[str, GeneratorData] = {}
+        self.data: dict[str, GeneratorData] = {}
         generated_slots = self.get_all_generated_slots_from_id_code()
         star_lookup_slots = MAKE_ROW_INDEX_LOOKUPS.get("*", [])
         all_data = merge_dicts_of_lists([data_files, data_frames])
@@ -315,7 +316,7 @@ class IDGenerator(object):
         class_linkages = self.config.get(ConfigKeys.CLASS_LINKAGES, {})
         all_classes = list(class_linkages.keys())
         all_classes += [
-            class_name for lnk in class_linkages.values() for class_name in lnk.keys()
+            class_name for lnk in class_linkages.values() for class_name in lnk
         ]
         all_classes += list(self.primary_keys.keys())
         all_classes = list(dict.fromkeys(all_classes))
@@ -366,7 +367,7 @@ class IDGenerator(object):
                         self.cleanup_linkage_path(source_class, target_class, linkages)
 
     def cleanup_linkage_path(
-        self, source_class: str, target_class: str, linkages: Union[Dict, List[Dict]]
+        self, source_class: str, target_class: str, linkages: dict | list[dict]
     ):
         """Cleanup the linkage path(s) by adding any missing (inferred) values along the path.
 
@@ -401,7 +402,7 @@ class IDGenerator(object):
         Args:
             source_class (str): The source class that we link from.
             target_class (str): The target class that we link to.
-            linkages (Union[Dict, List[Dict]]): A single linkage path item or a list of linkage path items
+            linkages (dict | list[dict]): A single linkage path item or a list of linkage path items
                 that we follow in order.
         """
 
@@ -461,12 +462,12 @@ class IDGenerator(object):
         }
         id_code_df.columns = [code_columns_map.get(c, c) for c in id_code_df.columns]
 
-    def prepare_id_code(self, id_code_files: List[Dict]):
+    def prepare_id_code(self, id_code_files: list[dict]):
         """Load and prepare the ID generation code from the specified file. The file should contain all the
         columns found in IDCodeColumns.
 
         Args:
-            id_code_files (List[Dict]): List of dictionaries specifying the files containing the ID code, or
+            id_code_files (list[dict]): List of dictionaries specifying the files containing the ID code, or
                 DataFrames containing the ID code. If DataFrames then they are treated as regular files that
                 have already been loaded into memory. The
                 dictionaries are in any of the following forms:
@@ -520,7 +521,7 @@ class IDGenerator(object):
 
         self.id_code_df = id_code_df
 
-    def get_code_selectors_from_row(self, class_name: str, row_index: int) -> List[str]:
+    def get_code_selectors_from_row(self, class_name: str, row_index: int) -> list[str]:
         """Get the code selectors associated with the specified row in the specified class.
 
         Args:
@@ -528,17 +529,17 @@ class IDGenerator(object):
             row_index (int): The row index in the class to get the code selectors for.
 
         Returns:
-            List[str]: A list of the code selectors associated with the row. If there are no
+            list[str]: A list of the code selectors associated with the row. If there are no
                 code selectors then the default None code selector is returned as [None].
         """
         return self.data[class_name].get_code_selectors_from_row(row_index)
 
-    def get_all_generated_slots_from_id_code(self) -> Dict[str, Dict[str, List[str]]]:
+    def get_all_generated_slots_from_id_code(self) -> dict[str, dict[str, list[str]]]:
         """Get a list of all slots (and their class) that have ID code, as well as the code
         selector for the ID code if there is one.
 
         Returns:
-            Dict[str, Dict[str, List[str]]]: A dictionary where the key is the class name
+            dict[str, dict[str, list[str]]]: A dictionary where the key is the class name
                 and the values are sub-dictionaries. In the sub-dictionaries the keys are
                 the code selectors (include the key None for code without a selector) and
                 the values are list of slots in the class that have ID code.
@@ -567,7 +568,7 @@ class IDGenerator(object):
         keep_tracking_columns: bool,
         keep_debug_columns: bool,
         remove_duplicates: bool,
-    ) -> Dict[str, List[pd.DataFrame]]:
+    ) -> dict[str, list[pd.DataFrame]]:
         """Run the generator and retrieve the final DataFrames.
 
         Args:
@@ -588,7 +589,7 @@ class IDGenerator(object):
                 have been dropped if remove_duplicates was True.
 
         Returns:
-            Dict[str, List[pd.DataFrame]]: Dictionary where the keys are the class names and the values are
+            dict[str, list[pd.DataFrame]]: Dictionary where the keys are the class names and the values are
                 lists of DataFrames belonging to the class, where all IDs have been generated.
         """
         self.make_all_ids()
@@ -598,7 +599,7 @@ class IDGenerator(object):
         total_dropped_rows = 0
         progress = ProgressCounter({FINALIZE_BARID: len(self.data)})
         with progress:
-            for _, data in self.data.items():
+            for data in self.data.values():
                 # finalize_data converts to DataFrames and drops duplicates
                 (
                     cur_data_frames,
@@ -621,15 +622,17 @@ class IDGenerator(object):
             )
         self.data_frames = data_frames
 
-        logger.info(f"Finished making all IDs in {datetime.now() - self.tic}")
+        logger.info(
+            f"Finished making all IDs in {datetime.now().astimezone() - self.tic}"
+        )
 
         return self.data_frames
 
     def make_all_ids(
         self,
-        class_names: Optional[Union[str, List[str]]] = None,
-        row_indices: Optional[Union[int, List[int]]] = None,
-        skip_slots: Optional[Union[str, List[str]]] = None,
+        class_names: str | list[str] | None = None,
+        row_indices: int | list[int] | None = None,
+        skip_slots: str | list[str] | None = None,
     ):
         """Make all IDs that need to be generated.
 
@@ -639,11 +642,11 @@ class IDGenerator(object):
         If an ID is non-null, then it has already been generated and will not be re-generated.
 
         Args:
-            class_names (Optional[Union[str, List[str]]], optional): The class names to generate all IDs for. If None then
+            class_names (str | list[str] | None, optional): The class names to generate all IDs for. If None then
                 all known classes are used. Defaults to None.
-            row_indices (Optional[Union[int, List[int]]], optional): The row index or array of row indices to generate
+            row_indices (int | list[int] | None, optional): The row index or array of row indices to generate
                 the IDs for. If None then all rows in all specified classes are generated. Defaults to None.
-            skip_slots (Optional[Union[str, List[str]]], optional): If specified, then skip generating IDs for
+            skip_slots (str | list[str] | None, optional): If specified, then skip generating IDs for
                 these slots.
 
         Raises:
@@ -664,7 +667,6 @@ class IDGenerator(object):
         def _log(level: str, s: str):
             if output_progress:
                 getattr(logger, level)(s)
-            pass
 
         _log("info", "Generating IDs, this may take some time...")
 
@@ -714,7 +716,7 @@ class IDGenerator(object):
             for idx, class_name in enumerate(class_names):
                 if progress.has_bar(class_name):
                     progress.show_bar(class_name)
-                class_tic = datetime.now()
+                class_tic = datetime.now().astimezone()
                 _log(
                     "debug",
                     f"Making IDs for class '{class_name}' ({idx + 1}/{len(class_names)})",
@@ -727,7 +729,7 @@ class IDGenerator(object):
                 row_indices = orig_row_indices
                 if row_indices is None:
                     # Generate IDs for all rows
-                    row_indices = range(0, len(self.data[class_name]))
+                    row_indices = range(len(self.data[class_name]))
                 else:
                     # Only generate IDs for the rows in row_indices. Make sure it's an array.
                     if not isinstance(row_indices, Iterable):
@@ -762,7 +764,7 @@ class IDGenerator(object):
                         self.calculate_id(class_name, slot, idx)
                 _log(
                     "debug",
-                    f"Made all IDs for class '{class_name}': {datetime.now() - class_tic}",
+                    f"Made all IDs for class '{class_name}': {datetime.now().astimezone() - class_tic}",
                 )
                 # _log("debug", f"Progress: {self.progress.get_progress_report()}")
 
@@ -770,7 +772,7 @@ class IDGenerator(object):
         self.current_class = orig_current_class
         self.current_row_index = orig_current_row_index
 
-        # _log("info", f"Finished making all IDs in {datetime.now() - self.tic}")
+        # _log("info", f"Finished making all IDs in {datetime.now().astimezone() - self.tic}")
 
     def make_code_column_name(self, idx: int) -> str:
         """Get the name of the code column at the specified index in the ID code generation config table.
@@ -785,13 +787,11 @@ class IDGenerator(object):
         Returns:
             str: The name of the code column at index idx.
         """
-        return "{}{}".format(
-            IDCodeColumns.CODE_PREFIX, IDCodeColumns.CODE_SUFFIX
-        ).format(idx)
+        return f"{IDCodeColumns.CODE_PREFIX}{IDCodeColumns.CODE_SUFFIX}".format(idx)
 
     def get_code(
         self, class_name: str, slot: str, idx: int, code_selector: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """Get the ID code for generating the ID for the specified slot.
 
         Args:
@@ -812,7 +812,7 @@ class IDGenerator(object):
                 "sampleID:pooled").
 
         Returns:
-            Optional[str]: The code (at index idx) that generates the ID for the slot. None if no code
+            str | None: The code (at index idx) that generates the ID for the slot. None if no code
                 is available.
         """
         select_slots = []  # [slot]
@@ -860,14 +860,14 @@ class IDGenerator(object):
     def get_linked_rows(
         self,
         source_class: str,
-        source_index: Union[int, List[int]],
+        source_index: int | list[int],
         target_class: str,
-        max_rows: Optional[int] = None,
-        ignore_indices: Optional[List[int]] = None,
-        linkage_path: Optional[Union[Dict, List[Dict]]] = None,
+        max_rows: int | None = None,
+        ignore_indices: list[int] | None = None,
+        linkage_path: dict | list[dict] | None = None,
         return_indices: bool = False,
         ignore_current_row: bool = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         """Get the rows in target_class, that are linked to the row(s) at index source_index in source_class. Use the linkage path to determine
         the linking steps required to go from source_class to target_class. If linkage_path is None then we use the
         linkage path found in the config file (under the ConfigKeys.CLASS_LINKAGES key). Typically, rows in different classes
@@ -877,13 +877,13 @@ class IDGenerator(object):
 
         Args:
             source_class (str): The source class that we are linking from.
-            source_index (Union[int, List[int]]): The row index(es) in the source class to link from.
+            source_index (int | list[int]): The row index(es) in the source class to link from.
             target_class (str): The target class to get the linked rows from.
-            max_rows (Optional[int], Optional): The maximum number of linked rows to retrieve. Only the first max_rows rows
+            max_rows (int | None, Optional): The maximum number of linked rows to retrieve. Only the first max_rows rows
                 are returned. If None then all linked rows are returned. Defaults to None.
-            ignore_indices (Optional[List[int]], Optional): A list of indices to ignore. The rows at these indices
+            ignore_indices (list[int] | None, Optional): A list of indices to ignore. The rows at these indices
                 will not be returned. If None then all rows are considered.
-            linkage_path (Optional[Union[Dict, List[Dict]]], Optional): Configuration of how to link from source_class to target_class. If None then
+            linkage_path (dict | list[dict] | None, Optional): Configuration of how to link from source_class to target_class. If None then
                 the default linkage in the config file is used. Defaults to None.
             return_indices (bool): If True then return the indices of all the rows. The return value
                 will be a tuple of the form (rows, indices) where indices is a 1-D array of indices for each row. If False
@@ -892,7 +892,7 @@ class IDGenerator(object):
                 the current row might be included in the results.
 
         Returns:
-            Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]: If return_indices is False then returns an 2D Numpy array that is
+            np.ndarray | tuple[np.ndarray, np.ndarray]: If return_indices is False then returns an 2D Numpy array that is
                 the linked rows. If return_indices is True then returns a tuple consisting of the (rows, indices),
                 where indices is a 1D Numpy array specifying the indices of the returned matching rows in the full dataset
                 for the class. If no linked rows are found the either None or the tuple (None, None) are returned,
@@ -998,10 +998,10 @@ class IDGenerator(object):
         source_class: str,
         source_index: int,
         target_class: str,
-        linkage_path: Optional[Union[Dict, List[Dict]]] = None,
+        linkage_path: dict | list[dict] | None = None,
         return_index: bool = False,
         ignore_current_row: bool = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, int]]:
+    ) -> np.ndarray | tuple[np.ndarray, int]:
         """Get the first row in target_class that is linked to the row at index source_index in the class source_class.
 
         Note that the returned row may have IDs that have not yet been calculated.
@@ -1010,7 +1010,7 @@ class IDGenerator(object):
             source_class (str): The source class.
             source_index (int): The row index in the source class that we want to get the linked rows for.
             target_class (str): The target class to get the linked rows from.
-            linkage_path (Optional[Union[Dict, List[Dict]]], Optional): The configuration specifying how to link from source_class to target_class. If None
+            linkage_path (dict | list[dict] | None, Optional): The configuration specifying how to link from source_class to target_class. If None
                 then the default linkage path from source_class to target_class in the config file is used. Defaults to None.
             return_index (bool): If True then return the index of the first linked row, in addition to
                 the row. The return value will be the tuple (row, index)
@@ -1018,7 +1018,7 @@ class IDGenerator(object):
                 the current row might be included in the results.
 
         Returns:
-            Union[np.ndarray, Tuple[np.ndarray, int]]: If return_index is False then a 1D Numpy array is returned
+            np.ndarray | tuple[np.ndarray, int]: If return_index is False then a 1D Numpy array is returned
                 that is the first linked row in the target class. If return_index is True then a tuple of the form
                 (row, index) is returned, where index is the index of the row in the full dataset for the target class.
                 If no linked rows are found the either None or the tuple (None, None) are returned,
@@ -1050,7 +1050,7 @@ class IDGenerator(object):
         source_index: int,
         target_class: str,
         target_slot: str,
-        linkage_path: Optional[Union[Dict, List[Dict]]] = None,
+        linkage_path: dict | list[dict] | None = None,
         generate_index_if_primary_key: bool = True,
         ignore_current_row: bool = False,
     ) -> Any:
@@ -1067,7 +1067,7 @@ class IDGenerator(object):
             source_index (int): The row index in the source class to link from.
             target_class (str): The target class that we want to get the linked value from.
             target_slot (str): The slot in the target class to get the value from.
-            linkage_path (Optional[Union[Dict, List[Dict]]], Optional): Configuration of how to link from source_class to
+            linkage_path (dict | list[dict] | None, Optional): Configuration of how to link from source_class to
                 target_class. If None then the default linkage in the config file is used. Defaults to None.
             generate_index_if_primary_key (bool): If True and the target class and slot are for a primary key, then
                 generate the index of the first linked value before returning it if the index has not yet been generated.
@@ -1137,7 +1137,7 @@ class IDGenerator(object):
 
     def get_default_linkage_path(
         self, source_class: str, target_class: str
-    ) -> Optional[Union[Dict, List[Dict]]]:
+    ) -> dict | list[dict] | None:
         """Get the default class linkage, that specifies the steps required to link a row in source_class to
         row(s) in target_class. The default linkage is the one specified in the config file under the
         ConfigKeys.CLASS_LINKAGES key.
@@ -1147,7 +1147,7 @@ class IDGenerator(object):
             target_class (str): The target class to link to.
 
         Returns:
-            Optional[Union[Dict, List[Dict]]]: The list of linkage steps (or optionally a dictionary if the linkage path has a
+            dict | list[dict] | None: The list of linkage steps (or optionally a dictionary if the linkage path has a
             single step) to go from the source class to target class. The dictionaries are of the form:
                     {
                         source_class: "class1",
@@ -1293,7 +1293,9 @@ class IDGenerator(object):
                     interpreter.symtable = self.interpreter_clean_symtable.copy()
                     try:
                         v = interpreter(code, raise_errors=True)
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001
+                        # code is an arbitrary user-supplied expression from the ID config
+                        # file, so it can raise anything at all.
                         # format_exc() will provide extra traceback information related to the exception that occurred
                         # when executing the code string.
                         logger.error("*" * 100)
@@ -1324,14 +1326,14 @@ class IDGenerator(object):
 
             # IDs must be strings. Numbers like "1.0" will be loaded as an integer by Excel and possibly
             # other tools, so is indistinguishable from "1". To avoid this, get rid of the ".0" if it exists
-            try:
+            # A non-numeric string, or a float that has no integer equivalent (inf/nan),
+            # simply keeps its original value.
+            with contextlib.suppress(ValueError, OverflowError):
                 # It's alright for numbers that have a "_" in it (which is allowed in Python)
                 if isinstance(v, str) and "." in v and "_" not in v:
                     f = float(v)
                     if f == int(f):
                         v = f"{int(f)}"
-            except Exception:
-                pass
 
             # During calculation of the value above, it's possible that we recursed into calculating
             # other IDs, which eventually led to calculating of the current ID (for class_name, slot, and
@@ -1382,7 +1384,7 @@ class IDGenerator(object):
 
     def get_source_class_and_row(
         self, class_name: str, row_index: int
-    ) -> Tuple[Optional[str], Optional[int]]:
+    ) -> tuple[str | None, int | None]:
         """Get the source class and source row that were used to populate the row at row_index (0-based) of
         the table class_name.
 
@@ -1392,7 +1394,7 @@ class IDGenerator(object):
                 and source row of.
 
         Returns:
-            Tuple[Optional[str], Optional[int]]: A tuple of the form ("source_class", source_row), or (None, None)
+            tuple[str | None, int | None]: A tuple of the form ("source_class", source_row), or (None, None)
                 if the source class and row could not be retrieved.
         """
         data = self.data[class_name]
@@ -1401,18 +1403,18 @@ class IDGenerator(object):
             data.get_data_value(TrackingSlots.SOURCE_ROW, row_index),
         )
 
-    def get_current_source_class_and_row(self) -> Tuple[Optional[str], Optional[int]]:
+    def get_current_source_class_and_row(self) -> tuple[str | None, int | None]:
         """Get the source class and source row that was used to populate the current class and current row.
 
         Returns:
-            Tuple[Optional[str], Optional[int]]: A tuple of the form ("source_class", source_row), or (None, None)
+            tuple[str | None, int | None]: A tuple of the form ("source_class", source_row), or (None, None)
                 if the source class and row could not be retrieved.
         """
         return self.get_source_class_and_row(self.current_class, self.current_row_index)
 
     def get_source_file_and_row(
         self, class_name: str, row_index: int
-    ) -> Tuple[Optional[str], Optional[int]]:
+    ) -> tuple[str | None, int | None]:
         """Get the source file and source row that were used to populate the row at row_index (0-based) of
         the table class_name.
 
@@ -1422,7 +1424,7 @@ class IDGenerator(object):
                 and source row of.
 
         Returns:
-            Tuple[Optional[str], Optional[int]]: A tuple of the form ("source_file", source_row), or (None, None)
+            tuple[str | None, int | None]: A tuple of the form ("source_file", source_row), or (None, None)
                 if the source file and row could not be retrieved.
         """
         data = self.data[class_name]
@@ -1435,23 +1437,23 @@ class IDGenerator(object):
             source_row,
         )
 
-    def get_current_source_file_and_row(self) -> Tuple[Optional[str], Optional[int]]:
+    def get_current_source_file_and_row(self) -> tuple[str | None, int | None]:
         """Get the source file and source row that was used to populate the current class and current row.
 
         Returns:
-            Tuple[Optional[str], Optional[int]]: A tuple of the form ("source_file", source_row), or (None, None)
+            tuple[str | None, int | None]: A tuple of the form ("source_file", source_row), or (None, None)
                 if the source file and row could not be retrieved.
         """
         return self.get_source_file_and_row(self.current_class, self.current_row_index)
 
-    def get_class_short_name(self, class_name: str) -> Optional[str]:
+    def get_class_short_name(self, class_name: str) -> str | None:
         """Get the short name of the specified class name, according to the configuration file.
 
         Args:
             class_name (str): The class name to get the short name of (eg. "sampels" -> "sm")
 
         Returns:
-            Optional[str]: The short name of the class, or None if no short name is defined.
+            str | None: The short name of the class, or None if no short name is defined.
         """
         return self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).get(
             class_name, None
@@ -1460,8 +1462,8 @@ class IDGenerator(object):
     def save_all(
         self,
         output_dir: str,
-    ) -> Tuple[Dict[str, List[Path]], Dict[str, List[pd.DataFrame]]]:
-        tic = datetime.now()
+    ) -> tuple[dict[str, list[Path]], dict[str, list[pd.DataFrame]]]:
+        tic = datetime.now().astimezone()
         logger.info(f"Saving all data to {output_dir}")
         output_data_files = {}
         output_data_frames = {}
@@ -1474,5 +1476,5 @@ class IDGenerator(object):
                 [output_data_frames, cur_output_data_frames]
             )
 
-        logger.info(f"Finished saving: {datetime.now() - tic}")
+        logger.info(f"Finished saving: {datetime.now().astimezone() - tic}")
         return output_data_files, output_data_frames

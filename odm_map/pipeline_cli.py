@@ -13,15 +13,16 @@ python3 pipeline_cli.py \
 ```
 """
 
-from typing import List, Annotated, Optional
-from datetime import datetime
 import sys
-import typer
-from click.exceptions import UsageError, ClickException
+from datetime import datetime
+from typing import Annotated
 
-from odm_map.utils.pipeline_module import get_all_modules
-from odm_map.utils.logger import get_logger, make_logger_bullet_list
+import typer
+from click.exceptions import ClickException, UsageError
+
 from odm_map.utils.clean_exit_error import CleanExitError
+from odm_map.utils.logger import get_logger, make_logger_bullet_list
+from odm_map.utils.pipeline_module import get_all_modules
 
 app = typer.Typer(
     pretty_exceptions_show_locals=False,
@@ -97,11 +98,11 @@ which case the row would be dropped when not in debug mode."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
-    module: Annotated[Optional[str], typer.Option(help=MODULE_HELP)] = None,
-    module_path: Annotated[Optional[str], typer.Option(help=MODULE_PATH_HELP)] = None,
-    temp_dir: Annotated[Optional[str], typer.Option(help=TEMP_DIR_HELP)] = None,
+    module: Annotated[str | None, typer.Option(help=MODULE_HELP)] = None,
+    module_path: Annotated[str | None, typer.Option(help=MODULE_PATH_HELP)] = None,
+    temp_dir: Annotated[str | None, typer.Option(help=TEMP_DIR_HELP)] = None,
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
     max_processes: Annotated[int, typer.Option(help=MAX_PROCESSES_HELP)] = 1,
     debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
@@ -119,14 +120,14 @@ def main(
                 f"Invalid value for '--module': '{module}' is not one of {_module_names}"
             )
 
-        logger.info(f"Starting run at {datetime.now()}")
+        logger.info(f"Starting run at {datetime.now().astimezone()}")
 
         # These imports are placed here entirely for performance reasons. The imports can
         # take some time, so we make sure all cli error checking is done first. It will also
         # avoid these imports when the user runs with the --help cli flag.
         from odm_map.pipeline import Pipeline
-        from odm_map.utils.pipeline_module import PipelineModule
         from odm_map.utils.cli_utils import get_input_data_files
+        from odm_map.utils.pipeline_module import PipelineModule
         from odm_map.utils.schema_utils import all_classes_without_tree_root
 
         # Load the module
@@ -164,10 +165,10 @@ def main(
             debug_mode=debug,
         )
     except CleanExitError as e:
-        print("", end="\r")
+        print(end="\r")
         raise ClickException(str(e))
     except KeyboardInterrupt:
-        print("", end="\r")
+        print(end="\r")
         raise ClickException("Interrupted by user")
 
 

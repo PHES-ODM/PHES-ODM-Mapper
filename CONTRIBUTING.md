@@ -21,7 +21,7 @@ Thank you for your interest in contributing to the PHES-ODM Mapper. This guide c
 
 ### Requirements
 
-- Python 3.9 or higher
+- Python 3.10 or higher
 
 ### Steps
 
@@ -127,7 +127,7 @@ The mapper executes a pipeline of actions defined in a module's `config.yaml` fi
 8. **`drop_columns`** — Remove internal tracking and `_extra_` columns from the output.
 9. **`save`** — Write the final DataFrames to CSV files.
 
-The `pipeline.py` file dispatches each step to the corresponding function in `odm_map/actions/`. Each action function is self-contained and receives a `Dict[str, List[pd.DataFrame]]` (a dictionary of class name → list of DataFrames) and returns the same structure after modification.
+The `pipeline.py` file dispatches each step to the corresponding function in `odm_map/actions/`. Each action function is self-contained and receives a `dict[str, list[pd.DataFrame]]` (a dictionary of class name → list of DataFrames) and returns the same structure after modification.
 
 ### Key Concepts
 
@@ -141,24 +141,24 @@ The `pipeline.py` file dispatches each step to the corresponding function in `od
 
 ## Code Style
 
-This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. The CI pipeline checks both on every push to `main` and on pull requests targeting `main`.
+This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. The CI pipeline checks both on every push to `main` and on pull requests targeting `main`. The target Python version is set by `target-version` in `pyproject.toml`, so no command-line flag is needed.
 
 Check for lint errors:
 
 ```console
-ruff check --target-version=py39
+ruff check
 ```
 
 Check formatting without making changes:
 
 ```console
-ruff format --diff --target-version=py39
+ruff format --diff
 ```
 
 Apply formatting automatically:
 
 ```console
-ruff format --target-version=py39
+ruff format
 ```
 
 All code must pass both checks before a pull request can be merged.
@@ -201,7 +201,7 @@ A module is a self-contained directory with a `config.yaml` and all supporting f
 
 To add a new action type that can be used in a module `config.yaml`:
 
-1. Create a new file `odm_map/actions/action_<name>.py`. The file should expose a single top-level function `action_<name>(data_frames, ...)` that accepts and returns a `Dict[str, List[pd.DataFrame]]`.
+1. Create a new file `odm_map/actions/action_<name>.py`. The file should expose a single top-level function `action_<name>(data_frames, ...)` that accepts and returns a `dict[str, list[pd.DataFrame]]`.
 
 2. Import and dispatch the new action in `odm_map/pipeline.py` by adding a new `elif action == "<name>":` branch in the `run` method.
 
@@ -211,6 +211,6 @@ To add a new action type that can be used in a module `config.yaml`:
 
 1. Fork the repository and create a branch from `main`.
 2. Make your changes, following the code style guidelines above.
-3. Verify that `ruff check --target-version=py39` and `ruff format --diff --target-version=py39` both pass with no errors.
+3. Verify that `ruff check` and `ruff format --diff` both pass with no errors.
 4. Push your branch and open a pull request against `main`.
 5. Describe what your change does and why, and reference any relevant issues.

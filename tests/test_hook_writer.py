@@ -3,8 +3,7 @@
 import io
 import logging
 
-
-from odm_map.progress.hook_writer import HookWriter, DEFAULT_ENCODING
+from odm_map.progress.hook_writer import DEFAULT_ENCODING, HookWriter
 
 
 class TestHookWriterInit:

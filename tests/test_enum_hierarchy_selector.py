@@ -1,18 +1,17 @@
 """Tests for odm_map.enum_hierarchy.enum_hierarchy_selector"""
 
-import pytest
-import pandas as pd
-from unittest.mock import MagicMock, patch
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
+import pandas as pd
+import pytest
 from linkml_runtime import SchemaView
 from linkml_runtime.linkml_model import SlotDefinition
 
 from odm_map.enum_hierarchy.enum_hierarchy_selector import (
-    EnumHierarchySelector,
     ConfigKeys,
+    EnumHierarchySelector,
 )
-
 
 # Minimal schema for testing:
 #   FruitEnum: apple is_a fruit is_a food

@@ -6,5 +6,7 @@ linkml>=1.9.2,<2
 linkml-map>=0.3.8
 openpyxl>=3.1.5
 sortedcontainers>=2.4.0
-typer>=0.12.3
+# 0.13.0 is the first release whose type dispatcher understands PEP 604
+# annotations (X | None), which the CLI signatures use.
+typer>=0.13.0
 click>=8.1.8

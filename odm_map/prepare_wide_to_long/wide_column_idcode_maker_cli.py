@@ -1,5 +1,6 @@
-from typing import Annotated
 from pathlib import Path
+from typing import Annotated
+
 import typer
 
 from odm_map.prepare_wide_to_long.wide_column_idcode_maker import WideColumnIDCodeMaker
@@ -43,7 +44,7 @@ def main(
         str, typer.Option(show_default=False, help=SOURCE_CLASS_HELP)
     ],
     output_dir: Annotated[
-        Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)
+        Path | None, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)
     ] = None,
 ):
     maker = WideColumnIDCodeMaker(

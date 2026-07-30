@@ -1,4 +1,5 @@
-from typing import List, Annotated
+from typing import Annotated
+
 import typer
 
 from odm_map.id_generator.generator import IDGenerator
@@ -52,16 +53,18 @@ case the row would be dropped when not in debug mode."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     config_file: Annotated[
-        List[str], typer.Option(show_default=False, help=CONFIG_FILE_HELP)
+        list[str], typer.Option(show_default=False, help=CONFIG_FILE_HELP)
     ],
     id_code_files: Annotated[
-        List[str], typer.Option(show_default=False, help=ID_CODE_FILES_HELP)
+        list[str], typer.Option(show_default=False, help=ID_CODE_FILES_HELP)
     ],
-    id_code_sheets: Annotated[List[str], typer.Option(help=ID_CODE_SHEETS_HELP)] = None,
-    schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
+    id_code_sheets: Annotated[
+        list[str] | None, typer.Option(help=ID_CODE_SHEETS_HELP)
+    ] = None,
+    schema: Annotated[str | None, typer.Option(help=SCHEMA_HELP)] = None,
     debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
 ):
     data_files = get_input_data_files(inputs, schema=schema)

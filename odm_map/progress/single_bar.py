@@ -5,7 +5,7 @@ TQDM_MININTERVAL = 0.2
 TQDM_MAXINTERVAL = 10.0
 
 
-class SingleBar(object):
+class SingleBar:
     def __init__(
         self, title: str, bar_format: str, total: int, position: int, show_bar: bool
     ):

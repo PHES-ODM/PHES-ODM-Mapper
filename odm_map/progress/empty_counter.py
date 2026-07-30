@@ -1,5 +1,3 @@
-from typing import Optional
-
 from odm_map.progress.base_counter import BaseCounter
 
 
@@ -13,7 +11,7 @@ class EmptyCounter(BaseCounter):
     def __exit__(self, exception_type, exception_value, exception_traceback):
         pass
 
-    def show_bar(self, barid: Optional[str]):
+    def show_bar(self, barid: str | None):
         pass
 
     def update(self, barid: str, inc: int):

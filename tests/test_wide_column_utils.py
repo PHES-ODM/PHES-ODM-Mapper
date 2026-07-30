@@ -1,13 +1,12 @@
 """Tests for odm_map.prepare_wide_to_long.wide_column_utils"""
 
-from odm_map.utils.extra_and_tracking_slots import EXTRA_SLOT_PREFIX
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     AND_VALUE_SEPARATOR,
+    RECOGNIZED_FLAG_PREFIXES,
     ConfigKeys,
     FlagPrefixes,
     MeasureTableColumns,
     ProtocolStepsTableColumns,
-    RECOGNIZED_FLAG_PREFIXES,
     WideColumnValues,
     column_and_flags_of_column,
     column_and_groups_of_column,
@@ -18,7 +17,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     get_flag_prefix,
     groups_of_column,
 )
-
+from odm_map.utils.extra_and_tracking_slots import EXTRA_SLOT_PREFIX
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -402,11 +401,11 @@ class TestColumnAndFlagsOfColumn:
         assert "g1" in flags
 
     def test_non_matching_prefix_empty(self):
-        col, flags = column_and_flags_of_column("mr_measure.l1", flag_prefix="g")
+        _col, flags = column_and_flags_of_column("mr_measure.l1", flag_prefix="g")
         assert flags == []
 
     def test_remove_flag_prefix(self):
-        col, flags = column_and_flags_of_column(
+        _col, flags = column_and_flags_of_column(
             "mr_measure.g5", flag_prefix="g", remove_flag_prefix=True
         )
         assert "5" in flags

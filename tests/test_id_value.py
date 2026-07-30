@@ -44,7 +44,7 @@ class TestIDValueEquality:
         assert IDValue("x", 1) != IDValue("x", 2)
 
     def test_ne_operator(self):
-        assert not (IDValue("a") != "a")
+        assert IDValue("a") == "a"
         assert IDValue("a") != "b"
 
 

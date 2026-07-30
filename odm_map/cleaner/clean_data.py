@@ -6,30 +6,31 @@ dictionary where the keys are the cleaning option names and the values are the p
 parameters depend on the option. See the clean_data function for a list of options and their parameters.
 """
 
-from pathlib import Path
-import pandas as pd
 import os
 import re
-from typing import Tuple, List, Union, Optional, Dict, Any, Callable
-import yaml
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
+import pandas as pd
+import yaml
 from linkml_runtime import SchemaView
 from linkml_runtime.linkml_model.meta import EnumDefinition
 
-from odm_map.utils.schema_caster import SchemaCaster
+from odm_map.progress import ProgressCounter
+from odm_map.utils.extra_and_tracking_slots import is_extra_or_tracking_slot
 from odm_map.utils.general_utils import (
+    EXCEL_FILE_KEY,
+    make_multivalued,
     read_data_frame,
     save_data_frame,
-    make_multivalued,
-    EXCEL_FILE_KEY,
 )
 from odm_map.utils.logger import get_logger
-from odm_map.utils.extra_and_tracking_slots import is_extra_or_tracking_slot
+from odm_map.utils.schema_caster import SchemaCaster
 from odm_map.utils.schema_utils import (
-    get_ranges_of_slot,
     all_classes_without_tree_root,
+    get_ranges_of_slot,
 )
-from odm_map.progress import ProgressCounter
 
 logger = get_logger(__name__)
 
@@ -68,10 +69,10 @@ class Logs:
 MAX_LOG_KEY_LENGTH = 31
 
 
-class DataCleaner(object):
+class DataCleaner:
     def __init__(
         self,
-        schema: Optional[Union[str, Path, SchemaView]] = None,
+        schema: str | Path | SchemaView | None = None,
     ):
         # Log lines (that have not yet been converted to a DataFrame). The rows for a log_key are the list of
         # values at self.log_lines[log_key]
@@ -101,11 +102,9 @@ class DataCleaner(object):
                 os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
 
             # Order the reports according to the order in Logs
-            reports = [
-                getattr(Logs, f) for f in Logs.__dict__.keys() if not f.startswith("_")
-            ]
+            reports = [getattr(Logs, f) for f in Logs.__dict__ if not f.startswith("_")]
             # Add the reports not found in Logs to the end
-            reports = reports + [r for r in self.log_dfs.keys() if r not in reports]
+            reports = reports + [r for r in self.log_dfs if r not in reports]
             # Select all the reports in the order found in the variable reports
             reports = {r: self.log_dfs[r] for r in reports if r in self.log_dfs}
             # Remove empty reports
@@ -153,7 +152,7 @@ class DataCleaner(object):
         self,
         df: pd.DataFrame,
         class_name: str,
-        format_columns_options: Union[str, List[str]],
+        format_columns_options: str | list[str],
     ) -> pd.DataFrame:
         """Cleaning operation to format all column names and then match them to valid columns found in the schema.
         Once formatting is complete, we try to match them, ignoring case. See DataCleaner.clean_data for all available
@@ -163,7 +162,7 @@ class DataCleaner(object):
             df (pd.DataFrame): The DataFrame to clean the column names of. A copy of this DataFrame is made and
                 the original is left unchanged.
             class_name (str): The class name that the DataFrame belongs to. It must exist in the schema for the DataCleaner.
-            format_columns_options (Union[str, List[str]]): The formatting operations top apply to the column names.
+            format_columns_options (str | list[str]): The formatting operations top apply to the column names.
                 See clean_data for a list of all available formatting options (specified with the "format_and_match_columns"
                 clean_option).
 
@@ -182,7 +181,7 @@ class DataCleaner(object):
             format_columns_options = [format_columns_options]
 
         class_defn = self.schema.induced_class(class_name)
-        recognized_columns = [attr for attr in class_defn.attributes.keys()]
+        recognized_columns = [attr for attr in class_defn.attributes]
         lowercase_recognized_columns = [c.lower() for c in recognized_columns]
 
         columns = []
@@ -308,7 +307,7 @@ class DataCleaner(object):
     def add_to_log(
         self,
         log_key: str,
-        log_lines: Union[List[Dict[str, Any]], Dict[str, Any]],
+        log_lines: list[dict[str, Any]] | dict[str, Any],
     ):
         """Add the specified log lines to the log with the specified log key.
 
@@ -316,7 +315,7 @@ class DataCleaner(object):
             log_key (str): The log key to add the log lines to. Usually a value from class Logs.
                 This becomes the tab name in the Excel log file, or a file name if saving as
                 a CSV. Must be at most 31 characters.
-            log_lines (Union[List[Dict[str, Any]], Dict[str, Any]]): One or more lines to add
+            log_lines (list[dict[str, Any]] | dict[str, Any]): One or more lines to add
                 to the log. If a dictionary then it is a single log line. If a list then it
                 is multiple dictionaries where each dictionary is an individual line. Any number
                 and value of keys can included in the dictionaries. The keys become the columns
@@ -400,12 +399,12 @@ class DataCleaner(object):
         df_column: pd.Series,
         class_name: str,
         slot_name: str,
-        source_values: List[str],
-        target_values: List[str],
+        source_values: list[str],
+        target_values: list[str],
         can_be_anything: bool,
         log_unknown_values: bool = False,
         clear_unknown_values: bool = False,
-        source_value_formatter: Optional[Callable[[str], str]] = None,
+        source_value_formatter: Callable[[str], str] | None = None,
     ) -> pd.Series:
         """A general cleaning function for cleaning a single slot in a class. This is called by self.general_map_class.
 
@@ -424,8 +423,8 @@ class DataCleaner(object):
                 unchanged.
             class_name (str): The name of the class that df_column belongs to.
             slot_name (str): The slot (in class class_name) that df_column represents.
-            source_values (List[str]): The mapping source values. The mapping performed is target_values[source_values.index(v)]
-            target_values (List[str]): The mapping target values. The mapping performed is target_values[source_values.index(v)]
+            source_values (list[str]): The mapping source values. The mapping performed is target_values[source_values.index(v)]
+            target_values (list[str]): The mapping target values. The mapping performed is target_values[source_values.index(v)]
             can_be_anything (bool): If True, then the values in the slot can take on any value. It is usually set to
                 True if the slot has at least one range that is not an enumeration. If False then if a value in the slot
                 is not found in source_values, then it is counted as an invalid value and stored and reported in
@@ -436,7 +435,7 @@ class DataCleaner(object):
             clear_unknown_values (bool): If True then any source value that is unrecognized (ie. is not found
                 in source_values) gets cleared in df_column (set to None). If False then unrecognized source
                 values are left unchanged. Defaults to False.
-            source_value_formatter (Optional[Callable[[str], str]], optional): Function that formats all the source values
+            source_value_formatter (Callable[[str], str] | None, optional): Function that formats all the source values
                 within df_column before trying to map (from source_values[idx] to target_values[idx]). If None then the
                 default behavior is to use the source values unchanged when mapping.
 
@@ -591,7 +590,7 @@ class DataCleaner(object):
         class_name: str,
         get_source_values: Callable[[EnumDefinition], str],
         get_target_values: Callable[[EnumDefinition], str],
-        source_value_formatter: Optional[Callable[[str], str]],
+        source_value_formatter: Callable[[str], str] | None,
         log_unknown_values: bool = False,
         clear_unknown_values: bool = False,
     ) -> pd.DataFrame:
@@ -618,7 +617,7 @@ class DataCleaner(object):
                 returns a list of target values for mapping for the enum. For a given enum, get_source_values(enum)[idx]
                 maps to get_target_values(enum)[idx]. If get_target_values is None, then the default will be to return
                 all permissible values of all the enums (ie. list(enum.permissible_values.keys()))
-            source_value_formatter (Optional[Callable[[str], str]], optional): Function that formats all the source values
+            source_value_formatter (Callable[[str], str] | None, optional): Function that formats all the source values
                 within the slots of the DataFrame before trying to map (from get_source_values(enum)[idx] to
                 get_target_values(enum)[idx]). If None then the default behavior is to use the source values unchanged when
                 mapping.
@@ -633,7 +632,7 @@ class DataCleaner(object):
         """
         df = df.copy()
 
-        def _get_enum_permissible_values(enum: EnumDefinition) -> List[Optional[str]]:
+        def _get_enum_permissible_values(enum: EnumDefinition) -> list[str | None]:
             # By default, the get_source_values and get_target_values functions simply returns the EnumDefinition's permissible values
             # unchanged
             return list(enum.permissible_values.keys())
@@ -694,30 +693,30 @@ class DataCleaner(object):
 
     def clean_single_data(
         self,
-        data_file: Optional[Union[str, Path, Dict]],
-        data_frame: Optional[pd.DataFrame],
-        output_file: Optional[Union[str, Path]],
+        data_file: str | Path | dict | None,
+        data_frame: pd.DataFrame | None,
+        output_file: str | Path | None,
         class_name: str,
-        clean_operations: List[Dict[str, Any]],
-        max_rows: Optional[int] = 0,
-    ) -> Tuple[str, pd.DataFrame]:
+        clean_operations: list[dict[str, Any]],
+        max_rows: int | None = 0,
+    ) -> tuple[str, pd.DataFrame]:
         """Clean either a single data file or a single DataFrame.
 
         Args:
-            data_file (Optional[Union[str, Path, Dict]]): The file to clean. If a dictionary, then it is for an
+            data_file (str | Path | dict | None): The file to clean. If a dictionary, then it is for an
                 Excel file in the format {EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name"}. If specified then
                 data_frame must be None.
-            data_frame (Optional[pd.DataFrame]): The DataFrame to clean. If specified then data_file must be None.
-            output_file (Optional[Union[str, Path]]): The file to save the cleaned data to. This should
+            data_frame (pd.DataFrame | None): The DataFrame to clean. If specified then data_file must be None.
+            output_file (str | Path | None): The file to save the cleaned data to. This should
                 be different than the input_file to avoid overwriting the original. If None then the cleaned
                 data is not saved to disk, but the cleaned DataFrame is still returned.
             class_name (str): The class name that the data_file or data_frame is for. This should be a class name found in
                 the schema.
-            clean_operations (List[Dict[str, Any]]): List of dictionaries specifying all the cleaning operations to perform.
+            clean_operations (list[dict[str, Any]]): List of dictionaries specifying all the cleaning operations to perform.
                 The key of each dictionary specifies which operation to perform and the value is the parameters for that
                 operation. The operations are performed in the same order as they appear in the list. See clean_data for all
                 available operations
-            max_rows (Optional[int]): Maximum number of rows to clean from the file or DataFrame. The returned DataFrame
+            max_rows (int | None): Maximum number of rows to clean from the file or DataFrame. The returned DataFrame
                 and save data will have at most this many rows. If 0 or None then clean all rows. Defaults to 0.
 
         Raises:
@@ -725,7 +724,7 @@ class DataCleaner(object):
                 was found.
 
         Returns:
-            Tuple[str, pd.DataFrame]: A tuple of (new file name, data frame). The DataFrame
+            tuple[str, pd.DataFrame]: A tuple of (new file name, data frame). The DataFrame
                 is the contents of the file with any required processing performed (eg.
                 putting dates and datetimes into the correct string format)
         """
@@ -774,7 +773,7 @@ class DataCleaner(object):
             for clean_name, clean_params in cur_operation.items():
                 if clean_name == "correct_enums" and clean_params:
 
-                    def _get_source_values(enum: EnumDefinition) -> List[Any]:
+                    def _get_source_values(enum: EnumDefinition) -> list[Any]:
                         # Get all permissible values of the enum, with multiple consecutive
                         # spaces reduced to one space, and the value made lowercase.
                         return [
@@ -794,31 +793,34 @@ class DataCleaner(object):
                         clear_unknown_values=True,
                     )
                 elif clean_name == "add_ontology_ids_to_enums" and clean_params:
+                    if not isinstance(clean_params, dict) or not isinstance(
+                        clean_params.get("match_ontology_id", None), str
+                    ):
+                        raise ValueError(
+                            "Parameter 'match_ontology_id' for action 'add_ontology_ids_to_enums' in config file must exist and be a string."
+                        )
 
-                    def _search_and_remove(v: str) -> Optional[str]:
+                    match_ontology_id = clean_params["match_ontology_id"]
+
+                    def _search_and_remove(
+                        v: str, match_ontology_id: str = match_ontology_id
+                    ) -> str | None:
                         # From v remove the ontology ID (and strip and lowercase).
                         # If v does not have an ontology ID then return None.
-                        res = re.search(clean_params["match_ontology_id"], v.strip())
+                        res = re.search(match_ontology_id, v.strip())
                         if res is None:
                             return None
                         span = res.span(0)
                         v = v[: span[0]] + v[span[1] :]
                         return v.strip().lower()
 
-                    def _get_source_values(enum: EnumDefinition) -> List[Any]:
+                    def _get_source_values(enum: EnumDefinition) -> list[Any]:
                         # Remove the ontology ID from the permissible values
                         vals = [
                             _search_and_remove(v)
                             for v in list(enum.permissible_values.keys())
                         ]
                         return vals
-
-                    if not isinstance(clean_params, Dict) or not isinstance(
-                        clean_params.get("match_ontology_id", None), str
-                    ):
-                        raise ValueError(
-                            "Parameter 'match_ontology_id' for action 'add_ontology_ids_to_enums' in config file must exist and be a string."
-                        )
 
                     df = self.general_map_class(
                         log_note="Added ontology IDs",
@@ -850,13 +852,13 @@ class DataCleaner(object):
 
     def clean_data(
         self,
-        data_files: Dict[str, List[Union[str, Path, Dict]]],
-        data_frames: Dict[str, List[pd.DataFrame]],
-        output_dir: Union[str, Path],
-        log_file: Union[str, Path],
-        clean_operations: List[Dict[str, Any]],
+        data_files: dict[str, list[str | Path | dict]],
+        data_frames: dict[str, list[pd.DataFrame]],
+        output_dir: str | Path,
+        log_file: str | Path,
+        clean_operations: list[dict[str, Any]],
         max_rows: int = 0,
-    ) -> Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]:
+    ) -> tuple[dict[str, list[str]], dict[str, list[pd.DataFrame]]]:
         """Clean all data files and DataFrames and optionally save the cleaned data to the specified output
         directory, ensuring that all output files names are unique and no existing file in output_dir is modified.
 
@@ -864,26 +866,26 @@ class DataCleaner(object):
         correctly, and possibly other operations.
 
         Args:
-            data_files (List[Union[str, Path, Dict]]]): Dictionary of all data files to clean. The keys are
+            data_files (dict[str, list[str | Path | dict]]): Dictionary of all data files to clean. The keys are
                 the class names and the values are lists of file paths belonging to that class or dictionaries
                 specifying the Excel file and sheet name to load (In the format
                 {EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name"}). Both data_files and data_frames are cleaned.
-            data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of all DataFrames to clean. The keys are
+            data_frames (dict[str, list[pd.DataFrame]]): Dictionary of all DataFrames to clean. The keys are
                 the class names and the values are lists of DataFrames belonging to that class. Both data_files
                 and data_frames are cleaned.
-            output_dir (Union[str, Path]): Output directory to save the cleaned data files to. To avoid overwriting
+            output_dir (str | Path): Output directory to save the cleaned data files to. To avoid overwriting
                 files in data_files that have the same name, we ensure that all output files have unique file names.
                 The returned dictionary will contain the updated file name, if a file name is changed.
                 If output_dir is None then the cleaned data is not saved to disk, and the cleaned DataFrames
                 are returned.
-            log_file (Union[str, Path]): The Excel file to save the log of changes to. If None then no log file is saved.
-            clean_operations (List[Dict[str, Any]]): List of operations to perform. Each item in the list is a dictionary where the
+            log_file (str | Path): The Excel file to save the log of changes to. If None then no log file is saved.
+            clean_operations (list[dict[str, Any]]): List of operations to perform. Each item in the list is a dictionary where the
                 key specifies which cleaning operation to  perform and teh values are the parameters for the operation.
                 The type of the parameters depends on which operation it is. The available operations are:
                     correct_enums (bool):
                         If True then correcting capitalization and whitespace of enumerations. Defaults to False.
-                    format_and_match_columns (Optional[Union[str, List[str]]]):
-                        A single (str) or multiple (List[str]) operations to perform on the column names of the DataFrames.
+                    format_and_match_columns (str | list[str] | None):
+                        A single (str) or multiple (list[str]) operations to perform on the column names of the DataFrames.
                         Formating operations that can be performed are:
                                 "lowercase": Make lowercase.
                                 "uppercase": Make uppercase.
@@ -903,7 +905,7 @@ class DataCleaner(object):
                 Defaults to 0.
 
         Returns:
-            Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]: A tuple of [cleaned_data_files, cleaned_data_frames]:
+            tuple[dict[str, list[str]], dict[str, list[pd.DataFrame]]]: A tuple of [cleaned_data_files, cleaned_data_frames]:
                 cleaned_data_files: Dictionary of all outputed cleaned data files. The keys are the class name
                     the file belongs to and the values are lists of files. If output_dir is None then data_files will be
                     None (ie. no data saved to disk), instead see expanded_data_frames.
@@ -942,14 +944,11 @@ class DataCleaner(object):
                         # Determine the output_file
                         if output_dir is not None:
                             if data_file:
-                                if isinstance(data_file, Dict):
+                                if isinstance(data_file, dict):
                                     basename = os.path.basename(
                                         data_file[EXCEL_FILE_KEY]
                                     )
-                                    basename = "{class_name}({basename}).csv".format(
-                                        class_name=class_name,
-                                        basename=os.path.splitext(basename)[0],
-                                    )
+                                    basename = f"{class_name}({os.path.splitext(basename)[0]}).csv"
                                 else:
                                     basename = os.path.basename(data_file)
                                 output_file = os.path.join(output_dir, basename)

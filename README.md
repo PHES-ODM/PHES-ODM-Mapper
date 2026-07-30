@@ -314,7 +314,7 @@ pipeline = Pipeline(
 result = pipeline.run(
     data_files={
         "WWMeasure": ["path/to/wwmeasure.csv"],
-        "Sample":    ["path/to/sample.csv"],
+        "Sample": ["path/to/sample.csv"],
     },
     output_dir="path/to/output",
 )

@@ -1,5 +1,6 @@
-from typing import Annotated, List
 from pathlib import Path
+from typing import Annotated
+
 import typer
 
 from odm_map.prepare_wide_to_long.wide_column_expander import WideColumnExpander
@@ -29,7 +30,7 @@ If 0 then load all rows."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
     config: Annotated[Path, typer.Option(show_default=False, help=CONFIG_HELP)],
     target_schema: Annotated[
         Path, typer.Option(show_default=False, help=TARGET_SCHEMA_HELP)
@@ -38,7 +39,7 @@ def main(
         str, typer.Option(show_default=False, help=SOURCE_CLASS_HELP)
     ],
     output_dir: Annotated[
-        Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)
+        Path | None, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)
     ] = None,
     max_rows: Annotated[int, typer.Option(show_default=True, help=MAX_ROWS_HELP)] = 0,
 ):

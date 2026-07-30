@@ -22,29 +22,28 @@ data_frames, *_ = data.finalize_data(keep_extra_and_tracking_columns=False, keep
 """
 
 import os
-import pandas as pd
-import numpy as np
-from typing import Union, List, Any, Optional, Tuple, Dict
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
+import numpy as np
+import pandas as pd
 from linkml_runtime import SchemaView
 
-from odm_map.id_generator.row_index_lookup import RowIndexLookup
-from odm_map.id_generator.id_value import IDValue
 from odm_map.id_generator.id_na import EMPTY_OBJ, isna
-
-from odm_map.utils.logger import get_logger
+from odm_map.id_generator.id_value import IDValue
+from odm_map.id_generator.row_index_lookup import RowIndexLookup
 from odm_map.utils.extra_and_tracking_slots import (
-    is_extra_or_tracking_slot,
-    is_tracking_slot,
-    is_extra_slot,
     EXTRA_SLOT_PREFIX,
+    is_extra_or_tracking_slot,
+    is_extra_slot,
+    is_tracking_slot,
 )
 from odm_map.utils.general_utils import (
     read_data_frame,
     save_data_frame,
 )
+from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -129,19 +128,21 @@ def remove_code_selectors_from_slot(slot: str) -> str:
     return slot.split(CODE_SELECTOR_SPECIFIER)[0]
 
 
-def get_slot_and_selectors_from_slot(slot: str) -> Tuple[str, List[str]]:
-    """Get a list of code selectors from the specified slot name. This will also
-    include the default or blank code selector, which would be returned as None.
-    For example, the slot name "sampleID:pooled,,main" would return
-    ["pooled", None, "main"] (the second selector is the default/blank selector,
-    or None). If no selector is specified, then the None selector is returned as
-    [ None ] (for example, for the slot "sampleID" or the slot "sampleID:").
+def get_slot_and_selectors_from_slot(slot: str) -> tuple[str, list[str]]:
+    """Get the slot name and its list of code selectors from the specified slot name.
+    The returned selectors also include the default or blank code selector, which is
+    returned as None. For example, the slot name "sampleID:pooled,,main" would return
+    ("sampleID", ["pooled", None, "main"]) (the second selector is the default/blank
+    selector, or None). If no selector is specified, then the None selector is returned
+    as [None] (for example, both the slot "sampleID" and the slot "sampleID:" return
+    ("sampleID", [None])).
 
     Args:
         slot (str): The slot name to get the code selectors from.
 
     Returns:
-        List[str]: A list of all code selectors in the slot name.
+        tuple[str, list[str]]: The slot name with its code selectors removed, and a list
+            of all code selectors in the slot name.
     """
     if not isinstance(slot, str):
         return None, []
@@ -151,7 +152,7 @@ def get_slot_and_selectors_from_slot(slot: str) -> Tuple[str, List[str]]:
     return slot_without_selectors, get_code_selectors_from_string(selectors)
 
 
-def get_code_selectors_from_string(value: str) -> List[str]:
+def get_code_selectors_from_string(value: str) -> list[str]:
     """Get the list of code selectors from the specified string, which should be a comma-separated
     list of code selectors. In contrast to get_slot_and_selectors_from_slot, it does not include
     a preceding slot name. For example, the value "pooled,,main" would have the code selectors
@@ -162,7 +163,7 @@ def get_code_selectors_from_string(value: str) -> List[str]:
         value (str): The value to get the code selectors from.
 
     Returns:
-        List[str]: A lits of the code selectors.
+        list[str]: A lits of the code selectors.
     """
     if not isinstance(value, str):
         return [None]
@@ -176,10 +177,10 @@ class GeneratorData:
     def __init__(
         self,
         class_name: str,
-        input_data: List[Union[str, Path, Dict, pd.DataFrame]],
+        input_data: list[str | Path | dict | pd.DataFrame],
         primary_key: str,
-        schema: Union[str, Path, SchemaView],
-        generated_slots_for_selectors: Optional[Dict[str, List[str]]] = None,
+        schema: str | Path | SchemaView,
+        generated_slots_for_selectors: dict[str, list[str]] | None = None,
         for_merging: bool = False,
     ):
         if isinstance(schema, (str, Path)):
@@ -190,7 +191,7 @@ class GeneratorData:
 
         self.class_name = class_name
         self.primary_key = primary_key
-        self.generated_slots_for_selectors: Dict[str, List[str]] = (
+        self.generated_slots_for_selectors: dict[str, list[str]] = (
             generated_slots_for_selectors if generated_slots_for_selectors else {}
         )
         self.largest_pk_indices = {}
@@ -199,10 +200,10 @@ class GeneratorData:
         # Load all data in input_data, store in all_dfs so we can concatenate them
         for cur_data in input_data:
             file = None
-            if isinstance(cur_data, (str, Path, Dict)):
+            if isinstance(cur_data, (str, Path, dict)):
                 # Load DataFrame from file
                 file = cur_data
-                logger.debug(f"Loading data from {str(file)}")
+                logger.debug(f"Loading data from {file!s}")
                 df = read_data_frame(file, keep_default_na=False, na_values=None)
             elif isinstance(cur_data, pd.DataFrame):
                 # Data is already in DataFrame format
@@ -294,7 +295,7 @@ class GeneratorData:
         # but includes the column at UNINDEXED_PK_SLOT (ie the unindexed primary key).
         # Get the slots that belong to the class
         class_defn = self.schema.induced_class(class_name)
-        class_slots = [c for c in class_defn.attributes.keys()]
+        class_slots = [c for c in class_defn.attributes]
         self.match_columns = [
             self.get_column_index(c)
             for c in self.orig_columns
@@ -315,14 +316,14 @@ class GeneratorData:
     def __len__(self):
         return len(self.data)
 
-    def get_generated_slots_with_selectors(self, selectors: List[str]) -> List[str]:
+    def get_generated_slots_with_selectors(self, selectors: list[str]) -> list[str]:
         return [
             slot
             for selector in selectors
             for slot in self.generated_slots_for_selectors.get(selector, [])
         ]
 
-    def get_all_generated_slots(self) -> List[str]:
+    def get_all_generated_slots(self) -> list[str]:
         slots = [
             slot
             for slots in self.generated_slots_for_selectors.values()
@@ -331,14 +332,14 @@ class GeneratorData:
         slots = list(dict.fromkeys(slots))
         return slots
 
-    def get_code_selectors_from_row(self, row_index: int) -> List[str]:
+    def get_code_selectors_from_row(self, row_index: int) -> list[str]:
         """Get the code selectors associated with the specified row.
 
         Args:
             row_index (int): The row index in the class to get the code selectors for.
 
         Returns:
-            List[str]: A list of the code selectors associated with the row. If there are no
+            list[str]: A list of the code selectors associated with the row. If there are no
                 code selectors then the default None code selector is returned as [None].
         """
         # # If code selector column doesn't exist, then return the blank code selector [None]
@@ -348,18 +349,18 @@ class GeneratorData:
         return self.get_data_value(CODE_SELECTOR_SLOT, row_index)
 
     def make_initial_slot_names_if_generated_slots(
-        self, slots: Union[str, List[str]]
-    ) -> List[str]:
+        self, slots: str | list[str]
+    ) -> list[str]:
         """If any of the specified slots is for a slot that is generated adjust the slot name so
         that it refers to the slot containing the ORIGINAL value for the slot as it was loaded from
         disk. For example, if sampleID is a generated slot, then we will typically replace it
         with __sampleID, where the original values are stored.
 
         Args:
-            slots (Union[str, List[str]]): Either a single slot (str) or a list of slots.
+            slots (str | list[str]): Either a single slot (str) or a list of slots.
 
         Returns:
-            List[str]: The slots parameter (converted to a list if required) with all slots
+            list[str]: The slots parameter (converted to a list if required) with all slots
                 that are generated replaced with the slot to reference the original values
                 as loaded form disk for that slot.
         """
@@ -373,7 +374,7 @@ class GeneratorData:
                 slots[idx] = f"{INITIAL_ID_PREFIX}{s}"
         return slots
 
-    def get_slots_with_code_for_selectors(self, selectors: List[str]) -> List[str]:
+    def get_slots_with_code_for_selectors(self, selectors: list[str]) -> list[str]:
         return [
             slot
             for selector in selectors
@@ -429,11 +430,11 @@ class GeneratorData:
         # Remove duplicates (and retain original order)
         self.initial_value_columns = list(dict.fromkeys(self.initial_value_columns))
 
-    def init_lookup_table(self, lookup_slots: List[str]):
+    def init_lookup_table(self, lookup_slots: list[str]):
         """Initialize the lookup tables and populate them.
 
         Args:
-            lookup_slots (List[str]): All slots with our class that should have a lookup table.
+            lookup_slots (list[str]): All slots with our class that should have a lookup table.
         """
         if lookup_slots is None:
             lookup_slots = []
@@ -478,16 +479,16 @@ class GeneratorData:
         """
         return col in self.columns
 
-    def get_column_index(self, col: Union[str, List[str]]) -> Union[int, List[int]]:
+    def get_column_index(self, col: str | list[str]) -> int | list[int]:
         """Get the index/indices of the specified column name(s).
 
         The index is the 0-based column number for the 2D Numpy array for the data.
 
         Args:
-            col (Union[str, List[str]]): The column name(s) to get the index for.
+            col (str | list[str]): The column name(s) to get the index for.
 
         Returns:
-            Union[int, List[int]]: The index or indices.
+            int | list[int]: The index or indices.
         """
 
         def _get_index(c: str) -> int:
@@ -554,12 +555,12 @@ class GeneratorData:
 
     def get_rows_equal(
         self,
-        slots: Union[str, List[str]],
+        slots: str | list[str],
         match_value: Any,
-        max_rows: Optional[int] = None,
-        ignore_indices: Optional[List[int]] = None,
-        return_indices: Optional[bool] = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+        max_rows: int | None = None,
+        ignore_indices: list[int] | None = None,
+        return_indices: bool | None = False,
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         """Get the rows where slots are equal to match_value.
 
         slots can be either a single slot or a list of slots. For a single slot, if the slot value equals
@@ -571,18 +572,18 @@ class GeneratorData:
         then if any sublist matches the slots then a match occurs.
 
         Args:
-            slots (Union[str, List[str]]): The slot(s) to use for matching.
+            slots (str | list[str]): The slot(s) to use for matching.
             match_value (Any): The value(s) to match.
-            max_rows (Optional[int], Optional): The maximum number of rows to retrieve. Only the first max_rows matching rows
+            max_rows (int | None, Optional): The maximum number of rows to retrieve. Only the first max_rows matching rows
                 are returned. If None then all matched rows are returned. Defaults to None.
-            ignore_indices (Optional[List[int]], Optional): A list of indices to ignore. The rows at these indices
+            ignore_indices (list[int] | None, Optional): A list of indices to ignore. The rows at these indices
                 will not be returned. If None then all rows are considered.
-            return_indices (Optional[bool], Optional): If True then return the indices of the rows, along with the rows. The return
+            return_indices (bool | None, Optional): If True then return the indices of the rows, along with the rows. The return
                 value will be the tuple (rows, indices), where indices is a 1-D array of the integer indices of the rows.
                 If False then only the rows are returned.
 
         Returns:
-            Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]: If return_indices is False then returns an 2D Numpy array that is
+            np.ndarray | tuple[np.ndarray, np.ndarray]: If return_indices is False then returns an 2D Numpy array that is
                 the selected rows that match. If return_indices is True then returns a tuple consisting of the (rows, indices),
                 where indices is a 1D Numpy array specifying the indices of the returned matching rows in the full dataset
                 for the class. If no matches are found the either None or the tuple (None, None) are returned,
@@ -678,12 +679,12 @@ class GeneratorData:
 
             return _ret_value(self.data[matched_indices], np.array(matched_indices))
 
-    def get_rows_at_index(self, index: Union[int, List[int]]) -> np.ndarray:
+    def get_rows_at_index(self, index: int | list[int]) -> np.ndarray:
         """Get the row(s) at the specified indices.
 
         Args:
             class_name (str): The class to get the rows from.
-            index (Union[int, List[int]]): A single index or list of indices to retrieve the
+            index (int | list[int]): A single index or list of indices to retrieve the
                 rows of.
 
         Returns:
@@ -844,21 +845,21 @@ class GeneratorData:
                 if np.equal(cur_row, current_row_match).all(axis=1):
                     cur_pk = self.data[i, self.get_column_index(self.primary_key)]
                     cur_match_length = match_len(cur_pk, unindexed_pk_value)
-                    if cur_match_length:
-                        if _is_after_match_number(
-                            cur_pk, cur_match_length
-                        ) and _is_after_match_number(
-                            unindexed_pk_value, cur_match_length
-                        ):
-                            if longest_pk_match is None or cur_match_length >= len(
-                                longest_pk_match
-                            ):
-                                longest_pk_match = cur_pk[:cur_match_length]
-                                longest_pk_index = cur_pk[cur_match_length:]
-                                if longest_pk_index:
-                                    longest_pk_index = int(longest_pk_index)
-                                else:
-                                    longest_pk_index = 0
+                    if (
+                        cur_match_length
+                        and _is_after_match_number(cur_pk, cur_match_length)
+                        and _is_after_match_number(unindexed_pk_value, cur_match_length)
+                        and (
+                            longest_pk_match is None
+                            or cur_match_length >= len(longest_pk_match)
+                        )
+                    ):
+                        longest_pk_match = cur_pk[:cur_match_length]
+                        longest_pk_index = cur_pk[cur_match_length:]
+                        if longest_pk_index:
+                            longest_pk_index = int(longest_pk_index)
+                        else:
+                            longest_pk_index = 0
 
             if longest_pk_match is not None:
                 return self.set_row_pk_and_finalize(
@@ -912,7 +913,7 @@ class GeneratorData:
         keep_tracking_columns: bool,
         keep_debug_columns: bool,
         remove_duplicates: bool,
-    ) -> Tuple[Dict[str, List[pd.DataFrame]], int, int, int]:
+    ) -> tuple[dict[str, list[pd.DataFrame]], int, int, int]:
         """Finalize the data by converting it to a DataFrame and dropping duplicates based on the
         primary key.
 
@@ -934,8 +935,8 @@ class GeneratorData:
                 have been dropped if remove_duplicates was True.
 
         Returns:
-            Tuple[Dict[str, List[pd.DataFrame]], int, int, int]:
-                Dict[str, List[pd.DataFrame]]: All DataFrames, where the keys are the target class names and the values
+            tuple[dict[str, list[pd.DataFrame]], int, int, int]:
+                dict[str, list[pd.DataFrame]]: All DataFrames, where the keys are the target class names and the values
                     are lists of DataFrames for the class.
                 int: Number of total rows, before dropping duplicates
                 int: Number of total rows, after dropping duplicates
@@ -1006,14 +1007,14 @@ class GeneratorData:
     def save_data(
         self,
         output_dir: str,
-    ) -> Tuple[Dict[str, List[Path]], Dict[str, List[pd.DataFrame]]]:
+    ) -> tuple[dict[str, list[Path]], dict[str, list[pd.DataFrame]]]:
         """Save the data to disk.
 
         Args:
             output_dir (str): Directory to save DataFrame to.
 
         Returns:
-            Tuple[Dict[str, List[Path]], Dict[str, List[pd.DataFrame]]]: A tuple of two dictionaries corresponding
+            tuple[dict[str, list[Path]], dict[str, list[pd.DataFrame]]]: A tuple of two dictionaries corresponding
                 to (saved_files, data_frames):
                     saved_files: All saved files, where the keys are the target class names and the values
                         are lists of output files for the class.

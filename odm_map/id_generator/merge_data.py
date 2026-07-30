@@ -27,19 +27,18 @@ data_frames = merge.merge("output/dir/", debug=False)
 ```
 """
 
-from typing import Union, List, Tuple, Optional, Dict
 from pathlib import Path
-import pandas as pd
 
+import pandas as pd
 from linkml_runtime import SchemaView
 
-from odm_map.utils.logger import get_logger
-from odm_map.utils.general_utils import merge_dicts_of_lists
+from odm_map.id_generator.generator import IDGenerator
 from odm_map.utils.cli_utils import get_input_data_files_from_dir
 from odm_map.utils.extra_and_tracking_slots import (
     load_data_with_source_tracking_columns,
 )
-from odm_map.id_generator.generator import IDGenerator
+from odm_map.utils.general_utils import merge_dicts_of_lists
+from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -51,16 +50,16 @@ class CodeColumns:
 
 
 class MergeData:
-    def __init__(self, inputs: Union[str, Path], schema: Union[str, Path, SchemaView]):
+    def __init__(self, inputs: str | Path, schema: str | Path | SchemaView):
         """Constructor for MergeData. This class merges multiple datasets that have previously had
         their IDs generated with the ID generator. It ensures that there are no primary key naming
         conflicts by adding indices to primary keys when necessary.
 
         Args:
-            inputs (Union[str, Path]): List of directories to merge. The files should be data files
+            inputs (str | Path): List of directories to merge. The files should be data files
                 (eg. CSV, TSV files) where the file names contain class names found in the schema.
                 The data for each class will be merged together for each class.
-            schema (Union[str, Path, SchemaView]): Path or SchemaView for the LinkML schema.
+            schema (str | Path | SchemaView): Path or SchemaView for the LinkML schema.
         """
         if isinstance(schema, (str, Path)):
             schema = SchemaView(schema)
@@ -78,14 +77,14 @@ class MergeData:
 
     def merge(
         self,
-        output_dir: Optional[Union[str, Path]] = None,
+        output_dir: str | Path | None = None,
         multi_bar_progress: bool = True,
         debug: bool = False,
-    ) -> Dict[str, List[pd.DataFrame]]:
+    ) -> dict[str, list[pd.DataFrame]]:
         """Merge all data and optionally save to disk.
 
         Args:
-            output_dir (Optional[Union[str, Path]], optional): Directory to save the merged
+            output_dir (str | Path | None, optional): Directory to save the merged
                 data to. If None then the data is returned but not saved to disk. Defaults
                 to None.
             multi_bar_progress (bool, optional): If True then show multiple progress bars
@@ -136,14 +135,14 @@ class MergeData:
         self.make_linkage_slots()
         self.combine_datasets()
 
-    def get_foreign_keys_for_class(self, class_name: str) -> List[str]:
+    def get_foreign_keys_for_class(self, class_name: str) -> list[str]:
         """Get all slots in the class class_name that are foreign keys into other classes.
 
         Args:
             class_name (str): The name of the class to get the foreign keys for.
 
         Returns:
-            List[str]: List of slot names that are foreign keys.
+            list[str]: List of slot names that are foreign keys.
         """
         return [s for c, s in self.foreign_keys if str(class_name) == c]
 
@@ -250,7 +249,7 @@ class MergeData:
             rows, columns=[CodeColumns.CLASS, CodeColumns.SLOT, CodeColumns.CODE0]
         )
 
-    def get_fk_target(self, class_name: str, slot_name: str) -> Tuple[str, str]:
+    def get_fk_target(self, class_name: str, slot_name: str) -> tuple[str, str]:
         """Get the target class and slot that the specified slot points to. The specified
         slot is a foreign key, and the returned class/slot is a primary key.
 
@@ -259,7 +258,7 @@ class MergeData:
             slot_name (str): The slot name for the foreign key.
 
         Returns:
-            Tuple[str, str]: A tuple of (class, slot) where "class" is the class name
+            tuple[str, str]: A tuple of (class, slot) where "class" is the class name
                 that slot_name points to and "slot" is the slot name that slot_name
                 points to. The returned class/slot combination is a primary key that is
                 a target of the specified foreign key.
@@ -309,25 +308,25 @@ class MergeData:
         save the results internally to self.foreign_keys for future use.
         """
         foreign_keys = []
-        for class_name in self.schema.all_classes().keys():
+        for class_name in self.schema.all_classes():
             class_defn = self.schema.induced_class(class_name)
             for attr_name, attr_defn in class_defn.attributes.items():
                 rng = attr_defn.range
                 if rng in self.schema.all_classes():
                     foreign_keys.append((str(class_name), str(attr_name)))
-        self.foreign_keys: List[Tuple[str, str]] = foreign_keys
+        self.foreign_keys: list[tuple[str, str]] = foreign_keys
 
     def retrieve_all_primary_keys(self):
         """Retrieve all (class, slot) tuples for all primary keys in the schema and
         save the results internally to self.primary_keys for future use.
         """
         primary_keys = []
-        for class_name in self.schema.all_classes().keys():
+        for class_name in self.schema.all_classes():
             class_defn = self.schema.induced_class(class_name)
             for attr_name, attr_defn in class_defn.attributes.items():
                 if attr_defn.identifier:
                     primary_keys.append((str(class_name), str(attr_name)))
-        self.primary_keys: List[Tuple[str, str]] = primary_keys
+        self.primary_keys: list[tuple[str, str]] = primary_keys
 
     def make_linkage_slots(self):
         """Add all linkage slots (which are named according to the function get_linkage_slot_name)

@@ -263,7 +263,9 @@ using any of the `dat` or `datEmpty` variables, which are described below. An
 example would be:
 
 ```python
-dat.contacts.get_first_linked_value("contactID", linkage_path="custom_measures_to_contact")
+dat.contacts.get_first_linked_value(
+    "contactID", linkage_path="custom_measures_to_contact"
+)
 ```
 
 The above example will retrieve the `contactID` from the `contacts` table, from
@@ -382,8 +384,8 @@ The `linkage_path` parameter can also be a dictionary of the form:
 
 ```python
 linkage_path = {
-    "source_slot" : "sourceSlotName",
-    "target_slot" : "targetSlotName",
+    "source_slot": "sourceSlotName",
+    "target_slot": "targetSlotName",
 }
 ```
 
@@ -403,19 +405,19 @@ linkage_path = [
         "source_class": "class_a",
         "source_slot": "slot_a",
         "target_class": "class_b",
-        "target_slot": "slot_b"
+        "target_slot": "slot_b",
     },
     {
         "source_class": "class_b",
         "source_slot": "slot_b2",
         "target_class": "class_c",
-        "target_slot": "slot_c"
+        "target_slot": "slot_c",
     },
     {
         "source_class": "class_c",
         "source_slot": "slot_c2",
         "target_class": "class_d",
-        "target_slot": "slot_d"
+        "target_slot": "slot_d",
     },
 ]
 ```
@@ -467,7 +469,9 @@ In practice, each argument is often a result of accessing values through
 `datEmpty`, but this is not a requirement. For example:
 
 ```python
-fn.makeid(datEmpty.addresses.country, datEmpty.addresses.pCode, datEmpty.addresses.city[:3])
+fn.makeid(
+    datEmpty.addresses.country, datEmpty.addresses.pCode, datEmpty.addresses.city[:3]
+)
 ```
 
 If an ID is passed as an argument to `fn.makeid` (eg. `datEmpty.sites.siteID`),
@@ -484,7 +488,12 @@ Attribute (integer): The zero-based row number of the current row. For example,
 it is used in the final argument to `fn.makeid` below:
 
 ```python
-fn.makeid(datEmpty.addresses.country, datEmpty.addresses.pCode, datEmpty.addresses.city[:3], f"{fn.rownum:03d}")
+fn.makeid(
+    datEmpty.addresses.country,
+    datEmpty.addresses.pCode,
+    datEmpty.addresses.city[:3],
+    f"{fn.rownum:03d}",
+)
 ```
 
 #### fn.sourceclass
@@ -494,7 +503,9 @@ was used to populate the current row. For example:
 
 ```python
 if fn.sourceclass == "WWMeasure":
-    target = dat.samples.get_first_linked_value("siteID", linkage_path={"source_slot":"sampleID", "target_slot":"sampleID"})
+    target = dat.samples.get_first_linked_value(
+        "siteID", linkage_path={"source_slot": "sampleID", "target_slot": "sampleID"}
+    )
 else:
     target = ""
 ```
@@ -511,7 +522,7 @@ YYYY-mm-ddTHH:MM:SS.f+0000 (YYYY=year, mm=month number, dd=day, HH=24-hour
 time, MM=minutes, SS=seconds, f=ms). For example:
 
 ```python3
-fn.datetimetz(dat.samples.__collDT.split('/'))
+fn.datetimetz(dat.samples.__collDT.split("/"))
 ```
 
 An example value of `dat.samples.__collDT` is `2022-11-16/7:00/utc-04:00`,

@@ -1,7 +1,7 @@
 """Tests for odm_map.expander.array_expander.ArrayExpander"""
 
-import pytest
 import pandas as pd
+import pytest
 import yaml
 
 from odm_map.expander.array_expander import ArrayExpander, ConfigKeys
@@ -196,7 +196,7 @@ class TestExpandData:
     def test_empty_config_returns_inputs_unchanged(self, expander_empty_config):
         df = pd.DataFrame({"value": [[1, 2, 3]]})
         data_frames = {"measures": [df]}
-        files_out, frames_out = expander_empty_config.expand_data(
+        _files_out, frames_out = expander_empty_config.expand_data(
             data_files={}, data_frames=data_frames
         )
         assert frames_out == data_frames
@@ -206,7 +206,7 @@ class TestExpandData:
     ):
         df = pd.DataFrame({"value": [[1, 2, 3]]})
         data_frames = {"measures": [df]}
-        files_out, frames_out = expander_no_expand_columns.expand_data(
+        _files_out, frames_out = expander_no_expand_columns.expand_data(
             data_files={}, data_frames=data_frames
         )
         assert frames_out is data_frames
@@ -214,7 +214,7 @@ class TestExpandData:
     def test_basic_expand_from_dataframes(self, expander_with_expand):
         df = pd.DataFrame({"measure": ["A", "B"], "value": [[1, 2], "3"]})
         data_frames = {"measures": [df]}
-        files_out, frames_out = expander_with_expand.expand_data(
+        _files_out, frames_out = expander_with_expand.expand_data(
             data_files={}, data_frames=data_frames
         )
         result_df = frames_out["measures"][0]
@@ -224,7 +224,7 @@ class TestExpandData:
     def test_expand_from_file(self, expander_with_expand, tmp_path):
         csv_file = tmp_path / "measures.csv"
         csv_file.write_text('measure,value\nA,"[1, 2]"\nB,3\n')
-        files_out, frames_out = expander_with_expand.expand_data(
+        _files_out, frames_out = expander_with_expand.expand_data(
             data_files={"measures": [str(csv_file)]}, data_frames={}
         )
         result_df = frames_out["measures"][0]
@@ -233,7 +233,7 @@ class TestExpandData:
     def test_expand_saves_to_output_dir(self, expander_with_expand, tmp_path):
         df = pd.DataFrame({"measure": ["A"], "value": [[10, 20]]})
         output_dir = tmp_path / "output"
-        files_out, frames_out = expander_with_expand.expand_data(
+        files_out, _frames_out = expander_with_expand.expand_data(
             data_files={}, data_frames={"measures": [df]}, output_dir=str(output_dir)
         )
         assert files_out is not None
@@ -243,7 +243,7 @@ class TestExpandData:
         # config says expand 'measures' but no 'measures' in data_frames
         df = pd.DataFrame({"name": ["A"]})
         data_frames = {"sites": [df]}
-        files_out, frames_out = expander.expand_data(
+        _files_out, frames_out = expander.expand_data(
             data_files={}, data_frames=data_frames
         )
         # sites is not in expand config so it stays as-is; no error
@@ -251,7 +251,7 @@ class TestExpandData:
 
     def test_returns_none_files_when_no_output_dir(self, expander_with_expand):
         df = pd.DataFrame({"measure": ["A"], "value": [[1, 2]]})
-        files_out, frames_out = expander_with_expand.expand_data(
+        files_out, _frames_out = expander_with_expand.expand_data(
             data_files={}, data_frames={"measures": [df]}
         )
         assert files_out is None

@@ -3,25 +3,23 @@ Command-line interface utilities.
 """
 
 import os
-import pandas as pd
-
-from typing import Dict, List, Union, Optional
 from pathlib import Path
 
+import pandas as pd
 from linkml_runtime import SchemaView
 
+from odm_map.utils.clean_exit_error import CleanExitError
 from odm_map.utils.general_utils import (
-    merge_dicts_of_lists,
     EXCEL_FILE_KEY,
     EXCEL_SHEET_KEY,
-)
-from odm_map.utils.schema_utils import (
-    find_class,
-    get_class,
-    all_classes_without_tree_root,
+    merge_dicts_of_lists,
 )
 from odm_map.utils.logger import get_logger
-from odm_map.utils.clean_exit_error import CleanExitError
+from odm_map.utils.schema_utils import (
+    all_classes_without_tree_root,
+    find_class,
+    get_class,
+)
 
 # When explicitly specifying the class name that a file belongs to (when using the CLI),
 # the file path is prefixed by the class name, then CLASS_PREFIX_SEPARATOR. For example,
@@ -33,10 +31,10 @@ logger = get_logger(__name__)
 
 
 def get_input_data_files_from_dir(
-    directory: Union[str, Path],
-    schema: Optional[Union[SchemaView, str, Path]] = None,
+    directory: str | Path,
+    schema: SchemaView | str | Path | None = None,
     exception_on_unknown: bool = False,
-) -> Dict[str, List[Path]]:
+) -> dict[str, list[Path]]:
     """Get all data files (csv, txt, tsv) in the directory and the class that the data file
     is for. The class is determined by the file name, without extension and with anything after
     the first square bracket removed. For example, "measures[2024-09-25].csv" would be a data
@@ -44,8 +42,8 @@ def get_input_data_files_from_dir(
     be checked by the caller.
 
     Args:
-        directory (Union[str, Path]): The directory to get the files from.
-        schema (Optional[Union[SchemaView, str, Path]], optional): The schema that the files are for.
+        directory (str | Path): The directory to get the files from.
+        schema (SchemaView | str | Path | None, optional): The schema that the files are for.
             We will only retrieve the files that belong to the classes in the schema (ie. have the same
             file name as a recognized class in the schema, ignoring anything after the first open square
             or round bracket). For Excel files, we will retrieve the sheets that belong to the classes.
@@ -55,7 +53,7 @@ def get_input_data_files_from_dir(
             exception and instead just ignore the file.
 
     Returns:
-        Dict[str, List[Path]]: Dictionary where the keys are class names (they might not be valid
+        dict[str, list[Path]]: Dictionary where the keys are class names (they might not be valid
             class names, so should be checked by callers) and the values are lists of files representing
             data for those classes.
     """
@@ -80,14 +78,14 @@ def get_input_data_files_from_dir(
 
 
 def get_excel_file_info(
-    file: Union[str, Path], schema: Union[SchemaView, str, Path] = None
-) -> Dict[str, List[Dict[str, str]]]:
+    file: str | Path, schema: SchemaView | str | Path = None
+) -> dict[str, list[dict[str, str]]]:
     """Get all the information for the sheets in the  specified Excel file. The information
     consists of the class name that the sheet belongs to.
 
     Args:
-        file (Union[str, Path]): The Excel file to get the information for.
-        schema (Union[SchemaView, str, Path], optional): The schema that the Excel file sheets
+        file (str | Path): The Excel file to get the information for.
+        schema (SchemaView | str | Path, optional): The schema that the Excel file sheets
             belong to. This is used to identify recognized classes. If a sheet name contains
             a recognized class then it is assumed to belong to that class. The longest matching
             sheet name is used. Sheets that do not belong to a class are ignored and not
@@ -96,7 +94,7 @@ def get_excel_file_info(
             Defaults to None.
 
     Returns:
-        Dict[str, List[Dict[str, str]]]: Dictionary of the form { class_name: [info, ...]}
+        dict[str, list[dict[str, str]]]: Dictionary of the form { class_name: [info, ...]}
             where each sheet that belongs to a recognized class has it's own info belonging
             to a specific class. The info is of the form
             { EXCEL_FILE_KEY: file, EXCEL_SHEET_KEY: "sheet_name" }
@@ -138,10 +136,10 @@ def get_excel_file_info(
 
 def get_file_info(
     file: Path,
-    schema: Optional[Union[SchemaView, str, Path]],
+    schema: SchemaView | str | Path | None,
     parse_class_prefix: bool = False,
     exception_on_error: bool = True,
-) -> Optional[Dict]:
+) -> dict | None:
     """Get the information for the specified file. The information is in the format
     { class_name: [info, ...] } where info is either the file path or a Dictionary of the
     form { EXCEL_FILE_KEY: file, EXCEL_SHEET_KEY: "sheet" }. For Excel files there
@@ -149,7 +147,7 @@ def get_file_info(
 
     Args:
         file (Path): The file to get the information for.
-        schema (Optional[Union[SchemaView, str, Path]]): Path to LinkML schema or the
+        schema (SchemaView | str | Path | None): Path to LinkML schema or the
             SchemaView that the file belongs to. If set then the class name for the file
             (based on the file name or the Excel sheet names) will be verified. If it
             is not a recognized class and exception_on_error is False then None is
@@ -169,7 +167,7 @@ def get_file_info(
             raising an exception. Defaults to True.
 
     Returns:
-        Optional[Dict]: A dictionary of the file information. The information is in the
+        dict | None: A dictionary of the file information. The information is in the
             format { class_name: [info, ...] } where info is either the file path or a
             Dictionary of the form { EXCEL_FILE_KEY: file, EXCEL_SHEET_KEY: "sheet" }.
             For Excel files there can be multiple info fields (one for each tab that
@@ -185,7 +183,6 @@ def get_file_info(
                 msg = f"{msg}."
             msg = f"{msg} Ignoring file: {file}"
             logger.warning(msg)
-        return None
 
     if schema is not None and not isinstance(schema, SchemaView):
         schema = SchemaView(schema)
@@ -239,7 +236,9 @@ def get_file_info(
             return _return_error("File does not exist", file)
         try:
             info = get_excel_file_info(file, schema=schema)
-        except Exception:
+        except Exception:  # noqa: BLE001
+            # A malformed or non-Excel .xlsx makes openpyxl/pandas raise a wide range of
+            # types (BadZipFile, KeyError, ValueError, ...); all mean "unusable file".
             return _return_error("Could not load Excel file", file)
         if not info:
             all_classes = all_classes_without_tree_root(schema)
@@ -254,26 +253,26 @@ def get_file_info(
 
 
 def get_input_data_files(
-    inputs: List[str],
-    schema: Optional[Union[SchemaView, str, Path]] = None,
-) -> Dict[str, List[Union[Path, Dict]]]:
+    inputs: list[str],
+    schema: SchemaView | str | Path | None = None,
+) -> dict[str, list[Path | dict]]:
     """Get all the files in the specified inputs, which consist of a list of either files and/or
     directories. For directories we extract all the files in the dictionary and add them to the
     returned value.
 
     Args:
-        inputs (List[str]): List of files and/or directories. For files they can optionally be
+        inputs (list[str]): List of files and/or directories. For files they can optionally be
             preceded by the class name that the file belongs to (eg. "WWMeasure:path/to/data.csv").
             If the class is not explicitly specified then the file name is searched for the class
             name. For Excel files the sheets are added to the returned value, where the info
             is of the form { class_name: [{EXCEL_FILE_KEY: file, EXCEL_SHEET_KEY: "sheet_name"}] }.
             The sheet names are used to determine the class name (if no class name is identified
             then the sheet is ignored).
-        schema (Optional[Union[SchemaView, str, Path]], optional): The schema that the inputs belong
+        schema (SchemaView | str | Path | None, optional): The schema that the inputs belong
             to. This schema lists all the recognized class names. Defaults to None.
 
     Returns:
-        Dict[str, List[Union[Path, Dict]]]: Dictionary for all the information for the inputs.
+        dict[str, list[Path | dict]]: Dictionary for all the information for the inputs.
             The keys are the class names, the values are lists of file paths and/or file dictionaries.
             File dictionaries are used to specify the file name and sheet name within an Excel file,
             in the format {EXCEL_FILE_KEY: file, EXCEL_SHEET_KEY: "sheet_name"}.

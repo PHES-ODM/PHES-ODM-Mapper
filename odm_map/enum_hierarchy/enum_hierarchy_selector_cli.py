@@ -1,9 +1,10 @@
-from typing import Annotated, List
-import typer
 from pathlib import Path
+from typing import Annotated
 
-from odm_map.utils.cli_utils import get_input_data_files
+import typer
+
 from odm_map.enum_hierarchy.enum_hierarchy_selector import EnumHierarchySelector
+from odm_map.utils.cli_utils import get_input_data_files
 
 app = typer.Typer(
     pretty_exceptions_show_locals=False,
@@ -36,13 +37,15 @@ classes and slots that are multi-valued enums are selected."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     schema: Annotated[Path, typer.Option(show_default=False, help=SCHEMA_HELP)],
     output_dir: Annotated[Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     output_fmt: Annotated[
         str, typer.Option(show_default=False, help=OUTPUT_FMT_HELP)
     ] = "{class_name}.csv",
-    config: Annotated[Path, typer.Option(show_default=False, help=CONFIG_HELP)] = None,
+    config: Annotated[
+        Path | None, typer.Option(show_default=False, help=CONFIG_HELP)
+    ] = None,
 ):
     data_files = get_input_data_files(inputs, schema=schema)
     selector = EnumHierarchySelector(schema, config=config)

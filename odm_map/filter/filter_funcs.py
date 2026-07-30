@@ -11,8 +11,8 @@ dictionary) and a class to apply the filter to (a DataFrame in `data`).
 
 Filtering functions can take the following keyword arguments:
 
-- filters (Dict[str, pd.Series]): All filters. Keys are the filter names and values are the boolean filters.
-- data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+- filters (dict[str, pd.Series]): All filters. Keys are the filter names and values are the boolean filters.
+- data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
 - input_name (str): The input filter name. We use this as the initial filter.
 - output_name (str): The output filter name to save the filter as.
 - cls (str): The class we are applying the filter to.
@@ -22,9 +22,10 @@ Filtering functions can take the following keyword arguments:
 All the arguments above are optional, to avoid errors each filtering function should also include the parameter **kwargs.
 """
 
-from typing import Dict, Any
-import pandas as pd
 from functools import reduce
+from typing import Any
+
+import pandas as pd
 
 from odm_map.utils.logger import get_logger
 
@@ -47,26 +48,26 @@ def call_filter_func(op: str, **kwargs):
     FILTER_FUNCS[op](**kwargs)
 
 
-def set_named_filter(filt: pd.Series, name: str, filters: Dict[str, pd.Series]):
+def set_named_filter(filt: pd.Series, name: str, filters: dict[str, pd.Series]):
     """Set the current filter for the specified filter name. The filter is a boolean series
     that specifies which rows are selected in the table.
 
     Args:
         filt (pd.Series): The filter.
-        name (int): The name to save the filter as.
-        filters (Dict[str, pd.Series]): The dictionary containing all filters (values) for all names (keys).
+        name (str): The name to save the filter as.
+        filters (dict[str, pd.Series]): The dictionary containing all filters (values) for all names (keys).
             The value for the name gets modified with filt.
     """
     filters[name] = filt
 
 
-def get_named_filter(name: str, filters: Dict[str, pd.Series]) -> pd.Series:
+def get_named_filter(name: str, filters: dict[str, pd.Series]) -> pd.Series:
     """Get the filter with the specified name. The filter must have been previously created, using the create_filter operation or as an
     outputFilter in the configuration file.
 
     Args:
         name (str): The name of the filter to get.
-        filters (Dict[str, pd.Series]): All the named filters. We retrieve the filter form this.
+        filters (dict[str, pd.Series]): All the named filters. We retrieve the filter form this.
 
     Returns:
         pd.Series: The current filter with the specified name.
@@ -79,8 +80,8 @@ def get_named_filter(name: str, filters: Dict[str, pd.Series]) -> pd.Series:
 
 
 def do_drop_duplicates(
-    filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
+    filters: dict[str, pd.Series],
+    data: dict[str, pd.DataFrame],
     input_name: str,
     output_name: str,
     cls: str,
@@ -92,8 +93,8 @@ def do_drop_duplicates(
     according to value.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         input_name (str): The input name. We use this as the initial filter.
         output_name (str): The output name. After ANDing with the input filter we save the resulting filter to this name.
         cls (str): The class to drop duplicates in.
@@ -118,8 +119,8 @@ def do_drop_duplicates(
 
 
 def do_exclude_equals(
-    filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
+    filters: dict[str, pd.Series],
+    data: dict[str, pd.DataFrame],
     input_name: str,
     output_name: str,
     cls: str,
@@ -130,8 +131,8 @@ def do_exclude_equals(
     """Exclude operation. Exclude any row where the slot is equal to the value.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         input_name (str): The input name. We use this as the initial filter.
         output_name (str): The output name. After ANDing with the input filter we save the resulting filter to this name.
         cls (str): The class to create the new filter based on.
@@ -167,8 +168,8 @@ def do_exclude_equals(
 
 
 def do_include_equals(
-    filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
+    filters: dict[str, pd.Series],
+    data: dict[str, pd.DataFrame],
     input_name: str,
     output_name: str,
     cls: str,
@@ -179,8 +180,8 @@ def do_include_equals(
     """Include operation. Include any row where the slot is equal to the value.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         input_name (str): The input name. We use this as the initial filter.
         output_name (str): The output name. After ORing with the input filter we save the resulting filter to this name.
         cls (str): The class to create the new filter based on.
@@ -214,21 +215,20 @@ def do_include_equals(
     set_named_filter(filt, output_name, filters)
 
 
-def do_delete_filter(filters: Dict[str, pd.Series], input_name: str, **kwargs):
+def do_delete_filter(filters: dict[str, pd.Series], input_name: str, **kwargs):
     """Delete the filter named input_name. After deleting, the filter will no longer exist
     but can be reacreated by a subsequent row that references the filter by the same name.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
         input_name (str): Name of the filter to delete.
     """
-    if input_name in filters:
-        del filters[input_name]
+    filters.pop(input_name, None)
 
 
 def do_apply_filter(
-    filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
+    filters: dict[str, pd.Series],
+    data: dict[str, pd.DataFrame],
     input_name: str,
     cls: str,
     value: Any,
@@ -239,8 +239,8 @@ def do_apply_filter(
     specified in value.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         input_name (str): The filter to apply to the input DataFrame.
         cls (str): The class to apply the filter to (in data)
         value (Any): The class to save the filtered DataFrame to (in data).
@@ -266,13 +266,13 @@ def do_apply_filter(
 
 
 def do_copy_filter(
-    filters: Dict[str, pd.Series], input_name: str, output_name: str, **kwargs
+    filters: dict[str, pd.Series], input_name: str, output_name: str, **kwargs
 ):
     """Copy a named filter (called input_name) to a new name (output_name). If input_name does not exist
     then a ValueError exception is thrown. If a filter with name output_name already exists it is overwritten.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
         input_name (str): The filter to copy. A filter with this name must already exist.
         output_name (str): The name to copy the filter to. If a filter with this name already exists it is overwritten.
 
@@ -285,22 +285,21 @@ def do_copy_filter(
     set_named_filter(filt, output_name, filters)
 
 
-def do_delete_class(data: Dict[str, pd.DataFrame], cls: str, **kwargs):
+def do_delete_class(data: dict[str, pd.DataFrame], cls: str, **kwargs):
     """Delete the class (DataFrame) named cls.
 
     Args:
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         cls (str): The class to delete from the data. If no such class exists then nothing is changed.
     """
-    if cls in data:
-        del data[cls]
+    data.pop(cls, None)
 
 
-def do_copy_class(data: Dict[str, pd.DataFrame], cls: str, value: str, **kwargs):
+def do_copy_class(data: dict[str, pd.DataFrame], cls: str, value: str, **kwargs):
     """Copy a class (DataFrame) to a new name in the data.
 
     Args:
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         cls (str): The class to copy.
         value (str): The name to copy the class to. If a DataFrame/class already exists with this name
             it is overwritten.
@@ -309,7 +308,7 @@ def do_copy_class(data: Dict[str, pd.DataFrame], cls: str, value: str, **kwargs)
 
 
 def do_invert_filter(
-    filters: Dict[str, pd.Series],
+    filters: dict[str, pd.Series],
     input_name: str,
     output_name: str,
     **kwargs,
@@ -317,8 +316,8 @@ def do_invert_filter(
     """Negate/invert a filter.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         input_name (str): The input filter to invert.
         output_name (str): The filter name to save the inverted filter to.
         cls (str): The class the filter applies to.
@@ -328,7 +327,7 @@ def do_invert_filter(
 
 
 def do_or_filters(
-    filters: Dict[str, pd.Series],
+    filters: dict[str, pd.Series],
     output_name: str,
     value: Any,
     **kwargs,
@@ -336,8 +335,8 @@ def do_or_filters(
     """OR all the filters in the value array and save to the output_name.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         output_name (str): The name to save the OR'd filter to.
         value (Any): Array of all filter names to OR together.
         cls (str): The class the filter applies to.
@@ -352,7 +351,7 @@ def do_or_filters(
 
 
 def do_and_filters(
-    filters: Dict[str, pd.Series],
+    filters: dict[str, pd.Series],
     output_name: str,
     value: Any,
     **kwargs,
@@ -360,8 +359,8 @@ def do_and_filters(
     """AND all the filters in the value array and save to the output_name.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         output_name (str): The name to save the AND'd filter to.
         value (Any): Array of all filter names to AND together.
         cls (str): The class the filter applies to.
@@ -376,8 +375,8 @@ def do_and_filters(
 
 
 def do_create_filter(
-    filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
+    filters: dict[str, pd.Series],
+    data: dict[str, pd.DataFrame],
     output_name: str,
     cls: str,
     value: Any,
@@ -387,23 +386,25 @@ def do_create_filter(
     are initially included. A boolean value of False means that none of the rows are initially included.
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         output_name (str): The name to give the filter.
         cls (str): The class the filter applies to.
         value (Any): Either True or False. If True then the new filter will include all rows, if False then the
             new filter will include none of the rows.
     """
     if not isinstance(value, bool):
-        raise ValueError(
+        # ValueError, not TypeError: this validates a value read from the filter config
+        # file, and every other config validation error in the package is a ValueError.
+        raise ValueError(  # noqa: TRY004
             f"value must be a boolean for the create_filter operation. Found '{value}' (of type {type(value)})"
         )
     filters[output_name] = pd.Series(value, index=data[cls].index)
 
 
 def do_requires_any(
-    filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
+    filters: dict[str, pd.Series],
+    data: dict[str, pd.DataFrame],
     input_name: str,
     output_name: str,
     cls: str,
@@ -413,8 +414,8 @@ def do_requires_any(
     """Include rows where at least one of the slots in value is set (value is either a single slot or an array of slots)
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         input_name (str): The input name. We use this as the initial filter.
         output_name (str): The name to give the new filter.
         cls (str): The class the filter applies to.
@@ -447,8 +448,8 @@ def do_requires_any(
 
 
 def do_requires_all(
-    filters: Dict[str, pd.Series],
-    data: Dict[str, pd.DataFrame],
+    filters: dict[str, pd.Series],
+    data: dict[str, pd.DataFrame],
     input_name: str,
     output_name: str,
     cls: str,
@@ -458,8 +459,8 @@ def do_requires_all(
     """Include rows where at all of the slots in value is set (value is either a single slot or an array of slots)
 
     Args:
-        filters (Dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
-        data (Dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
+        filters (dict[str, pd.Series]): All filters. Keys are the names and values are the boolean filters.
+        data (dict[str, pd.DataFrame]): The data. Keys are the classes and values are the DataFrames.
         input_name (str): The input name. We use this as the initial filter.
         output_name (str): The name to give the new filter.
         cls (str): The class the filter applies to.

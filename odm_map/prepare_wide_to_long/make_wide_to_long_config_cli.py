@@ -1,13 +1,14 @@
-from typing import Annotated, Union
-import typer
-from pathlib import Path
-import yaml
-import pandas as pd
 import os
+from pathlib import Path
+from typing import Annotated
 
+import pandas as pd
+import typer
+import yaml
+
+from odm_map.prepare_wide_to_long.wide_column_utils import ConfigKeys
 from odm_map.utils.general_utils import read_data_frame
 from odm_map.utils.logger import get_logger
-from odm_map.prepare_wide_to_long.wide_column_utils import ConfigKeys
 
 MAIN_HELP = """Generate the configuration file needed for the
 WideColumnExpander to run for ODM wide tables."""
@@ -30,9 +31,7 @@ app = typer.Typer(
 
 
 class MakeWideToLongConfig:
-    def __init__(
-        self, data_dictionary: Union[str, Path], config_template: Union[str, Path]
-    ):
+    def __init__(self, data_dictionary: str | Path, config_template: str | Path):
         self.df = read_data_frame(
             data_dictionary,
             sheet_name="parts",
@@ -46,7 +45,7 @@ class MakeWideToLongConfig:
         else:
             self.config_template = {}
 
-    def make(self, output_file: Union[str, Path]):
+    def make(self, output_file: str | Path):
         self.config = {}
         self.config.update(self.config_template)
 

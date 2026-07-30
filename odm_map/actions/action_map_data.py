@@ -1,33 +1,33 @@
-from typing import Dict, List, Union, Optional
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 from odm_map.mapper.map_data import DataMapper
 
 
 def action_map_data(
-    source_schema_file: Union[str, Path],
-    target_schema_file: Union[str, Path],
-    mappers_dir: Union[str, Path],
-    data_frames: Dict[str, List[pd.DataFrame]],
-    max_processes: Optional[int] = 1,
+    source_schema_file: str | Path,
+    target_schema_file: str | Path,
+    mappers_dir: str | Path,
+    data_frames: dict[str, list[pd.DataFrame]],
+    max_processes: int | None = 1,
     prepare_barid: str = "Preparing Data",
     map_barid: str = "Mapping",
     convert_barid: str = "Processing Data",
     keep_extra_columns: bool = True,
     keep_tracking_columns: bool = True,
     unrestricted_eval: bool = True,
-) -> Dict[str, List[pd.DataFrame]]:
+) -> dict[str, list[pd.DataFrame]]:
     """Map all the data specified in data_frames using all mapper files found in the specified mapper directory.
 
     Args:
-        source_schema_file (Union[str, Path]): The LinkML schema for the source database.
-        target_schema_file (Union[str, Path]): The LinkML schema for the target database.
-        mappers_dir (Union[str, Path]): The directory containing all LinkML Mapper configuration (YAML)
+        source_schema_file (str | Path): The LinkML schema for the source database.
+        target_schema_file (str | Path): The LinkML schema for the target database.
+        mappers_dir (str | Path): The directory containing all LinkML Mapper configuration (YAML)
             files. All config files will be used for mapping all the loaded data.
-        data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of source DataFrames to map. The keys are the
+        data_frames (dict[str, list[pd.DataFrame]]): Dictionary of source DataFrames to map. The keys are the
             source class names and the values are lists of DataFrames belonging to the class, which should each be mapped.
-        max_processes (Optional[int], optional): Maximum number of processes to use for multi-processing.
+        max_processes (int | None, optional): Maximum number of processes to use for multi-processing.
             If 1 then no multi-processing will be performed. If None or 0 then the maximum number
             (as obtained by cpu_count()) will be used. Note that for mapping small tables multi-processing
             might be slower. Defaults to 1.
@@ -47,7 +47,7 @@ def action_map_data(
             dropped. Defaults to True.
 
     Returns:
-        Dict[str, List[pd.DataFrame]]: Keys are the target class names and the values are the mapped data for
+        dict[str, list[pd.DataFrame]]: Keys are the target class names and the values are the mapped data for
             that class.
     """
     mapper = DataMapper()

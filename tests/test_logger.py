@@ -3,12 +3,11 @@
 import logging
 
 from odm_map.utils.logger import (
-    MultiFormatter,
     DEFAULT_LEVEL,
+    MultiFormatter,
     get_logger,
     make_logger_bullet_list,
 )
-
 
 # ---------------------------------------------------------------------------
 # MultiFormatter

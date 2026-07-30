@@ -2,17 +2,20 @@
 General utility functions.
 """
 
+import contextlib
+import inspect
+import json
 import os
+import re
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
+
 import pandas as pd
 import yaml
-import json
-import inspect
-from typing import Union, List, Optional, Any, Dict, Callable
-import re
 
-from odm_map.utils.logger import get_logger
 from odm_map.utils.clean_exit_error import CleanExitError
+from odm_map.utils.logger import get_logger
 
 EMPTY_PERMISSIBLE_VALUE = "<empty>"
 
@@ -30,12 +33,12 @@ EXCEL_SHEET_KEY = "sheet"
 logger = get_logger(__name__)
 
 
-def order_columns(df: pd.DataFrame, column_order: List[str]) -> pd.DataFrame:
+def order_columns(df: pd.DataFrame, column_order: list[str]) -> pd.DataFrame:
     """Order the columns in a DataFrame.
 
     Args:
         df (pd.DataFrame): The DataFrame to order the columns of.
-        column_order (List[str]): The order of the columns. Any column in df not found in this
+        column_order (list[str]): The order of the columns. Any column in df not found in this
             list are put at the end.
 
     Returns:
@@ -46,13 +49,13 @@ def order_columns(df: pd.DataFrame, column_order: List[str]) -> pd.DataFrame:
 
 
 def save_data_frame(
-    df: pd.DataFrame, output_file: Union[str, Path], strip: bool = True, **kwargs
+    df: pd.DataFrame, output_file: str | Path, strip: bool = True, **kwargs
 ):
     """Save a Pandas DataFrame to disk as a TSV, CSV, or YAML file.
 
     Args:
         df (pd.DataFrame): The DataFrame to save.
-        output_file (Union[str, Path]): The output file to save to. Can have extension ".csv", ".tsv",
+        output_file (str | Path): The output file to save to. Can have extension ".csv", ".tsv",
             ".txt", ".yaml", or ".yml". If the extension is ".tsv" or ".txt" then tab delimeters are used.
         strip (bool): If True then strip leading and trailing whitespace from all string values
             in the DataFrame. (Defaults to True)
@@ -76,12 +79,12 @@ def save_data_frame(
 
 
 def read_data_frame(
-    file: Union[str, Dict[str, str]], **kwargs
-) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
+    file: str | dict[str, str], **kwargs
+) -> pd.DataFrame | dict[str, pd.DataFrame]:
     """Read a Pandas DataFrom from disk.
 
     Args:
-        file (Union[str, Dict[str, str]]): The file to read. Supports loading files with any of the extensions in
+        file (str | dict[str, str]): The file to read. Supports loading files with any of the extensions in
             RECOGNIZED_EXTENSIONS. If an Excel file then the first sheet is loaded if "sheet_name" is not found in
             kwargs. If "sheet_name" is found in kwargs then it is passed to pd.read_excel to that sheet (or
             multiple sheets). Alternatively, if file is a Dictionary, then the sheet name can be specified there,
@@ -94,11 +97,11 @@ def read_data_frame(
             DataFrame (eg. the additional arguments to pd.read_csv or pd.read_excel).
 
     Returns:
-        Union[pd.DataFrame, Dict[str, pd.DataFrame]]: The DataFrame loaded from the file, or if multiple DataFrames
+        pd.DataFrame | dict[str, pd.DataFrame]: The DataFrame loaded from the file, or if multiple DataFrames
             were loaded (from sheet_name or EXCEL_SHEET_KEY being a list of sheet names) then a dictionary where the
             keys are the sheet name and the values are the DataFrame for that sheet.
     """
-    if isinstance(file, Dict):
+    if isinstance(file, dict):
         sheet_name = file[EXCEL_SHEET_KEY]
         file = file[EXCEL_FILE_KEY]
     else:
@@ -136,18 +139,20 @@ def strip_whitespace(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clear_dirs(
-    dirs: Union[Union[str, Path], List[Union[str, Path]]],
-    extensions: Union[str, List[str]] = [".tsv", ".csv", ".yaml", ".yml"],
+    dirs: str | Path | list[str | Path],
+    extensions: str | list[str] | None = None,
 ):
     """Remove all TSV, CSV, and YAML files in all the specified directories.
 
     Args:
-        dirs (Union[Union[str, Path], List[Union[str, Path]]]): One or more directories to clean.
-        extensions (Union[str, List[str]]): One or more extensions. All files with these
+        dirs (str | Path | list[str | Path]): One or more directories to clean.
+        extensions (str | list[str] | None): One or more extensions. All files with these
             extensions found in the directories are deleted. These are case-insensitive and
             should be prefixed by a dot.
             (Defaults to [".tsv", ".csv", ".yaml", ".yml"])
     """
+    if extensions is None:
+        extensions = [".tsv", ".csv", ".yaml", ".yml"]
     if isinstance(extensions, str):
         extensions = [extensions]
     extensions = [e.lower() for e in extensions]
@@ -164,22 +169,22 @@ def clear_dirs(
 
 def choose_ignore_case_value(
     val: str,
-    allowable_values: List[str],
-    lowercase_allowable_values: Optional[List[str]] = None,
-    return_same_if_missing: Optional[bool] = True,
+    allowable_values: list[str],
+    lowercase_allowable_values: list[str] | None = None,
+    return_same_if_missing: bool | None = True,
 ) -> str:
     """Convert a value to match the capitalization of the same value in allowable_values.
 
     Args:
         val (str): The value to change the capitalization of.
-        allowable_values (List[str]): A list of all allowable values that val may take on. If val matches
+        allowable_values (list[str]): A list of all allowable values that val may take on. If val matches
             any of these values (ignoring case), then we use the matching value in allowable_values.
-        lowercase_allowable_values (Optional[List[str]], optional): All values in allowable_values but in
+        lowercase_allowable_values (list[str] | None, optional): All values in allowable_values but in
             lowercase. This is optional, if not specified then we will calculate this ourselves. Specifying
             this is simply to improve performance, so if this function is called many times we can calculate
             lowercase_allowable_values once outside of this function then pass it in for each call.
             Defaults to None.
-        return_same_if_missing (Optional[bool], optional): If True and val is not found in
+        return_same_if_missing (bool | None, optional): If True and val is not found in
             allowable_values (ignoring case)/lowercase_allowable_values then val is returned unchanged. If
             False and val is not found the None is returned. Defaults to True.
 
@@ -265,26 +270,26 @@ def parse_numeric(value: str) -> Any:
     return value
 
 
-def select_func_kwargs(func: Callable, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+def select_func_kwargs(func: Callable, kwargs: dict[str, Any]) -> dict[str, Any]:
     """Only select the keyword arguments in the dictionary that are acceptable arguments
     for the function.
 
     Args:
         func (Callable): The function to get the keyword arguments for.
-        kwargs (Dict[str, Any]): The keyword arguments to select from.
+        kwargs (dict[str, Any]): The keyword arguments to select from.
 
     Returns:
-        Dict[str, Any]: A dictionary which is a copy of kwargs where only the keys that
+        dict[str, Any]: A dictionary which is a copy of kwargs where only the keys that
             exist as arguments to the function func are present.
     """
     args, _, _, _, kwonlyargs, *_ = inspect.getfullargspec(func)
     all_args = list(dict.fromkeys(list(args) + list(kwonlyargs)))
-    existing_keywords = [k for k in all_args if k in kwargs.keys()]
+    existing_keywords = [k for k in all_args if k in kwargs]
     kwargs = {k: kwargs[k] for k in existing_keywords}
     return kwargs
 
 
-def get_unique_output_file(file: Union[str, Path]) -> Path:
+def get_unique_output_file(file: str | Path) -> Path:
     """Get an output file name, in the same directory as the specified file and with a similar file name,
     that does not already exist on disk.
 
@@ -292,7 +297,7 @@ def get_unique_output_file(file: Union[str, Path]) -> Path:
     is a number that makes the file name unique (ie. it doesn't exist on disk).
 
     Args:
-        file (Union[str, Path]): The full path and filename to base the returned output file on.
+        file (str | Path): The full path and filename to base the returned output file on.
 
     Returns:
         Path: A full path and filename, in the same directory as file, but with a filename that is guaranteed to not
@@ -307,17 +312,17 @@ def get_unique_output_file(file: Union[str, Path]) -> Path:
 
 
 def merge_dicts_of_lists(
-    dicts: List[Dict[Any, List]],
-) -> Dict[Any, List[Any]]:
+    dicts: list[dict[Any, list]],
+) -> dict[Any, list[Any]]:
     """Combine multiple Dictionaries where the values are lists. When multiple dictionaries
     have the same keys, their lists are combined.
 
     Args:
-        dicts (List[Dict[Any, List]]): List of all dictionaries to merge. If multiple dictionaries
+        dicts (list[dict[Any, list]]): List of all dictionaries to merge. If multiple dictionaries
             have the same key, then the lists for those keys are combined to include all values.
 
     Returns:
-        Dict[Any, List[Any]]: Dictionary where the keys are the keys found in the source dicitionaries
+        dict[Any, list[Any]]: Dictionary where the keys are the keys found in the source dicitionaries
             and the values are lists containing all values found in the source dictionary.
     """
     d = {}
@@ -332,29 +337,29 @@ def merge_dicts_of_lists(
 
 
 def save_data_frames_for_classes(
-    data_frames: Dict[str, List[pd.DataFrame]],
-    output_dir: Union[str, Path],
+    data_frames: dict[str, list[pd.DataFrame]],
+    output_dir: str | Path,
     file_name_format="{class_name}.csv",
-    save_to_data_files: Optional[Dict[str, List[Union[str, Path]]]] = None,
-) -> Dict[str, List[Path]]:
+    save_to_data_files: dict[str, list[str | Path]] | None = None,
+) -> dict[str, list[Path]]:
     """Save the DataFrames to disk, combining the DataFrames for each class into one
     DataFrame per class.
 
     Args:
-        data_frames (Dict[str, List[pd.DataFrame]]): The dictionary of DataFrames to save to disk.
+        data_frames (dict[str, list[pd.DataFrame]]): The dictionary of DataFrames to save to disk.
             The keys are the class names and the values are lists of DataFrames for the class. The lists
             are merged into a single DataFrame then saved to disk.
-        output_dir (Union[str, Path]): The directory to save the data to.
+        output_dir (str | Path): The directory to save the data to.
         file_name_format (str, optional): The file name to use for saving to disk. Can include the
             {class_name} string interpolation value to include the class name in the file name. Defaults
             to "{class_name}.csv".
-        save_to_data_files (Optional[Dict[str, List[Union[str, Path]]]], optional): If set, then this
+        save_to_data_files (dict[str, list[str | Path]] | None, optional): If set, then this
             dictionary receives the paths of the saved files. The keys are the class names and the values
             are lists of file names. This function will only add one file name per class to the
             list. Defaults to None.
 
     Returns:
-        Dict[str, List[Path]]: The list of files saved to disk. The keys are the class names and
+        dict[str, list[Path]]: The list of files saved to disk. The keys are the class names and
             the values are lists of paths to saved files. If save_to_data_files was set then the files
             are added to save_to_data_files and returned.
     """
@@ -382,26 +387,26 @@ def save_data_frames_for_classes(
 
 
 def load_data_frames_for_classes(
-    data_files: Optional[Dict[str, List[Union[str, Path, Dict]]]],
-    save_to_data_frames: Optional[Dict[str, List[pd.DataFrame]]] = None,
-    max_rows: Optional[int] = None,
-) -> Dict[str, List[pd.DataFrame]]:
+    data_files: dict[str, list[str | Path | dict]] | None,
+    save_to_data_frames: dict[str, list[pd.DataFrame]] | None = None,
+    max_rows: int | None = None,
+) -> dict[str, list[pd.DataFrame]]:
     """Load lists of data files associated with various classes.
 
     The returned dictionary contains the class names (the keys of the dictionary) and the list of DataFrames for that class
     (the values of the dictionary).
 
     Args:
-        data_files (Optional[Dict[str, List[Union[str, Path, Dict]]]]): List of data files to load. The keys are the class
+        data_files (dict[str, list[str | Path | dict]] | None): List of data files to load. The keys are the class
             names for the data files, and the values are lists of files to load for that class.
-        save_to_data_frames (Optional[Dict[str, List[pd.DataFrame]]], optional): If set, then add the loaded DataFrames to
+        save_to_data_frames (dict[str, list[pd.DataFrame]] | None, optional): If set, then add the loaded DataFrames to
             this dictionary, where the keys are the class names and the values are lists of DataFrames for the class. Each
             DataFrame loaded from data_files gets appended to the end of the list for the class. Defaults to None.
-        max_rows (Optional[int], optional): Maximum number of rows to load from each data file. If 0 or None then all rows
+        max_rows (int | None, optional): Maximum number of rows to load from each data file. If 0 or None then all rows
             are loaded. Defaults to None.
 
     Returns:
-        Dict[str, List[pd.DataFrame]]: Dictionary of loaded DataFrames, where the keys are the class names and the values
+        dict[str, list[pd.DataFrame]]: Dictionary of loaded DataFrames, where the keys are the class names and the values
             are the DataFrames for that class. If save_to_data_frames was specified, then save_to_data_frames gets modified
             by appending the newly loaded DataFrames from data_files, and save_to_data_frames is also returned.
     """
@@ -425,7 +430,7 @@ def load_data_frames_for_classes(
     return save_to_data_frames
 
 
-def make_multivalued(v: Any) -> List[Any]:
+def make_multivalued(v: Any) -> list[Any]:
     """Make a string (typically from a DataFrame) multivalued. This means converting it to a list of values.
 
     We try to load the value as as JSON or YAML. If that doesn't work we split on the character "," or ";".
@@ -434,21 +439,17 @@ def make_multivalued(v: Any) -> List[Any]:
         v (Any): The value to convert to multivalued.
 
     Returns:
-        List[Any]: The multivalued version of v. If v is a single value then it will be an array of size 1.
+        list[Any]: The multivalued version of v. If v is a single value then it will be an array of size 1.
     """
     if isinstance(v, str):
-        try:
+        with contextlib.suppress(json.JSONDecodeError):
             vs = json.loads(v)
             if isinstance(vs, list):
                 return vs
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(yaml.YAMLError):
             vs = yaml.safe_load(v)
             if isinstance(vs, list):
                 return vs
-        except Exception:
-            pass
 
         # @TODO: This doesn't properly deal with commas and semi-colons nested within
         # quotes, which we would typically not want to split on. This is how LinkML does it,

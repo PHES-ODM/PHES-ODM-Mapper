@@ -2,31 +2,29 @@
 Utility functions for LinkML schemas.
 """
 
-from typing import Dict, List, Union, Optional
 from dataclasses import asdict
 from pathlib import Path
-import numpy as np
 
+import numpy as np
 from linkml_runtime import SchemaView
 from linkml_runtime.linkml_model import SlotDefinition
 
-from odm_map.utils.logger import make_logger_bullet_list
 from odm_map.utils.general_utils import (
     choose_ignore_case_value,
 )
-from odm_map.utils.logger import get_logger
+from odm_map.utils.logger import get_logger, make_logger_bullet_list
 
 logger = get_logger(__name__)
 
 
-def all_primary_keys(schema: SchemaView) -> Dict[str, str]:
+def all_primary_keys(schema: SchemaView) -> dict[str, str]:
     """Get a dictionary containing the primary key for all non-treeroot classes in the schema.
 
     Args:
         schema (SchemaView): The schema that we want the primary keys of.
 
     Returns:
-        Dict[str, str]: A dictionary where the keys are the class names and the values are the
+        dict[str, str]: A dictionary where the keys are the class names and the values are the
             single primary key of the class.
     """
     all_classes = all_classes_without_tree_root(schema)
@@ -74,7 +72,7 @@ def get_primary_key(class_name: str, schema: SchemaView) -> str:
     return class_primary_keys[0]
 
 
-def all_classes_without_tree_root(schema: SchemaView) -> List[str]:
+def all_classes_without_tree_root(schema: SchemaView) -> list[str]:
     """Get a list of all classes in the schema, excluding the tree root class that contains
     all the classes.
 
@@ -82,7 +80,7 @@ def all_classes_without_tree_root(schema: SchemaView) -> List[str]:
         schema (SchemaView): The Schema to get the classes of.
 
     Returns:
-        List[str]: List of all classes belonging to the schema, excluding the tree root class.
+        list[str]: List of all classes belonging to the schema, excluding the tree root class.
     """
     classes = [str(c) for c, defn in schema.all_classes().items() if not defn.tree_root]
     return classes
@@ -90,7 +88,7 @@ def all_classes_without_tree_root(schema: SchemaView) -> List[str]:
 
 def get_slot_definition(
     cls: str, slot: str, schema: SchemaView, exception_on_error: bool = True
-) -> Dict:
+) -> dict:
     """Get the full definition for the slot. This includes fields that are attributes of the class.
     If a slot is modified with a slot_usage, then we also update the returned dictionary with the
     slot usage information.
@@ -103,7 +101,7 @@ def get_slot_definition(
             return None if the slot does not exist.
 
     Returns:
-        Dict: The dictionary with all information about the slot (eg. the name, range, pattern, etc).
+        dict: The dictionary with all information about the slot (eg. the name, range, pattern, etc).
             If the slot is not a member of the class then None is returned.
     """
     if exception_on_error:
@@ -111,27 +109,30 @@ def get_slot_definition(
     else:
         try:
             return asdict(schema.induced_slot(slot, cls))
-        except Exception:
+        except Exception:  # noqa: BLE001
+            # induced_slot is a third-party (LinkML) call whose exception type for a
+            # missing slot varies by version. exception_on_error=False promises None
+            # for any failure, so guard broadly.
             return None
 
 
 def get_ranges_of_slot(
     class_name: str,
-    slot_name: Union[str, List[str]],
+    slot_name: str | list[str],
     schema: SchemaView,
     exception_on_error: bool = True,
-) -> List[str]:
+) -> list[str]:
     """Get the range(s) (if any) of the slot(s) in the specified class.
 
     Args:
         cls (str): The class that the slot belongs to.
-        slot (Union[str, List[str]]): The slot(s) to get the range(s) for.
+        slot (str | list[str]): The slot(s) to get the range(s) for.
         schema (SchemaView): The Schema to retrieve the slot info from.
         exception_on_error (bool): If True then raise an exception if the a slot does not exist. If False then
             an empty range is retrieved for slots that do not exist.
 
     Returns:
-        List[str]: A list of range(s) for the specified slots, if at least one range exists. If
+        list[str]: A list of range(s) for the specified slots, if at least one range exists. If
             no range is found (eg. the class or slot are invalid) then an empty list is returned.
     """
     if isinstance(slot_name, str):
@@ -152,18 +153,18 @@ def get_ranges_of_slot(
 
 
 def get_ranges_of_slot_defn(
-    slot_defn: Union[Dict, SlotDefinition, List[SlotDefinition]],
-) -> List[str]:
+    slot_defn: dict | SlotDefinition | list[SlotDefinition],
+) -> list[str]:
     """Get the range(s) (if any) of the slot definition(s).
 
     Args:
-        slot_defn (Union[Dict, SlotDefinition, List[SlotDefinition]]): The SlotDefinition(s) to get the ranges of.
+        slot_defn (dict | SlotDefinition | list[SlotDefinition]): The SlotDefinition(s) to get the ranges of.
 
     Returns:
-        List[str]: A list of range(s) for the specified slot(s), if at least one range exists. If
+        list[str]: A list of range(s) for the specified slot(s), if at least one range exists. If
             no range is found then an empty list is returned.
     """
-    if isinstance(slot_defn, (SlotDefinition, Dict)):
+    if isinstance(slot_defn, (SlotDefinition, dict)):
         slot_defn = [slot_defn]
     ranges = []
     for cur_defn in slot_defn:
@@ -196,30 +197,30 @@ def get_ranges_of_slot_defn(
 
 
 def validate_columns_with_schema(
-    columns: List[str],
-    schema: Union[SchemaView, str, Path],
+    columns: list[str],
+    schema: SchemaView | str | Path,
     class_name: str,
-    file: Union[str, Path],
+    file: str | Path,
     show_log: bool = True,
-) -> List[str]:
+) -> list[str]:
     """Check for missing or unrecognized columns in the DataFrame. If missing or unrecognized
     columns are found then they are returned to the caller as a list of logging messages, so that
     the results can be reported to the user. No exception or other error occurs. It is for
     informational purposes.
 
     Args:
-        columns (List[str]): The list of columns to validate (usually from a DataFrame).
-        schema (Union[SchemaView, str, Path]): The SchemaView that defines the class
+        columns (list[str]): The list of columns to validate (usually from a DataFrame).
+        schema (SchemaView | str | Path): The SchemaView that defines the class
             that the DataFrame belongs to. It will provide all known columns for the class.
         class_name (str): The class (in the schema) that df belongs to.
-        file (Union[str, Path]): The file that the DataFrame was loaded from. This is so
+        file (str | Path): The file that the DataFrame was loaded from. This is so
             we can tell the user which file has missing or unrecognized columns.
         show_log (bool): If True then output logger information that shows which columns
             were missing and which columns were unrecognized. If False then do not output
             the log, but instead return a list of strings representing the log.
 
     Returns:
-        List[str]: A list of messages that say which columns in the DataFrame are missing
+        list[str]: A list of messages that say which columns in the DataFrame are missing
             or unrecognized. If there are no missing or unrecognized columns then
             this is empty ([]).
     """
@@ -308,8 +309,8 @@ def remove_ignored_text_from_class_name(class_name: str) -> str:
 
 
 def find_class(
-    class_name: str, schema: Optional[SchemaView], ignore_case: bool
-) -> Optional[str]:
+    class_name: str, schema: SchemaView | None, ignore_case: bool
+) -> str | None:
     """Figure out which class the class_name string should belong to, making the search
     fairly flexible. We will typically search for a recognized class name in the string,
     so for example "1 - WWMeasure (2024-11-30)" would map to the class "WWMeasure".
@@ -331,13 +332,13 @@ def find_class(
     Args:
         class_name (str): The string to search for the class name. Any text after the
             first opening square or round bracket in class_name is ignored.
-        schema (Optional[SchemaView], optional): The schema containing all the recognized
+        schema (SchemaView | None, optional): The schema containing all the recognized
             classes. Can be None.
         ignore_case (bool): If True then make the search case-insensitive, otherwise
             make it case-sensitive.
 
     Returns:
-        Optional[str]: The class that the string should represent, or None if no
+        str | None: The class that the string should represent, or None if no
             class was found.
     """
     class_name = remove_ignored_text_from_class_name(class_name)
@@ -362,8 +363,8 @@ def find_class(
 
 
 def get_class(
-    class_name: str, schema: Optional[SchemaView], ignore_case: bool
-) -> Optional[str]:
+    class_name: str, schema: SchemaView | None, ignore_case: bool
+) -> str | None:
     """Get the recognized class name based on the string class_name (optionally case-
     sensitive or case-insensitive), or None if the class name does not exist.
 
@@ -376,7 +377,7 @@ def get_class(
     Args:
         class_name (str): The string to get the class name for. Any text after the
             first opening square or round bracket in class_name is ignored.
-        schema (Optional[SchemaView], optional): The schema that contains all the
+        schema (SchemaView | None, optional): The schema that contains all the
             recognized classes. If None then we simply return the cleaned class_name
             (since we need schema to know which class names are valid)
         ignore_case (bool): If True then make class_name case-insensitive, but return
@@ -385,7 +386,7 @@ def get_class(
             capitalization.
 
     Returns:
-        Optional[str]: The recognized class name, or None if class_name is not
+        str | None: The recognized class name, or None if class_name is not
             a recognized class name in the schema. If schema is None, then we
             clean class_name (remove text after the first opening round or
             square bracket) and return the value without checking if it is

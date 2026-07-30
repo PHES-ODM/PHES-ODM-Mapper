@@ -1,17 +1,16 @@
 import os
-import stat
-from typing import List, Union, Dict, Optional
-from pathlib import Path
-import yaml
-from enum import Enum
 import re
+import stat
 import tempfile
 import zipfile
+from enum import Enum
+from pathlib import Path
 
+import yaml
 from linkml_runtime import SchemaView
 
-from odm_map.utils.logger import get_logger, make_logger_bullet_list
 from odm_map.utils.clean_exit_error import CleanExitError
+from odm_map.utils.logger import get_logger, make_logger_bullet_list
 
 MODULE_DIR = Path(os.path.dirname(__file__)) / ".." / "data" / "modules"
 CONFIG_FILE = "config.yaml"
@@ -42,7 +41,7 @@ TEMP_DIR_TAG = "{temp}"
 # Also available below: ModulesEnum for all available installed modules (based on get_all_modules(include_titles=False))
 
 
-def get_all_modules(include_titles: bool = False) -> List[str]:
+def get_all_modules(include_titles: bool = False) -> list[str]:
     """Get a list of builtin all modules available in the modules directory.
 
     Args:
@@ -50,7 +49,7 @@ def get_all_modules(include_titles: bool = False) -> List[str]:
             of all modules in the list of modules.
 
     Returns:
-        List[str]: List of all available modules.
+        list[str]: List of all available modules.
     """
     try:
         modules = [
@@ -80,7 +79,10 @@ def get_all_modules(include_titles: bool = False) -> List[str]:
             modules = with_titles
 
         return modules
-    except Exception:
+    except Exception:  # noqa: BLE001
+        # Module discovery runs at import time to build the --module choices, so any
+        # failure (unreadable directory, malformed config YAML) must degrade to an
+        # empty list rather than prevent the CLI from starting.
         return []
 
 
@@ -94,9 +96,9 @@ _all_modules = {
 ModulesEnum = Enum("ModulesEnum", _all_modules)
 
 
-class PipelineModule(object):
-    def __init__(self, module: Optional[str], module_path: Optional[Union[str, Path]]):
-        self._config: Dict = None
+class PipelineModule:
+    def __init__(self, module: str | None, module_path: str | Path | None):
+        self._config: dict = None
         self.source_schema: SchemaView = None
         # A name for the module. For informational purposes
         self.module_name = None
@@ -165,11 +167,11 @@ class PipelineModule(object):
     def __del__(self):
         self.cleanup()
 
-    def extract_module(self, module_path: Union[str, Path]):
+    def extract_module(self, module_path: str | Path):
         """Extract the zip module at the specified path to a temporary directory.
 
         Args:
-            module_path (Union[str, Path]): The path to the module, which must be a zip file.
+            module_path (str | Path): The path to the module, which must be a zip file.
                 The zip file should contain files and a directory structure like any regular
                 directory module.
         """
@@ -206,11 +208,11 @@ class PipelineModule(object):
 
         self.module_name = os.path.basename(module_path)
 
-    def get_source_schema(self) -> Optional[Path]:
+    def get_source_schema(self) -> Path | None:
         """Get the path of the source schema specified in the configuration file for the module.
 
         Returns:
-            Optional[Path]: The path to the source schema of the module.
+            Path | None: The path to the source schema of the module.
         """
         source_schema = self.config.get(MODULE_SOURCE_SCHEMA_KEY)
         return self.get_module_path(source_schema) if source_schema else None
@@ -226,14 +228,14 @@ class PipelineModule(object):
         return self.source_schema
 
     @property
-    def config(self) -> Dict:
+    def config(self) -> dict:
         """Get the main config file for the module.
 
         Raises:
             CleanExitError: The module config file does not exist.
 
         Returns:
-            Dict: The configuration of the module.
+            dict: The configuration of the module.
         """
         if self._config is None:
             config_file = self.get_module_config_path()
@@ -251,19 +253,19 @@ class PipelineModule(object):
         """
         return self.get_module_path(CONFIG_FILE)
 
-    def set_temp_dir(self, temp_dir: Union[str, Path]):
+    def set_temp_dir(self, temp_dir: str | Path):
         self.temp_dir = Path(temp_dir)
 
-    def get_module_path(self, relative_path: Union[str, List[str]]) -> Optional[Path]:
+    def get_module_path(self, relative_path: str | list[str]) -> Path | None:
         """Get the full path of a relative path within a module. This can be used to
         retrieve the path of files within the module.
 
         Args:
-            relative_path (Union[str, List[str]]): The relative path to retrieve within the module,
+            relative_path (str | list[str]): The relative path to retrieve within the module,
                 such as a path to the config file.
 
         Returns:
-            Optional[Path]: The full path of the specified relative path, within the module. None
+            Path | None: The full path of the specified relative path, within the module. None
                 if relative_path is None.
         """
         if not relative_path:
@@ -283,7 +285,7 @@ class PipelineModule(object):
         return self._join_within_base(self.module_dir, relative_path)
 
     @staticmethod
-    def _join_within_base(base: Union[str, Path], relative_path: str) -> Path:
+    def _join_within_base(base: str | Path, relative_path: str) -> Path:
         """Join relative_path onto base, ensuring the result does not escape base via path
         traversal (eg. "../.."). Returns the joined (unresolved) path so existing path
         semantics are preserved; raises CleanExitError if the path escapes base.

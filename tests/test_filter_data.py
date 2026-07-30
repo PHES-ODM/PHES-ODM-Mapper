@@ -1,11 +1,11 @@
 """Tests for odm_map.filter.filter_data"""
 
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 from odm_map.filter.filter_data import DataFilter, FilterConfigColumns
 from odm_map.filter.filter_funcs import DROP_COLUMN
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -120,7 +120,7 @@ class TestDataFilterInit:
         )
         df_filter = DataFilter(config_path)
         val = df_filter.config_df[FilterConfigColumns.VALUE].iloc[0]
-        assert val == True  # noqa: E712 — comparing against numpy bool
+        assert val == True
 
     def test_yaml_parses_boolean_false(self, tmp_path):
         config_path = write_config(
@@ -138,7 +138,7 @@ class TestDataFilterInit:
         )
         df_filter = DataFilter(config_path)
         val = df_filter.config_df[FilterConfigColumns.VALUE].iloc[0]
-        assert val == False  # noqa: E712 — comparing against numpy bool
+        assert val == False
 
     def test_yaml_parses_list_value(self, tmp_path):
         config_path = write_config(
@@ -403,7 +403,7 @@ class TestRunFilter:
         df = pd.DataFrame({"v": [1, 2]})
         output_dir = tmp_path / "out"
 
-        result, output_files = df_filter.run_filter(
+        _result, output_files = df_filter.run_filter(
             data={"C": df}, output_dir=output_dir
         )
 

@@ -43,12 +43,13 @@ print(lookup.get_indices("slot1", "valB"))
 ```
 """
 
-from typing import Any, List
-from sortedcontainers import SortedList
 from bisect import insort
+from typing import Any
 
-from odm_map.id_generator.id_value import IDValue
+from sortedcontainers import SortedList
+
 from odm_map.id_generator.id_na import isna
+from odm_map.id_generator.id_value import IDValue
 
 # If True, then use SortedList for the list of indices. If False then use a regular Python list (and
 # keep the list sorted by using bisect.insort to insert new values). They both give the same results,
@@ -57,11 +58,11 @@ USE_SORTED_LIST = True
 
 
 class RowIndexLookup:
-    def __init__(self, lookup_slot: List[Any]):
+    def __init__(self, lookup_slot: list[Any]):
         """Constructor for RowIndexLookup.
 
         Args:
-            lookup_slot (List[Any]): List of slots that should have a lookup table.
+            lookup_slot (list[Any]): List of slots that should have a lookup table.
         """
         lookup_slot = list(dict.fromkeys([self._get_value_key(s) for s in lookup_slot]))
         self.data = {s: {} for s in lookup_slot}
@@ -161,15 +162,15 @@ class RowIndexLookup:
             else:
                 insort(self.data[slot][new_value], idx)
 
-    def all_lookup_slots(self) -> List[Any]:
+    def all_lookup_slots(self) -> list[Any]:
         """Get a list of all lookup slots.
 
         Returns:
-            List[Any]: List of lookup slots.
+            list[Any]: List of lookup slots.
         """
         return list(self.data.keys())
 
-    def get_indices(self, slot: str, value: Any) -> List[int]:
+    def get_indices(self, slot: str, value: Any) -> list[int]:
         """Get all row indices that have the specified value in the specified slot.
 
         Args:
@@ -177,7 +178,7 @@ class RowIndexLookup:
             value (Any): The value to get the indices for (in the slot).
 
         Returns:
-            List[int]: List of row indices where the slot is equal to value.
+            list[int]: List of row indices where the slot is equal to value.
                 If the value does not exist, then an empty list [] is returned.
         """
         value = self._get_value_key(value)

@@ -1,6 +1,7 @@
-from typing import List, Annotated
-import typer
 from pathlib import Path
+from typing import Annotated
+
+import typer
 
 from odm_map.mapper.map_data import DataMapper
 from odm_map.utils.cli_utils import get_input_data_files
@@ -56,7 +57,7 @@ extra information, and are columns that do not exist in the target database."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     source_schema: Annotated[
         Path, typer.Option(show_default=False, help=SOURCE_SCHEMA_HELP)

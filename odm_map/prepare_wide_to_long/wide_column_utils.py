@@ -1,5 +1,3 @@
-from typing import Optional, Tuple, List, Union
-
 from odm_map.utils.extra_and_tracking_slots import (
     EXTRA_SLOT_PREFIX,
     EXTRA_SLOT_SUFFIX,
@@ -76,7 +74,7 @@ RECOGNIZED_FLAG_PREFIXES = [
 AND_VALUE_SEPARATOR = "."
 
 
-def get_flag_prefix(flag_value: str) -> Optional[str]:
+def get_flag_prefix(flag_value: str) -> str | None:
     """Given the flag value (eg. "o123"), return the flag prefix (eg. "o"). We will iterate over
     all recognized flag prefixes (RECOGNIZED_FLAG_PREFIXES), and return the longest prefix that
     flag_value starts with.
@@ -85,13 +83,14 @@ def get_flag_prefix(flag_value: str) -> Optional[str]:
         flag_value (str): The flag value to get the prefix of.
 
     Returns:
-        Optional[str]: The flag prefix if one is found, or None if there is no recognized flag prefix.
+        str | None: The flag prefix if one is found, or None if there is no recognized flag prefix.
     """
     recognized_prefix = None
     for prefix in RECOGNIZED_FLAG_PREFIXES:
-        if flag_value.startswith(prefix):
-            if recognized_prefix is None or len(prefix) >= len(recognized_prefix):
-                recognized_prefix = prefix
+        if flag_value.startswith(prefix) and (
+            recognized_prefix is None or len(prefix) >= len(recognized_prefix)
+        ):
+            recognized_prefix = prefix
     return recognized_prefix
 
 
@@ -112,10 +111,10 @@ def get_extra_slot_for_flag_prefix(flag_prefix: str) -> str:
 
 def get_column_flags(
     col: str,
-    flag_prefix: Optional[Union[List[str], str]] = None,
-    ignore_prefixes: Optional[Union[List[str], str]] = None,
+    flag_prefix: list[str] | str | None = None,
+    ignore_prefixes: list[str] | str | None = None,
     remove_flag_prefix: bool = False,
-) -> List[str]:
+) -> list[str]:
     """Get all flags associated with the column. Flags are separated by COLUMN_FLAGPSEPARATOR.
     For example, qr_qualityFlag.o123.t_sample has the flags o123 and t_sample.
 
@@ -124,9 +123,9 @@ def get_column_flags(
 
     Args:
         col (str): The column name to get the flags from.
-        flag_prefix (Optional[Union[List[str], str]]): If set, then only return flags that begin
+        flag_prefix (list[str] | str | None): If set, then only return flags that begin
             with this string or begin with any of the strings (if a list).
-        ignore_prefixes (Optional[Union[List[str], str]]): If set, then ignore any flag that
+        ignore_prefixes (list[str] | str | None): If set, then ignore any flag that
             begins with any of these prefixes.
         remove_flag_prefix (bool): If True then remove the prefix from all flags. For example,
             the prefix for a column group is "o", and the column is mr_measure.o123, then
@@ -134,7 +133,7 @@ def get_column_flags(
             is empty then remove_flag_prefix is ignored (ie. treated as False).
 
     Returns:
-        List[str]: A list of flags. If no flags then the empty array [] is returned.
+        list[str]: A list of flags. If no flags then the empty array [] is returned.
     """
     if WideColumnValues.COLUMN_FLAG_SEPARATOR in col:
         if isinstance(flag_prefix, str):
@@ -171,7 +170,7 @@ def get_column_flags(
     return []
 
 
-def groups_of_column(col: str, remove_flag_prefix: bool = False) -> List[str]:
+def groups_of_column(col: str, remove_flag_prefix: bool = False) -> list[str]:
     """Get the group of the specified column.
 
     The group is the string that follows the colon in the column name. For example,
@@ -186,7 +185,7 @@ def groups_of_column(col: str, remove_flag_prefix: bool = False) -> List[str]:
             returned.
 
     Returns:
-        List[str]: The groups of the column. If no group exists then an empty
+        list[str]: The groups of the column. If no group exists then an empty
             list is returned.
     """
     return column_and_groups_of_column(col, remove_flag_prefix=remove_flag_prefix)[1]
@@ -194,7 +193,7 @@ def groups_of_column(col: str, remove_flag_prefix: bool = False) -> List[str]:
 
 def column_and_groups_of_column(
     col: str, remove_flag_prefix: bool = False
-) -> Tuple[str, List[str]]:
+) -> tuple[str, list[str]]:
     """Get the column name (without group) and the group of the specified column.
     For example, "qr_qualityFlag.o1" will return ("qr_qualityFlag", "o1"), and
     "qr_qualityFlag" will return ("qr_qualityFlag", None).
@@ -206,7 +205,7 @@ def column_and_groups_of_column(
             True, but will return "o12" if remove_flag_prefix is False.
 
     Returns:
-        Tuple[str, List[str]]: The ungrouped column name and the groups of col.
+        tuple[str, list[str]]: The ungrouped column name and the groups of col.
             If there is no group, then the group is returned as an empty list.
     """
     return column_and_flags_of_column(
@@ -236,7 +235,7 @@ def column_and_flags_of_column(
             True, but will return "o12" if remove_flag_prefix is False.
 
     Returns:
-        Tuple[str, Optional[List[str]]]: The column name with all flags removed and a list of
+        tuple[str, list[str] | None]: The column name with all flags removed and a list of
             the flags of the column that starts with flag_prefix. If no flags are found in col
             then the flag is returned as an empty list.
     """
@@ -265,14 +264,14 @@ def column_without_flags(col: str) -> str:
     return col
 
 
-def column_with_flags(col: str, flags: Union[str, List[str]]) -> str:
+def column_with_flags(col: str, flags: str | list[str]) -> str:
     """Create the column name consisting of the specified base column name with all
     the specified flags added to the column name. For example, if col is mr_measure and
     the flags are ["o123", "t_sampleID"], then the result will be mr_measure.o123.t_sampleID.
 
     Args:
         col (str): The column name to add the flags to.
-        flags (Union[str, List[str]]): A single flag (string) or a list of flags to add to the
+        flags (str | list[str]): A single flag (string) or a list of flags to add to the
             column.
 
     Returns:

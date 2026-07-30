@@ -1,20 +1,19 @@
 """Tests for odm_map.cleaner.clean_data"""
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from odm_map.cleaner.clean_data import (
+    MAX_LOG_KEY_LENGTH,
     DataCleaner,
     LogColumns,
     Logs,
-    MAX_LOG_KEY_LENGTH,
 )
 from odm_map.utils.extra_and_tracking_slots import (
     EXTRA_SLOT_PREFIX,
     TrackingSlots,
 )
-
 
 # ---------------------------------------------------------------------------
 # Minimal LinkML schema for testing
@@ -625,7 +624,7 @@ class TestCleanSingleData:
 class TestCleanData:
     def test_basic_dataframes_cleaned(self, cleaner):
         df = pd.DataFrame({"sample_id": ["s1"], "status": ["active"]})
-        out_files, out_frames = cleaner.clean_data(
+        _out_files, out_frames = cleaner.clean_data(
             data_files=None,
             data_frames={CLASS_NAME: [df]},
             output_dir=None,
@@ -652,7 +651,7 @@ class TestCleanData:
     def test_saves_cleaned_file(self, cleaner, tmp_path):
         df = pd.DataFrame({"sample_id": ["s1"], "status": ["active"]})
         out_dir = tmp_path / "cleaned"
-        _, out_frames = cleaner.clean_data(
+        _, _out_frames = cleaner.clean_data(
             data_files=None,
             data_frames={CLASS_NAME: [df]},
             output_dir=str(out_dir),

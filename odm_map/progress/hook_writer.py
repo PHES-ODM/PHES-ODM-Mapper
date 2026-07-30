@@ -1,11 +1,12 @@
-from collections.abc import Callable
+import contextlib
 import logging
 import sys
+from collections.abc import Callable
 
 DEFAULT_ENCODING = sys.getdefaultencoding()
 
 
-class HookWriter(object):
+class HookWriter:
     """
     Intercepts output (eg. to a logging.StreamHandler, sys.stdout, or sys.stderr) and modifies the text
     to ensure that output looks nice while a ProgressCounter is running. The main purpose is to clear
@@ -24,13 +25,10 @@ class HookWriter(object):
             # For StreamHandlers (ie. a handler for logging), replace the stream with ourself
             # so we can intercept all output to modify it.
             self.output_stream = stream.stream
-            try:
+            # A StreamHandler might not allow setting the stream, for example logging._StderrHandler,
+            # whose 'stream' property has no setter because it always uses the current sys.stderr.
+            with contextlib.suppress(AttributeError):
                 self.stream.setStream(self)
-            except Exception:
-                # A StreamHandler might not allow setting the stream, for example logging._StderrHandler,
-                # which always uses the current sys.stderr
-                # logging.error(f"Could not set HookWriter for stream {self.stream}")
-                pass
         else:
             # For non-StreamHandlers (eg. stdout and stderr), just save the stream, we will
             # write our modified output to it.
@@ -62,7 +60,7 @@ class HookWriter(object):
         # For this particular Writer, we are at the beginning of a line when at_new_line is True.
         # In the next call to write, we will clear the line when at_new_line is True
         # self.at_new_line = "\n" in msg or "\r" in msg
-        self.at_new_line = msg.endswith("\n") or msg.endswith("\r")
+        self.at_new_line = msg.endswith(("\n", "\r"))
 
         # Any new lines should consist of a clear to end of current line, new line, then clear full line
         msg = msg.replace("\n", "\x1b[K\n\x1b[2K")

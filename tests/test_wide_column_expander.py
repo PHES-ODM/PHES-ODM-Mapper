@@ -1,17 +1,17 @@
 """Tests for odm_map.prepare_wide_to_long.wide_column_expander"""
 
-import pytest
-import pandas as pd
 from unittest.mock import MagicMock
 
-from odm_map.utils.extra_and_tracking_slots import make_tracking_slot_name
+import pandas as pd
+import pytest
+
 from odm_map.prepare_wide_to_long.wide_column_expander import (
     ColumnType,
     SeeHeaders,
     WideColumnExpander,
 )
 from odm_map.prepare_wide_to_long.wide_column_utils import ConfigKeys
-
+from odm_map.utils.extra_and_tracking_slots import make_tracking_slot_name
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -432,7 +432,7 @@ class TestCurrentExpandedRows:
         )
         current = expander_no_schema.current_expanded_rows[None]
         # Should have both group and link flags
-        assert any("l5" in k for k in current.keys())
+        assert any("l5" in k for k in current)
 
     def test_save_appends_to_all_rows(self, expander_no_schema):
         expander_no_schema.all_expanded_rows = []

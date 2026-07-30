@@ -49,35 +49,36 @@ maker.make(data_file=None, data_frame=input_data_frame, output_dir="wide_to_long
 
 """
 
-from typing import List, Union, Dict, Optional, Generator, Any, Tuple
+import os
+from collections.abc import Generator
+from datetime import datetime
+from enum import Enum, auto
 from pathlib import Path
+from typing import Any
+
 import pandas as pd
 import yaml
-from enum import Enum, auto
-from tqdm import tqdm
-import os
-from datetime import datetime
-
 from linkml_runtime import SchemaView
+from tqdm import tqdm
 
-from odm_map.utils.logger import get_logger
-from odm_map.utils.general_utils import save_data_frame
-from odm_map.utils.extra_and_tracking_slots import (
-    load_data_with_source_tracking_columns,
-    is_tracking_slot,
-)
 from odm_map.prepare_wide_to_long.wide_column_utils import (
+    AND_VALUE_SEPARATOR,
     ConfigKeys,
-    WideColumnValues,
+    FlagPrefixes,
     MeasureTableColumns,
     ProtocolStepsTableColumns,
-    AND_VALUE_SEPARATOR,
-    FlagPrefixes,
-    groups_of_column,
-    column_without_flags,
+    WideColumnValues,
     column_with_flags,
+    column_without_flags,
     get_column_flags,
+    groups_of_column,
 )
+from odm_map.utils.extra_and_tracking_slots import (
+    is_tracking_slot,
+    load_data_with_source_tracking_columns,
+)
+from odm_map.utils.general_utils import save_data_frame
+from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -114,9 +115,9 @@ EXPANDED_OUTPUT_CONFIG_FILE = "expanded_config.yaml"
 class WideColumnExpander:
     def __init__(
         self,
-        config: Union[str, Path, Dict],
+        config: str | Path | dict,
         source_class_name: str,
-        target_schema: Union[str, Path],
+        target_schema: str | Path,
     ):
         self.source_class_name = source_class_name
 
@@ -131,14 +132,14 @@ class WideColumnExpander:
             target_schema = SchemaView(target_schema)
         self.target_schema: SchemaView = target_schema
 
-    def get_column_type(self, col: str) -> Optional[ColumnType]:
+    def get_column_type(self, col: str) -> ColumnType | None:
         """Get the type of wide column of the specified column.
 
         Args:
             col (str): The column to get the type of.
 
         Returns:
-            Optional[ColumnType]: The ColumnType associated with the column. None if the column type could
+            ColumnType | None: The ColumnType associated with the column. None if the column type could
                 not be determined.
         """
         if is_tracking_slot(col):
@@ -200,7 +201,7 @@ class WideColumnExpander:
         return None
 
     def is_part_equal_at_index(
-        self, col_parts: List[List[str]], equals: Union[str, List[str]], index: int
+        self, col_parts: list[list[str]], equals: str | list[str], index: int
     ) -> bool:
         """Check if the part at the index, in col_parts, is equal to equals.
 
@@ -208,8 +209,8 @@ class WideColumnExpander:
         array col_parts[index] is equal to each corresponding item in equals.
 
         Args:
-            col_parts (List[str]): The parts to test, as retrieved with get_all_parts.
-            equals (Union[str, List[str]]): The value or list of values to compare to col_parts[index]. Can be
+            col_parts (list[list[str]]): The parts to test, as retrieved with get_all_parts.
+            equals (str | list[str]): The value or list of values to compare to col_parts[index]. Can be
                 a string or a list of strings. If a string then it is converted to an array of size 1 with the
                 single item been the string.
             index (int): The index of the part in col_parts to test. ie. we test if col_parts[index] == equals.
@@ -224,36 +225,36 @@ class WideColumnExpander:
 
     def expand(
         self,
-        data_files: List[Path],
-        data_frames: List[pd.DataFrame],
-        output_dir: Optional[Union[str, Path]],
-        max_rows: Optional[int] = None,
-    ) -> Tuple[pd.DataFrame, Dict]:
+        data_files: list[Path],
+        data_frames: list[pd.DataFrame],
+        output_dir: str | Path | None,
+        max_rows: int | None = None,
+    ) -> tuple[pd.DataFrame, dict]:
         """Expand the files and/or DataFrames to the expanded wide format, so that it's ready to map from
         wide to long format. After expanding the data, WideColumnMapMaker should be run on the returned
         DataFrame.
 
         Args:
-            data_files (List[Path]): A list of data files to load and expand. These data files are concatenated
+            data_files (list[Path]): A list of data files to load and expand. These data files are concatenated
                 together (along with the DataFrames in data_frames). TrackingSlots will also be added.
-            data_frames (List[pd.DataFrame]): A list of DataFrames to expand. These DataFrames are concatenated
+            data_frames (list[pd.DataFrame]): A list of DataFrames to expand. These DataFrames are concatenated
                 to the DataFrames loaded from data_files. TrackingSlots should already have been added to these
                 DataFrames.
-            output_dir (Optional[Union[str, Path]]): If set then save the expanded DataFrame result as well as
+            output_dir (str | Path | None): If set then save the expanded DataFrame result as well as
                 configuration information to this directory. The file is saved as expanded.csv and the configuration
                 as expanded_config.yaml.
-            max_rows (Optional[int]): Maximum number of rows to load from all files in data_files. If 0 or None
+            max_rows (int | None): Maximum number of rows to load from all files in data_files. If 0 or None
                 then all rows are loaded.
 
         Returns:
-            Tuple[pd.DataFrame, Dict]: The expanded DataFrame and the configuration information about the DataFrame.
+            tuple[pd.DataFrame, dict]: The expanded DataFrame and the configuration information about the DataFrame.
                 This configuration includes information such as which groups in the expanded DataFrame are explicitly
                 specified in the input data file and which are implicitly (and generated at runtime).
         """
-        tic = datetime.now()
+        tic = datetime.now().astimezone()
 
         # Load the data to expand
-        input_df: List[pd.DataFrame] = []
+        input_df: list[pd.DataFrame] = []
         if data_frames:
             input_df.extend(data_frames)
         if data_files:
@@ -279,24 +280,24 @@ class WideColumnExpander:
             with open(output_config_file, "w") as f:
                 yaml.safe_dump(output_config, f)
 
-        logger.info(f"Expanded in {datetime.now() - tic}")
+        logger.info(f"Expanded in {datetime.now().astimezone() - tic}")
 
         return expanded_df, output_config
 
-    def get_expanded_config(self) -> Dict:
+    def get_expanded_config(self) -> dict:
         """Get the configuration information about the expanded DataFrame. This includes information
         such as which groups in the expanded DataFrame are explicitly specified in the input data
         file and which are implicitly (and generated at runtime).
 
         Returns:
-            Dict: The configuration information about the expanded DataFrame.
+            dict: The configuration information about the expanded DataFrame.
         """
         return {
             "explicit_groups": self.explicit_groups,
             "implicit_groups": self.implicit_groups,
         }
 
-    def get_all_parts(self, col: str) -> Optional[List[List[str]]]:
+    def get_all_parts(self, col: str) -> list[list[str]] | None:
         """Get a list of all parts of the specified wide-name column. The parts are separated
         by commas, and can include #_AND and #_OR parts. Each part is a list of strings. Most
         parts will only have one string. #_AND and #_OR parts will contain multiple strings,
@@ -308,7 +309,7 @@ class WideColumnExpander:
             col (str): The wide column name to get all the parts of.
 
         Returns:
-            Optional[List[List[str]]]: A list of lists of strings. Each sub-list is a separate part
+            list[list[str]] | None: A list of lists of strings. Each sub-list is a separate part
                 of col. If the sub-list is for a part that has #_AND or #_OR, then the sub-list
                 will have 2+# strings, where # is the value preceding _AND or _OR. None is returned
                 if there is an error in the column, and the column should be ignored.
@@ -321,7 +322,7 @@ class WideColumnExpander:
             return None
         return parts
 
-    def get_next_part(self, col: str) -> Generator[List[str], None, None]:
+    def get_next_part(self, col: str) -> Generator[list[str], None, None]:
         """Generator to retrieve all parts of the specified column. See get_all_parts for details.
 
         Args:
@@ -335,7 +336,7 @@ class WideColumnExpander:
                 to re-log the warning.
 
         Yields:
-            Generator[List[str], None, None]: Returns each part in order. Each part is a list of strings.
+            Generator[list[str], None, None]: Returns each part in order. Each part is a list of strings.
                 Most parts will have one string, but parts with #_AND and #_OR tags have multiple strings
                 and will result in the part list ['#', 'AND', 'part1', 'part2', ...].
         """
@@ -360,10 +361,10 @@ class WideColumnExpander:
                         # an additional int(cur_part) number of parts
                         try:
                             expected_parts = int(cur_part)
-                        except Exception:
+                        except (ValueError, TypeError) as err:
                             msg = f"Boolean aggregation ({next_part}) must be preceded by a number, instead '{cur_part}' was found. Ignoring column: {col}"
                             logger.warning(msg)
-                            raise ValueError(msg)
+                            raise ValueError(msg) from err
                         parts = [cur_part, next_part]
 
                         # Skip the number and the boolean part (ie. cur_part and next_part)
@@ -403,21 +404,21 @@ class WideColumnExpander:
                 idx += 1
                 yield [cur_part]
 
-    def get_table_long_name(self, table_short_name: str) -> Optional[str]:
+    def get_table_long_name(self, table_short_name: str) -> str | None:
         """Get the long table name of the specified short table name.
 
         Args:
             table_short_name (str): The short table name to get the long table name of.
 
         Returns:
-            Optional[str]: The long table name of table_short_name, or None if table_short_name
+            str | None: The long table name of table_short_name, or None if table_short_name
                 is unrecognized.
         """
         tables = self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {})
         tables = [k for k, v in tables.items() if v == table_short_name]
         return tables[0] if len(tables) > 0 else None
 
-    def get_table_short_name(self, table_long_name: str) -> Optional[str]:
+    def get_table_short_name(self, table_long_name: str) -> str | None:
         """Get the short name of the specified table.
 
         For example, the short name for the "measures" table might be "mr".
@@ -426,7 +427,7 @@ class WideColumnExpander:
             table_long_name (str): The table name to get the short name of.
 
         Returns:
-            Optional[str]: The short name of the table, or None if the table is not recognized.
+            str | None: The short name of the table, or None if the table is not recognized.
         """
         return self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).get(
             table_long_name, None
@@ -434,11 +435,11 @@ class WideColumnExpander:
 
     def get_resolved_single_part_at_index(
         self,
-        col_parts: List[List[str]],
+        col_parts: list[list[str]],
         index: int,
         row: pd.Series,
-        allowable_see_headers: Optional[Union[str, List[str]]],
-        column_group: Optional[str],
+        allowable_see_headers: str | list[str] | None,
+        column_group: str | None,
     ) -> Any:
         """Get the value of the part at the index of the list of column parts (as returned
         by get_all_parts). If the part at the index has a list of values, then only the
@@ -450,14 +451,14 @@ class WideColumnExpander:
         does not exist then None is returned.
 
         Args:
-            col_parts (List[List[str]]): The list of parts, as retrieved from get_all_parts.
+            col_parts (list[list[str]]): The list of parts, as retrieved from get_all_parts.
             index (int): The index in col_parts to get the value of.
             row (pd.Series): The input row, where we can retrieve values from if the
                 resulting part refers to another header (eg. if the part is hCo, hUn, hAg, etc.)
-            allowable_see_headers (Union[str, List[str]]): One or more allowable header types, from
+            allowable_see_headers (str | list[str] | None): One or more allowable header types, from
                 the class SeeHeaders. If empty then we will not retrieve the value from a different
                 column, so the value will be returned unchanged.
-            column_group (Optional[str]): If we resolve to a "see header" (eg. hAg, hMe) then
+            column_group (str | None): If we resolve to a "see header" (eg. hAg, hMe) then
                 we first try to get the column that has this group flag (eg. mr_aggregation.column_group).
                 If the column with the group does not exist, then we get the column without a group
                 (eg. mr_aggregation).
@@ -507,7 +508,7 @@ class WideColumnExpander:
         # This is not a see headers value, so return the value unchanged.
         return val
 
-    def get_and_values(self, val: Any, num_values: int) -> List[Any]:
+    def get_and_values(self, val: Any, num_values: int) -> list[Any]:
         """From the specified value (cast to a string), split the value up into num_values values
         using the separator AND_VALUE_SEPARATOR (a period). For example, 24.12 will be split
         into two values and returned as ["24", "12"].
@@ -518,7 +519,7 @@ class WideColumnExpander:
             num_values (int): The number of values to split val into.
 
         Returns:
-            List[Any]: The value val split into num_values values. If val is None then a list of size
+            list[Any]: The value val split into num_values values. If val is None then a list of size
                 num_values consisting only of None is returned. If fewer then num_values is available,
                 then the returned list is expanded with None values so that the list is of size num_values.
                 If more than num_values are available, only the first num_values splits are returned.
@@ -544,8 +545,8 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
-        column_flags: Optional[List[str]],
-        column_group: Optional[str],
+        column_flags: list[str] | None,
+        column_group: str | None,
         always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as an attribute. Attributes are in the form tableShortName_attribute or
@@ -554,9 +555,9 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+            column_flags (list[str] | None): If set then add all of these flags (eg. "l123") to all of the columns being added.
                 This should NOT include a group flag, which is specified by the column_group parameter.
-            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
+            column_group (str | None): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
@@ -602,7 +603,7 @@ class WideColumnExpander:
                 slot_defn = self.target_schema.induced_slot(
                     col_parts[1][0], table_long_name
                 )
-            except Exception:
+            except Exception:  # noqa: BLE001
                 slot_defn = None
             if not slot_defn:
                 logger.warning(
@@ -669,8 +670,8 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
-        column_flags: Optional[List[str]],
-        column_group: Optional[str],
+        column_flags: list[str] | None,
+        column_group: str | None,
         always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as a protocolSteps measure. protocolSteps measures are in the format
@@ -680,9 +681,9 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+            column_flags (list[str] | None): If set then add all of these flags (eg. "l123") to all of the columns being added.
                 This should NOT include a group flag, which is specified by the column_group parameter.
-            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
+            column_group (str | None): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
@@ -793,8 +794,8 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
-        column_flags: Optional[List[str]],
-        column_group: Optional[str],
+        column_flags: list[str] | None,
+        column_group: str | None,
         always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as a protocolSteps method. protocolSteps methods are in the format
@@ -804,9 +805,9 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+            column_flags (list[str] | None): If set then add all of these flags (eg. "l123") to all of the columns being added.
                 This should NOT include a group flag, which is specified by the column_group parameter.
-            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
+            column_group (str | None): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
@@ -902,8 +903,8 @@ class WideColumnExpander:
         self,
         col: str,
         row: pd.Series,
-        column_flags: Optional[List[str]],
-        column_group: Optional[str],
+        column_flags: list[str] | None,
+        column_group: str | None,
         always_use_group: bool,
     ) -> bool:
         """Expand the specified column, treating it as a measure. Measures are in the format
@@ -913,9 +914,9 @@ class WideColumnExpander:
         Args:
             col (str): The column name to expand.
             row (pd.Series): The row of input data that we are expanding. It contains a column with name col.
-            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+            column_flags (list[str] | None): If set then add all of these flags (eg. "l123") to all of the columns being added.
                 This should NOT include a group flag, which is specified by the column_group parameter.
-            column_group (Optional[str]): The group that the expansion belongs to. A group is assigned to each expanded
+            column_group (str | None): The group that the expansion belongs to. A group is assigned to each expanded
                 column, and allows us to ensure all the resulting columns, after expanding, can be grouped together.
                 If it is not None, then it is added to the end of the expanded column(s), eg.
                 sm_sampleID:1 (1 is the group).
@@ -1029,7 +1030,7 @@ class WideColumnExpander:
                 is wrong with a value in the column for the current row, then True should still be returned, since
                 later rows might have valid values and we would want to continue processing those later values.
         """
-        for row_index in self.current_expanded_rows.keys():
+        for row_index in self.current_expanded_rows:
             self.update_current_expanded_rows(
                 {col: row[col]},
                 row_index=row_index,
@@ -1039,8 +1040,8 @@ class WideColumnExpander:
         return True
 
     def select_measure_or_method_for_value(
-        self, val: Any, candidate_partids: List[str]
-    ) -> Optional[str]:
+        self, val: Any, candidate_partids: list[str]
+    ) -> str | None:
         """Given the specified value (which is found in the slot protocolSteps.value or measures.value),
         select the part ID whose associated mmaSet contains the value. The returned part ID should be
         used to populate protocolSteps.method, protocolSteps.measure, or measures.measure (while the
@@ -1053,12 +1054,12 @@ class WideColumnExpander:
 
         Args:
             val (Any): The enumeration value to find the enumeration for.
-            candidate_partids (List[str]): A list of partIDs that are candidates for setting the
+            candidate_partids (list[str]): A list of partIDs that are candidates for setting the
                 protocolSteps.method, protocolSteps.measure, or measures.measure to. The partid we
                 return is the one whose associated mmaSet contains the value val.
 
         Returns:
-            Optional[str]: The part ID in candidate_partids whose mmaSet val belongs to. If val does not
+            str | None: The part ID in candidate_partids whose mmaSet val belongs to. If val does not
                 belong to any of the mmaSets then None is returned.
         """
         for check_enum in candidate_partids:
@@ -1081,26 +1082,26 @@ class WideColumnExpander:
 
     def update_current_expanded_rows(
         self,
-        data: Dict[str, Any],
-        row_index: Optional[int],
-        column_flags: Optional[List[str]] = None,
-        column_group: Optional[int] = None,
+        data: dict[str, Any],
+        row_index: int | None,
+        column_flags: list[str] | None = None,
+        column_group: int | None = None,
     ):
         """Update the expanded row that we're currently working on with new values.
 
         This function should be called multiple times when expanding a row after new_current_expanded_rows is called.
 
         Args:
-            data (Dict[str, Any]): The columns (keys) and values (values) to update the current row with. If column_group is
+            data (dict[str, Any]): The columns (keys) and values (values) to update the current row with. If column_group is
                 not None, then the column_group is appended to the column names.
             source_column (str): The original wide-column name that generated this data. We use this to copy over the column
                 flags to the new target columns in data.
-            row_index (Optional[int]): The output expanded row index to update. When expanding a given input row, we might have
+            row_index (int | None): The output expanded row index to update. When expanding a given input row, we might have
                 multiple output expanded rows (ie. a 1-to-many relationship). The row_index specifies which of these output rows
                 to update. When there is a 1-to-1 relationship from input to output rows, then row_index should be None.
-            column_flags (Optional[List[str]]): If set then add all of these flags (eg. "l123") to all of the columns being added.
+            column_flags (list[str] | None): If set then add all of these flags (eg. "l123") to all of the columns being added.
                 This should NOT include a group flag, which is specified by the column_group parameter.
-            column_group (Optional[str]): The group that the expansion belongs to. This meant for
+            column_group (int | None): The group that the expansion belongs to. This meant for
                 grouping all the columns together, with columns that have the same group value belonging to the same group. For example,
                 a measure might have a compartment, unit, aggregation, etc. all specified in different columns. By adding a
                 group to these columns we know which of the columns belong to the same measure. Columns with no group
@@ -1130,7 +1131,7 @@ class WideColumnExpander:
 
     def new_current_expanded_rows(self):
         """Begin expanding a new input row by initializing the output row(s). This should be called before expanding a new row."""
-        self.current_expanded_rows: Dict[str, Dict[str, Any]] = {}
+        self.current_expanded_rows: dict[str, dict[str, Any]] = {}
         self.current_expanded_rows[None] = {}
 
     def save_current_expanded_rows(self):
@@ -1147,7 +1148,7 @@ class WideColumnExpander:
         current_rows = list(self.current_expanded_rows.values())
         self.all_expanded_rows.extend(current_rows)
 
-    def get_duplicate_columns(self, df: pd.DataFrame) -> Dict[str, List[str]]:
+    def get_duplicate_columns(self, df: pd.DataFrame) -> dict[str, list[str]]:
         """Get a dictionary containing lists of columns that have duplicate names. If a column
         name ends with .# (dot followed by an integer), then the base name is the column
         name without the trailing .#. If after removing the suffix it has the same base name
@@ -1157,7 +1158,7 @@ class WideColumnExpander:
             df (pd.DataFrame): The DataFrame to get the duplicate columns of.
 
         Returns:
-            Dict[str, List[str]]: Dictionary where the key is the base name of a column,
+            dict[str, list[str]]: Dictionary where the key is the base name of a column,
                 and the values are lists of column names that have that base name. An example
                 is shown below:
                     {

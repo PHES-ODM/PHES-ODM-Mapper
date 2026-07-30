@@ -1,12 +1,11 @@
 """Tests for odm_map.utils.schema_caster"""
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 from linkml_runtime import SchemaView
 
 from odm_map.utils.schema_caster import SchemaCaster
-
 
 SCHEMA_YAML = """\
 id: https://example.org/test

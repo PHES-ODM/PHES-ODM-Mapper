@@ -24,20 +24,20 @@ filtered_data, _ = filter.run_filter(data=data)
 ```
 """
 
-from typing import Union, Dict, List, Tuple
-import yaml
-import pandas as pd
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
-from odm_map.utils.logger import get_logger
-from odm_map.utils.general_utils import (
-    read_data_frame,
-    save_data_frame,
-    parse_df_values,
-)
+import pandas as pd
+import yaml
+
 from odm_map.filter.filter_funcs import call_filter_func
 from odm_map.progress import ProgressCounter
+from odm_map.utils.general_utils import (
+    parse_df_values,
+    read_data_frame,
+    save_data_frame,
+)
+from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -53,8 +53,8 @@ class FilterConfigColumns:
     VALUE = "value"
 
 
-class DataFilter(object):
-    def __init__(self, filter_config_file: Union[str, Path]):
+class DataFilter:
+    def __init__(self, filter_config_file: str | Path):
         self.config_df = read_data_frame(filter_config_file, keep_default_na=False)
         self.config_df = self.config_df.astype(str)
 
@@ -67,17 +67,15 @@ class DataFilter(object):
             FilterConfigColumns.VALUE
         ].map(yaml.safe_load)
 
-    def load_data(
-        self, data_files: Dict[str, Union[Path, str]]
-    ) -> Dict[str, pd.DataFrame]:
+    def load_data(self, data_files: dict[str, Path | str]) -> dict[str, pd.DataFrame]:
         """Load all data specified in data_files.
 
         Args:
-            data_files (Dict[str, Union[Path, str]]): All data files to load. The keys are the class names
+            data_files (dict[str, Path | str]): All data files to load. The keys are the class names
                 and the values are list of data files to load belonging to the class.
 
         Returns:
-            Dict[str, pd.DataFrame]: Dictionary where the keys are the class names and the values are
+            dict[str, pd.DataFrame]: Dictionary where the keys are the class names and the values are
                 the loaded DataFrames.
         """
         data = {}
@@ -100,17 +98,17 @@ class DataFilter(object):
         return data
 
     def save_data(
-        self, data: Dict[str, pd.DataFrame], output_dir: Union[Path, str]
-    ) -> Dict[str, List[Path]]:
+        self, data: dict[str, pd.DataFrame], output_dir: Path | str
+    ) -> dict[str, list[Path]]:
         """Save all the data as CSV files to the output directory.
 
         Args:
-            data (Dict[str, pd.DataFrame]): Data to save. The keys are the class names (which become the
+            data (dict[str, pd.DataFrame]): Data to save. The keys are the class names (which become the
                 file names) and the values are the DataFrames to save.
-            output_dir (Union[Path, str]): The directory to save all data to, as CSV files.
+            output_dir (Path | str): The directory to save all data to, as CSV files.
 
         Returns:
-            Dict[str, List[Path]]: Dictionary of all files saved to disk. The keys are the class names
+            dict[str, list[Path]]: Dictionary of all files saved to disk. The keys are the class names
                 that the files belong to, and the values are list of files belonging to the class.
         """
         output_files = {}
@@ -129,22 +127,22 @@ class DataFilter(object):
     def run_filter(
         self,
         *,
-        data: Dict[str, pd.DataFrame] = None,
-        data_files: Dict[str, List[Union[str, Path, Dict[str, str]]]] = None,
-        output_dir: Union[Path, str] = None,
+        data: dict[str, pd.DataFrame] | None = None,
+        data_files: dict[str, list[str | Path | dict[str, str]]] | None = None,
+        output_dir: Path | str | None = None,
         debug_mode: bool = False,
-    ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, List[Path]]]:
+    ) -> tuple[dict[str, pd.DataFrame], dict[str, list[Path]]]:
         """Run the filters specified in the configuration file on all the data, and optionally save the data to disk.
 
         Args:
-            data (Dict[str, pd.DataFrame], optional): The data to filter. The keys are the class names and the values are the
+            data (dict[str, pd.DataFrame] | None, optional): The data to filter. The keys are the class names and the values are the
                 DataFrames to filter. This dictionary is left unchanged, the returned dictionary is the filtered data.
                 If None then data_dir must be specified. Defaults to None.
-            data_files (Dict[str, List[Union[str, Path, Dict[str, str]]]], optional): If data is None, then load all data specified by
+            data_files (dict[str, list[str | Path | dict[str, str]]] | None, optional): If data is None, then load all data specified by
                 data_files. The keys are the data file class names and the values are a list of files to filter belonging to the class,
                 or dictionaries for Excel files in the format {EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name"}.
                 Defaults to None.
-            output_dir (Union[Path, str], optional): If specified then the directory to save all data after filtering has been
+            output_dir (Path | str | None, optional): If specified then the directory to save all data after filtering has been
                 performed. Defaults to None.
             debug_mode (bool, optional): If True then run the filter in debug mode. In debug mode instead of
                 dropping rows, we set the value for the column filter_funcs.DROP_COLUMN to True. There may be other
@@ -152,14 +150,14 @@ class DataFilter(object):
                 in filter_funcs.py for details.
 
         Returns:
-            Tuple[Dict[str, pd.DataFrame], Dict[str, Path]]: Tuple in the form (data, output_files).
-                data (Dict[str, pd.DataFrame]): The filtered data, where they keys are the classes and the values are the
+            tuple[dict[str, pd.DataFrame], dict[str, list[Path]]]: Tuple in the form (data, output_files).
+                data(dict[str, pd.DataFrame]): The filtered data, where they keys are the classes and the values are the
                     filtered DataFrames.
-                output_files (Dict[str, List[Path]]): If output_dir was specified, then a dictionary where
+                output_files(dict[str, list[Path]]): If output_dir was specified, then a dictionary where
                     the keys are the class names saved and the values are lists of output fitered files saved for the class.
                     If output_dir was not specified then an empty dictionary is returned.
         """
-        tic = datetime.now()
+        tic = datetime.now().astimezone()
 
         # If no data is provided, then load the data from data_dir
         if data is None:
@@ -209,5 +207,5 @@ class DataFilter(object):
         if output_dir:
             output_files = self.save_data(data, output_dir)
 
-        logger.debug(f"Filtered in {datetime.now() - tic}")
+        logger.debug(f"Filtered in {datetime.now().astimezone() - tic}")
         return data, output_files

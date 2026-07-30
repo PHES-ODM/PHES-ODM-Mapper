@@ -1,36 +1,36 @@
 import os
-from typing import Dict, List, Union, Optional
-import pandas as pd
 from datetime import datetime
 from pathlib import Path
 
-from odm_map.progress import ProgressCounter, EmptyCounter
-from odm_map.utils.logger import get_logger
+import pandas as pd
+
+from odm_map.progress import EmptyCounter, ProgressCounter
 from odm_map.utils.general_utils import save_data_frame
+from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 
 def action_save_data(
-    data_frames: Dict[str, List[pd.DataFrame]],
-    output_dir: Union[str, Path],
-    progress_barid: Optional[str] = None,
+    data_frames: dict[str, list[pd.DataFrame]],
+    output_dir: str | Path,
+    progress_barid: str | None = None,
     name_format: str = "{class_name}.csv",
-    name_format_kwargs: Optional[Dict] = None,
+    name_format_kwargs: dict | None = None,
     exception_if_exists: bool = False,
-) -> Dict[str, List[str]]:
+) -> dict[str, list[str]]:
     """Save the specified DataFrames to disk.
 
     Args:
-        data_frames (Dict[str, List[pd.DataFrame]]): The data to save. The keys are the class names and the values
+        data_frames (dict[str, list[pd.DataFrame]]): The data to save. The keys are the class names and the values
             are lists of DataFrames belonging to the class. For each key, the list of DataFrames are concatenated
             into a single DataFrame.
-        output_dir (Union[str, Path]): The directory to save the DataFrames to.
-        progress_barid (Optional[str], optional): If set then the title of the progress bar to show while saving.
+        output_dir (str | Path): The directory to save the DataFrames to.
+        progress_barid (str | None, optional): If set then the title of the progress bar to show while saving.
             If not set then do not show a progress bar.
         name_format (str, optional): The string interpolation format of the file names, accepts the variable class_name.
             Defaults to "{class_name}.csv"
-        name_format_kwargs (Dict, optional): A dictionary of values that contain some additional arguments for
+        name_format_kwargs (dict | None, optional): A dictionary of values that contain some additional arguments for
             string interpolation of name_format. This could include arguments such as "temp" that can be
             used in formating name_format (eg. "{temp}/file.csv"). These arguments are used in addition
             to arguments that this function calculates such as "class_name". Defaults to None.
@@ -42,12 +42,12 @@ def action_save_data(
             files already exists. Be sure to delete the files in output_dir before callings save_data.
 
     Returns:
-        Dict[str, List[str]]: A dictionary where the keys are class names and the values are lists
+        dict[str, list[str]]: A dictionary where the keys are class names and the values are lists
             of files saved to disk for that class.
     """
     # Save data to disk
     all_mapped_files = {}
-    save_tic = datetime.now()
+    save_tic = datetime.now().astimezone()
     if progress_barid:
         progress = ProgressCounter(
             {progress_barid: len(data_frames)}, multiple_bars=False
@@ -78,7 +78,7 @@ def action_save_data(
             all_mapped_files[class_name].append(output_data_file)
 
             progress.update(progress_barid, 1)
-    logger.debug(f"Total time for saving: {datetime.now() - save_tic}")
+    logger.debug(f"Total time for saving: {datetime.now().astimezone() - save_tic}")
     logger.info(f"All data saved to directory: {output_dir}")
 
     return all_mapped_files

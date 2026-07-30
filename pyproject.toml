@@ -1,12 +1,12 @@
 [project]
 name = "odm-map"
-version = "0.1.0"
+version = "0.2.0"
 description = "Map between wastewater surveillance database formats"
 authors = [
     { name="Martin Wellman", email="mwellman@ohri.ca" }
 ]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dynamic = ["dependencies"]
 
 [project.scripts]
@@ -21,3 +21,6 @@ packages = ["odm_map"]
 
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
+
+[tool.ruff]
+target-version = "py310"

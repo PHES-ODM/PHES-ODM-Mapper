@@ -26,14 +26,13 @@ print("Final Progress:", progress.get_progress_report())
 ```
 """
 
-import sys
-from typing import Dict, Optional, List
 import logging
+import sys
 import time
 
+from odm_map.progress.base_counter import BaseCounter
 from odm_map.progress.hook_writer import HookWriter
 from odm_map.progress.single_bar import SingleBar
-from odm_map.progress.base_counter import BaseCounter
 
 # Maximum allowable width (in characters) of the description of a tqdm bar
 MAX_DESC_WIDTH = 22
@@ -59,20 +58,20 @@ HOOK_STDERR = True
 class ProgressCounter(BaseCounter):
     def __init__(
         self,
-        totals: Dict,
+        totals: dict,
         multiple_bars: bool = False,
-        titles: Dict = None,
+        titles: dict | None = None,
         total_title: str = "TOTAL",
         hide_all: bool = False,
-        full_refresh_duration: Optional[float] = 0.5,
-        full_refresh_iters: Optional[int] = None,
+        full_refresh_duration: float | None = 0.5,
+        full_refresh_iters: int | None = None,
         install_output_hooks: bool = True,
     ):
         """A ProgressCounter consists of multiple counts with a separate progress bar for each count. Either all progress bars can be shown
         at once, or just a single progress bar can be shown at a time.
 
         Args:
-            totals (Dict): A dictionary where the keys are the barids of all progress bars to create, and the values are the
+            totals (dict): A dictionary where the keys are the barids of all progress bars to create, and the values are the
                 total count value of each progress bar. For example, the following will create a bar called "measures" with
                 a maximum total count of 1000, and another called "samples" with a total of 500:
                     {
@@ -83,15 +82,15 @@ class ProgressCounter(BaseCounter):
                 False then only show one bar at a time. show_bar() can be called to switch between bars to display. When in a
                 Jupyter notebook or something similar it is usually best to set this to False to prevent unusual output.
                 Defaults to False.
-            titles (Dict, optional): If set then a dictionary mapping bar IDs (as found in the totals parameter) to titles.
+            titles (dict | None, optional): If set then a dictionary mapping bar IDs (as found in the totals parameter) to titles.
                 If a title is not specified here then the bar ID in the totals parameter is used as the title. To set
                 the title of the total bar, use total_title. Defaults to None.
             total_title (str, optional): The description to use for the total progress bar, which shows the overall total of
                 all counts combined. Defaults to "TOTAL".
             hide_all (bool, optional): If True then initially hide all the bars.
-            full_refresh_duration (Optional[float], optional): If not None, then a float representing how many seconds between
+            full_refresh_duration (float | None, optional): If not None, then a float representing how many seconds between
                 each full refresh of all progress bars when update() is called. A full refresh redraws all visible bars. Defaults to 0.5.
-            full_refresh_iters (Optional[int], optional): If not None, then an int representing how many increments of the total
+            full_refresh_iters (int | None, optional): If not None, then an int representing how many increments of the total
                 progress to wait before performing a full refresh of all bars. A full refresh redraws all visible bars. Defaults to None.
             install_output_hooks (bool, optional): If True, then install all output hooks to intercept output from either logging
                 or stdout/stderr, to clean up output so that it looks nicer with the progress bars (ie returning to the start of the
@@ -110,7 +109,7 @@ class ProgressCounter(BaseCounter):
         self.install_output_hooks = install_output_hooks
 
         # Create the bar format
-        bar_titles = [titles.get(barid, barid) for barid in totals.keys()]
+        bar_titles = [titles.get(barid, barid) for barid in totals]
         bar_format = self.calc_bar_format(bar_titles)
 
         # Create all progress bars (except for total bar)
@@ -140,16 +139,16 @@ class ProgressCounter(BaseCounter):
 
         # If multiple_bars is False then only show the first bar.
         if not multiple_bars and not hide_all:
-            self.show_bar(list(self.progress_bars.keys())[0])
+            self.show_bar(next(iter(self.progress_bars.keys())))
 
-    def calc_bar_format(self, titles: List[str]) -> str:
+    def calc_bar_format(self, titles: list[str]) -> str:
         """Calculate the bar_format (as passed to the tqdm() constructor) used for a set of bars with the specified titles.
 
         The titles are used to determine the width of the tqdm bar descriptions, so that we have the smallest width that fits
         all titles (up to a maximum allowable width, after which we might clip the longer titles).
 
         Args:
-            titles (List[str]): List of all titles in our set of bars.
+            titles (list[str]): List of all titles in our set of bars.
 
         Returns:
             str: The bar format, which should be passed to the tqdm() constructor.
@@ -287,14 +286,12 @@ class ProgressCounter(BaseCounter):
         loggers = [logging.root] + [
             logging.getLogger(name) for name in logging.root.manager.loggerDict
         ]
-        handlers = set(
-            [
-                h
-                for logger in loggers
-                for h in logger.handlers
-                if isinstance(h, logging.StreamHandler)
-            ]
-        )
+        handlers = {
+            h
+            for logger in loggers
+            for h in logger.handlers
+            if isinstance(h, logging.StreamHandler)
+        }
         # Install the hooks
         self.hook_handlers = {h: HookWriter(h, self.refresh) for h in handlers}
         # Hide cursor

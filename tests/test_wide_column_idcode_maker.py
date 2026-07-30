@@ -1,16 +1,16 @@
 """Tests for odm_map.prepare_wide_to_long.wide_column_idcode_maker"""
 
-import pytest
-import pandas as pd
 from unittest.mock import MagicMock
 
-from odm_map.utils.extra_and_tracking_slots import make_tracking_slot_name
+import pandas as pd
+import pytest
+
 from odm_map.prepare_wide_to_long.wide_column_idcode_maker import (
     MetaConfigKeys,
     WideColumnIDCodeMaker,
 )
 from odm_map.prepare_wide_to_long.wide_column_utils import ConfigKeys
-
+from odm_map.utils.extra_and_tracking_slots import make_tracking_slot_name
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -297,7 +297,7 @@ class TestMake:
             }
         )
         output_dir = str(tmp_path / "output")
-        id_code_df, out_file, _, out_config = real_maker.make(
+        _id_code_df, out_file, _, out_config = real_maker.make(
             data_file=None, data_frame=df, output_dir=output_dir
         )
         assert out_file is not None

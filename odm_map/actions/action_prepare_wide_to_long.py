@@ -1,22 +1,22 @@
 import os
-from typing import Dict, List, Union
-import pandas as pd
 from pathlib import Path
 
+import pandas as pd
+
 from odm_map.prepare_wide_to_long.wide_column_expander import WideColumnExpander
-from odm_map.prepare_wide_to_long.wide_column_map_maker import WideColumnMapMaker
 from odm_map.prepare_wide_to_long.wide_column_idcode_maker import WideColumnIDCodeMaker
+from odm_map.prepare_wide_to_long.wide_column_map_maker import WideColumnMapMaker
 
 SOURCE_CLASS_NAME = "wide_data"
 
 
 def action_prepare_wide_to_long(
-    data_frames: Dict[str, List[pd.DataFrame]],
-    config: Union[str, Path],
-    target_schema: Union[str, Path],
-    output_dir: Union[str, Path],
+    data_frames: dict[str, list[pd.DataFrame]],
+    config: str | Path,
+    target_schema: str | Path,
+    output_dir: str | Path,
     debug_mode: bool = False,
-) -> Dict[str, List[pd.DataFrame]]:
+) -> dict[str, list[pd.DataFrame]]:
     """Prepare the data to map from wide format to long format. This will rearrange the data to be
     in a format that is ready for wide to long mapping, will create multiple LinkML-Map mapping
     schemas to apply to the prepared data, and also create a LinkML schema for the prepared data
@@ -27,15 +27,15 @@ def action_prepare_wide_to_long(
     located at {output_dir}/schema/schema.yaml.
 
     Args:
-        data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of DataFrames in wide format that
+        data_frames (dict[str, list[pd.DataFrame]]): Dictionary of DataFrames in wide format that
             we want to prepare for mapping to long format. The keys are the class names and
             the values are lists of DataFrames belonging to the class. The class names are ignored,
             and all DataFrames for all classes are concatenated together into one large DataFrame.
             This DataFrame is then modified to prepare it for wide-to-long mapping.
-        config (Union[str, Path]): The configuration file to use for the action.
-        target_schema (Union[str, Path]): The target schema for the long format that we want
+        config (str | Path): The configuration file to use for the action.
+        target_schema (str | Path): The target schema for the long format that we want
             to map to, such as ODM v3 long format.
-        output_dir (Union[str, Path]): Directory to save all the artifacts required for wide-to-long
+        output_dir (str | Path): Directory to save all the artifacts required for wide-to-long
             mapping. This include the LinkML-Map schemas for mapping (in output_dir) and the
             LinkML schema used for the prepared dataset that gets returned to the caller
             (in {output_dir}/schema/schema.yaml).
@@ -43,7 +43,7 @@ def action_prepare_wide_to_long(
             is saved to output_dir/data/expanded.csv.
 
     Returns:
-        Dict[str, List[pd.DataFrame]]: Dictionary of DataFrames based on the input data_frames that
+        dict[str, list[pd.DataFrame]]: Dictionary of DataFrames based on the input data_frames that
             have been modified to be ready for mapping from wide to long format. The key is the
             wide-format class name (SOURCE_CLASS_NAME), and the value is a list of DataFrames
             belonging to the wide-format class. This data is ready to be mapped to long format

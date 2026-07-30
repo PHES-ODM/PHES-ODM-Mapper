@@ -295,7 +295,9 @@ As discussed previously, the ID generation custom code would look like the
 following:
 
 ```python
-dat.protocols.get_first_linked_value("protocolID", linkage_path="measures_protocolID_protocols_protocolID")
+dat.protocols.get_first_linked_value(
+    "protocolID", linkage_path="measures_protocolID_protocols_protocolID"
+)
 ```
 
 #### Final Steps

@@ -16,7 +16,6 @@ from odm_map.utils.schema_utils import (
     validate_columns_with_schema,
 )
 
-
 SCHEMA_YAML = """\
 id: https://example.org/test
 name: test_schema
@@ -170,7 +169,9 @@ class TestGetSlotDefinition:
         assert result is not None
 
     def test_raises_on_unknown_slot_by_default(self, schema):
-        with pytest.raises(Exception):
+        # The exception LinkML raises for a missing slot varies by version, so assert
+        # only that something is raised.
+        with pytest.raises(Exception):  # noqa: B017
             get_slot_definition("Sites", "nonExistentSlot", schema)
 
     def test_returns_none_on_unknown_slot_no_exception(self, schema):

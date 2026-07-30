@@ -1,15 +1,15 @@
 """Tests for odm_map.prepare_wide_to_long.make_wide_to_long_config_cli"""
 
+from unittest.mock import patch
+
+import pandas as pd
 import pytest
 import yaml
-import pandas as pd
-from unittest.mock import patch
 
 from odm_map.prepare_wide_to_long.make_wide_to_long_config_cli import (
     MakeWideToLongConfig,
 )
 from odm_map.prepare_wide_to_long.wide_column_utils import ConfigKeys
-
 
 # ---------------------------------------------------------------------------
 # Helpers

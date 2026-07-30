@@ -1,5 +1,4 @@
-from typing import Optional
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 
 class BaseCounter(ABC):
@@ -12,7 +11,7 @@ class BaseCounter(ABC):
     def __exit__(self, exception_type, exception_value, exception_traceback): ...
 
     @abstractmethod
-    def show_bar(self, barid: Optional[str]): ...
+    def show_bar(self, barid: str | None): ...
 
     @abstractmethod
     def update(self, barid: str, inc: int): ...

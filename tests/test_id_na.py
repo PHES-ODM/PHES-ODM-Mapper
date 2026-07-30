@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from odm_map.id_generator.id_na import EmptyObject, EMPTY_OBJ, isna
+from odm_map.id_generator.id_na import EMPTY_OBJ, EmptyObject, isna
 
 
 class TestEmptyObject:

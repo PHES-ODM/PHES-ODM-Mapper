@@ -1,5 +1,6 @@
-from typing import Annotated, List, Optional
 from pathlib import Path
+from typing import Annotated
+
 import typer
 
 from odm_map.column_dropper.drop_columns import DropColumns
@@ -45,7 +46,7 @@ If not set or 0 then all rows are loaded."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     drop_extra_columns: Annotated[
         bool, typer.Option(help=DROP_EXTRA_COLUMNS_HELP)
@@ -56,8 +57,8 @@ def main(
     keep_columns_in_schema_only: Annotated[
         bool, typer.Option(help=KEEP_COLUMNS_IN_SCHEMA_ONLY_HELP)
     ] = False,
-    schema: Annotated[Path, typer.Option(help=SCHEMA_HELP)] = None,
-    max_rows: Annotated[Optional[int], typer.Option(help=MAX_ROWS_HELP)] = None,
+    schema: Annotated[Path | None, typer.Option(help=SCHEMA_HELP)] = None,
+    max_rows: Annotated[int | None, typer.Option(help=MAX_ROWS_HELP)] = None,
 ):
     data_files = get_input_data_files(inputs, schema=schema)
 

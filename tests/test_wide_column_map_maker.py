@@ -1,12 +1,12 @@
 """Tests for odm_map.prepare_wide_to_long.wide_column_map_maker"""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 import yaml
-from unittest.mock import MagicMock, patch
 
 from odm_map.prepare_wide_to_long.wide_column_map_maker import WideColumnMapMaker
 from odm_map.prepare_wide_to_long.wide_column_utils import ConfigKeys
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -238,9 +238,11 @@ class TestGetClassAndSlot:
             maker.get_class_and_slot("sm_sampleID")
 
     def test_raises_for_unknown_slot(self, maker, mock_schema):
-        with patch(
-            "odm_map.prepare_wide_to_long.wide_column_map_maker.get_slot_definition",
-            return_value=None,
+        with (
+            patch(
+                "odm_map.prepare_wide_to_long.wide_column_map_maker.get_slot_definition",
+                return_value=None,
+            ),
+            pytest.raises(ValueError, match="Unrecognized slot"),
         ):
-            with pytest.raises(ValueError, match="Unrecognized slot"):
-                maker.get_class_and_slot("sm_sampleID")
+            maker.get_class_and_slot("sm_sampleID")

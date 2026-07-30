@@ -1,13 +1,12 @@
 """Tests for standalone functions in odm_map.id_generator.generator_data"""
 
 from odm_map.id_generator.generator_data import (
-    match_len,
     add_code_selector_to_slot,
-    remove_code_selectors_from_slot,
-    get_slot_and_selectors_from_slot,
     get_code_selectors_from_string,
+    get_slot_and_selectors_from_slot,
+    match_len,
+    remove_code_selectors_from_slot,
 )
-
 
 # ---------------------------------------------------------------------------
 # match_len

@@ -1,30 +1,30 @@
-from typing import Union, Optional, Dict, Tuple, List, Generator
-from pathlib import Path
-import yaml
-import pandas as pd
 import os
+from collections.abc import Generator
+from pathlib import Path
 
+import pandas as pd
+import yaml
 from linkml_runtime import SchemaView
 
-from odm_map.utils.logger import get_logger
-from odm_map.utils.general_utils import read_data_frame, save_data_frame
+from odm_map.id_generator.generator import IDCodeColumns
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     ConfigKeys,
+    FlagPrefixes,
     WideColumnValues,
     column_and_groups_of_column,
     get_extra_slot_for_flag_prefix,
-    FlagPrefixes,
 )
 from odm_map.utils.extra_and_tracking_slots import (
-    is_tracking_slot,
     TrackingSlots,
+    is_tracking_slot,
 )
+from odm_map.utils.general_utils import read_data_frame, save_data_frame
+from odm_map.utils.logger import get_logger
 from odm_map.utils.schema_utils import (
-    get_ranges_of_slot_defn,
     all_classes_without_tree_root,
     get_primary_key,
+    get_ranges_of_slot_defn,
 )
-from odm_map.id_generator.generator import IDCodeColumns
 
 logger = get_logger(__name__)
 
@@ -41,10 +41,10 @@ ID_CODE_CONFIG_FILE = "id_code_config.yaml"
 class WideColumnIDCodeMaker:
     def __init__(
         self,
-        config: Union[str, Path, Dict],
-        expanded_meta: Union[str, Path, Dict],
+        config: str | Path | dict,
+        expanded_meta: str | Path | dict,
         source_class_name: str,
-        target_schema: Union[str, Path, SchemaView],
+        target_schema: str | Path | SchemaView,
     ):
         self.source_class_name = source_class_name
 
@@ -66,7 +66,7 @@ class WideColumnIDCodeMaker:
 
     def iter_columns(
         self, df: pd.DataFrame
-    ) -> Generator[Tuple[str, str, str, str], None, None]:
+    ) -> Generator[tuple[str, str, str, str], None, None]:
         for col in df.columns:
             if is_tracking_slot(col):
                 continue
@@ -90,16 +90,16 @@ class WideColumnIDCodeMaker:
 
     def make(
         self,
-        data_file: Union[str, Path],
+        data_file: str | Path,
         data_frame: pd.DataFrame,
-        output_dir: Union[str, Path] = None,
-    ) -> Tuple[pd.DataFrame, Optional[str], Dict, Optional[str]]:
+        output_dir: str | Path | None = None,
+    ) -> tuple[pd.DataFrame, str | None, dict, str | None]:
         if data_file:
             data_frame = read_data_frame(
                 data_file, keep_default_na=False, na_values=None, nrows=0
             )
         self.df: pd.DataFrame = data_frame
-        self.class_groups: Dict[str, Dict[str, List[str]]] = {}
+        self.class_groups: dict[str, dict[str, list[str]]] = {}
 
         for class_name, class_short_name, slot_name, group_name in self.iter_columns(
             self.df
@@ -268,21 +268,21 @@ class WideColumnIDCodeMaker:
             > 0
         )
 
-    def get_table_long_name(self, table_short_name: str) -> Optional[str]:
+    def get_table_long_name(self, table_short_name: str) -> str | None:
         """Get the long table name of the specified short table name.
 
         Args:
             table_short_name (str): The short table name to get the long table name of.
 
         Returns:
-            Optional[str]: The long table name of table_short_name, or None if table_short_name
+            str | None: The long table name of table_short_name, or None if table_short_name
                 is unrecognized.
         """
         tables = self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {})
         tables = [k for k, v in tables.items() if v == table_short_name]
         return tables[0] if len(tables) > 0 else None
 
-    def get_table_short_name(self, table_long_name: str) -> Optional[str]:
+    def get_table_short_name(self, table_long_name: str) -> str | None:
         """Get the short name of the specified table.
 
         For example, the short name for the "measures" table might be "mr".
@@ -291,7 +291,7 @@ class WideColumnIDCodeMaker:
             table_long_name (str): The table name to get the short name of.
 
         Returns:
-            Optional[str]: The short name of the table, or None if the table is not recognized.
+            str | None: The short name of the table, or None if the table is not recognized.
         """
         return self.config.get(ConfigKeys.TABLES_TO_SHORTNAMES, {}).get(
             table_long_name, None

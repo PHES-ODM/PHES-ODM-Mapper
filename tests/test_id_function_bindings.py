@@ -1,7 +1,8 @@
 """Tests for odm_map.id_generator.id_function_bindings.FunctionBindings"""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from odm_map.id_generator.id_function_bindings import FunctionBindings
 from odm_map.id_generator.id_value import IDValue

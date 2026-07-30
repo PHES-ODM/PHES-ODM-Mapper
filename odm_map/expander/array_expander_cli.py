@@ -1,6 +1,7 @@
-from typing import List, Annotated
-import typer
 from pathlib import Path
+from typing import Annotated
+
+import typer
 
 from odm_map.expander.array_expander import ArrayExpander
 from odm_map.utils.cli_utils import get_input_data_files
@@ -26,9 +27,9 @@ have one file per class."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[Path], typer.Argument(show_default=False, help=INPUTS_HELP)],
     config: Annotated[Path, typer.Option(show_default=False, help=CONFIG_HELP)],
-    output_dir: Annotated[Path, typer.Option(help=OUTPUT_DIR_HELP)] = None,
+    output_dir: Annotated[Path | None, typer.Option(help=OUTPUT_DIR_HELP)] = None,
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
 ):
     data_files = get_input_data_files(inputs, schema=None)

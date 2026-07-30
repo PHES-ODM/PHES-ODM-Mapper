@@ -1,8 +1,9 @@
 """Tests for odm_map.utils.general_utils"""
 
 import os
-import pytest
+
 import pandas as pd
+import pytest
 
 from odm_map.utils.general_utils import (
     choose_ignore_case_value,
@@ -17,7 +18,6 @@ from odm_map.utils.general_utils import (
     select_func_kwargs,
     strip_whitespace,
 )
-
 
 # ---------------------------------------------------------------------------
 # order_columns

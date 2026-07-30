@@ -1,33 +1,33 @@
-from typing import Dict, List, Union, Any
 from pathlib import Path
-import pandas as pd
+from typing import Any
 
+import pandas as pd
 from linkml_runtime import SchemaView
 
 from odm_map.cleaner import DataCleaner
 
 
 def action_clean_data(
-    data_frames: Dict[str, List[pd.DataFrame]],
-    schema: Union[SchemaView, str, Path],
-    log_file: Union[str, Path],
-    clean_operations: List[Dict[str, Any]],
-) -> Dict[str, List[pd.DataFrame]]:
+    data_frames: dict[str, list[pd.DataFrame]],
+    schema: SchemaView | str | Path,
+    log_file: str | Path,
+    clean_operations: list[dict[str, Any]],
+) -> dict[str, list[pd.DataFrame]]:
     """Clean the data in the specified data files and DataFrames.
 
     Args:
-        data_frames (Dict[str, List[pd.DataFrame]]): Dictionary of DataFrames, where the keys are the class names
+        data_frames (dict[str, list[pd.DataFrame]]): Dictionary of DataFrames, where the keys are the class names
             and the values are lists of DataFrames for that class to clean.
-        schema (Union[SchemaView, str, Path]): The schema that the data belong to. It should contain classes
+        schema (SchemaView | str | Path): The schema that the data belong to. It should contain classes
             for all the classes in data_frames.
-        log_file (Union[str, Path]): The Excel (.xlsx) file to save the log of changes to. If None then no log file
+        log_file (str | Path): The Excel (.xlsx) file to save the log of changes to. If None then no log file
             is saved.
-        clean_operations (List[Dict[str, Any]]): List of cleaning operations to perform. These are performed in order.
+        clean_operations (list[dict[str, Any]]): List of cleaning operations to perform. These are performed in order.
             Each item is a dictionary where the key is the operation name and the value is the parameters for that
             operation. The format of the parameters depends on the operation.
 
     Returns:
-        Dict[str, List[pd.DataFrame]]: Dictionary where the keys are the class names and the values are lists
+        dict[str, list[pd.DataFrame]]: Dictionary where the keys are the class names and the values are lists
                     of DataFrames that are cleaned.
     """
     cleaner = DataCleaner(schema=schema)

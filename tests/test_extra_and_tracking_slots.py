@@ -1,9 +1,10 @@
 """Tests for odm_map.utils.extra_and_tracking_slots"""
 
-import pytest
 import pandas as pd
+import pytest
 from linkml_runtime import SchemaView
 
+from odm_map.utils.clean_exit_error import CleanExitError
 from odm_map.utils.extra_and_tracking_slots import (
     EXTRA_SLOT_PREFIX,
     TRACKING_SLOT_PREFIX,
@@ -23,8 +24,6 @@ from odm_map.utils.extra_and_tracking_slots import (
     load_data_with_source_tracking_columns,
     make_tracking_slot_name,
 )
-from odm_map.utils.clean_exit_error import CleanExitError
-
 
 # ---------------------------------------------------------------------------
 # make_tracking_slot_name

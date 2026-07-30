@@ -1,4 +1,5 @@
-from typing import List, Annotated
+from typing import Annotated
+
 import typer
 
 from odm_map.filter.filter_data import DataFilter
@@ -41,12 +42,12 @@ dropping rows, we set the value for the column '{DROP_COLUMN}' to True."""
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     filter_config_file: Annotated[
         str, typer.Option(show_default=False, help=FILTER_CONFIG_FILE_HELP)
     ],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
-    schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
+    schema: Annotated[str | None, typer.Option(help=SCHEMA_HELP)] = None,
     debug: Annotated[bool, typer.Option(help=DEBUG_HELP)] = False,
 ):
     data_files = get_input_data_files(inputs, schema=schema)

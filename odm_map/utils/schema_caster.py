@@ -15,12 +15,14 @@ new_v = schema_caster.cast_value("12.3", "sites", "geoLat")
 ```
 """
 
-from typing import Union, Any, Dict, Callable
+import contextlib
+from collections.abc import Callable
+from functools import partial
 from pathlib import Path
+from typing import Any
+
 import pandas as pd
 import yaml
-from functools import partial
-
 from linkml_runtime import SchemaView
 
 from odm_map.utils.general_utils import make_multivalued
@@ -28,7 +30,7 @@ from odm_map.utils.schema_utils import all_classes_without_tree_root
 
 
 class SchemaCaster:
-    def __init__(self, schema: Union[str, Path, SchemaView]):
+    def __init__(self, schema: str | Path | SchemaView):
         if isinstance(schema, (Path, str)):
             schema = SchemaView(schema)
         self.schema = schema
@@ -63,16 +65,16 @@ class SchemaCaster:
                 "integer": int,
                 "string": str,
             }.get(cast_type, str)
-            try:
+            # If the value cannot be cast to this type, fall through and try the next
+            # cast_type; if none succeed the original value is returned unchanged.
+            with contextlib.suppress(ValueError, TypeError):
                 if multivalued and isinstance(v, list):
                     # @TODO: Should we keep uncastable elements?
                     return [cast_func(i) for i in v]
                 return cast_func(v)
-            except Exception:
-                pass
         return v
 
-    def get_cast_functions(self, schema: SchemaView) -> Dict[str, Dict[str, Callable]]:
+    def get_cast_functions(self, schema: SchemaView) -> dict[str, dict[str, Callable]]:
         """Get a dictionary specifying how all slots/attributes in all classes of the schema should
         be cast, according to the range of the slot.
 
@@ -86,7 +88,7 @@ class SchemaCaster:
             schema (SchemaView): The schema to get the casting functions for.
 
         Returns:
-            Dict[str, Dict[str, Callable]]: Dictionary of all casting functions. Keys are the schema
+            dict[str, dict[str, Callable]]: Dictionary of all casting functions. Keys are the schema
                 class names, values are dictionaries where keys are the slot names and values are
                 the casting functions (that take a single parameter to cast).
         """

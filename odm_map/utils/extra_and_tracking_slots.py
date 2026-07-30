@@ -1,21 +1,19 @@
-from typing import Dict, List, Union, Optional
-
 from pathlib import Path
-import pandas as pd
 
+import pandas as pd
 from linkml_runtime import SchemaView
 from linkml_runtime.linkml_model import SlotDefinition
 
+from odm_map.progress import EmptyCounter, ProgressCounter
 from odm_map.utils.clean_exit_error import CleanExitError
+from odm_map.utils.general_utils import EXCEL_FILE_KEY, read_data_frame
+from odm_map.utils.logger import get_logger
+from odm_map.utils.schema_caster import SchemaCaster
 from odm_map.utils.schema_utils import (
     all_classes_without_tree_root,
-    validate_columns_with_schema,
     find_class,
+    validate_columns_with_schema,
 )
-from odm_map.progress import ProgressCounter, EmptyCounter
-from odm_map.utils.schema_caster import SchemaCaster
-from odm_map.utils.general_utils import read_data_frame, EXCEL_FILE_KEY
-from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -141,31 +139,31 @@ def drop_tracking_slots(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_extra_and_tracking_slot_derivations(
-    data: Dict[str, Union[List[Dict], pd.DataFrame]],
-    spec: Dict,
+    data: dict[str, list[dict] | pd.DataFrame],
+    spec: dict,
     target_schema: SchemaView,
-) -> Dict[str, List[str]]:
+) -> dict[str, list[str]]:
     """Add slot derivations in the mapping spec to copy over all extra/tracking columns from the source data.
 
     If there is already a slot derivation for a tracking column then a new slot derivation is NOT added.
 
     Args:
-        data: Dict[str, Union[List[Dict], pd.DataFrame]]: The data that contains the tracking slots that
+        data (dict[str, list[dict] | pd.DataFrame]): The data that contains the tracking slots that
             we need to copy over. Keys are the source class names, and values are the data. The data are
             either a list of rows (where a row is a dictionary with column names as the keys) or
             a DataFrame, where each column is tested to see if it's a tracking column.
-        spec (Dict): The mapper spec to add the slot derivations to, in order to copy over the tracking columns.
+        spec (dict): The mapper spec to add the slot derivations to, in order to copy over the tracking columns.
             All classes within the spec are processed.
         target_schema (SchemaView): The LinkML schema for the target database that the spec maps onto.
 
     Returns:
-        Dict[str, List[str]]: A dictionary containing all tracking slots that exist in the target data, after mapping
+        dict[str, list[str]]: A dictionary containing all tracking slots that exist in the target data, after mapping
             from the source data. The keys are the target class names and the values are lists of tracking slot names
             that exist in the data if a mapping were to occur.
     """
-    tree_root = [
+    tree_root = next(
         c for c, defn in target_schema.all_classes().items() if defn.tree_root
-    ][0]
+    )
 
     all_extra_slots = get_extra_and_tracking_slots_from_data(data)
     added_extra_slots = {}
@@ -188,7 +186,7 @@ def add_extra_and_tracking_slot_derivations(
         # Get all tracking slots that already exist in the class derivation
         existing_extra_slots = [
             c
-            for c in class_derivation["slot_derivations"].keys()
+            for c in class_derivation["slot_derivations"]
             if is_extra_or_tracking_slot(c)
         ]
 
@@ -214,14 +212,14 @@ def add_extra_and_tracking_slot_derivations(
 
 
 def add_extra_and_tracking_slots_to_schema_class(
-    extra_and_tracking_slots: List[str], class_name: str, schema: SchemaView
+    extra_and_tracking_slots: list[str], class_name: str, schema: SchemaView
 ):
     """Add all the specified extra/tracking slots to the class definition for class_name in the schema. They
     will be added to both the top-level list of slots in the schema as well as the class definition
     for class_name in the schema.
 
     Args:
-        extra_and_tracking_slots (List[str]): A list of extra/tracking slot names to add to the class definition in
+        extra_and_tracking_slots (list[str]): A list of extra/tracking slot names to add to the class definition in
             the schema.
         class_name (str): The name of the class to add the tracking slots to.
         schema (SchemaView): The schema to add the tracking slots to. The tracking slots are added to
@@ -251,7 +249,7 @@ def add_extra_and_tracking_slots_to_schema_class(
 
 
 def add_extra_and_tracking_slots_to_schema(
-    data: Dict[str, Union[List[Dict], pd.DataFrame]], schema: SchemaView
+    data: dict[str, list[dict] | pd.DataFrame], schema: SchemaView
 ):
     """Add all extra/tracking slots found in the data to all classes in the schema.
 
@@ -262,7 +260,7 @@ def add_extra_and_tracking_slots_to_schema(
     All of the extra and tracking slots will result in is_extra_or_tracking_slot returning True.
 
     Args:
-        data (Dict[str, Union[List[Dict], pd.DataFrame]]): The data that contains the tracking slots that
+        data (dict[str, list[dict] | pd.DataFrame]): The data that contains the tracking slots that
             we need to add to the schema. Keys are the source class names, and values are the data. The data are
             either a list of rows (where a row is a dictionary with column names as the keys) or
             a DataFrame, where each column is tested to see if it's a tracking column.
@@ -282,19 +280,19 @@ def add_extra_and_tracking_slots_to_schema(
 
 
 def get_extra_and_tracking_slots_from_data(
-    data: Dict[str, Union[List[Dict], pd.DataFrame]],
-) -> Dict[str, List[str]]:
+    data: dict[str, list[dict] | pd.DataFrame],
+) -> dict[str, list[str]]:
     """Get a list of all extra/tracking slots found in the data, for all classes. Extra/tracking slots are any
     slot that is_extra_or_tracking_slot(slot) returns True for.
 
     Args:
-        data (Dict[str, Union[List[Dict], pd.DataFrame]]): The data to get the extra/tracking slots from. Keys are
+        data (dict[str, list[dict] | pd.DataFrame]): The data to get the extra/tracking slots from. Keys are
             the source class names, and values are the data. The data are either a list of rows (where a row
             is a dictionary with column names as the keys) or a DataFrame, where each column is tested to see
             if it's an extra/tracking column.
 
     Returns:
-        Dict[str, List[str]]: A dictionary where the keys are the class names and the values are lists of strings,
+        dict[str, list[str]]: A dictionary where the keys are the class names and the values are lists of strings,
             where each string is the name of an extra/tracking slot found in the data.
     """
     extra_slots = {}
@@ -309,25 +307,23 @@ def get_extra_and_tracking_slots_from_data(
             ]
         else:
             extra_slots[class_name] = [
-                c for c in class_data[0].keys() if is_extra_or_tracking_slot(c)
+                c for c in class_data[0] if is_extra_or_tracking_slot(c)
             ]
     return extra_slots
 
 
-def get_tracking_slots() -> List[str]:
+def get_tracking_slots() -> list[str]:
     """Get all the predefined tracking slots, which are all the columns specified in TrackingSlots.
 
     Returns:
-        List[str]: List of all predefined tracking slots.
+        list[str]: List of all predefined tracking slots.
     """
     return [
         getattr(TrackingSlots, v) for v in vars(TrackingSlots) if not v.startswith("__")
     ]
 
 
-def add_source_tracking_columns(
-    df: pd.DataFrame, class_name: str, file: Union[str, Path]
-):
+def add_source_tracking_columns(df: pd.DataFrame, class_name: str, file: str | Path):
     """Add the source tracking columns and values to the DataFrame. These columns specify the source class,
     source file, and source file row that each row in the DataFrame belongs to. The source row
     is 0-based and is equal to the row number in the DataFrame.
@@ -335,7 +331,7 @@ def add_source_tracking_columns(
     Args:
         df (pd.DataFrame): The DataFrame to add the source tracking columns and values to.
         class_name (str): The value to use for the source class (TrackingSlots.SOURCE_CLASS).
-        file (Union[str, Path]): The vaue to use for the source file (TrackingSlots.SOURCE_FILE)
+        file (str | Path): The vaue to use for the source file (TrackingSlots.SOURCE_FILE)
 
     Raises:
         ValueError: Raised if any of the predefined tracking column already exists in the DataFrame.
@@ -375,27 +371,27 @@ def add_source_tracking_columns(
 
 
 def load_data_with_source_tracking_columns(
-    data_files: Dict[str, List[Union[str, Path, Dict[str, str]]]],
-    schema: Union[SchemaView, str, Path] = None,
-    max_rows: Optional[int] = 0,
-    progress_barid: Optional[str] = None,
+    data_files: dict[str, list[str | Path | dict[str, str]]],
+    schema: SchemaView | str | Path = None,
+    max_rows: int | None = 0,
+    progress_barid: str | None = None,
     validate_class_names: bool = False,
     validate_columns: bool = False,
     add_tracking_columns: bool = True,
-) -> Dict[str, List[pd.DataFrame]]:
+) -> dict[str, list[pd.DataFrame]]:
     """Load all data from disk (as DataFrames) and add the tracking columns that specify which source rows and
     files the data was loaded from.
 
     Args:
-        data_files (Dict[str, List[Union[str, Path, Dict[str, str]]]]): Dictionary of all files to load. The
+        data_files (dict[str, list[str | Path | dict[str, str]]]): Dictionary of all files to load. The
             keys are the class names and the values are lists of files belonging to that class or dictionaries
             specifying an Excel file and a sheet, in the form
             { EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name" }.
-        schema (Union[SchemaView, str, Path], optional): The source schema that contains the classes that the data_files
+        schema (SchemaView | str | Path, optional): The source schema that contains the classes that the data_files
             should belong to. Only files belonging to recognized classes are loaded. Defaults to None.
-        max_rows (Optional[int], optional): Maximum number of rows to load from each file. If 0 or None then all
+        max_rows (int | None, optional): Maximum number of rows to load from each file. If 0 or None then all
             rows are loaded. Defaults to 0.
-        progress_barid (Optional[str], optional): If True then show a progress bar with this as its title to show loading
+        progress_barid (str | None, optional): If True then show a progress bar with this as its title to show loading
             progress. If None then no progress bar is shown. Defaults to None.
         validate_class_names (bool, optional): If True, then make sure all class names in data_files is
             a valid class name in the schema. If a class name is invalid then a CleanExitError exception is
@@ -407,7 +403,7 @@ def load_data_with_source_tracking_columns(
             Defaults to True.
 
     Returns:
-        Dict[str, List[pd.DataFrame]]: Keys are the class names (matching the keys in data_file) and the
+        dict[str, list[pd.DataFrame]]: Keys are the class names (matching the keys in data_file) and the
             values are lists of loaded DataFrames for the class with source tracking columns added.
     """
     if not data_files:
@@ -475,7 +471,7 @@ def load_data_with_source_tracking_columns(
                     # the file name plus other data such as the Excel sheet name for Excel
                     # files. For those types of files we collapse all keys and values
                     # into the file name.
-                    if isinstance(file, Dict):
+                    if isinstance(file, dict):
                         params = "&".join(
                             [f"{k}={v}" for k, v in file.items() if k != EXCEL_FILE_KEY]
                         )

@@ -1,10 +1,12 @@
 """Tests for odm_map.utils.pipeline_module"""
 
 import zipfile
-import pytest
-import yaml
 from pathlib import Path
 
+import pytest
+import yaml
+
+from odm_map.utils.clean_exit_error import CleanExitError
 from odm_map.utils.pipeline_module import (
     CONFIG_FILE,
     MODULE_TITLE_KEY,
@@ -13,7 +15,6 @@ from odm_map.utils.pipeline_module import (
     PipelineModule,
     get_all_modules,
 )
-from odm_map.utils.clean_exit_error import CleanExitError
 
 
 def make_module_dir(base: Path, module_name: str, title: str = "Test Module") -> Path:

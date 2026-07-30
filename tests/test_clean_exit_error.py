@@ -14,7 +14,9 @@ class TestCleanExitError:
             raise CleanExitError("test message")
 
     def test_can_be_caught_as_exception(self):
-        with pytest.raises(Exception):
+        # Asserting the base Exception is the point of this test, so the blind
+        # pytest.raises is intentional here.
+        with pytest.raises(Exception):  # noqa: B017
             raise CleanExitError("test message")
 
     def test_message_preserved(self):

@@ -1,7 +1,7 @@
 """Tests for odm_map.column_dropper.drop_columns.DropColumns"""
 
-import pytest
 import pandas as pd
+import pytest
 
 from odm_map.column_dropper.drop_columns import DropColumns
 from odm_map.utils.extra_and_tracking_slots import (

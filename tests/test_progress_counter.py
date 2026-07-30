@@ -2,7 +2,7 @@
 
 import pytest
 
-from odm_map.progress.progress_counter import ProgressCounter, TOTAL_BARID
+from odm_map.progress.progress_counter import TOTAL_BARID, ProgressCounter
 
 
 @pytest.fixture
@@ -50,9 +50,8 @@ class TestSetBarTitle:
 
 class TestUpdateErrors:
     def test_update_total_barid_raises_value_error(self, counter):
-        with counter:
-            with pytest.raises(ValueError, match=TOTAL_BARID):
-                counter.update(TOTAL_BARID, 1)
+        with counter, pytest.raises(ValueError, match=TOTAL_BARID):
+            counter.update(TOTAL_BARID, 1)
 
     def test_update_without_enter_raises_runtime_error(self, counter):
         with pytest.raises(RuntimeError):

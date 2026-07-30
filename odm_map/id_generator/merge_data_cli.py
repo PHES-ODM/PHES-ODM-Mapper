@@ -1,5 +1,6 @@
-from typing import Annotated, List
 from pathlib import Path
+from typing import Annotated
+
 import typer
 
 from odm_map.id_generator.merge_data import MergeData
@@ -30,7 +31,7 @@ app = typer.Typer(
 
 @app.command(help=MAIN_HELP)
 def main(
-    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     schema: Annotated[Path, typer.Option(show_default=False, help=SCHEMA_HELP)],
     output_dir: Annotated[Path, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     debug: Annotated[bool, typer.Option(show_default=True, help=DEBUG_HELP)] = False,

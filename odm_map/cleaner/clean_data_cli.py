@@ -1,7 +1,7 @@
-from typing import List, Annotated, Optional
+from typing import Annotated
+
 import typer
 import yaml
-
 from linkml_runtime import SchemaView
 
 from odm_map.cleaner.clean_data import DataCleaner
@@ -70,13 +70,13 @@ performed"""
 
 @app.command()
 def main(
-    inputs: Annotated[List[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
+    inputs: Annotated[list[str], typer.Argument(show_default=False, help=INPUTS_HELP)],
     output_dir: Annotated[str, typer.Option(show_default=False, help=OUTPUT_DIR_HELP)],
     log_file: Annotated[str, typer.Option(show_default=False, help=LOG_FILE_HELP)],
     max_rows: Annotated[int, typer.Option(help=MAX_ROWS_HELP)] = 0,
-    schema: Annotated[str, typer.Option(help=SCHEMA_HELP)] = None,
+    schema: Annotated[str | None, typer.Option(help=SCHEMA_HELP)] = None,
     clean_operations_file: Annotated[
-        Optional[str], typer.Option(help=CLEAN_OPERATIONS_FILE_HELP)
+        str | None, typer.Option(help=CLEAN_OPERATIONS_FILE_HELP)
     ] = None,
 ):
     if not isinstance(schema, SchemaView) and schema is not None:

@@ -1,17 +1,16 @@
 """Tests for odm_map.mapper.map_data"""
 
-import pytest
-import pandas as pd
 from unittest.mock import patch
 
+import pandas as pd
+import pytest
 from linkml_runtime import SchemaView
 
-from odm_map.mapper.map_data import run_mapper, DataMapper
+from odm_map.mapper.map_data import DataMapper, run_mapper
 from odm_map.utils.extra_and_tracking_slots import (
-    TrackingSlots,
     EXTRA_SLOT_PREFIX,
+    TrackingSlots,
 )
-
 
 # ---------------------------------------------------------------------------
 # Minimal LinkML schema for testing

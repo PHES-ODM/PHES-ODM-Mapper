@@ -19,33 +19,34 @@ pipeline.run(
 )
 """
 
-from pathlib import Path
-from typing import Union, Optional, List, Dict, Any
-from datetime import datetime
 import tempfile
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
 import pandas as pd
 
-from odm_map.actions.action_drop_columns import action_drop_columns
 from odm_map.actions.action_clean_data import action_clean_data
-from odm_map.actions.action_save_data import action_save_data
-from odm_map.actions.action_map_data import action_map_data
-from odm_map.actions.action_generate_ids import action_generate_ids
-from odm_map.actions.action_filter_data import action_filter_data
+from odm_map.actions.action_drop_columns import action_drop_columns
 from odm_map.actions.action_expand_data import action_expand_data
-from odm_map.actions.action_select_enum_hierarchy import action_select_enum_hierarchy
+from odm_map.actions.action_filter_data import action_filter_data
+from odm_map.actions.action_generate_ids import action_generate_ids
+from odm_map.actions.action_map_data import action_map_data
 from odm_map.actions.action_prepare_wide_to_long import action_prepare_wide_to_long
-from odm_map.utils.pipeline_module import (
-    PipelineModule,
-    MODULE_STEPS_KEY,
-    MODULE_IF_KEY,
-    MODULE_ACTION_KEY,
-    MODULE_PARAMS_KEY,
-    TEMP_DIR_TAG,
-)
-from odm_map.utils.logger import get_logger
+from odm_map.actions.action_save_data import action_save_data
+from odm_map.actions.action_select_enum_hierarchy import action_select_enum_hierarchy
 from odm_map.utils.clean_exit_error import CleanExitError
 from odm_map.utils.extra_and_tracking_slots import (
     load_data_with_source_tracking_columns,
+)
+from odm_map.utils.logger import get_logger
+from odm_map.utils.pipeline_module import (
+    MODULE_ACTION_KEY,
+    MODULE_IF_KEY,
+    MODULE_PARAMS_KEY,
+    MODULE_STEPS_KEY,
+    TEMP_DIR_TAG,
+    PipelineModule,
 )
 from odm_map.utils.schema_utils import all_classes_without_tree_root
 
@@ -59,19 +60,19 @@ LOADING_BARID = "Loading Data"
 MARK_INSTEAD_OF_DROP_KEY = "mark_instead_of_drop"
 
 
-class Pipeline(object):
+class Pipeline:
     def __init__(
         self,
-        module: Optional[Union[str, PipelineModule]],
-        module_path: Optional[Union[str, Path]],
+        module: str | PipelineModule | None,
+        module_path: str | Path | None,
     ):
         """Class to perform a full mapping, including filtering and ID generation.
 
         Args:
-            module (Optional[Union[str, PipelineModule]]): Either the name of the built-in module for the mapping
+            module (str | PipelineModule | None): Either the name of the built-in module for the mapping
                 (eg. "odm-v1-to-v2" or "nwss-reporting-to-v2") or an already loaded PipelineModule. If None then
                 module_path must be specified.
-            module_path (Optional[Union[str, Path]]): The path to the directory or zip file for the mapping module.
+            module_path (str | Path | None): The path to the directory or zip file for the mapping module.
                 If None then module  must be specified.
         """
         if isinstance(module, PipelineModule):
@@ -96,15 +97,15 @@ class Pipeline(object):
             self.temp_dir_obj.cleanup()
             self.temp_dir_obj = None
 
-    def get_formatted_bool_key(self, d: Dict, key: str, default: Any = None) -> bool:
+    def get_formatted_bool_key(self, d: dict, key: str, default: Any = None) -> bool:
         val = self.get_formatted_string_key(d, key, default)
         if isinstance(val, str):
             return str(val).lower() in ("true", "1", "yes")
         return bool(int(val))
 
     def get_formatted_string_key(
-        self, d: Dict, key: str, default: Any = None
-    ) -> Optional[str]:
+        self, d: dict, key: str, default: Any = None
+    ) -> str | None:
         val = d.get(key, default)
         if isinstance(val, str):
             val = val.format(**self.top_level_kwargs)
@@ -114,27 +115,27 @@ class Pipeline(object):
 
     def run(
         self,
-        data_files: Dict[str, List[Union[str, Path, Dict[str, str]]]],
+        data_files: dict[str, list[str | Path | dict[str, str]]],
         output_dir: str,
-        temp_dir: Union[str, Path] = None,
-        max_rows: int = None,
+        temp_dir: str | Path | None = None,
+        max_rows: int | None = None,
         max_processes: int = 1,
         multi_bar_progress: bool = True,
         debug_mode: bool = False,
-    ) -> Dict[str, List[pd.DataFrame]]:
+    ) -> dict[str, list[pd.DataFrame]]:
         """Perform a full mapping, including filtering and ID generation.
 
         Args:
-            data_files (Dict[str, List[Union[str, Path]]]): Dictionary specifying all source database data
+            data_files (dict[str, list[str | Path | dict[str, str]]]): Dictionary specifying all source database data
                 files to map. The keys are the data file class names and the values are a list of files to
                 filter belonging to the class, or dictionaries for Excel files in the format
                 {EXCEL_FILE_KEY: "file.xlsx", EXCEL_SHEET_KEY: "sheet_name"}.
             output_dir (str): Directory to save all the final mapped data to.
-            temp_dir (Union[str, Path], optional): Location to store all temporary files used by mapping.
+            temp_dir (str | Path | None, optional): Location to store all temporary files used by mapping.
                 If None then a temporary directory will be created and deleted when complete. If set then
                 the resulting temporary files will not be deleted. This is useful for debugging purposes.
                 Defaults to None.
-            max_rows (int, optional): Maximum number of input rows to load for mapping for each
+            max_rows (int | None, optional): Maximum number of input rows to load for mapping for each
                 data file specified in data_files. Defaults to None.
             max_processes (int, optional): Maximum number of processes to run to do the mapping. For large
                 datasets increasing this can increase performance. Defaults to 1.
@@ -148,10 +149,10 @@ class Pipeline(object):
                 and set to TRUE if the row would be dropped when not in debug mode. Defaults to False.
 
         Returns:
-            Dict[str, List[pd.DataFrame]]: Lists all final DataFrames that resulted from the mapping. The keys
+            dict[str, list[pd.DataFrame]]: Lists all final DataFrames that resulted from the mapping. The keys
                 are the output class names and the values are lists of mapped DataFrames for the class.
         """
-        tic = datetime.now()
+        tic = datetime.now().astimezone()
 
         output_dir = Path(output_dir)
 
@@ -358,6 +359,6 @@ class Pipeline(object):
             self.temp_dir_obj.cleanup()
             self.temp_dir_obj = None
 
-        logger.info(f"Total runtime: {datetime.now() - tic}")
+        logger.info(f"Total runtime: {datetime.now().astimezone() - tic}")
 
         return data_frames

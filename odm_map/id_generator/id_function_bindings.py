@@ -6,15 +6,16 @@ For example:
     fn.datetimetz(["2024-09-13", "12:15:15 pm", "UTC-04:00"])
 """
 
-from typing import Any, List, Union, Dict, Optional
 import datetime
-import dateutil.parser
-import pytz
 import re
-import pandas as pd
+from typing import Any
 
-from odm_map.utils.logger import get_logger
+import dateutil.parser
+import pandas as pd
+import pytz
+
 from odm_map.id_generator.id_value import IDValue
+from odm_map.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -115,7 +116,7 @@ class FunctionBindings:
             # Make first character of each element uppercase. The first element has a first character that is
             # lowercase unless firstcap is True (in which case we uppercase it)
             args = [
-                "%s%s" % (v[0].upper() if (idx or firstcap) else v[0].lower(), v[1:])
+                f"{v[0].upper() if (idx or firstcap) else v[0].lower()}{v[1:]}"
                 for idx, v in enumerate(args)
             ]
         v = "".join(args)
@@ -143,7 +144,7 @@ class FunctionBindings:
             ValueError: val could not be parsed as a timezone.
 
         Returns:
-            datetime: A datetime object that has the timezone set. The date and
+            datetime.datetime: A datetime object that has the timezone set. The date and
                 time components of the object should be ignored and the timezone used.
                 It can be converted to a string by using %z in datetime.strftime.
         """
@@ -188,21 +189,19 @@ class FunctionBindings:
 
         raise ValueError(f"Cannot parse value as timezone: {orig_val}")
 
-    def datetimetz(
-        self, d: Union[str, List[str]], split_at: Optional[str] = None
-    ) -> str:
+    def datetimetz(self, d: str | list[str], split_at: str | None = None) -> str:
         """Convert the input date, time, and timezone strings into a single string in the format
         YYYY-mm-ddTHH:MM:SS+/-hhmm (eg. 2024-09-16T10:10:00-0700). This function can either
         accept an array of strings, up to size 3, in the format [date, time, timezone], [date, time],
         or just [date], or a single string that contains the date, time, and/or timezone.
 
         Args:
-            d (Union[str, List[str]]): If a string, then we try to parse the date, time, and timezone from
+            d (str | list[str]): If a string, then we try to parse the date, time, and timezone from
                 the single string by using the list of strings [d, d, d]. If split_at is specified, then we
                 first split the string by split_at and use the resulting array as the input.
                 If a list of strings, then the list should contain up to 3 items. The items are the date, time,
                 and timezone. Multiple formats are supported for each component. See DATE_TIME_TIMEZONE_FORMATS.
-            split_at (Optional[str]): If specified and d is a string, then we split d at split_at and use
+            split_at (str | None): If specified and d is a string, then we split d at split_at and use
                 the resulting array as input. If split_at is None and d is a string, then we use [d, d, d]
                 as the input. If d is already an array, then split_at is ignored.
 
@@ -257,16 +256,21 @@ class FunctionBindings:
                         # date 2000-1-1 and other_date_obj gets the date 2001-2-2. Therefore if the day, month,
                         # or year is missing then date_obj != other_date_obj, but if they are not missing
                         # then date_obj == other_date_obj
+                        # The sentinel defaults are deliberately naive: they are only compared
+                        # against each other to detect missing components, and attaching a
+                        # tzinfo here would leak a timezone into the parsed result.
                         date_obj = dateutil.parser.parse(
-                            val, default=datetime.datetime(2000, 1, 1)
+                            val,
+                            default=datetime.datetime(2000, 1, 1),  # noqa: DTZ001
                         )
                         other_date_obj = dateutil.parser.parse(
-                            val, default=datetime.datetime(2001, 2, 2)
+                            val,
+                            default=datetime.datetime(2001, 2, 2),  # noqa: DTZ001
                         )
                         if date_obj != other_date_obj:
                             # This occurs when no month, day, or year is specified in val
                             date_obj = None
-                            raise Exception(f"Not a date: {val}")
+                            raise ValueError(f"Not a date: {val}")
                         date_obj = date_obj.date()
                     elif fmt == "dateutil_time":
                         date_obj = dateutil.parser.parse(val)
@@ -275,10 +279,16 @@ class FunctionBindings:
                         date_obj = dateutil.parser.parse(val)
                         date_obj = date_obj.tzinfo
                     else:
-                        date_obj = datetime.datetime.strptime(val, fmt)
+                        # fmt comes from the configured format list and is applied to source
+                        # data as-is; requiring %z would reject the naive date/time strings
+                        # this function exists to parse.
+                        date_obj = datetime.datetime.strptime(val, fmt)  # noqa: DTZ007
                     objects[idx] = date_obj
                     break
-                except Exception:
+                except (ValueError, TypeError, OverflowError, KeyError):
+                    # Wrong format for this value, so try the next one. dateutil raises
+                    # ParserError/OverflowError/TypeError, strptime and _customtz raise
+                    # ValueError, and pytz raises UnknownTimeZoneError (a KeyError).
                     pass
             if objects[idx] is None:
                 if self.generator is None:
@@ -351,14 +361,14 @@ class FunctionBindings:
         return v
 
     def countrows(
-        self, class_name: str, linkage_path: Union[str, Dict, List[Dict]] = None
+        self, class_name: str, linkage_path: str | dict | list[dict] | None = None
     ) -> int:
         """Count number of linked rows (relative to the current class and row) in class class_name. We follow the
         specified linkage path, or the default linkage path if none is specified.
 
         Args:
             class_name (str): The class to count the rows in.
-            linkage_path (Union[str, Dict, List[Dict]]): The linkage path to follow, which can either be
+            linkage_path (str | dict | list[dict] | None): The linkage path to follow, which can either be
                 the dictionary or list of linkage paths, or a named linkage path. Named linkage paths are found
                 in the ID generation config file. If None then the default linkage path from the current class
                 to class_name is used, as specified in the config file.
@@ -399,7 +409,7 @@ class FunctionBindings:
             return v
         try:
             return float(v)
-        except Exception:
+        except (ValueError, TypeError):
             return v
 
     def try_int(self, v: Any) -> Any:
@@ -410,7 +420,7 @@ class FunctionBindings:
             return v
         try:
             return int(v)
-        except Exception:
+        except (ValueError, TypeError):
             return v
 
     def _has_str_value(

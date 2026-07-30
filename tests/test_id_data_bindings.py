@@ -1,11 +1,12 @@
 """Tests for odm_map.id_generator.id_data_bindings.DataBindings"""
 
-import pytest
 from unittest.mock import MagicMock
 
-from odm_map.id_generator.id_data_bindings import DataBindings, EMPTY_VALUE
-from odm_map.id_generator.id_value import IDValue
+import pytest
+
 from odm_map.id_generator.generator_config_keys import ConfigKeys
+from odm_map.id_generator.id_data_bindings import EMPTY_VALUE, DataBindings
+from odm_map.id_generator.id_value import IDValue
 
 
 def make_gen(current_class="samples", current_row_index=0):
@@ -78,7 +79,7 @@ class TestGetAttrWithRootClass:
 
         binding = DataBindings(gen, root_class="samples", sub_class_names=None)
         # Trigger attribute access
-        binding.sampleName
+        _ = binding.sampleName
         assert gen.get_first_linked_value.called
 
     def test_slot_access_propagates_value(self):

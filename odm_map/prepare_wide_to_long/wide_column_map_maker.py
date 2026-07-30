@@ -34,39 +34,37 @@ together to get the mapped data in ODM long format.
 """
 
 import os
-from typing import Union, Tuple, List, Dict, Optional
-from pathlib import Path
-import pandas as pd
-import yaml
 from copy import deepcopy
 from dataclasses import asdict
+from pathlib import Path
 
+import pandas as pd
+import yaml
+from linkml.utils.schema_builder import SchemaBuilder
 from linkml_runtime import SchemaView
 from linkml_runtime.dumpers import yaml_dumper
-from linkml.utils.schema_builder import SchemaBuilder
 from linkml_runtime.linkml_model import SlotDefinition
 
-from odm_map.utils.logger import get_logger
-from odm_map.utils.extra_and_tracking_slots import (
-    is_tracking_slot,
-    get_tracking_slots,
-)
-from odm_map.utils.general_utils import read_data_frame, TREE_ROOT_CLASS_NAME
-from odm_map.utils.schema_utils import (
-    get_ranges_of_slot,
-    get_slot_definition,
-    get_ranges_of_slot_defn,
-)
-
 from odm_map.prepare_wide_to_long.wide_column_utils import (
+    RECOGNIZED_FLAG_PREFIXES,
     ConfigKeys,
     WideColumnValues,
-    RECOGNIZED_FLAG_PREFIXES,
+    column_without_flags,
     get_column_flags,
+    get_extra_slot_for_flag_prefix,
     get_flag_prefix,
     groups_of_column,
-    column_without_flags,
-    get_extra_slot_for_flag_prefix,
+)
+from odm_map.utils.extra_and_tracking_slots import (
+    get_tracking_slots,
+    is_tracking_slot,
+)
+from odm_map.utils.general_utils import TREE_ROOT_CLASS_NAME, read_data_frame
+from odm_map.utils.logger import get_logger
+from odm_map.utils.schema_utils import (
+    get_ranges_of_slot,
+    get_ranges_of_slot_defn,
+    get_slot_definition,
 )
 
 logger = get_logger(__name__)
@@ -78,13 +76,13 @@ SCHEMA_SUB_DIR = "schema"
 class WideColumnMapMaker:
     def __init__(
         self,
-        config: Union[str, Path],
+        config: str | Path,
         source_class_name: str,
-        target_schema: Union[str, Path, SchemaView],
+        target_schema: str | Path | SchemaView,
     ):
-        self.source_schema_file: Optional[Path] = None
-        self.map_schemas_path: Optional[Path] = None
-        self.mapping_schemas: Optional[Dict[str, Dict]] = None
+        self.source_schema_file: Path | None = None
+        self.map_schemas_path: Path | None = None
+        self.mapping_schemas: dict[str, dict] | None = None
 
         self.source_class_name = source_class_name
 
@@ -113,39 +111,39 @@ class WideColumnMapMaker:
 
     def make(
         self,
-        data_file: Union[str, Path],
+        data_file: str | Path,
         data_frame: pd.DataFrame,
-        output_dir: Union[str, Path] = None,
-    ) -> Tuple[SchemaView, Optional[Path], Dict[str, Dict], Optional[Path]]:
+        output_dir: str | Path | None = None,
+    ) -> tuple[SchemaView, Path | None, dict[str, dict], Path | None]:
         """Make the LinkML-Map schemas and the LinkML schema for the source dataset, to map
         the expanded source dataset from wide to long format. The expanded source dataset is
         a wide dataset that has been expanded with WideColumnExpander.
 
         Args:
-            data_file (Union[str, Path]): If specified then use this as the source dataset that
+            data_file (str | Path): If specified then use this as the source dataset that
                 we want to map. This should be in expanded wide format (ie. after expanding the
                 original wide format using WideColumnExpander).
             data_frame (pd.DataFrame): If specified then use this as the source dataset. It is
                 treated identically to data_file. If data_file is set then data_frame is ignored.
                 (ie. only one of data_file or data_frame should be specified)
-            output_dir (Union[str, Path], optional): Directory to save the resulting LinkML-Map
+            output_dir (str | Path | None, optional): Directory to save the resulting LinkML-Map
                 schemas and LinkML-Map source schema to. If None then they are not saved to disk.
                 Defaults to None.
 
         Returns:
-            Tuple[SchemaView, Optional[Path], Dict[str, Dict], Optional[Path]]: Tuple
+            tuple[SchemaView, Path | None, dict[str, dict], Path | None]: Tuple
                 containing the artifacts and paths to the saved artifacts:
                     source_schema (SchemaView): The constructed LinkML-Schema that should
                         be used as the source schema when mapping from expanded wide to long.
-                    source_schema_file (Optional[Path]): If output_dir was provided, then the full
+                    source_schema_file(Path | None): If output_dir was provided, then the full
                         path to the saved LinkML-schema associated with source_schema. If output_dir
                         is None then source_schema_file is None.
-                    mapping_schemas (Dict[str, Dict]): A dictionary if LinkML-Map schemas, where
+                    mapping_schemas(dict[str, dict]): A dictionary if LinkML-Map schemas, where
                         the keys are unique names for the schema and the values are actual mapping
                         schemas (as dictionaries). Applying all of these mappings chemas to
                         expanded wide data (and concatenating the results as separate rows) will
                         perform a full mapping from the expanded wide to long format.
-                    mapping_schemas_path (Optional[Path]): If output_dir was provided, then the
+                    mapping_schemas_path(Path | None): If output_dir was provided, then the
                         directory where all LinkML-Map schemas associated with mapping_schemas
                         were saved. If output_dir is None then mapping_schemas_path is None.
         """
@@ -192,13 +190,11 @@ class WideColumnMapMaker:
         # Get all the enums that appear as a range in the schema
         all_enums = []
         schema = SchemaView(self.source_schema_builder.schema)
-        for class_name in schema.all_classes().keys():
+        for class_name in schema.all_classes():
             class_defn = schema.induced_class(class_name)
             for slot_defn in class_defn.attributes.values():
                 ranges = get_ranges_of_slot_defn(slot_defn)
-                enum_ranges = [
-                    r for r in ranges if r in self.target_schema.all_enums().keys()
-                ]
+                enum_ranges = [r for r in ranges if r in self.target_schema.all_enums()]
                 all_enums.extend(enum_ranges)
 
         # Drop duplicates
@@ -288,7 +284,7 @@ class WideColumnMapMaker:
         # Add all tracking slots to all the derivations (copy them over from source to target datasets)
         tracking_slots = get_tracking_slots()
         for cur_derivations in self.class_derivations.values():
-            for target_class_name in cur_derivations.keys():
+            for target_class_name in cur_derivations:
                 if target_class_name == TREE_ROOT_CLASS_NAME:
                     continue
                 for tracking_slot in tracking_slots:
@@ -404,14 +400,14 @@ class WideColumnMapMaker:
                 }
                 mapping_schema["enum_derivations"].update(enum_derivation)
 
-    def add_tree_root_derivation(self, derivation: Dict):
+    def add_tree_root_derivation(self, derivation: dict):
         """Add the tree root derivation to the specified class derivation. The tree root is the
         top-level class that contains all the tables, and is named TREE_ROOT_CLASS_NAME. Its
         slots are the tables, and a slot derivation is added to copy these slots from the
         source dataset to the target dataset.
 
         Args:
-            derivation (Dict): The class derivation to add the tree root derivations to.
+            derivation (dict): The class derivation to add the tree root derivations to.
 
         Raises:
             ValueError: Raised if a tree root derivation already exists for one of the target
@@ -430,7 +426,7 @@ class WideColumnMapMaker:
         slot_derivations = container_derivations["slot_derivations"]
 
         # Add a slot derivation for all target classes
-        for target_class in derivation.keys():
+        for target_class in derivation:
             if target_class == TREE_ROOT_CLASS_NAME:
                 continue
             if target_class in slot_derivations:
@@ -443,12 +439,12 @@ class WideColumnMapMaker:
             }
 
     def save(
-        self, output_dir: Union[str, Path], delete_existing_mappers: bool = True
-    ) -> Tuple[Path, Path]:
+        self, output_dir: str | Path, delete_existing_mappers: bool = True
+    ) -> tuple[Path, Path]:
         """Save the dynamic source schema for the mapping and all the LinkML-Map schemas to disk.
 
         Args:
-            output_dir (Union[str, Path]): The directory to save the source schema and LinkML-Map
+            output_dir (str | Path): The directory to save the source schema and LinkML-Map
                 schemas to.
             delete_existing_mappers (bool): If True, then delete all the existing YAML files in
                 the output directory before saving the new mapper schemas. This will ensure that
@@ -458,7 +454,7 @@ class WideColumnMapMaker:
                 will not be affected (eg. the subdirectory where the LinkML schema is saved).
 
         Returns:
-            Tuple[Path, Path]: A tuple of two paths where artifacts are saved. This first is the
+            tuple[Path, Path]: A tuple of two paths where artifacts are saved. This first is the
                 path for the YAML file that is the LinkML schema for the source dataset (for mapping
                 purposes), and the second is the directory where all the YAML LinkML-Map schemas are
                 found for mapping from wide to long.
@@ -493,7 +489,7 @@ class WideColumnMapMaker:
 
         return self.source_schema_file, self.map_schemas_path
 
-    def get_class_and_slot(self, col: str) -> Tuple[str, str]:
+    def get_class_and_slot(self, col: str) -> tuple[str, str]:
         """From the specified (possibly grouped) wide column, get the class name and the slot that
         the column is for. For example, the column mr_organizationID:12 has a class of
         "measures" (from mr) and a slot of "organizationID". The class and slot must be
@@ -507,7 +503,7 @@ class WideColumnMapMaker:
                 to the constructor.
 
         Returns:
-            Tuple[str, str]: The class name and slot name for the column.
+            tuple[str, str]: The class name and slot name for the column.
         """
         parts = column_without_flags(col).split(WideColumnValues.COLUMN_PART_SEPARATOR)
         if len(parts) != 2:
@@ -583,9 +579,7 @@ class WideColumnMapMaker:
         # another table
         return "string"
 
-    def get_slot_definition_info_for_ranges(
-        self, ranges: Union[str, List[str]]
-    ) -> Dict:
+    def get_slot_definition_info_for_ranges(self, ranges: str | list[str]) -> dict:
         """For the specified ranges, create the slot definition information required to specify
         that a slot can be any of the ranges.
 
@@ -603,10 +597,10 @@ class WideColumnMapMaker:
             }
 
         Args:
-            ranges (Union[str, List[str]]): Either a single range or a list of one or more ranges.
+            ranges (str | list[str]): Either a single range or a list of one or more ranges.
 
         Returns:
-            Dict: A dictionary that contains the proper slot definition information for a slot that
+            dict: A dictionary that contains the proper slot definition information for a slot that
                 can be any of the specified ranges. The result will either have the "range" key set
                 (for a single range) or the "any_of" key set (for multiple ranges)
         """
@@ -622,8 +616,8 @@ class WideColumnMapMaker:
         return {"any_of": [{"range": r} for r in ranges]}
 
     def get_range_info_of_slot(
-        self, slot_defn: Union[SlotDefinition, Dict], schema: SchemaView
-    ) -> Dict:
+        self, slot_defn: SlotDefinition | dict, schema: SchemaView
+    ) -> dict:
         """Get the range information from the specified slot definition. The range information is stored
         in the slot definition's "range" and "any_of" keys. We will extract this information, and replace any
         range that points to a class with a string.
@@ -642,13 +636,13 @@ class WideColumnMapMaker:
             }
 
         Args:
-            slot_defn (Union[SlotDefinition, Dict]): The slot definition to get the range info from.
+            slot_defn (SlotDefinition | dict): The slot definition to get the range info from.
             schema (SchemaView): The schema that the slot belongs to. If any of the ranges are a class
                 in this schema, then the range will be converted to a string (since in the final
                 schema that we build we will not have those class definitions).
 
         Returns:
-            Dict: A dictionary that contains the range information extracted from the slot definition.
+            dict: A dictionary that contains the range information extracted from the slot definition.
                 Either the "range" key (if there is only one range) or "any_of" key (if there is more
                 than one range) will be set.
         """
@@ -679,10 +673,10 @@ class WideColumnMapMaker:
         class_name: str,
         slot_name: str,
         info_schema: SchemaView,
-        info_class_name: Optional[str],
-        info_slot_name: Optional[str],
-        slot_type: Optional[Union[str, List[str]]] = None,
-        slot_info: Dict = None,
+        info_class_name: str | None,
+        info_slot_name: str | None,
+        slot_type: str | list[str] | None = None,
+        slot_info: dict | None = None,
         replace_if_present: bool = False,
     ):
         """Add the specified class and slot to the schema being built by schema_builder.
@@ -693,16 +687,16 @@ class WideColumnMapMaker:
             slot_name (str): The name of the slot to add.
             info_schema (SchemaView): The schema to use for determining the range, description, title, and
                 other information about the slot when using info_class_name and info_slot_name.
-            info_class_name (Optional[str]): If slot_type is None, then use this plus info_slot_name to determine the
+            info_class_name (str | None): If slot_type is None, then use this plus info_slot_name to determine the
                 range, description, title and other info about the slot. This information will be inherited
                 from the slot info_slot_name in the schema info_schema.
-            info_slot_name (Optional[str]): If slot_type is None, then use this plus info_class_name to determine the
+            info_slot_name (str | None): If slot_type is None, then use this plus info_class_name to determine the
                 range, description, title and other info about the slot. This information will be inherited
                 from the slot info_slot_name in the schema info_schema.
-            slot_type (Optional[Union[str, List[str]]], optional): If specified, then use this type or types
+            slot_type (str | list[str] | None, optional): If specified, then use this type or types
                 (eg. "string", "float") to assign as ranges to the slot being added. If None, then we use the
                 type of info_class_name and info_slot_name in the info_schema. Defaults to None.
-            slot_info (Dict, optional): If specified, then use the values in this dictionary as information to add
+            slot_info (dict | None, optional): If specified, then use the values in this dictionary as information to add
                 to the new slot being added. It can contain keys and values for "description", "title", and "notes".
                 Defaults to None.
             replace_if_present (bool, optional): If True and the slot already exists in the SchemaBuilder, the
@@ -741,7 +735,7 @@ class WideColumnMapMaker:
 
     def add_slot_derivation(
         self,
-        class_derivations: Dict,
+        class_derivations: dict,
         source_class_name: str,
         source_slot_name: str,
         target_class_name: str,
@@ -751,7 +745,7 @@ class WideColumnMapMaker:
         to a target class/slot.
 
         Args:
-            class_derivations (Dict): The class derivations to add the derivation to. This is a
+            class_derivations (dict): The class derivations to add the derivation to. This is a
                 dicitonary where the keys are the target class and the values are the derivations
                 for that class.
             source_class_name (str): The source class to copy from.
@@ -788,7 +782,7 @@ class WideColumnMapMaker:
         }
 
     def make_derivations(
-        self, class_derivations: Dict, columns: List[str], group_name: Optional[str]
+        self, class_derivations: dict, columns: list[str], group_name: str | None
     ):
         """Add class/slot derivations for all columns, to copy from the column to the corresponding
         class/slot. This will also add the slot to the dynamics schema being built for the source
@@ -798,13 +792,13 @@ class WideColumnMapMaker:
         otherwise an exception is raised.
 
         Args:
-            class_derivations (Dict): The class derivations to add the new derivations for the
+            class_derivations (dict): The class derivations to add the new derivations for the
                 columns to. The keys are the target class and the values are the derivation for
                 the target class.
-            columns (List[str]): All the columns to make a derivation for. For example, the
+            columns (list[str]): All the columns to make a derivation for. For example, the
                 column mr_organizationID:1 will add a derivation to copy from the column
                 mr_organizationID:1 to the column organizationID in the target class measure (mr).
-            group_name (Optional[str]): The group that the derivations belong to. Each class
+            group_name (str | None): The group that the derivations belong to. Each class
                 derivation has a group associated with it. It is used to populate and extra column
                 with the group name, which can be used for linking purposes.
         """

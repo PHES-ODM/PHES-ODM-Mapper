@@ -155,17 +155,18 @@ The above will remove null values from the `sampleShed` column arrays, but will 
 create any new rows and instead keep all the non-null values in the array.
 """
 
-from typing import Union, List, Dict, Any, Optional, Tuple
 from pathlib import Path
-import yaml
-import pandas as pd
+from typing import Any
 
-from odm_map.utils.logger import get_logger
+import pandas as pd
+import yaml
+
+from odm_map.progress import ProgressCounter
 from odm_map.utils.general_utils import (
     load_data_frames_for_classes,
     save_data_frames_for_classes,
 )
-from odm_map.progress import ProgressCounter
+from odm_map.utils.logger import get_logger
 
 
 # Config file keys
@@ -182,34 +183,34 @@ EXPAND_BARID = "Expanding"
 logger = get_logger(__name__)
 
 
-class ArrayExpander(object):
-    def __init__(self, config: Union[str, Path]):
+class ArrayExpander:
+    def __init__(self, config: str | Path):
         with open(config, "r") as f:
             self.config = yaml.safe_load(f)
 
     def expand_data(
         self,
-        data_files: Dict[str, List[Union[str, Path, Dict]]],
-        data_frames: Dict[str, List[pd.DataFrame]],
-        output_dir: Optional[Union[str, Path]] = None,
+        data_files: dict[str, list[str | Path | dict]],
+        data_frames: dict[str, list[pd.DataFrame]],
+        output_dir: str | Path | None = None,
         max_rows: int = 0,
-    ) -> Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]:
+    ) -> tuple[dict[str, list[str]], dict[str, list[pd.DataFrame]]]:
         """Expand all the specified data files and DataFrames, and optionally save them to disk.
 
         Args:
-            data_files (Dict[str, List[Union[str, Path, Dict]]]): A dictionary specifying files and DataFrames to expand. The
+            data_files (dict[str, list[str | Path | dict]]): A dictionary specifying files and DataFrames to expand. The
                 keys are class names and the values are paths to files to expand. Can be combined with the data_frames
                 parameter to expand both files and DataFrames.
-            data_frames (Dict[str, List[pd.DataFrame]]): A dicitonary specifying DataFrames to expand. The keys are the class
+            data_frames (dict[str, list[pd.DataFrame]]): A dicitonary specifying DataFrames to expand. The keys are the class
                 names and the values are lists of DataFrames belonging to that class. Can be combined with the data_files
                 parameter to expand both files and DataFrames.
-            output_dir (Optional[Union[str, Path]], optional): If specified then save the resulting DataFrames to disk.
+            output_dir (str | Path | None, optional): If specified then save the resulting DataFrames to disk.
                 DataFrames belonging to the same class are merged so that only one file per class is saved.
             max_rows (int, optional): If positive then the number of rows to load from each data file. If 0 then
                 all rows are loaded. Defaults to 0.
 
         Returns:
-            Tuple[Dict[str, List[str]], Dict[str, List[pd.DataFrame]]]: A tuple of [expanded_data_files, expanded_data_frames]:
+            tuple[dict[str, list[str]], dict[str, list[pd.DataFrame]]]: A tuple of [expanded_data_files, expanded_data_frames]:
                 expanded_data_files: Dictionary of all outputed expanded data files. The keys are the class name
                     the file belongs to and the values are lists of files. If output_dir is None then data_files will be
                     None (ie. no data saved to disk), instead see expanded_data_frames.
@@ -280,7 +281,7 @@ class ArrayExpander(object):
         self,
         df: pd.DataFrame,
         column: str,
-        config: Optional[Dict[str, Any]],
+        config: dict[str, Any] | None,
         class_name: str,
     ) -> pd.DataFrame:
         """Expand the DataFrame based on the specified column and the specified optional configuration.
@@ -289,7 +290,7 @@ class ArrayExpander(object):
             df (pd.DataFrame): The DataFrame to expand.
             column (str): The column to use for expanding. We will look for arrays within this column and create
                 rows for each value in the array.
-            config (Optional[Dict[str, Any]]): Optional configuration for the expand operation. If None or empty,
+            config (dict[str, Any] | None): Optional configuration for the expand operation. If None or empty,
                 then we the output will have one row per value in the array. Otherwise expanding is done using
                 the following config options:
                     ConfigKeys.REMOVE_NULLS_KEY: If True then before doing anything remove any null values from the arrays within
@@ -323,7 +324,7 @@ class ArrayExpander(object):
                     expanded_values = yaml.safe_load(val)
                     if not isinstance(expanded_values, list):
                         continue
-                except Exception:
+                except yaml.YAMLError:
                     continue
             else:
                 continue

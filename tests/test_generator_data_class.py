@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from linkml_runtime import SchemaView
 
-from odm_map.id_generator.generator_data import GeneratorData, INITIAL_ID_PREFIX
+from odm_map.id_generator.generator_data import INITIAL_ID_PREFIX, GeneratorData
 
 SCHEMA_STR = textwrap.dedent("""
     id: https://example.org/test

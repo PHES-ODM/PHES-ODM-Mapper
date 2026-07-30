@@ -1,7 +1,7 @@
 """Tests for odm_map.filter.filter_funcs"""
 
-import pytest
 import pandas as pd
+import pytest
 
 from odm_map.filter.filter_funcs import (
     DROP_COLUMN,
@@ -24,7 +24,6 @@ from odm_map.filter.filter_funcs import (
     get_named_filter,
     set_named_filter,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
