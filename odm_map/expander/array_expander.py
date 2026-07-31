@@ -360,18 +360,6 @@ class ArrayExpander:
                     expanded_values[i] for i in select_items if i < len(expanded_values)
                 ]
 
-            # @TODO: Not sure if we want to drop rows with empty arrays anymore. For now
-            # we shouldn't drop the rows (ie. code below is commented out). We might want
-            # to add a configuration option to allow dropping rows, but that may not be
-            # necessary and could just make things more confusing in the config file.
-            # If there are no expanded values then we will drop the current row
-            # if len(expanded_values) == 0:
-            #     logger.info(
-            #         f"No expanded values found for row {idx}, row will be dropped"
-            #     )
-            #     drop_rows.append(idx)
-            #     continue
-
             # Go through each expanded value and create the row for it. The first expanded
             # value will be assigned to the original row already in the DataFrame.
             if config and config.get(ConfigKeys.EXPAND, True):
