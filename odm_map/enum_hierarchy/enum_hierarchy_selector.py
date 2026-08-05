@@ -187,9 +187,13 @@ class EnumHierarchySelector:
                     # include val in ancestors
                     cache_key = (val, rng)
                     if cache_key not in ancestor_cache:
+                        try:
+                            ancestors = self.schema.permissible_value_ancestors(val, rng)
+                        except:
+                            ancestors = []
                         ancestor_cache[cache_key] = [
                             str(a)
-                            for a in self.schema.permissible_value_ancestors(val, rng)
+                            for a in ancestors
                             if str(a) != val
                         ]
                     ancestors = ancestor_cache[cache_key]

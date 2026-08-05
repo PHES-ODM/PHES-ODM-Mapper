@@ -23,11 +23,11 @@ class_derivations:
         populated_from: specimen_processing
       value:
         name: value
-        expr: "value_map = {\n    \"Concentration\": \"NR\",\n    \"Centrifugation\"\
-          : \"cent\",\n    \"Filtration\": \"filt\",\n    \"Flocculation\": \"floc\"\
-          ,\n    \"Magnetic nanobead binding\": \"magBead\",\n    \"Precipitation\"\
+        expr: "value_map = (lambda v: v)({\n    \"Concentration\": \"NR\",\n    \"\
+          Centrifugation\": \"cent\",\n    \"Filtration\": \"filt\",\n    \"Flocculation\"\
+          : \"floc\",\n    \"Magnetic nanobead binding\": \"magBead\",\n    \"Precipitation\"\
           : \"prec\",\n    \"Gravity separation\": \"graSet\",\n    \"Growth in enrichment\
-          \ broth\": \"growBroth\",\n    \"Pasteurization\": \"TRUE\",\n}\ntarget\
+          \ broth\": \"growBroth\",\n    \"Pasteurization\": \"TRUE\",\n})\ntarget\
           \ = [value_map.get(str(v).split(\"[\")[0].strip(), \"\") for v in src.specimen_processing]"
   Container:
     name: Container

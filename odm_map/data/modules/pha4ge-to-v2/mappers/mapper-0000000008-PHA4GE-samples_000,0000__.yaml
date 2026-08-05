@@ -3,11 +3,17 @@ class_derivations:
     name: samples[000,0000=]
     populated_from: PHA4GE
     slot_derivations:
+      _extra_mapped_collection_device:
+        name: _extra_mapped_collection_device
+        populated_from: collection_device
+      _extra_mapped_collection_method:
+        name: _extra_mapped_collection_method
+        populated_from: collection_method
       collType:
         name: collType
-        expr: "if len([d for d in emap.collection_device if isinstance(d, str) and\
-          \ len(d) > 0]):\n    target = emap.collection_device\nelse:\n    target\
-          \ = emap.collection_method"
+        expr: "if len([d for d in slot('_extra_mapped_collection_device') if isinstance(d,\
+          \ str) and len(d) > 0]):\n    target = slot('_extra_mapped_collection_device')\n\
+          else:\n    target = slot('_extra_mapped_collection_method')"
       saMaterial:
         name: saMaterial
         populated_from: environmental_material

@@ -6,11 +6,14 @@ class_derivations:
       siteID:
         name: siteID
         populated_from: sampling_site_id
+      _extra_mapped_environmental_site:
+        name: _extra_mapped_environmental_site
+        populated_from: environmental_site
       sampleShed:
         name: sampleShed
-        expr: "target = emap.environmental_site\nif len([v for v in src.environmental_material\
-          \ if \"bar screen\" in str(v).lower()]) > 0:\n    target.append(\"siteType:barScreen\"\
-          )"
+        expr: "target = (lambda v: v)(slot('_extra_mapped_environmental_site'))\n\
+          if len([v for v in src.environmental_material if \"bar screen\" in str(v).lower()])\
+          \ > 0:\n    target.append(\"siteType:barScreen\")"
       geoLat:
         name: geoLat
         populated_from: geo_loc_latitude

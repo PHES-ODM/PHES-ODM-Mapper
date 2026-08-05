@@ -3,6 +3,12 @@ class_derivations:
     name: samples[000,0000=sampling_event_id]
     populated_from: PHA4GE
     slot_derivations:
+      _extra_mapped_collection_device:
+        name: _extra_mapped_collection_device
+        populated_from: collection_device
+      _extra_mapped_collection_method:
+        name: _extra_mapped_collection_method
+        populated_from: collection_method
       collType:
         name: collType
         expr: ''''''
@@ -62,6 +68,50 @@ class_derivations:
       samples[000,0000=sampling_event_id]:
         populated_from: PHA4GE
 enum_derivations:
+  ODMv3_enum_from_CollectionDeviceMenu:
+    name: ODMv3_enum_from_CollectionDeviceMenu
+    mirror_source: false
+    populated_from: CollectionDeviceMenu
+    permissible_value_derivations:
+      grb:
+        name: grb
+        populated_from: Grab sampler [GENEPIO:0100941]
+      core:
+        name: core
+        populated_from: Core sampling device [GENEPIO:0100943]
+      vac:
+        name: vac
+        populated_from: Vacuum sludge sampling device [GENEPIO:0100944]
+      cone:
+        name: cone
+        populated_from: Cone-shaped sampling device [GENEPIO:0100945]
+      horGrb:
+        name: horGrb
+        populated_from: Horizontal grab sampling device [GENEPIO:0100946]
+      vertGrb:
+        name: vertGrb
+        populated_from: Vertical grab sampling device [GENEPIO:0100947]
+      comp:
+        name: comp
+        populated_from: Composite sampler [GENEPIO:0100942]
+      trap:
+        name: trap
+        populated_from: Passive (trap) sampler [GENEPIO:0100948]
+      moorSw:
+        name: moorSw
+        populated_from: Moore swab [GENEPIO:0100949]
+      autoComp:
+        name: autoComp
+        populated_from: Automatic composite sampler [GENEPIO:0100950]
+      flowPr:
+        name: flowPr
+        populated_from: Automatic flow-proportional sampler [GENEPIO:0100951]
+      autoSeq:
+        name: autoSeq
+        populated_from: Automatic sequential (time-proportional) sampler [GENEPIO:0100952]
+      bagFilt:
+        name: bagFilt
+        populated_from: Bag filtration device [GENEPIO:0102027]
   ODMv3_enum_from_NullValueMenu:
     name: ODMv3_enum_from_NullValueMenu
     mirror_source: false
@@ -82,6 +132,29 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
+  ODMv3_enum_from_CollectionMethodMenu:
+    name: ODMv3_enum_from_CollectionMethodMenu
+    mirror_source: false
+    populated_from: CollectionMethodMenu
+    permissible_value_derivations:
+      grb:
+        name: grb
+        populated_from: Grab sampling [GENEPIO:0100953]
+      comp:
+        name: comp
+        populated_from: Composite sampling [GENEPIO:0100954]
+      passiveGen:
+        name: passiveGen
+        populated_from: Passive composite sampling [GENEPIO:0100955]
+      autoComp:
+        name: autoComp
+        populated_from: Automatic composite sampling [GENEPIO:0100956]
+      manComp:
+        name: manComp
+        populated_from: Manual composite sampling [GENEPIO:0100957]
+      bagFilt:
+        name: bagFilt
+        populated_from: Bag Mediated Filtration [GENEPIO:0102028]
   collAppxSet:
     name: collAppxSet
     mirror_source: false
