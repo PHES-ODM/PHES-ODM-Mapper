@@ -2,7 +2,7 @@
 # Wide Column Expander
 
 Expand wide column names (with values) to a format that is more usable by LinkML-Map. The target format
-of the columns is tableShortName_attribute.group.
+of the columns is tableShortName_attribute:group.
 
 For example, the following data with a measure wide column:
 
@@ -13,7 +13,7 @@ For example, the following data with a measure wide column:
 
 Would get expanded into:
 
-| mr_compartment.o1 | mr_specimen.o1 | mr_fraction.o1 | mr_measure.o1 | mr_unit.o1 | mr_aggregation.o1 | mr_index.o1 | mr_value.o1 |
+| mr_compartment:o1 | mr_specimen:o1 | mr_fraction:o1 | mr_measure:o1 | mr_unit:o1 | mr_aggregation:o1 | mr_index:o1 | mr_value:o1 |
 |-------------------|----------------|----------------|---------------|------------|-------------------|-------------|-------------|
 | wat               | sa             | liq            | covN1         | gch        | me                | 1           | 100         |
 | wat               | sa             | liq            | covN1         | gch        | me                | 1           | 120         |
@@ -21,13 +21,13 @@ Would get expanded into:
 Once we have the resulting expanded DataFrame, we can then use WideColumnMapMaker to generate:
 
 1. A LinkML schema describing the expanded wide format. This schema is specific to the resulting expanded DataFrame, and
-will contain all the tableShortName_attribute.group columns as well as tracking columns.
+will contain all the tableShortName_attribute:group columns as well as tracking columns.
 2. A group of LinkML-Map schemas that will map the expanded DataFrame to an ODM long format.
 
 ## Usage
 
 ```python
-# First expand the columns to be in tableShortName_attribute.group format
+# First expand the columns to be in tableShortName_attribute:group format
 expander = WideColumnExpander(
     config="wide_column_config.yaml", source_class_name="odm_wide", target_schema="odm_v3.yaml"
 )
@@ -1297,7 +1297,7 @@ class WideColumnExpander:
         df = self.merge_duplicate_columns(df)
         first_group_number = self.get_first_group_number(df)
 
-        # Explicit groups are those that are explicitly specified in the original data in the column names (eg. qr_qualityFlags.o123)
+        # Explicit groups are those that are explicitly specified in the original data in the column names (eg. qr_qualityFlags:o123)
         self.explicit_groups = []
         # Implicit groups are those that are generated in code because the original data does not have a group in the column name (eg. qr_qualityFlags)
         self.implicit_groups = []

@@ -159,7 +159,7 @@ class TestGetAllParts:
         assert "collNum" in parts[1]
 
     def test_group_flag_stripped_before_parsing(self, expander_no_schema):
-        parts = expander_no_schema.get_all_parts("sm_sampleID.g5")
+        parts = expander_no_schema.get_all_parts("sm_sampleID:g5")
         assert parts == [["sm"], ["sampleID"]]
 
     def test_digit_index_part(self, expander_no_schema):
@@ -294,7 +294,7 @@ class TestGetColumnType:
         assert expander_no_schema.get_column_type(col) is None
 
     def test_attribute_column_with_group_flag(self, expander_no_schema):
-        col = "sm_sampleID.g5"
+        col = "sm_sampleID:g5"
         assert expander_no_schema.get_column_type(col) == ColumnType.ATTRIBUTE
 
 
@@ -374,12 +374,12 @@ class TestGetFirstGroupNumber:
         assert result == 0
 
     def test_returns_max_group_plus_one(self, expander_no_schema):
-        df = pd.DataFrame({"sm_sampleID.g3": [1], "mr_measure.g5": [2]})
+        df = pd.DataFrame({"sm_sampleID:g3": [1], "mr_measure:g5": [2]})
         result = expander_no_schema.get_first_group_number(df)
         assert result == 6  # max(3, 5) + 1
 
     def test_single_group(self, expander_no_schema):
-        df = pd.DataFrame({"mr_value.g10": [1]})
+        df = pd.DataFrame({"mr_value:g10": [1]})
         result = expander_no_schema.get_first_group_number(df)
         assert result == 11
 
@@ -419,8 +419,8 @@ class TestCurrentExpandedRows:
             column_group="g1",
         )
         current = expander_no_schema.current_expanded_rows[None]
-        assert "mr_measure.g1" in current
-        assert current["mr_measure.g1"] == "covN1"
+        assert "mr_measure:g1" in current
+        assert current["mr_measure:g1"] == "covN1"
 
     def test_update_with_flags_appends_flags(self, expander_no_schema):
         expander_no_schema.new_current_expanded_rows()
@@ -534,7 +534,7 @@ class TestGetResolvedSinglePartAtIndex:
         row = pd.Series(
             {
                 "mr_aggregation": "global_mean",
-                "mr_aggregation.g1": "group_mean",
+                "mr_aggregation:g1": "group_mean",
             }
         )
         val = expander_no_schema.get_resolved_single_part_at_index(
@@ -639,7 +639,7 @@ class TestExpandColumnTypeAttribute:
         )
         assert result is True
         current = expander.current_expanded_rows[None]
-        assert "sm_sampleID.g2" in current
+        assert "sm_sampleID:g2" in current
 
     def test_group_not_applied_when_always_use_group_false(self, expander):
         row = pd.Series({"sm_sampleID": "S001"})
@@ -654,7 +654,7 @@ class TestExpandColumnTypeAttribute:
         assert result is True
         current = expander.current_expanded_rows[None]
         assert "sm_sampleID" in current
-        assert "sm_sampleID.g2" not in current
+        assert "sm_sampleID:g2" not in current
 
     def test_unknown_table_returns_false(self, expander):
         row = pd.Series({"zz_col": "val"})
@@ -735,15 +735,15 @@ class TestExpandColumnTypeMeasure:
         )
         assert result is True
         current = expander.current_expanded_rows[None]
-        assert "mr_compartment.g1" in current
-        assert current["mr_compartment.g1"] == "wat"
-        assert current["mr_specimen.g1"] == "sa"
-        assert current["mr_fraction.g1"] == "liq"
-        assert current["mr_measure.g1"] == "covN1"
-        assert current["mr_unit.g1"] == "gch"
-        assert current["mr_aggregation.g1"] == "me"
-        assert current["mr_index.g1"] == "1"
-        assert current["mr_value.g1"] == 100
+        assert "mr_compartment:g1" in current
+        assert current["mr_compartment:g1"] == "wat"
+        assert current["mr_specimen:g1"] == "sa"
+        assert current["mr_fraction:g1"] == "liq"
+        assert current["mr_measure:g1"] == "covN1"
+        assert current["mr_unit:g1"] == "gch"
+        assert current["mr_aggregation:g1"] == "me"
+        assert current["mr_index:g1"] == "1"
+        assert current["mr_value:g1"] == 100
 
     def test_measure_value_captured(self, expander):
         row = pd.Series({"wat_sa_liq_covN1_gch_me_1_value": 42.5})
@@ -756,7 +756,7 @@ class TestExpandColumnTypeMeasure:
             always_use_group=True,
         )
         current = expander.current_expanded_rows[None]
-        assert current["mr_value.g1"] == 42.5
+        assert current["mr_value:g1"] == 42.5
 
 
 # ---------------------------------------------------------------------------
@@ -817,7 +817,7 @@ class TestExpandSingle:
         assert result[tracking_col].iloc[0] == "file.csv/0"
 
     def test_explicit_groups_tracked(self, expander):
-        df = pd.DataFrame({"sm_sampleID.g5": ["S001"]})
+        df = pd.DataFrame({"sm_sampleID:g5": ["S001"]})
         expander.expand_single(df)
         assert "g5" in expander.explicit_groups
 

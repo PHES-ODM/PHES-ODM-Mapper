@@ -67,7 +67,7 @@ class TestWideColumnValues:
         assert WideColumnValues.VALUE_TAG == "value"
 
     def test_flag_separator(self):
-        assert WideColumnValues.COLUMN_FLAG_SEPARATOR == "."
+        assert WideColumnValues.COLUMN_FLAG_SEPARATOR == ":"
 
 
 class TestMeasureTableColumns:
@@ -198,65 +198,65 @@ class TestGetColumnFlags:
         assert get_column_flags("mr_measure") == []
 
     def test_single_group_flag(self):
-        flags = get_column_flags("mr_measure.g123")
+        flags = get_column_flags("mr_measure:g123")
         assert "g123" in flags
 
     def test_filter_by_group_prefix(self):
-        flags = get_column_flags("mr_measure.g123.l456", flag_prefix="g")
+        flags = get_column_flags("mr_measure:g123:l456", flag_prefix="g")
         assert "g123" in flags
         assert "l456" not in flags
 
     def test_filter_by_link_prefix(self):
-        flags = get_column_flags("mr_measure.g123.l456", flag_prefix="l")
+        flags = get_column_flags("mr_measure:g123:l456", flag_prefix="l")
         assert "l456" in flags
         assert "g123" not in flags
 
     def test_ignore_group_prefix(self):
-        flags = get_column_flags("mr_measure.g123.l456", ignore_prefixes="g")
+        flags = get_column_flags("mr_measure:g123:l456", ignore_prefixes="g")
         assert "g123" not in flags
         assert "l456" in flags
 
     def test_ignore_link_prefix(self):
-        flags = get_column_flags("mr_measure.g1.l2", ignore_prefixes="l")
+        flags = get_column_flags("mr_measure:g1:l2", ignore_prefixes="l")
         assert "l2" not in flags
         assert "g1" in flags
 
     def test_remove_flag_prefix_group(self):
         flags = get_column_flags(
-            "mr_measure.g123", flag_prefix="g", remove_flag_prefix=True
+            "mr_measure:g123", flag_prefix="g", remove_flag_prefix=True
         )
         assert "123" in flags
         assert "g123" not in flags
 
     def test_remove_flag_prefix_list(self):
         flags = get_column_flags(
-            "mr_measure.g1.l2", flag_prefix=["g", "l"], remove_flag_prefix=True
+            "mr_measure:g1:l2", flag_prefix=["g", "l"], remove_flag_prefix=True
         )
         assert "1" in flags
         assert "2" in flags
 
     def test_integer_only_flag_ignored(self):
-        flags = get_column_flags("mr_measure.123")
+        flags = get_column_flags("mr_measure:123")
         assert flags == []
 
     def test_unrecognized_prefix_excluded(self):
-        flags = get_column_flags("mr_measure.x99")
+        flags = get_column_flags("mr_measure:x99")
         assert flags == []
 
     def test_no_duplicates(self):
-        flags = get_column_flags("mr_measure.g1.g1")
+        flags = get_column_flags("mr_measure:g1:g1")
         assert flags.count("g1") == 1
 
     def test_multiple_flags_returned(self):
-        flags = get_column_flags("mr_measure.g1.l2")
+        flags = get_column_flags("mr_measure:g1:l2")
         assert len(flags) == 2
 
     def test_flag_prefix_as_list(self):
-        flags = get_column_flags("mr_measure.g5", flag_prefix=["g"])
+        flags = get_column_flags("mr_measure:g5", flag_prefix=["g"])
         assert "g5" in flags
 
     def test_ignore_prefixes_as_list(self):
-        flags = get_column_flags("mr_measure.g1.l2", ignore_prefixes=["g", "l"])
+        flags = get_column_flags("mr_measure:g1:l2", ignore_prefixes=["g", "l"])
         assert flags == []
 
 
@@ -270,19 +270,19 @@ class TestColumnWithoutFlags:
         assert column_without_flags("mr_measure") == "mr_measure"
 
     def test_removes_single_flag(self):
-        assert column_without_flags("mr_measure.g123") == "mr_measure"
+        assert column_without_flags("mr_measure:g123") == "mr_measure"
 
     def test_removes_multiple_flags(self):
-        assert column_without_flags("mr_measure.g1.l2") == "mr_measure"
+        assert column_without_flags("mr_measure:g1:l2") == "mr_measure"
 
     def test_preserves_underscore_column_name(self):
-        assert column_without_flags("sm_sampleID.g5") == "sm_sampleID"
+        assert column_without_flags("sm_sampleID:g5") == "sm_sampleID"
 
     def test_empty_string(self):
         assert column_without_flags("") == ""
 
     def test_separator_at_start(self):
-        result = column_without_flags(".g1")
+        result = column_without_flags(":g1")
         assert result == ""
 
 
@@ -294,11 +294,11 @@ class TestColumnWithoutFlags:
 class TestColumnWithFlags:
     def test_adds_single_string_flag(self):
         result = column_with_flags("mr_measure", "g1")
-        assert result == "mr_measure.g1"
+        assert result == "mr_measure:g1"
 
     def test_adds_list_of_flags(self):
         result = column_with_flags("mr_measure", ["g1", "l2"])
-        assert result == "mr_measure.g1.l2"
+        assert result == "mr_measure:g1:l2"
 
     def test_empty_list_unchanged(self):
         result = column_with_flags("mr_measure", [])
@@ -319,7 +319,7 @@ class TestColumnWithFlags:
 
     def test_three_flags(self):
         result = column_with_flags("col", ["g1", "l2", "g3"])
-        assert result == "col.g1.l2.g3"
+        assert result == "col:g1:l2:g3"
 
 
 # ---------------------------------------------------------------------------
@@ -332,20 +332,20 @@ class TestGroupsOfColumn:
         assert groups_of_column("mr_measure") == []
 
     def test_returns_group_flag(self):
-        result = groups_of_column("mr_measure.g1")
+        result = groups_of_column("mr_measure:g1")
         assert "g1" in result
 
     def test_remove_prefix(self):
-        result = groups_of_column("mr_measure.g123", remove_flag_prefix=True)
+        result = groups_of_column("mr_measure:g123", remove_flag_prefix=True)
         assert "123" in result
         assert "g123" not in result
 
     def test_link_flag_is_not_a_group(self):
-        result = groups_of_column("mr_measure.l456")
+        result = groups_of_column("mr_measure:l456")
         assert result == []
 
     def test_multiple_group_flags(self):
-        result = groups_of_column("mr_measure.g1.g2")
+        result = groups_of_column("mr_measure:g1:g2")
         assert "g1" in result
 
 
@@ -361,25 +361,25 @@ class TestColumnAndGroupsOfColumn:
         assert groups == []
 
     def test_returns_base_col_and_group(self):
-        col, groups = column_and_groups_of_column("mr_measure.g1")
+        col, groups = column_and_groups_of_column("mr_measure:g1")
         assert col == "mr_measure"
         assert "g1" in groups
 
     def test_link_flag_not_treated_as_group(self):
-        col, groups = column_and_groups_of_column("mr_measure.l5")
+        col, groups = column_and_groups_of_column("mr_measure:l5")
         assert col == "mr_measure"
         assert groups == []
 
     def test_remove_prefix(self):
         col, groups = column_and_groups_of_column(
-            "mr_measure.g99", remove_flag_prefix=True
+            "mr_measure:g99", remove_flag_prefix=True
         )
         assert col == "mr_measure"
         assert "99" in groups
         assert "g99" not in groups
 
     def test_complex_column(self):
-        col, groups = column_and_groups_of_column("sm_sampleID.g10.l5")
+        col, groups = column_and_groups_of_column("sm_sampleID:g10:l5")
         assert col == "sm_sampleID"
         assert "g10" in groups
 
@@ -396,21 +396,21 @@ class TestColumnAndFlagsOfColumn:
         assert flags == []
 
     def test_matching_prefix(self):
-        col, flags = column_and_flags_of_column("mr_measure.g1", flag_prefix="g")
+        col, flags = column_and_flags_of_column("mr_measure:g1", flag_prefix="g")
         assert col == "mr_measure"
         assert "g1" in flags
 
     def test_non_matching_prefix_empty(self):
-        _col, flags = column_and_flags_of_column("mr_measure.l1", flag_prefix="g")
+        _col, flags = column_and_flags_of_column("mr_measure:l1", flag_prefix="g")
         assert flags == []
 
     def test_remove_flag_prefix(self):
         _col, flags = column_and_flags_of_column(
-            "mr_measure.g5", flag_prefix="g", remove_flag_prefix=True
+            "mr_measure:g5", flag_prefix="g", remove_flag_prefix=True
         )
         assert "5" in flags
         assert "g5" not in flags
 
     def test_base_column_always_stripped(self):
-        col, _ = column_and_flags_of_column("sm_sampleID.g3.l4", flag_prefix="g")
+        col, _ = column_and_flags_of_column("sm_sampleID:g3:l4", flag_prefix="g")
         assert col == "sm_sampleID"

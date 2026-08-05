@@ -25,8 +25,8 @@ class WideColumnValues:
     OR_TAG = "OR"
     VALUE_TAG = "value"
 
-    # Separates the flags from the column name. eg. with qr_qualityReports.o123, the dot is the separator.
-    COLUMN_FLAG_SEPARATOR = "."
+    # Separates the flags from the column name. eg. with qr_qualityReports:o123, the colon is the separator.
+    COLUMN_FLAG_SEPARATOR = ":"
 
 
 # Column names used in the expanded measures table
@@ -115,8 +115,9 @@ def get_column_flags(
     ignore_prefixes: list[str] | str | None = None,
     remove_flag_prefix: bool = False,
 ) -> list[str]:
-    """Get all flags associated with the column. Flags are separated by COLUMN_FLAGPSEPARATOR.
-    For example, qr_qualityFlag.o123.t_sample has the flags o123 and t_sample.
+    """Get all flags associated with the column. Flags are separated by
+    WideColumnValues.COLUMN_FLAGPSEPARATOR. For example, qr_qualityFlag:o123:t_sample has
+    the flags o123 and t_sample.
 
     Note that only recognized flags will be returned. These are the flags listed in the
     global variable RECOGNIZED_FLAG_PREFIXES.
@@ -128,7 +129,7 @@ def get_column_flags(
         ignore_prefixes (list[str] | str | None): If set, then ignore any flag that
             begins with any of these prefixes.
         remove_flag_prefix (bool): If True then remove the prefix from all flags. For example,
-            the prefix for a column group is "o", and the column is mr_measure.o123, then
+            the prefix for a column group is "o", and the column is mr_measure:o123, then
             instead of returning ["o123"], ["123"] will be returned instead. If flag_prefix
             is empty then remove_flag_prefix is ignored (ie. treated as False).
 
@@ -174,13 +175,13 @@ def groups_of_column(col: str, remove_flag_prefix: bool = False) -> list[str]:
     """Get the group of the specified column.
 
     The group is the string that follows the colon in the column name. For example,
-    mr_protocolID.o12 has the group o12. If the column does not have a group then None
+    mr_protocolID:o12 has the group o12. If the column does not have a group then None
     is returned.
 
     Args:
         col (str): The column name to get the group of.
         remove_flag_prefix (bool): If True then remove the group flag prefix from the returned
-            group. For example, for mr_protocolID.o12 will return "12" if remove_flag_prefix is
+            group. For example, for mr_protocolID:o12 will return "12" if remove_flag_prefix is
             True, but will return "o12" if remove_flag_prefix is False. Only the first group is
             returned.
 
@@ -195,13 +196,13 @@ def column_and_groups_of_column(
     col: str, remove_flag_prefix: bool = False
 ) -> tuple[str, list[str]]:
     """Get the column name (without group) and the group of the specified column.
-    For example, "qr_qualityFlag.o1" will return ("qr_qualityFlag", "o1"), and
+    For example, "qr_qualityFlag:o1" will return ("qr_qualityFlag", "o1"), and
     "qr_qualityFlag" will return ("qr_qualityFlag", None).
 
     Args:
         col (str): The column to get the ungrouped column name and the group from.
         remove_flag_prefix (bool): If True then remove the group flag prefix from the returned
-            group. For example, for mr_protocolID.o12 will return "12" if remove_flag_prefix is
+            group. For example, for mr_protocolID:o12 will return "12" if remove_flag_prefix is
             True, but will return "o12" if remove_flag_prefix is False.
 
     Returns:
@@ -220,7 +221,7 @@ def column_and_flags_of_column(
 ):
     """Get the column name (without flags) and the flags with the specified flag_prefix
     of the specified column. For example, if flag_prefix is "o", then the column
-    "qr_qualityFlag.o1" will return the tuple ("qr_qualityFlag", "o1"), and
+    "qr_qualityFlag:o1" will return the tuple ("qr_qualityFlag", "o1"), and
     "qr_qualityFlag" will return the tuple ("qr_qualityFlag", None).
     If there are multiple flags with the flag_prefix then only the first one will be returned.
 
@@ -231,7 +232,7 @@ def column_and_flags_of_column(
             For example, if flag_prefix is "o" then the first flag that starts with "o" is
             returned.
         remove_flag_prefix (bool): If True then remove the flag prefixes from the returned
-            flags. For example, "mr_protocolID.o12" will return "12" if remove_flag_prefix is
+            flags. For example, "mr_protocolID:o12" will return "12" if remove_flag_prefix is
             True, but will return "o12" if remove_flag_prefix is False.
 
     Returns:
@@ -251,7 +252,7 @@ def column_and_flags_of_column(
 def column_without_flags(col: str) -> str:
     """Get the column name with all flags removed.
 
-    For example, mr_measure.o123.t_sample will be converted to mr_measure.
+    For example, mr_measure:o123:t_sample will be converted to mr_measure.
 
     Args:
         col (str): The column to remove the flags from.
@@ -267,7 +268,7 @@ def column_without_flags(col: str) -> str:
 def column_with_flags(col: str, flags: str | list[str]) -> str:
     """Create the column name consisting of the specified base column name with all
     the specified flags added to the column name. For example, if col is mr_measure and
-    the flags are ["o123", "t_sampleID"], then the result will be mr_measure.o123.t_sampleID.
+    the flags are ["o123", "t_sampleID"], then the result will be mr_measure:o123:t_sampleID.
 
     Args:
         col (str): The column name to add the flags to.
@@ -282,3 +283,22 @@ def column_with_flags(col: str, flags: str | list[str]) -> str:
     if isinstance(flags, str):
         flags = [flags]
     return f"{col}{WideColumnValues.COLUMN_FLAG_SEPARATOR}{WideColumnValues.COLUMN_FLAG_SEPARATOR.join(flags)}"
+
+
+def get_column_parts(col: str) -> list[str]:
+    """Get all the parts of the column name, which are separated by
+    WideColumnValues.COLUMN_PART_SEPARATOR. For example, mr_measure has the two parts
+    "mr" (the table short name) and "measure" (the slot name).
+
+    Flags are not removed from col, so any flags will be included in the returned parts
+    (eg. "mr_measure:g1" returns ["mr", "measure:g1"], and a flag that itself contains the
+    part separator adds extra parts). Pass col through column_without_flags first if the
+    flags should not be part of the result.
+
+    Args:
+        col (str): The column name to get the parts of.
+
+    Returns:
+        list[str]: All the parts of the column name.
+    """
+    return col.split(WideColumnValues.COLUMN_PART_SEPARATOR)

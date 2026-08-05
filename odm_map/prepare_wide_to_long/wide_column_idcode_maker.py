@@ -10,8 +10,8 @@ from odm_map.id_generator.generator import IDCodeColumns
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     ConfigKeys,
     FlagPrefixes,
-    WideColumnValues,
     column_and_groups_of_column,
+    get_column_parts,
     get_extra_slot_for_flag_prefix,
 )
 from odm_map.utils.extra_and_tracking_slots import (
@@ -73,7 +73,7 @@ class WideColumnIDCodeMaker:
 
             # Get the current class (class_name), slot (slot_name), and group (group_name)
             col_no_group, group_names = column_and_groups_of_column(col)
-            parts = col_no_group.split(WideColumnValues.COLUMN_PART_SEPARATOR)
+            parts = get_column_parts(col_no_group)
             if len(parts) != 2:
                 logger.warning(
                     f"Expected column to have two parts, but {len(parts)} found instead: {col}"

@@ -188,13 +188,15 @@ class EnumHierarchySelector:
                     cache_key = (val, rng)
                     if cache_key not in ancestor_cache:
                         try:
-                            ancestors = self.schema.permissible_value_ancestors(val, rng)
-                        except:
+                            ancestors = self.schema.permissible_value_ancestors(
+                                val, rng
+                            )
+                        except ValueError:
+                            # Raised when rng is not an enum in the schema, or val is not
+                            # one of its permissible values: no hierarchy to prune against.
                             ancestors = []
                         ancestor_cache[cache_key] = [
-                            str(a)
-                            for a in ancestors
-                            if str(a) != val
+                            str(a) for a in ancestors if str(a) != val
                         ]
                     ancestors = ancestor_cache[cache_key]
                     new_vals = [v for v in new_vals if v not in ancestors]

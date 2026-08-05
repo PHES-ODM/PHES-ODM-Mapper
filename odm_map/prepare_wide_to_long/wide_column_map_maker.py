@@ -40,10 +40,10 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
-from linkml.utils.schema_builder import SchemaBuilder
 from linkml_runtime import SchemaView
 from linkml_runtime.dumpers import yaml_dumper
 from linkml_runtime.linkml_model import SlotDefinition
+from linkml_runtime.utils.schema_builder import SchemaBuilder
 
 from odm_map.prepare_wide_to_long.wide_column_utils import (
     RECOGNIZED_FLAG_PREFIXES,
@@ -51,6 +51,7 @@ from odm_map.prepare_wide_to_long.wide_column_utils import (
     WideColumnValues,
     column_without_flags,
     get_column_flags,
+    get_column_parts,
     get_extra_slot_for_flag_prefix,
     get_flag_prefix,
     groups_of_column,
@@ -505,7 +506,7 @@ class WideColumnMapMaker:
         Returns:
             tuple[str, str]: The class name and slot name for the column.
         """
-        parts = column_without_flags(col).split(WideColumnValues.COLUMN_PART_SEPARATOR)
+        parts = get_column_parts(column_without_flags(col))
         if len(parts) != 2:
             raise ValueError(
                 f"Column name must have exactly two parts (separated by '{WideColumnValues.COLUMN_PART_SEPARATOR}'): {col}"

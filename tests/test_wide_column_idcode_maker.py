@@ -92,7 +92,7 @@ class TestGetTableNames:
 
 class TestIterColumns:
     def test_yields_class_slot_and_group(self, maker):
-        df = pd.DataFrame({"sm_sampleID.g1": ["S001"]})
+        df = pd.DataFrame({"sm_sampleID:g1": ["S001"]})
         results = list(maker.iter_columns(df))
         assert len(results) == 1
         class_name, class_short_name, slot_name, group_name = results[0]
@@ -118,8 +118,8 @@ class TestIterColumns:
     def test_multiple_columns(self, maker):
         df = pd.DataFrame(
             {
-                "sm_sampleID.g1": ["S001"],
-                "mr_value.g1": [100],
+                "sm_sampleID:g1": ["S001"],
+                "mr_value:g1": [100],
             }
         )
         results = list(maker.iter_columns(df))

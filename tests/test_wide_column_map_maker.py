@@ -220,7 +220,7 @@ class TestGetClassAndSlot:
             "odm_map.prepare_wide_to_long.wide_column_map_maker.get_slot_definition",
             return_value={"name": "sampleID"},
         ):
-            class_name, slot_name = maker.get_class_and_slot("sm_sampleID.g5")
+            class_name, slot_name = maker.get_class_and_slot("sm_sampleID:g5")
         assert class_name == "samples"
         assert slot_name == "sampleID"
 
