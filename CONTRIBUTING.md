@@ -103,6 +103,17 @@ PHES-ODM-Mapper/
 ├── CONTRIBUTING.md                        # This file
 ├── docs/                                  # Documentation
 │   ├── custom_modules.md                  # Full reference for creating custom modules
+│   ├── actions/                           # One document per pipeline action
+│   │   ├── README.md                      # Concepts common to all actions, plus the index
+│   │   ├── clean.md                       # `clean` action
+│   │   ├── drop_columns.md                # `drop_columns` action
+│   │   ├── expand.md                      # `expand` action
+│   │   ├── filter.md                      # `filter` action
+│   │   ├── generate_ids.md                # `generate_ids` action
+│   │   ├── map.md                         # `map` action
+│   │   ├── prepare_wide_to_long.md        # `prepare_wide_to_long` action
+│   │   ├── save.md                        # `save` action
+│   │   └── select_enum_hierarchy.md       # `select_enum_hierarchy` action
 │   ├── filters.md                         # Filter system reference
 │   ├── id_generator.md                    # ID generator reference
 │   ├── merging_spec.md                    # Design spec for merging separately-mapped datasets
@@ -118,16 +129,19 @@ PHES-ODM-Mapper/
 The mapper executes a pipeline of actions defined in a module's `config.yaml` file. The typical flow is:
 
 1. **Load data** — Input CSV/TSV/Excel files are loaded into pandas DataFrames, one per source table.
-2. **`clean`** — Normalize column names, correct enumeration values, and check regex patterns against a LinkML schema.
-3. **`select_enum_hierarchy`** *(optional)* — For multivalued enum slots, remove parent values when a more specific child value is present.
-4. **`map`** — Use LinkML-Map YAML schemas to transform DataFrames from the source format to the target format.
-5. **`expand`** *(optional)* — Expand rows that contain multi-valued arrays so that each value gets its own row.
-6. **`filter`** — Remove unwanted rows (e.g. rows with blank required values, or rows with sentinel values like `<ignore>`).
-7. **`generate_ids`** — Create primary and foreign keys to link tables together.
-8. **`drop_columns`** — Remove internal tracking and `_extra_` columns from the output.
-9. **`save`** — Write the final DataFrames to CSV files.
+2. **[`clean`](docs/actions/clean.md)** — Normalize column names, correct enumeration values, and check regex patterns against a LinkML schema.
+3. **[`select_enum_hierarchy`](docs/actions/select_enum_hierarchy.md)** *(optional)* — For multivalued enum slots, remove parent values when a more specific child value is present.
+4. **[`prepare_wide_to_long`](docs/actions/prepare_wide_to_long.md)** *(wide sources only)* — Restructure wide data and generate the mappers, schema, and ID code needed to map it to long format.
+5. **[`map`](docs/actions/map.md)** — Use LinkML-Map YAML schemas to transform DataFrames from the source format to the target format.
+6. **[`expand`](docs/actions/expand.md)** *(optional)* — Expand rows that contain multi-valued arrays so that each value gets its own row.
+7. **[`filter`](docs/actions/filter.md)** — Remove unwanted rows (e.g. rows with blank required values, or rows with sentinel values like `<ignore>`).
+8. **[`generate_ids`](docs/actions/generate_ids.md)** — Create primary and foreign keys to link tables together.
+9. **[`drop_columns`](docs/actions/drop_columns.md)** — Remove internal tracking and `_extra_` columns from the output.
+10. **[`save`](docs/actions/save.md)** — Write the final DataFrames to CSV files.
 
 The `pipeline.py` file dispatches each step to the corresponding function in `odm_map/actions/`. Each action function is self-contained and receives a `dict[str, list[pd.DataFrame]]` (a dictionary of class name → list of DataFrames) and returns the same structure after modification.
+
+Each action is documented in its own file under [docs/actions/](docs/actions/), with [docs/actions/README.md](docs/actions/README.md) covering what is common to all of them.
 
 ### Key Concepts
 
@@ -169,23 +183,24 @@ A module is a self-contained directory with a `config.yaml` and all supporting f
 
 1. Create a new directory under `odm_map/data/modules/` using a descriptive kebab-case name, such as `my-source-to-v3`.
 
-2. Write a `config.yaml` that defines the full transformation pipeline. See [custom_modules.md](docs/custom_modules.md) for the complete configuration reference and all available actions.
+2. Write a `config.yaml` that defines the full transformation pipeline. See [custom_modules.md](docs/custom_modules.md) for the complete configuration reference, and [docs/actions/](docs/actions/) for the available actions and their parameters.
 
     At a minimum, the config requires:
     - `title`: A short human-readable description of the conversion.
     - `source_schema`: Path to the LinkML schema for the source format.
     - `steps`: A list of actions to perform.
 
-3. Add the required files in subdirectories:
+3. Add the required files in subdirectories. Each action's document explains how to prepare the files it needs:
 
     | Subdirectory | Contents |
     |:-------------|:---------|
     | `schemas/`   | LinkML schema YAML files for the source and/or target datasets |
-    | `mappers/`   | LinkML-Map YAML files that define field-level transformations |
-    | `filters/`   | CSV files defining row-filtering rules |
-    | `ids/`       | Excel or CSV ID code files and YAML ID config files |
-    | `expander/`  | Expander YAML config (if using the `expand` action) |
-    | `wide_to_long/` | Wide-to-long config (if using `prepare_wide_to_long`) |
+    | `mappers/`   | LinkML-Map YAML files that define field-level transformations ([map](docs/actions/map.md)) |
+    | `filters/`   | CSV files defining row-filtering rules ([filter](docs/actions/filter.md)) |
+    | `ids/`       | Excel or CSV ID code files and YAML ID config files ([generate_ids](docs/actions/generate_ids.md)) |
+    | `expander/`  | Expander YAML config ([expand](docs/actions/expand.md)) |
+    | `enum_hierarchy/` | Enum hierarchy YAML config ([select_enum_hierarchy](docs/actions/select_enum_hierarchy.md)) |
+    | `wide_to_long/` | Wide-to-long YAML config ([prepare_wide_to_long](docs/actions/prepare_wide_to_long.md)) |
 
 4. Use `{shared}` as a path prefix in `config.yaml` to reference files in the `_shared` module (e.g. `{shared}/schemas/odm_v3.yaml`).
 
@@ -205,7 +220,9 @@ To add a new action type that can be used in a module `config.yaml`:
 
 2. Import and dispatch the new action in `odm_map/pipeline.py` by adding a new `elif action == "<name>":` branch in the `run` method.
 
-3. Document the new action in [custom_modules.md](docs/custom_modules.md) under the **Actions** section, including a YAML example and a parameter table.
+3. Document the new action in its own file, `docs/actions/<name>.md`, following the same structure as the existing action documents: what the action does, where it fits in a pipeline, a YAML example, a parameter table, and how to prepare any configuration or other files the action needs.
+
+4. Add the new action to the index tables in [docs/actions/README.md](docs/actions/README.md), [docs/custom_modules.md](docs/custom_modules.md), and [README.md](README.md), and to the `docs/actions/` tree in the [Project Structure](#project-structure) section above.
 
 ## Submitting a Pull Request
 

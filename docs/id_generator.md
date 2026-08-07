@@ -27,18 +27,35 @@ details of both files.
 
 ## General Configuration File
 
-This is a simple YAML file that specifies some general configuration. At the
-moment the only setting is `primary_keys`, which is a dictionary where the keys
-are class names and the values are the single primary key for that class. See
-below for an example:
+This is a YAML file that specifies some general configuration. It supports the
+following top-level keys, all of which are optional:
+
+| Key | Description |
+| :-- | :---------- |
+| `tables_to_shortnames` | A dictionary mapping each class (table) name to a short name. The short name is returned by `fn.class_shortname` and is used to prefix generated IDs that do not begin with an alphabetic character. See [fn.class_name and fn.class_shortname](#fnclass_name-and-fnclass_shortname). |
+| `class_linkages` | Overrides how the generator finds the related row in another class when resolving a value from it. See [class_linkages](#class_linkages). |
+| `named_class_linkages` | Named linkages that can be referenced from the code, without overriding the default linking behavior. See [named_class_linkages](#named_class_linkages). |
+
+An example is shown below:
 
 ```yaml
-primary_keys:
-  addresses: addressID
-  contacts: contactID
-  datasets: datasetID
+tables_to_shortnames:
+  addresses: ad
+  contacts: co
+  datasets: ds
+  measures: mr
+  samples: sas
   # ...
 ```
+
+The full configuration used by the built-in modules is at
+[/odm_map/data/modules/_shared/ids/general_v2_id_code.yaml](/odm_map/data/modules/_shared/ids/general_v2_id_code.yaml).
+
+**Primary keys are not configured here.** The primary key of each class is read
+from the LinkML schema: it is the attribute marked with `identifier: true`.
+Every class (other than the tree root) must have exactly one such attribute,
+otherwise ID generation stops with an error. If a class defines more than one, a
+warning is logged and the first is used.
 
 ## Code Configuration File
 
@@ -535,10 +552,11 @@ then an empty string is returned. The timezone can also be omitted.
 
 These return the current class and class short name (as strings), respectively.
 The class is equivalent to the table name. The class short names are shorter
-versions of the full class name. For example, in ODM v3 the `measures` table
-has the short name `sas`. The class shortnames are defined in the ID generator
-config file. See the `tables_to_shortnames` key in the config file
-[odm_map/data/modules/_shared/ids/general_v2_id_code.yaml](general_v2_id_code.yaml)
+versions of the full class name. For example, in ODM v3 the `measures` table has
+the short name `mr` and the `samples` table has the short name `sas`. The class
+shortnames are defined in the ID generator config file. See the
+`tables_to_shortnames` key in the config file
+[/odm_map/data/modules/_shared/ids/general_v2_id_code.yaml](/odm_map/data/modules/_shared/ids/general_v2_id_code.yaml)
 for an example of how it is configured for ODM v3.
 
 The short names are also used to prefix IDs passed to fn.makeid if the

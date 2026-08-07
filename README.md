@@ -40,45 +40,29 @@ modules, contact [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
 | [README.md](README.md) | Installation, CLI usage, and quick-start examples |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Developer setup, code structure, and contribution guide |
 | [custom_modules.md](docs/custom_modules.md) | Complete reference for creating custom conversion modules |
+| [actions/](docs/actions/) | One document per pipeline action, including how to prepare each action's configuration files |
 | [filters.md](docs/filters.md) | Filter system reference — how to remove unwanted rows |
 | [id_generator.md](docs/id_generator.md) | ID generator reference — how to create primary and foreign keys |
+| [wide_to_long_spec.md](docs/wide_to_long_spec.md) | Wide-format column naming and expansion rules (developer reference) |
 | [merging_spec.md](docs/merging_spec.md) | Design spec for merging separately-mapped datasets (developer reference) |
 
-## Access to Repository
+Each action that a module can perform has its own document:
 
-Because this repository is currently private you may have issues installing or
-cloning the Mapper. If you are having issues with installation, you may need to
-generate an SSH key-pair. Follow these steps to generate an SSH key on Mac or
-Linux:
+| Action | Document | Purpose |
+| :----- | :------- | :------ |
+| `clean` | [clean.md](docs/actions/clean.md) | Normalize column names, correct enumeration values, and check patterns against a LinkML schema |
+| `select_enum_hierarchy` | [select_enum_hierarchy.md](docs/actions/select_enum_hierarchy.md) | For multivalued enum slots, drop values that are ancestors of other values in the same cell |
+| `map` | [map.md](docs/actions/map.md) | Transform data from the source format to the target format with LinkML-Map schemas |
+| `prepare_wide_to_long` | [prepare_wide_to_long.md](docs/actions/prepare_wide_to_long.md) | Rearrange wide-format data and generate the mappers, schema, and ID code needed to map it to long format |
+| `expand` | [expand.md](docs/actions/expand.md) | Turn multivalued (array) cells into one row per array item |
+| `filter` | [filter.md](docs/actions/filter.md) | Remove unwanted rows using filtering rules |
+| `generate_ids` | [generate_ids.md](docs/actions/generate_ids.md) | Generate primary and foreign keys to link the output tables |
+| `drop_columns` | [drop_columns.md](docs/actions/drop_columns.md) | Remove internal tracking, `_extra_`, and non-schema columns |
+| `save` | [save.md](docs/actions/save.md) | Write the current data to CSV files |
 
-1. Run the SSH agent:
-
-    ```console
-    eval $(ssh-agent -s)
-    ```
-
-2. Create the SSH key:
-
-    ```console
-    ssh-keygen -t rsa -C mapper
-    ```
-
-    When asked for a password, leave it blank.
-
-3. From the files generated above, make sure the private key is added. Replace
-   "privatekey" with the path to the private key file (the file generated from
-   step 2 that has no extension):
-
-    ```console
-    ssh-add -K privatekey
-    ```
-
-4. Send the public key (the file with a .pub extension generated from step 2
-   above) to [mwellman@ohri.ca](mailto:mwellman@orhi.ca).
-
-Once you have sent the public key, you must wait for a reply to confirm that
-you can continue with the installation. In the `pip install` step below, run
-the one that starts with `pip install git+ssh`.
+[Pipeline Actions](docs/actions/README.md) covers what applies to every action:
+the structure of a step, conditional steps, string interpolation variables, how
+paths are resolved, and the order actions are usually combined in.
 
 ## Installation
 
@@ -104,10 +88,6 @@ If the above does not work, you can try:
 ```console
 pip install git+ssh://git@github.com/PHES-ODM/PHES-ODM-Mapper.git
 ```
-
-If neither `pip install` commands work, then follow the instructions in [Access
-to Repository](#access-to-repository) to create an SSH key then retry the second
-`pip install git+ssh` command.
 
 ## Installation (For Development)
 
