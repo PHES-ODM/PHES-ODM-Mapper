@@ -15,8 +15,8 @@ An example filter configuration file can be found at
 [/odm_map/data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.csv](/odm_map/data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.csv).
 
 The location of the filter configuration file within a conversion module are
-specified in the module configuration file ([Custom
-Modules](custom_modules.md))
+specified in the module configuration file
+([Reference](reference.md#module-configuration)).
 
 ## Filters Example
 

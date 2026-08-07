@@ -224,7 +224,8 @@ are not overwritten. When there is nothing to report, a single log containing
 
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
-- [Custom Modules](../custom_modules.md) — the module configuration file
+- [Reference](../reference.md#module-configuration) — the module
+  configuration file
 - Implementation:
   [/odm_map/actions/action_clean_data.py](/odm_map/actions/action_clean_data.py),
   [/odm_map/cleaner/clean_data.py](/odm_map/cleaner/clean_data.py)

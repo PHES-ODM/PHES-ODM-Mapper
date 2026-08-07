@@ -168,7 +168,8 @@ Working examples:
   files
 - [prepare_wide_to_long](prepare_wide_to_long.md) — generates an ID code file
   and ID config for wide-to-long modules
-- [Custom Modules](../custom_modules.md) — the module configuration file
+- [Reference](../reference.md#module-configuration) — the module
+  configuration file
 - Implementation:
   [/odm_map/actions/action_generate_ids.py](/odm_map/actions/action_generate_ids.py),
   [/odm_map/id_generator/generator.py](/odm_map/id_generator/generator.py)

@@ -77,7 +77,8 @@ So:
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and a
   description of the tracking and `_extra_` columns
 - [save](save.md) — the step that normally follows
-- [Custom Modules](../custom_modules.md) — the module configuration file
+- [Reference](../reference.md#module-configuration) — the module
+  configuration file
 - Implementation:
   [/odm_map/actions/action_drop_columns.py](/odm_map/actions/action_drop_columns.py),
   [/odm_map/column_dropper/drop_columns.py](/odm_map/column_dropper/drop_columns.py)

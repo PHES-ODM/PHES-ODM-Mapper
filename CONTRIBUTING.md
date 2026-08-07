@@ -11,7 +11,6 @@ Thank you for your interest in contributing to the PHES-ODM Mapper. This guide c
     - [Steps](#steps)
   - [Project Structure](#project-structure)
   - [How the Mapper Works](#how-the-mapper-works)
-    - [Key Concepts](#key-concepts)
   - [Code Style](#code-style)
   - [Adding a New Built-In Module](#adding-a-new-built-in-module)
   - [Adding a New Action](#adding-a-new-action)
@@ -99,10 +98,13 @@ PHES-ODM-Mapper/
 │           ├── odm-v1-to-v2/              # ODM v1 → ODM v2
 │           ├── odm-v3-wide-to-long/       # ODM v3 wide format → ODM v3 long format
 │           └── pha4ge-to-v2/              # PHA4GE → ODM v2
-├── README.md                              # Main documentation
+├── README.md                              # Landing page: install, supported mappings, doc map
 ├── CONTRIBUTING.md                        # This file
 ├── docs/                                  # Documentation
-│   ├── custom_modules.md                  # Full reference for creating custom modules
+│   ├── tutorial.md                        # Tutorial: a complete first mapping
+│   ├── how_to.md                          # How-to guides: task-oriented recipes
+│   ├── reference.md                       # Reference: CLI, Python API, module config.yaml
+│   ├── explanation.md                     # Explanation: how the Mapper works
 │   ├── actions/                           # One document per pipeline action
 │   │   ├── README.md                      # Concepts common to all actions, plus the index
 │   │   ├── clean.md                       # `clean` action
@@ -114,11 +116,11 @@ PHES-ODM-Mapper/
 │   │   ├── prepare_wide_to_long.md        # `prepare_wide_to_long` action
 │   │   ├── save.md                        # `save` action
 │   │   └── select_enum_hierarchy.md       # `select_enum_hierarchy` action
-│   ├── filters.md                         # Filter system reference
-│   ├── id_generator.md                    # ID generator reference
-│   ├── merging_spec.md                    # Design spec for merging separately-mapped datasets
-│   ├── wide_to_long_spec.md               # Implementation spec for wide-to-long mapping
-│   ├── long_to_wide_spec.md               # Implementation spec for long-to-wide mapping (in development)
+│   ├── filters.md                         # Filter file reference
+│   ├── id_generator.md                    # ID code and ID config reference
+│   ├── wide_to_long_spec.md               # Wide-format column naming reference
+│   ├── merging_spec.md                    # Design spec: merging separately-mapped datasets
+│   ├── long_to_wide_spec.md               # Design spec: long-to-wide mapping (in development)
 │   └── img/                               # Images used in documentation
 ├── pyproject.toml                         # Package metadata and build configuration
 └── requirements.txt                       # Python dependencies
@@ -126,32 +128,11 @@ PHES-ODM-Mapper/
 
 ## How the Mapper Works
 
-The mapper executes a pipeline of actions defined in a module's `config.yaml` file. The typical flow is:
+[docs/explanation.md](docs/explanation.md) explains the design: what a module is, what the pipeline does to the data, why IDs have to be generated, and what the internal tracking and `_extra_` columns are for. Read it before working on the pipeline. This section covers only what is specific to the code.
 
-1. **Load data** — Input CSV/TSV/Excel files are loaded into pandas DataFrames, one per source table.
-2. **[`clean`](docs/actions/clean.md)** — Normalize column names, correct enumeration values, and check regex patterns against a LinkML schema.
-3. **[`select_enum_hierarchy`](docs/actions/select_enum_hierarchy.md)** *(optional)* — For multivalued enum slots, remove parent values when a more specific child value is present.
-4. **[`prepare_wide_to_long`](docs/actions/prepare_wide_to_long.md)** *(wide sources only)* — Restructure wide data and generate the mappers, schema, and ID code needed to map it to long format.
-5. **[`map`](docs/actions/map.md)** — Use LinkML-Map YAML schemas to transform DataFrames from the source format to the target format.
-6. **[`expand`](docs/actions/expand.md)** *(optional)* — Expand rows that contain multi-valued arrays so that each value gets its own row.
-7. **[`filter`](docs/actions/filter.md)** — Remove unwanted rows (e.g. rows with blank required values, or rows with sentinel values like `<ignore>`).
-8. **[`generate_ids`](docs/actions/generate_ids.md)** — Create primary and foreign keys to link tables together.
-9. **[`drop_columns`](docs/actions/drop_columns.md)** — Remove internal tracking and `_extra_` columns from the output.
-10. **[`save`](docs/actions/save.md)** — Write the final DataFrames to CSV files.
+The mapper executes a pipeline of actions defined in a module's `config.yaml`. Input CSV/TSV/Excel files are first loaded into pandas DataFrames, one per source table, and then `pipeline.py` dispatches each step to the corresponding function in `odm_map/actions/`. Each action function is self-contained and receives a `dict[str, list[pd.DataFrame]]` (a dictionary of class name → list of DataFrames) and returns the same structure after modification.
 
-The `pipeline.py` file dispatches each step to the corresponding function in `odm_map/actions/`. Each action function is self-contained and receives a `dict[str, list[pd.DataFrame]]` (a dictionary of class name → list of DataFrames) and returns the same structure after modification.
-
-Each action is documented in its own file under [docs/actions/](docs/actions/), with [docs/actions/README.md](docs/actions/README.md) covering what is common to all of them.
-
-### Key Concepts
-
-**Modules** are directories containing a `config.yaml` and all supporting files (LinkML schemas, LinkML-Map mapper files, filter CSVs, ID code files). The built-in modules live in `odm_map/data/modules/`. Custom modules can live anywhere on disk.
-
-**Tracking columns** are internal columns added automatically during the `map` step. They record the source file and row number each output row came from, which is used by the ID generator for linking between tables. They are named `(__source_file_and_row__)`, `(__source_file__)`, and `(__source_row__)`.
-
-**`_extra_` columns** are additional non-schema columns added by the mapper or ID generator to carry temporary data needed during processing (e.g. tags used for linking between tables). They are stripped before saving the final output.
-
-**The `_shared` module** at `odm_map/data/modules/_shared/` contains LinkML schemas, ID code files, and filter files shared by multiple modules. Use `{shared}` as a path prefix in a `config.yaml` to reference files from this directory.
+Each action is documented in its own file under [docs/actions/](docs/actions/), with [docs/actions/README.md](docs/actions/README.md) covering what is common to all of them, and [A typical pipeline order](docs/actions/README.md#a-typical-pipeline-order) showing the sequence most modules follow.
 
 ## Code Style
 
@@ -183,7 +164,7 @@ A module is a self-contained directory with a `config.yaml` and all supporting f
 
 1. Create a new directory under `odm_map/data/modules/` using a descriptive kebab-case name, such as `my-source-to-v3`.
 
-2. Write a `config.yaml` that defines the full transformation pipeline. See [custom_modules.md](docs/custom_modules.md) for the complete configuration reference, and [docs/actions/](docs/actions/) for the available actions and their parameters.
+2. Write a `config.yaml` that defines the full transformation pipeline. See [Module Configuration](docs/reference.md#module-configuration) for the complete configuration reference, and [docs/actions/](docs/actions/) for the available actions and their parameters.
 
     At a minimum, the config requires:
     - `title`: A short human-readable description of the conversion.
@@ -222,7 +203,7 @@ To add a new action type that can be used in a module `config.yaml`:
 
 3. Document the new action in its own file, `docs/actions/<name>.md`, following the same structure as the existing action documents: what the action does, where it fits in a pipeline, a YAML example, a parameter table, and how to prepare any configuration or other files the action needs.
 
-4. Add the new action to the index tables in [docs/actions/README.md](docs/actions/README.md), [docs/custom_modules.md](docs/custom_modules.md), and [README.md](README.md), and to the `docs/actions/` tree in the [Project Structure](#project-structure) section above.
+4. Add the new action to the index tables in [docs/actions/README.md](docs/actions/README.md), [docs/reference.md](docs/reference.md#steps), and [docs/explanation.md](docs/explanation.md#the-pipeline), and to the `docs/actions/` tree in the [Project Structure](#project-structure) section above.
 
 ## Submitting a Pull Request
 

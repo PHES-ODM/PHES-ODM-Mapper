@@ -22,8 +22,9 @@ There are two configuration files that must be created:
    generate the IDs or values of the various slots.
 
 The location of these files within a conversion module are specified in the
-module configuration file ([Custom Modules](custom_modules.md)). See below for
-details of both files.
+module configuration file
+([Reference](reference.md#module-configuration)). See below for details of both
+files.
 
 ## General Configuration File
 

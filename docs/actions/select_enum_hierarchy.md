@@ -134,7 +134,8 @@ Notes on writing the config:
 
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
-- [Custom Modules](../custom_modules.md) — the module configuration file
+- [Reference](../reference.md#module-configuration) — the module
+  configuration file
 - Implementation:
   [/odm_map/actions/action_select_enum_hierarchy.py](/odm_map/actions/action_select_enum_hierarchy.py),
   [/odm_map/enum_hierarchy/enum_hierarchy_selector.py](/odm_map/enum_hierarchy/enum_hierarchy_selector.py)

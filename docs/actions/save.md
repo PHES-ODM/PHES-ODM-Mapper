@@ -75,6 +75,7 @@ under `{output_dir}` instead.
   path resolution
 - [drop_columns](drop_columns.md) — the step that normally precedes the final
   save
-- [Custom Modules](../custom_modules.md) — the module configuration file
+- [Reference](../reference.md#module-configuration) — the module
+  configuration file
 - Implementation:
   [/odm_map/actions/action_save_data.py](/odm_map/actions/action_save_data.py)

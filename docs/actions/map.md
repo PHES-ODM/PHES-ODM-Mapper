@@ -135,7 +135,8 @@ as
 
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
-- [Custom Modules](../custom_modules.md) — the module configuration file
+- [Reference](../reference.md#module-configuration) — the module
+  configuration file
 - [prepare_wide_to_long](prepare_wide_to_long.md) — generates a source schema
   and mapper files for a downstream `map` step
 - [generate_ids](generate_ids.md) — the step that links the mapped tables

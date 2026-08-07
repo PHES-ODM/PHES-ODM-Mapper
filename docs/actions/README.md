@@ -6,8 +6,8 @@ A conversion module performs a mapping as an ordered list of **steps**. Each
 step runs one **action**, such as cleaning the input data, mapping it with
 LinkML-Map, filtering out unwanted rows, generating IDs, or saving the result to
 disk. The steps are defined under the `steps` key of the module configuration
-file `config.yaml` (see [Custom Modules](../custom_modules.md) for the module
-configuration file as a whole).
+file `config.yaml` (see [Reference](../reference.md#module-configuration)
+for the module configuration file as a whole).
 
 Each action has its own document, listed in the table below. Every document
 describes what the action does, where it belongs in a pipeline, its parameters,
@@ -183,7 +183,7 @@ are normally removed by [`drop_columns`](drop_columns.md) before the final
 
 | Document | Description |
 | :------- | :---------- |
-| [custom_modules.md](../custom_modules.md) | The module configuration file and how to build a module |
+| [reference.md](../reference.md) | The module configuration file, the command line, and the Python API |
 | [filters.md](../filters.md) | The filtering rules used by the `filter` action |
 | [id_generator.md](../id_generator.md) | The ID code and ID config files used by the `generate_ids` action |
 | [wide_to_long_spec.md](../wide_to_long_spec.md) | Wide-format column naming, used by `prepare_wide_to_long` |

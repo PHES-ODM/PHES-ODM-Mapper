@@ -116,7 +116,8 @@ there.
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
 - [filters.md](../filters.md) — the complete filter file and operation reference
-- [Custom Modules](../custom_modules.md) — the module configuration file
+- [Reference](../reference.md#module-configuration) — the module
+  configuration file
 - Implementation:
   [/odm_map/actions/action_filter_data.py](/odm_map/actions/action_filter_data.py),
   [/odm_map/filter/filter_data.py](/odm_map/filter/filter_data.py),

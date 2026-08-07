@@ -231,7 +231,8 @@ value belongs in `sampleShed` or `siteType`.
 
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
-- [Custom Modules](../custom_modules.md) — the module configuration file
+- [Reference](../reference.md#module-configuration) — the module
+  configuration file
 - Implementation:
   [/odm_map/actions/action_expand_data.py](/odm_map/actions/action_expand_data.py),
   [/odm_map/expander/array_expander.py](/odm_map/expander/array_expander.py)
