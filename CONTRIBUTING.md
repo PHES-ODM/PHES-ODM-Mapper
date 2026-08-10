@@ -14,6 +14,9 @@ Thank you for your interest in contributing to the PHES-ODM Mapper. This guide c
   - [Code Style](#code-style)
   - [Adding a New Built-In Module](#adding-a-new-built-in-module)
   - [Adding a New Action](#adding-a-new-action)
+  - [Documentation](#documentation)
+    - [The four kinds of document](#the-four-kinds-of-document)
+    - [Keep docs in the same change as the code](#keep-docs-in-the-same-change-as-the-code)
   - [Submitting a Pull Request](#submitting-a-pull-request)
 
 ## Development Environment Setup
@@ -101,6 +104,7 @@ PHES-ODM-Mapper/
 ├── README.md                              # Landing page: install, supported mappings, doc map
 ├── CONTRIBUTING.md                        # This file
 ├── docs/                                  # Documentation
+│   ├── index.md                           # Landing page of the documentation site
 │   ├── tutorial.md                        # Tutorial: a complete first mapping
 │   ├── how_to.md                          # How-to guides: task-oriented recipes
 │   ├── reference.md                       # Reference: CLI, Python API, module config.yaml
@@ -122,8 +126,10 @@ PHES-ODM-Mapper/
 │   ├── merging_spec.md                    # Design spec: merging separately-mapped datasets
 │   ├── long_to_wide_spec.md               # Design spec: long-to-wide mapping (in development)
 │   └── img/                               # Images used in documentation
+├── mkdocs.yml                             # Documentation site configuration
 ├── pyproject.toml                         # Package metadata and build configuration
-└── requirements.txt                       # Python dependencies
+├── requirements.txt                       # Python dependencies
+└── requirements-docs.txt                  # Documentation build dependencies
 ```
 
 ## How the Mapper Works
@@ -204,6 +210,86 @@ To add a new action type that can be used in a module `config.yaml`:
 3. Document the new action in its own file, `docs/actions/<name>.md`, following the same structure as the existing action documents: what the action does, where it fits in a pipeline, a YAML example, a parameter table, and how to prepare any configuration or other files the action needs.
 
 4. Add the new action to the index tables in [docs/actions/README.md](docs/actions/README.md), [docs/reference.md](docs/reference.md#steps), and [docs/explanation.md](docs/explanation.md#the-pipeline), and to the `docs/actions/` tree in the [Project Structure](#project-structure) section above.
+
+## Documentation
+
+Documentation lives in [docs/](docs/) and is indexed by
+[docs/index.md](docs/index.md). It is built with
+[MkDocs](https://www.mkdocs.org/) with the
+[Material](https://squidfunk.github.io/mkdocs-material/) theme, and published to
+GitHub Pages by [.github/workflows/docs.yaml](.github/workflows/docs.yaml) on
+every push to `main`.
+
+Preview the site locally. `requirements-docs.txt` holds only the site build
+dependencies, so this works without installing the runtime packages:
+
+```console
+pip install -r requirements-docs.txt
+mkdocs serve                       # http://127.0.0.1:8000
+mkdocs build --strict              # what CI runs
+```
+
+CI also runs
+[.github/scripts/check_doc_links.py](.github/scripts/check_doc_links.py), which
+resolves every relative link and `#anchor` against the filesystem. `mkdocs.yml`
+has to switch off MkDocs' own broken-link check, because these documents are
+also read on GitHub and link to source files under `odm_map/` — targets that
+live outside `docs/` and that MkDocs cannot resolve. Write those links relative
+to the document (`../odm_map/pipeline_cli.py` from `docs/`,
+`../../odm_map/...` from `docs/actions/`), not as `/odm_map/...`: a leading `/`
+resolves against the domain root on both GitHub and the published site, so such
+a link is broken in both places.
+
+### The four kinds of document
+
+Documentation follows the [Divio/Diátaxis](https://diataxis.fr/) framework. New
+material belongs in exactly one of these — if it seems to fit two, it is
+probably two pieces of writing.
+
+- [docs/tutorial.md](docs/tutorial.md) — teaches a beginner by doing: followed
+  start to finish, on sample data, with no alternatives or caveats mid-step.
+- [docs/how_to.md](docs/how_to.md) — one section per stated problem: assumes
+  competence, starts from a goal, links out rather than explaining.
+- [docs/reference.md](docs/reference.md) and the documents it lists under
+  [Further Reference Documents](docs/reference.md#further-reference-documents)
+  — describe the machinery: exhaustive, dry, and structured like the thing they
+  describe.
+- [docs/explanation.md](docs/explanation.md) — gives background and rationale:
+  no instructions to follow.
+
+The most common mistake is putting how-to material in a reference document. If
+you catch yourself writing "first…, then…" in `docs/reference.md`, it belongs in
+`docs/how_to.md`.
+
+When you add a page, also add it to the `nav` section of
+[mkdocs.yml](mkdocs.yml), and to the table in
+[docs/index.md](docs/index.md) or [README.md](README.md#documentation) if it is
+a document a reader would look for by name.
+
+### Keep docs in the same change as the code
+
+Each fact is documented in exactly one place; the README links to `docs/` rather
+than repeating it. Update the one place, not several.
+
+| If you change | Also update |
+| --- | --- |
+| A command-line option | The Typer help text in `odm_map/pipeline_cli.py` and [docs/reference.md](docs/reference.md#command-line-interface) |
+| The `Pipeline` class signature | [docs/reference.md](docs/reference.md#python-api) |
+| A `config.yaml` key | [docs/reference.md](docs/reference.md#module-configuration) |
+| An action's parameters | That action's document in [docs/actions/](docs/actions/) |
+| A new action | See [Adding a New Action](#adding-a-new-action) — one new document plus three index tables |
+| A filter operation | [docs/filters.md](docs/filters.md) |
+| The ID code or ID config format | [docs/id_generator.md](docs/id_generator.md) |
+| The wide-column naming scheme | [docs/wide_to_long_spec.md](docs/wide_to_long_spec.md) |
+| The pipeline, or an internal column | [docs/explanation.md](docs/explanation.md#the-pipeline) |
+| A step a newcomer would trip over | [docs/tutorial.md](docs/tutorial.md) |
+| A recurring support question | A new section in [docs/how_to.md](docs/how_to.md) |
+
+**The one deliberate exception.** The command shape and the table of built-in
+modules are repeated in [README.md](README.md#supported-mappings) and
+[docs/index.md](docs/index.md), so that a new arrival at either landing page can
+run a mapping without navigating anywhere. If you add or rename a module, update
+both. Nothing else in the README is allowed to duplicate `docs/`.
 
 ## Submitting a Pull Request
 

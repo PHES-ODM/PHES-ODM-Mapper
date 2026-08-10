@@ -14,7 +14,7 @@ often use it more than once:
 - After [`generate_ids`](generate_ids.md) to drop rows still missing required
   values, once IDs have had their chance to fill slots in. The built-in modules
   do this with the shared filter file
-  [`{shared}/filters/odm_vx_filter_required_values.csv`](/odm_map/data/modules/_shared/filters/odm_vx_filter_required_values.csv).
+  [`{shared}/filters/odm_vx_filter_required_values.csv`](../../odm_map/data/modules/_shared/filters/odm_vx_filter_required_values.csv).
 
 Before filtering, all DataFrames belonging to a class are concatenated into a
 single DataFrame, and each class ends up with exactly one DataFrame afterwards.
@@ -119,6 +119,6 @@ there.
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:
-  [/odm_map/actions/action_filter_data.py](/odm_map/actions/action_filter_data.py),
-  [/odm_map/filter/filter_data.py](/odm_map/filter/filter_data.py),
-  [/odm_map/filter/filter_funcs.py](/odm_map/filter/filter_funcs.py)
+  [/odm_map/actions/action_filter_data.py](../../odm_map/actions/action_filter_data.py),
+  [/odm_map/filter/filter_data.py](../../odm_map/filter/filter_data.py),
+  [/odm_map/filter/filter_funcs.py](../../odm_map/filter/filter_funcs.py)

@@ -1,0 +1,118 @@
+site_name: PHES-ODM Mapper
+site_description: >-
+  Convert wastewater surveillance data between reporting formats — ODM v1,
+  NWSS, PHA4GE, and ODM v2/v3 — with generated primary and foreign keys.
+site_url: https://phes-odm.github.io/PHES-ODM-Mapper/
+repo_url: https://github.com/PHES-ODM/PHES-ODM-Mapper
+repo_name: PHES-ODM/PHES-ODM-Mapper
+# The default branch is "main"; without this mkdocs derives "edit/master/docs/"
+# and every "Edit on GitHub" link 404s.
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  logo: img/ODM-logo.png
+  favicon: img/ODM-logo.png
+  features:
+    # No navigation.tabs: keeping every section in the left sidebar gives a full
+    # table of contents for the whole site rather than one tab at a time.
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - navigation.tracking
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+# These documents are primarily read on GitHub, so they link to source files
+# under odm_map/ and to the root-level README.md and CONTRIBUTING.md using
+# repository paths. Those targets live outside docs_dir, so mkdocs cannot
+# resolve them and would otherwise report each one as a broken link. mkdocs
+# cannot tell those apart from genuinely broken links, so cross-document links
+# are checked separately by .github/scripts/check_doc_links.py instead.
+validation:
+  links:
+    not_found: ignore
+
+# A second draft of long_to_wide_spec.md, kept for reference while long-to-wide
+# mapping is in development. It is still built, but listing it in the nav beside
+# the first draft would suggest the two describe different things.
+not_in_nav: |
+  long_to_wide_spec_b.md
+
+# CONTRIBUTING.md explains which section a new page belongs in.
+#
+# actions/README.md is listed bare rather than as "Overview: ...", so that the
+# navigation.indexes feature attaches it to the section heading itself; mkdocs
+# serves a directory's README.md as its index page.
+nav:
+  - Home: index.md
+  - Tutorial: tutorial.md
+  - How-to guides: how_to.md
+  - Reference:
+      - reference.md
+      - Pipeline Actions:
+          - actions/README.md
+          - clean: actions/clean.md
+          - drop_columns: actions/drop_columns.md
+          - expand: actions/expand.md
+          - filter: actions/filter.md
+          - generate_ids: actions/generate_ids.md
+          - map: actions/map.md
+          - prepare_wide_to_long: actions/prepare_wide_to_long.md
+          - save: actions/save.md
+          - select_enum_hierarchy: actions/select_enum_hierarchy.md
+      - Filtering: filters.md
+      - ID Generator: id_generator.md
+      - Wide-Long Spec: wide_to_long_spec.md
+  - Explanation:
+      - explanation.md
+  - Design specs:
+      - Merging Mapped Datasets: merging_spec.md
+      - Long-to-Wide Spec: long_to_wide_spec.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/PHES-ODM/PHES-ODM-Mapper
+    - icon: fontawesome/solid/globe
+      link: https://phes-odm.org

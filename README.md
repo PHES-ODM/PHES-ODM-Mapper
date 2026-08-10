@@ -3,6 +3,7 @@
 <!-- badges: start -->
 [![lint.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/lint.yaml/badge.svg)](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/lint.yaml)
 [![pytest.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/pytest.yaml/badge.svg)](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/pytest.yaml)
+[![docs.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/docs.yaml/badge.svg)](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/docs.yaml)
 <!-- badges: end -->
 
 ## Important Notice
@@ -140,8 +141,12 @@ one.
 
 ## Documentation
 
-The documentation is organized into four kinds of material. Start with the
-tutorial if you have not run the Mapper before.
+Full documentation is published at
+<https://phes-odm.github.io/PHES-ODM-Mapper/> and lives in [docs/](docs/),
+indexed by [docs/index.md](docs/index.md).
+
+It is organized into four kinds of material. Start with the tutorial if you have
+not run the Mapper before.
 
 | | Document | Read it when you want to |
 | :--- | :------- | :----------------------- |

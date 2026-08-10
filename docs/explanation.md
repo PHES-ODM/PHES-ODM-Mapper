@@ -180,7 +180,7 @@ sign that something went wrong.
 Some files are needed by several conversions — the ODM schemas, the general ID
 code, filters for required values. Rather than copying them into each module,
 they live in the `_shared` module at
-[/odm_map/data/modules/_shared](/odm_map/data/modules/_shared), and modules
+[/odm_map/data/modules/_shared](../odm_map/data/modules/_shared), and modules
 refer to them with the `{shared}` path prefix. A fix to the ODM v3 schema then
 reaches every module that maps to ODM v3.
 

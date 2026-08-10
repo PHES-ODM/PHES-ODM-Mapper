@@ -275,7 +275,7 @@ to. To build one for a source format that is not supported:
         "path/to/inputdata"
     ```
 
-The built-in modules at [/odm_map/data/modules](/odm_map/data/modules) are
+The built-in modules at [/odm_map/data/modules](../odm_map/data/modules) are
 complete working examples; starting from the one whose shape is closest to your
 conversion is usually quicker than starting from nothing. To contribute a module
 back as a built-in one, see [CONTRIBUTING.md](../CONTRIBUTING.md).

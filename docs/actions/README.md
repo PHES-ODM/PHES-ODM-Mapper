@@ -162,7 +162,7 @@ Actions can be combined in any order, but most modules follow this shape:
 13. [`save`](save.md) — write the final output.
 
 For complete, working examples read the `config.yaml` of any built-in module in
-[/odm_map/data/modules](/odm_map/data/modules).
+[/odm_map/data/modules](../../odm_map/data/modules).
 
 ## Internal Columns
 

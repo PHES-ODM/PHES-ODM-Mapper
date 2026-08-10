@@ -78,4 +78,4 @@ under `{output_dir}` instead.
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:
-  [/odm_map/actions/action_save_data.py](/odm_map/actions/action_save_data.py)
+  [/odm_map/actions/action_save_data.py](../../odm_map/actions/action_save_data.py)
