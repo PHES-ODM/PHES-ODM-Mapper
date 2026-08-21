@@ -56,18 +56,18 @@ The example below drops every row in the `measures` table where `measure` or
 `unit` is `<ignore>`, or where `value` is blank or `-1`, and does something
 similar for `protocolSteps`:
 
-| inputFilter | outputFilter | class         | slot       | operation      | value         |
-| :---------- | :----------- | :------------ | :--------- | :------------- | :------------ |
-|             | 0            | measures      |            | create_filter  | TRUE          |
-| 0           | 0            | measures      | measure    | exclude_equals | \<ignore\>    |
-| 0           | 0            | measures      | unit       | exclude_equals | \<ignore\>    |
-| 0           | 0            | measures      | value      | exclude_equals | ["", -1]      |
-| 0           |              | measures      |            | apply_filter   | measures      |
-|             | 1            | protocolSteps |            | create_filter  | TRUE          |
-| 1           | 1            | protocolSteps | measure    | exclude_equals | \<ignore\>    |
-| 1           | 1            | protocolSteps | method     | exclude_equals | \<ignore\>    |
-| 1           | 1            | protocolSteps | value      | exclude_equals |               |
-| 1           |              | protocolSteps |            | apply_filter   | protocolSteps |
+| inputFilter | outputFilter | class         | slot       | operation      | value             |
+| :---------- | :----------- | :------------ | :--------- | :------------- | :---------------- |
+|             | 0            | measures      |            | create_filter  | TRUE              |
+| 0           | 0            | measures      | measure    | exclude_equals | &lt;ignore&gt;    |
+| 0           | 0            | measures      | unit       | exclude_equals | &lt;ignore&gt;    |
+| 0           | 0            | measures      | value      | exclude_equals | ["", -1]          |
+| 0           |              | measures      |            | apply_filter   | measures          |
+|             | 1            | protocolSteps |            | create_filter  | TRUE              |
+| 1           | 1            | protocolSteps | measure    | exclude_equals | &lt;ignore&gt;    |
+| 1           | 1            | protocolSteps | method     | exclude_equals | &lt;ignore&gt;    |
+| 1           | 1            | protocolSteps | value      | exclude_equals |                   |
+| 1           |              | protocolSteps |            | apply_filter   | protocolSteps     |
 
 In outline: a **named boolean filter** is created for a class, one operation per
 row narrows it, and a final `apply_filter` row actually applies it to the

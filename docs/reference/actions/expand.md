@@ -126,7 +126,6 @@ expand_columns:
     sites:
         - sampleShed:
             remove_nulls: True
-            select_items: -1
 ```
 
 For example, the sites table:

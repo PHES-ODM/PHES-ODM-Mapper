@@ -25,18 +25,18 @@ The following is an example filters configuration. It will drop all rows in the
 `<ignore>`, or any row that has a `value` of blank or `-1`. It will also
 perform similar filtering to the `protocolSteps` table.
 
-| inputFilter | outputFilter | class         | slot       | operation      | value         |
-| :---------- | :----------- | :------------ | :--------- | :------------- | :------------ |
-|             | 0            | measures      |            | create_filter  | TRUE          |
-| 0           | 0            | measures      | measure    | exclude_equals | \<ignore\>    |
-| 0           | 0            | measures      | unit       | exclude_equals | \<ignore\>    |
-| 0           | 0            | measures      | value      | exclude_equals | ["", -1]      |
-| 0           |              | measures      |            | apply_filter   | measures      |
-|             | 1            | protocolSteps |            | create_filter  | TRUE          |
-| 1           | 1            | protocolSteps | measure    | exclude_equals | \<ignore\>    |
-| 1           | 1            | protocolSteps | method     | exclude_equals | \<ignore\>    |
-| 1           | 1            | protocolSteps | value      | exclude_equals |               |
-| 1           |              | protocolSteps |            | apply_filter   | protocolSteps |
+| inputFilter | outputFilter | class         | slot       | operation      | value             |
+| :---------- | :----------- | :------------ | :--------- | :------------- | :---------------- |
+|             | 0            | measures      |            | create_filter  | TRUE              |
+| 0           | 0            | measures      | measure    | exclude_equals | &lt;ignore&gt;    |
+| 0           | 0            | measures      | unit       | exclude_equals | &lt;ignore&gt;    |
+| 0           | 0            | measures      | value      | exclude_equals | ["", -1]          |
+| 0           |              | measures      |            | apply_filter   | measures          |
+|             | 1            | protocolSteps |            | create_filter  | TRUE              |
+| 1           | 1            | protocolSteps | measure    | exclude_equals | &lt;ignore&gt;    |
+| 1           | 1            | protocolSteps | method     | exclude_equals | &lt;ignore&gt;    |
+| 1           | 1            | protocolSteps | value      | exclude_equals |                   |
+| 1           |              | protocolSteps |            | apply_filter   | protocolSteps     |
 
 Filtering is performed using boolean filters that are given names and that are
 applied to various classes (ie. DataFrames). The filters contain one boolean
@@ -187,9 +187,9 @@ Delete the filter specified by `inputFilter`.
 
 ### exclude_equals
 
-| inputFilter | outputFilter | class          | slot        | operation      | value          |
-| :---------- | :----------- | :------------- | :---------- | :------------- | :------------- |
-| 0           | 0            | measures       | measure     | exclude_equals | \<ignore\>     |
+| inputFilter | outputFilter | class          | slot        | operation      | value              |
+| :---------- | :----------- | :------------- | :---------- | :------------- | :----------------- |
+| 0           | 0            | measures       | measure     | exclude_equals | &lt;ignore&gt;     |
 
 Modify the filter specified by `inputFilter` to exclude any row in the
 DataFrame specified by `class` in column `slot` that has a value found in the
