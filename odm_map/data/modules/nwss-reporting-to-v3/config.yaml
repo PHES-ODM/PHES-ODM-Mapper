@@ -1,11 +1,11 @@
-title: ODM v1 to ODM v2
+title: NWSS Reporting to ODM v3
 
-source_schema: "{shared}/schemas/odm_v1.yaml"
+source_schema: schemas/nwss_reporting.yaml
 
 steps:
   - action: clean
     params:
-      schema: "{shared}/schemas/odm_v1.yaml"
+      schema: schemas/nwss_reporting.yaml
       log_file: "{output_dir}/logs/change_log_input.xlsx"
       operations:
         - format_and_match_columns: True
@@ -18,14 +18,12 @@ steps:
       progress_bar_title: Saving Cleaned Data
   - action: map
     params:
-      source_schema: "{shared}/schemas/odm_v1.yaml"
+      source_schema: schemas/nwss_reporting.yaml
       target_schema: "{shared}/schemas/odm_v3.yaml"
       mappers_dir: mappers
-  - action: clean
+  - action: filter
     params:
-      schema: "{shared}/schemas/odm_v3.yaml"
-      operations:
-        - correct_enums: True
+      filters: filters/nwss_reporting_to_v3_filters.csv
   - action: save
     if: "{debug_mode}"
     params:
@@ -35,9 +33,25 @@ steps:
     params:
       schema: "{shared}/schemas/odm_v3.yaml"
       id_code: 
-        - "{shared}/ids/general_v2_id_code.xlsx"
+        - "{shared}/ids/general_v3_id_code.xlsx"
+        - ids/nwss_reporting_to_v3_id_code.xlsx
       id_config: 
-        - "{shared}/ids/general_v2_id_code.yaml"
+        - "{shared}/ids/general_v3_id_code.yaml"
+        - "ids/nwss_reporting_to_v3_id_code.yaml"
+  - action: clean
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      operations:
+        - correct_enums: True
+  - action: filter
+    params:
+      filters: "{shared}/filters/odm_vx_filter_required_values.csv"
+      mark_instead_of_drop: "{debug_mode}"
+  - action: drop_columns
+    if: "{not_debug_mode}"
+    params:
+      keep_columns_in_schema_only: True
+      schema: "{shared}/schemas/odm_v3.yaml"
   - action: save
     params:
       output_dir: "{output_dir}"

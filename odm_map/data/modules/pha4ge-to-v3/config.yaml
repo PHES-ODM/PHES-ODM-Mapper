@@ -1,4 +1,4 @@
-title: PHA4GE to ODM v2
+title: PHA4GE to ODM v3
 
 source_schema: schemas/pha4ge.yaml
 
@@ -34,11 +34,11 @@ steps:
   - action: filter
     params:
       # Each PHA4GE row only has one sample ID, so drop all the samples other than the non-empty one
-      filters: filters/pha4ge_to_v2_filters_empty_samples.csv
+      filters: filters/pha4ge_to_v3_filters_empty_samples.csv
   - action: filter
     params:
       # Remove blank and <ignore> values
-      filters: filters/pha4ge_to_v2_filters_before_id.csv
+      filters: filters/pha4ge_to_v3_filters_before_id.csv
   - action: save
     if: "{debug_mode}"
     params:
@@ -48,11 +48,11 @@ steps:
     params:
       schema: "{shared}/schemas/odm_v3.yaml"
       id_code:
-        - "{shared}/ids/general_v2_id_code.xlsx"
-        - ids/pha4ge_to_v2_id_code.xlsx
+        - "{shared}/ids/general_v3_id_code.xlsx"
+        - ids/pha4ge_to_v3_id_code.xlsx
       id_config:
-        - "{shared}/ids/general_v2_id_code.yaml"
-        - ids/pha4ge_to_v2_id_code.yaml
+        - "{shared}/ids/general_v3_id_code.yaml"
+        - ids/pha4ge_to_v3_id_code.yaml
   # IMPORTANT: clean action must be after generate_ids action: Some enum values are purposely invalid after the map action, and
   # get further processed by generate_ids, eg: sampleShed: and siteType: values in sites.sampleShed (eg. sampleShed:corFcil and
   # siteType:ocean get processed to sites.sampleShed=corFcil and sites.siteType=ocean). The clean action would remove these
