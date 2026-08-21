@@ -5,11 +5,19 @@ and the module configuration file. For task-oriented instructions see the
 [How-to guides](../how-to/how_to.md); for the ideas behind these interfaces see
 [How the Mapper Works](../explanation/explanation.md).
 
-- [Command-Line Interface](#command-line-interface)
-- [Python API](#python-api)
-- [Module Configuration](#module-configuration)
-- [Module Directory Layout](#module-directory-layout)
-- [Further Reference Documents](#further-reference-documents)
+- [Reference](#reference)
+  - [Command-Line Interface](#command-line-interface)
+    - [Inputs](#inputs)
+    - [Options](#options)
+  - [Python API](#python-api)
+    - [`Pipeline()` parameters](#pipeline-parameters)
+    - [`Pipeline.run()` parameters](#pipelinerun-parameters)
+  - [Module Configuration](#module-configuration)
+    - [Top-level keys](#top-level-keys)
+    - [Steps](#steps)
+    - [LinkML schemas](#linkml-schemas)
+  - [Module Directory Layout](#module-directory-layout)
+  - [Further Reference Documents](#further-reference-documents)
 
 ## Command-Line Interface
 
@@ -65,7 +73,7 @@ The entry point is the `Pipeline` class in `odm_map.pipeline`:
 from odm_map.pipeline import Pipeline
 
 pipeline = Pipeline(
-    module="odm-v1-to-v3",   # a built-in module name
+    module="odm-v1-to-v3",  # a built-in module name
     module_path=None,
 )
 
