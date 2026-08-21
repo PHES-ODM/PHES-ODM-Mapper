@@ -97,10 +97,10 @@ PHES-ODM-Mapper/
 │   └── data/
 │       └── modules/                       # Built-in conversion modules
 │           ├── _shared/                   # Schemas, IDs, and filters shared across modules
-│           ├── nwss-reporting-to-v2/      # NWSS Reporting → ODM v2
-│           ├── odm-v1-to-v2/              # ODM v1 → ODM v2
+│           ├── nwss-reporting-to-v3/      # NWSS Reporting → ODM v3
+│           ├── odm-v1-to-v3/              # ODM v1 → ODM v3
 │           ├── odm-v3-wide-to-long/       # ODM v3 wide format → ODM v3 long format
-│           └── pha4ge-to-v2/              # PHA4GE → ODM v2
+│           └── pha4ge-to-v3/              # PHA4GE → ODM v3
 ├── README.md                              # Landing page: install, supported mappings, doc map
 ├── CONTRIBUTING.md                        # This file
 ├── docs/                                  # Documentation

@@ -30,8 +30,8 @@ datasets, potentially half a day or more for very large ones.
 - action: generate_ids
   params:
     schema: "{shared}/schemas/odm_v3.yaml"
-    id_code: ids/nwss_reporting_to_v2_id_code.xlsx
-    id_config: ids/nwss_reporting_to_v2_id_code.yaml
+    id_code: ids/nwss_reporting_to_v3_id_code.xlsx
+    id_config: ids/nwss_reporting_to_v3_id_code.yaml
 ```
 
 Combining shared rules with module-specific ones:
@@ -41,11 +41,11 @@ Combining shared rules with module-specific ones:
   params:
     schema: "{shared}/schemas/odm_v3.yaml"
     id_code:
-      - "{shared}/ids/general_v2_id_code.xlsx"
-      - ids/pha4ge_to_v2_id_code.xlsx
+      - "{shared}/ids/general_v3_id_code.xlsx"
+      - ids/pha4ge_to_v3_id_code.xlsx
     id_config:
-      - "{shared}/ids/general_v2_id_code.yaml"
-      - ids/pha4ge_to_v2_id_code.yaml
+      - "{shared}/ids/general_v3_id_code.yaml"
+      - ids/pha4ge_to_v3_id_code.yaml
 ```
 
 ## Parameters
@@ -69,17 +69,17 @@ column.
 
 ```yaml
 # 1. A single file
-id_code: ids/nwss_reporting_to_v2_id_code.xlsx
+id_code: ids/nwss_reporting_to_v3_id_code.xlsx
 
 # 2. A list of files (each Excel file uses its first sheet)
 id_code:
-  - "{shared}/ids/general_v2_id_code.xlsx"
-  - ids/nwss_reporting_to_v2_id_code.xlsx
+  - "{shared}/ids/general_v3_id_code.xlsx"
+  - ids/nwss_reporting_to_v3_id_code.xlsx
 
 # 3. A list where an entry names a specific sheet
 id_code:
-  - "{shared}/ids/general_v2_id_code.xlsx"
-  - id_code: ids/nwss_reporting_to_v2_id_code.xlsx
+  - "{shared}/ids/general_v3_id_code.xlsx"
+  - id_code: ids/nwss_reporting_to_v3_id_code.xlsx
     id_code_sheet: id_code
 ```
 
@@ -154,9 +154,9 @@ namespaces, helper functions, linkage paths, and code selectors — is in
 
 Working examples:
 
-- [/odm_map/data/modules/_shared/ids/general_v2_id_code.xlsx](../../odm_map/data/modules/_shared/ids/general_v2_id_code.xlsx)
+- [/odm_map/data/modules/_shared/ids/general_v3_id_code.xlsx](../../odm_map/data/modules/_shared/ids/general_v3_id_code.xlsx)
   and its config
-  [general_v2_id_code.yaml](../../odm_map/data/modules/_shared/ids/general_v2_id_code.yaml)
+  [general_v3_id_code.yaml](../../odm_map/data/modules/_shared/ids/general_v3_id_code.yaml)
   — the shared rules used by every built-in module.
 - The `ids/` directory of any built-in module for module-specific overrides.
 

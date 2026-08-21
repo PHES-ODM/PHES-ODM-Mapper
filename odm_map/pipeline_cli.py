@@ -2,13 +2,13 @@
 # Command-Line
 
 To run the pipeline to map data from the command-line, execute the following for ODM v1 to 
-ODM v2 (replacing values where appropriate):
+ODM v3 (replacing values where appropriate):
 
 ```console
 cd src
 python3 pipeline_cli.py \
-    --module odm-v1-to-v2 \
-    --output-dir "../gen/odm-v1-to-v2" \
+    --module odm-v1-to-v3 \
+    --output-dir "../gen/odm-v1-to-v3" \
     "path/to/input/data"
 ```
 """

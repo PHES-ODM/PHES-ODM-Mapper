@@ -7,7 +7,7 @@ most specific values.
 ## Where It Fits
 
 `select_enum_hierarchy` operates on multivalued cells, so it belongs wherever
-the data still holds arrays. In the built-in `pha4ge-to-v2` module it runs after
+the data still holds arrays. In the built-in `pha4ge-to-v3` module it runs after
 [`clean`](clean.md) and before [`map`](map.md), on the source data.
 
 It can be run against the target format instead, as long as the `schema`
@@ -125,7 +125,7 @@ Notes on writing the config:
 - Slots listed here are processed whether or not they are multivalued enum
   slots. When `config` is omitted, in contrast, only multivalued slots with at
   least one enumeration in their range are selected automatically.
-- Omit `config` altogether (as the `pha4ge-to-v2` module does) to process
+- Omit `config` altogether (as the `pha4ge-to-v3` module does) to process
   everything eligible. Add a config file when you need to restrict the selector
   to specific slots — for example when one multivalued enum slot deliberately
   carries both a parent and a child value.

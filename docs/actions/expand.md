@@ -7,7 +7,7 @@ when an array is longer than expected.
 ## Where It Fits
 
 `expand` runs wherever the data still contains arrays. In the built-in
-`pha4ge-to-v2` module it runs immediately after [`map`](map.md), because mapping
+`pha4ge-to-v3` module it runs immediately after [`map`](map.md), because mapping
 a wide source into long tables can produce cells holding several values. It is
 usually followed by [`filter`](filter.md), which removes rows that the expansion
 leaves empty.
@@ -104,7 +104,7 @@ A list item can be written two ways:
   name and the value is a dictionary of the options below.
 
 Classes and slots that are not listed are left untouched. A working example is
-[/odm_map/data/modules/pha4ge-to-v2/expander/expander_config.yaml](../../odm_map/data/modules/pha4ge-to-v2/expander/expander_config.yaml).
+[/odm_map/data/modules/pha4ge-to-v3/expander/expander_config.yaml](../../odm_map/data/modules/pha4ge-to-v3/expander/expander_config.yaml).
 
 The options are applied in this order: `remove_nulls`, then `max_length`, then
 `select_items`, then `expand`.
@@ -222,7 +222,7 @@ expand_columns:
             expand: False
 ```
 
-This is useful when a downstream step needs the whole array. The `pha4ge-to-v2`
+This is useful when a downstream step needs the whole array. The `pha4ge-to-v3`
 module does this for `sites.sampleShed`: every item must survive because
 [`generate_ids`](generate_ids.md) inspects all of them to decide whether each
 value belongs in `sampleShed` or `siteType`.

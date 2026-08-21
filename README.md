@@ -51,9 +51,9 @@ Installing makes the `odm-map` command available.
 
 | Module | Source Format | Target Format |
 | :------------------- | :------------ | :------------ |
-| `odm-v1-to-v2` | ODM v1 | ODM v2 / v3 |
-| `nwss-reporting-to-v2` | NWSS Reporting | ODM v2 / v3 |
-| `pha4ge-to-v2` | PHA4GE | ODM v2 / v3 |
+| `odm-v1-to-v3` | ODM v1 | ODM v3 |
+| `nwss-reporting-to-v3` | NWSS Reporting | ODM v3 |
+| `pha4ge-to-v3` | PHA4GE | ODM v3 |
 | `odm-v3-wide-to-long` | ODM v3 wide format | ODM v3 long format |
 
 Every mapping is run with the same command shape — pick the module with
@@ -71,12 +71,12 @@ differ only in the module name and in what the input files must be called. See
 tables](docs/how_to.md#choose-which-files-and-tables-to-map) if your files are
 named differently.
 
-### ODM v1 → ODM v2 / v3
+### ODM v1 → ODM v3
 
 ```console
 odm-map \
-    --module odm-v1-to-v2 \
-    --output-dir "output/odm-v1-to-v2" \
+    --module odm-v1-to-v3 \
+    --output-dir "output/odm-v1-to-v3" \
     "path/to/odm-v1-data"
 ```
 
@@ -86,24 +86,24 @@ The input directory holds one file per ODM v1 table, named after the table:
 you have are required — for example, `Sample.csv` and `WWMeasure.csv` alone are
 enough to produce measures and samples in the output.
 
-### NWSS Reporting → ODM v2 / v3
+### NWSS Reporting → ODM v3
 
 ```console
 odm-map \
-    --module nwss-reporting-to-v2 \
-    --output-dir "output/nwss-reporting-to-v2" \
+    --module nwss-reporting-to-v3 \
+    --output-dir "output/nwss-reporting-to-v3" \
     "path/to/nwss.csv"
 ```
 
 NWSS Reporting is a single-table format, and the table is named `nwss`, so the
 input file (or Excel sheet) must be named `nwss`.
 
-### PHA4GE → ODM v2 / v3
+### PHA4GE → ODM v3
 
 ```console
 odm-map \
-    --module pha4ge-to-v2 \
-    --output-dir "output/pha4ge-to-v2" \
+    --module pha4ge-to-v3 \
+    --output-dir "output/pha4ge-to-v3" \
     "path/to/PHA4GE.xlsx"
 ```
 

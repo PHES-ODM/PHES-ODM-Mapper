@@ -25,7 +25,7 @@ they hold.
 **Point it at a directory** to map every recognized file inside it:
 
 ```console
-odm-map --module odm-v1-to-v2 --output-dir "output" "path/to/inputdata"
+odm-map --module odm-v1-to-v3 --output-dir "output" "path/to/inputdata"
 ```
 
 Files with recognized extensions (`.csv`, `.tsv`, `.txt`, `.xlsx`) are matched
@@ -47,7 +47,7 @@ path with the table name and a colon:
 
 ```console
 odm-map \
-    --module odm-v1-to-v2 \
+    --module odm-v1-to-v3 \
     --output-dir "output" \
     "WWMeasure:path/to/measurements-export.csv"
 ```
@@ -66,7 +66,7 @@ are all loaded into it:
 
 ```console
 odm-map \
-    --module odm-v1-to-v2 \
+    --module odm-v1-to-v3 \
     --output-dir "output" \
     "WWMeasure:path/to/measures-2023.csv" \
     "WWMeasure:path/to/measures-2024.csv" \
@@ -82,7 +82,7 @@ Pass the workbook as an input. Each sheet tab is matched to a table using the
 same naming rules as file names, and sheets that match no table are skipped:
 
 ```console
-odm-map --module pha4ge-to-v2 --output-dir "output" "path/to/data.xlsx"
+odm-map --module pha4ge-to-v3 --output-dir "output" "path/to/data.xlsx"
 ```
 
 A single workbook holding one sheet per table is therefore enough for a whole
@@ -97,7 +97,7 @@ script, or to work with the resulting DataFrames directly:
 ```python
 from odm_map.pipeline import Pipeline
 
-pipeline = Pipeline(module="odm-v1-to-v2", module_path=None)
+pipeline = Pipeline(module="odm-v1-to-v3", module_path=None)
 
 tables = pipeline.run(
     data_files={
@@ -153,7 +153,7 @@ effect:
 
     ```console
     odm-map \
-        --module nwss-reporting-to-v2 \
+        --module nwss-reporting-to-v3 \
         --max-processes 8 \
         --output-dir "output" \
         "path/to/nwss.csv"
@@ -194,7 +194,7 @@ Work outward from the output:
 
     ```console
     odm-map \
-        --module odm-v1-to-v2 \
+        --module odm-v1-to-v3 \
         --output-dir "output/debug" \
         --temp-dir "output/temp" \
         --max-rows 500 \

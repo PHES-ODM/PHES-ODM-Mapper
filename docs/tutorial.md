@@ -1,7 +1,7 @@
 # Tutorial: Your First Mapping
 
 This tutorial takes you through one complete mapping from beginning to end. You
-will download a real ODM v1 dataset, convert it to ODM v2 / v3, and look at what
+will download a real ODM v1 dataset, convert it to ODM v3, and look at what
 came out. It should take about fifteen minutes, plus mapping time.
 
 You do not need to understand the Mapper's internals to follow along — every
@@ -52,15 +52,15 @@ Mapping the whole dataset can take a while, so start with a small slice. The
 
 ```console
 odm-map \
-    --module odm-v1-to-v2 \
-    --output-dir "output/v2-sample" \
+    --module odm-v1-to-v3 \
+    --output-dir "output/v3-sample" \
     --max-rows 500 \
     "sars-cov-2-data/CSV/Ottawa"
 ```
 
 Three things are happening in that command:
 
-- `--module odm-v1-to-v2` selects the conversion. The module name says what it
+- `--module odm-v1-to-v3` selects the conversion. The module name says what it
   converts from and to.
 - `--output-dir` is where the resulting CSV files are written. It is created if
   it does not exist.
@@ -76,7 +76,7 @@ before the first bar appears.
 ## Step 3: Look at the output
 
 ```console
-ls output/v2-sample
+ls output/v3-sample
 ```
 
 Each file is one ODM table in the target format — `measures.csv`,
@@ -102,8 +102,8 @@ Now drop `--max-rows` and let it map everything:
 
 ```console
 odm-map \
-    --module odm-v1-to-v2 \
-    --output-dir "output/v2" \
+    --module odm-v1-to-v3 \
+    --output-dir "output/v3" \
     "sars-cov-2-data/CSV/Ottawa"
 ```
 
@@ -119,25 +119,25 @@ Two options make a run inspectable. `--debug` adds detail to the output, and
 
 ```console
 odm-map \
-    --module odm-v1-to-v2 \
-    --output-dir "output/v2-debug" \
-    --temp-dir "output/v2-temp" \
+    --module odm-v1-to-v3 \
+    --output-dir "output/v3-debug" \
+    --temp-dir "output/v3-temp" \
     --max-rows 500 \
     --debug \
     "sars-cov-2-data/CSV/Ottawa"
 ```
 
-Open `output/v2-debug/measures.csv` again. It now carries extra columns showing
+Open `output/v3-debug/measures.csv` again. It now carries extra columns showing
 the ID values as they were *before* ID generation, along with the primary key
 index used for linking — so you can see how each key was arrived at. Rows that
 would normally be dropped for having a duplicate primary key are kept as well,
 flagged in an added column.
 
-`output/v2-temp` holds the data as it looked between steps, such as after
+`output/v3-temp` holds the data as it looked between steps, such as after
 cleaning and before ID generation. Together these show the whole pipeline rather
 than just its result.
 
-Also open `output/v2-debug/logs/change_log_input.xlsx`, which the cleaning step
+Also open `output/v3-debug/logs/change_log_input.xlsx`, which the cleaning step
 writes on every run. It records each correction made to the input, such as
 enumeration values whose capitalization was fixed, and is the first place to
 look when an output value is not what you expected.

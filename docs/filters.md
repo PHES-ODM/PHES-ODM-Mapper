@@ -6,13 +6,13 @@ Once data have been mapped with LinkML-Map we may want to filter the resulting
 data to remove rows that have missing information or for other reasons. This
 step is performed immediately after LinkML-Map is run but before ID generation
 is performed. When mapping from a wide-format database such as NWSS to a
-long-format database such as ODM v2 the resulting mapping often has missing
-data. For example, in NWSS to ODM v2 in the `measures` table, rows with a value
+long-format database such as ODM v3 the resulting mapping often has missing
+data. For example, in NWSS to ODM v3 in the `measures` table, rows with a value
 of `<ignore>` in the `measure` slot should be removed, as is rows with a blank
 `value`.
 
 An example filter configuration file can be found at
-[/odm_map/data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.csv](../odm_map/data/modules/nwss-reporting-to-v2/filters/nwss_reporting_to_v2_filters.csv).
+[/odm_map/data/modules/nwss-reporting-to-v3/filters/nwss_reporting_to_v3_filters.csv](../odm_map/data/modules/nwss-reporting-to-v3/filters/nwss_reporting_to_v3_filters.csv).
 
 The location of the filter configuration file within a conversion module are
 specified in the module configuration file

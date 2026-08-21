@@ -1,7 +1,7 @@
 site_name: PHES-ODM Mapper
 site_description: >-
   Convert wastewater surveillance data between reporting formats — ODM v1,
-  NWSS, PHA4GE, and ODM v2/v3 — with generated primary and foreign keys.
+  NWSS, PHA4GE, and ODM v3 — with generated primary and foreign keys.
 site_url: https://phes-odm.github.io/PHES-ODM-Mapper/
 repo_url: https://github.com/PHES-ODM/PHES-ODM-Mapper
 repo_name: PHES-ODM/PHES-ODM-Mapper

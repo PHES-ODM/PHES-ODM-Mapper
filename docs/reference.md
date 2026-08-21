@@ -48,7 +48,7 @@ names.
 
 | Option | Description |
 |:-------|:----------- |
-| `--module` | The built-in conversion module to use. The module specifies the source (eg. NWSS) and target (eg. ODM v2) database formats. Exactly one of `--module` or `--module-path` must be given. Run with `--help` to list the installed modules. |
+| `--module` | The built-in conversion module to use. The module specifies the source (eg. NWSS) and target (eg. ODM v3) database formats. Exactly one of `--module` or `--module-path` must be given. Run with `--help` to list the installed modules. |
 | `--module-path` | The directory, or ZIP file, of the module to use. This is how custom modules are run. Exactly one of `--module` or `--module-path` must be given. |
 | `--output-dir` | The directory to save the mapped data to. One CSV file is written per output table, named after the table. Required. |
 | `--max-processes` | Number of processes to use while mapping. For large datasets this can improve performance considerably. A non-positive value uses every available processor. Defaults to `1`, which maps without multiprocessing. |
@@ -65,7 +65,7 @@ The entry point is the `Pipeline` class in `odm_map.pipeline`:
 from odm_map.pipeline import Pipeline
 
 pipeline = Pipeline(
-    module="odm-v1-to-v2",   # a built-in module name
+    module="odm-v1-to-v3",   # a built-in module name
     module_path=None,
 )
 
@@ -109,7 +109,7 @@ A module is a directory containing a file named `config.yaml` in its root, plus
 the files that its steps refer to. `config.yaml` defines the conversion:
 
 ```yaml
-title: NWSS Reporting to ODM v2
+title: NWSS Reporting to ODM v3
 
 source_schema: schemas/nwss_reporting.yaml
 
@@ -137,14 +137,14 @@ steps:
   - action: map
     params:
       source_schema: schemas/nwss_reporting.yaml
-      target_schema: schemas/odm_v2.yaml
+      target_schema: schemas/odm_v3.yaml
       mappers_dir: mappers
   - action: expand
     params:
       config: expander/expander_config.yaml
   - action: filter
     params:
-      filters: filters/nwss_reporting_to_v2_filters.csv
+      filters: filters/nwss_reporting_to_v3_filters.csv
   - action: save
     if: "{debug_mode}"
     params:
@@ -152,9 +152,9 @@ steps:
       output_name: "{class_name}[preid].csv"
   - action: generate_ids
     params:
-      schema: "schemas/odm_v2.yaml"
-      id_code: ids/nwss_reporting_to_v2_id_code.xlsx
-      id_config: ids/nwss_reporting_to_v2_id_config.yaml
+      schema: "schemas/odm_v3.yaml"
+      id_code: ids/nwss_reporting_to_v3_id_code.xlsx
+      id_config: ids/nwss_reporting_to_v3_id_code.yaml
   - action: drop_columns
     if: "{not_debug_mode}"
     params:
@@ -214,7 +214,7 @@ An unrecognized action name stops the run with an error.
 ### LinkML schemas
 
 A module needs a LinkML schema for its source format and one for its target
-format — mapping NWSS to ODM v2 requires a schema for NWSS and one for ODM v2.
+format — mapping NWSS to ODM v3 requires a schema for NWSS and one for ODM v3.
 Each schema defines the format's tables and its enumerations, and has a tree
 root class whose slots are the table names.
 

@@ -140,7 +140,7 @@ capitalization and spacing from the schema.
 > values*. If a later step depends on a value that is deliberately not a valid
 > enumeration value — for example a tag such as `sampleShed:corFcil` that
 > [`generate_ids`](generate_ids.md) will process — run that step **before** this
-> `clean` step. The `pha4ge-to-v2` module does exactly this, and its
+> `clean` step. The `pha4ge-to-v3` module does exactly this, and its
 > `config.yaml` carries a comment explaining why.
 
 ### Clean Operation: add_ontology_ids_to_enums

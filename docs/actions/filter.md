@@ -27,7 +27,7 @@ at that step — source names before `map`, target names after it.
 ```yaml
 - action: filter
   params:
-    filters: filters/nwss_reporting_to_v2_filters.csv
+    filters: filters/nwss_reporting_to_v3_filters.csv
 ```
 
 Dropping rows normally, but marking them instead of dropping them in debug mode:
@@ -84,7 +84,7 @@ column, how filters are named and combined, and every available operation
 Practical points when preparing the file:
 
 - Give a module one filter file per pipeline position rather than one large file
-  for everything. The `pha4ge-to-v2` module has separate files for dropping
+  for everything. The `pha4ge-to-v3` module has separate files for dropping
   empty samples and for its pre-ID filtering, run as two consecutive `filter`
   steps.
 - Put filter files that several modules share in the `_shared` module and

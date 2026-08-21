@@ -83,10 +83,10 @@ like this:
   params:
     schema: "{shared}/schemas/odm_v3.yaml"
     id_code:
-      - "{shared}/ids/general_v2_id_code.xlsx"
+      - "{shared}/ids/general_v3_id_code.xlsx"
       - "{temp}/wide_to_long/ids/id_code.csv"
     id_config:
-      - "{shared}/ids/general_v2_id_code.yaml"
+      - "{shared}/ids/general_v3_id_code.yaml"
       - "{temp}/wide_to_long/ids/id_code_config.yaml"
 ```
 

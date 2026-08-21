@@ -94,7 +94,7 @@ Each file must be a valid LinkML-Map YAML file, and two rules apply:
    schema, and its slot derivations must name every target class derivation in
    that file (eg. `measures[001]` from the example above).
 
-The following mapper file populates the ODM v2/v3 `measures` table from the ODM
+The following mapper file populates the ODM v3 `measures` table from the ODM
 v1 `WWMeasure` table, with `Container` as the tree root of the target schema:
 
 ```yaml
@@ -121,7 +121,7 @@ not write derivations for them yourself.
 
 For working examples, see the `mappers` directory of any built-in module, such
 as
-[/odm_map/data/modules/odm-v1-to-v2/mappers](../../odm_map/data/modules/odm-v1-to-v2/mappers).
+[/odm_map/data/modules/odm-v1-to-v3/mappers](../../odm_map/data/modules/odm-v1-to-v3/mappers).
 
 > **⚠️ Security note:** Mapper files may use LinkML-Map `expr` slot derivations,
 > and the Mapper evaluates these expressions in _unrestricted_ mode by default.
