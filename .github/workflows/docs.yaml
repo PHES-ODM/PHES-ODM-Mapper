@@ -1,12 +1,8 @@
 name: Documentation
 
-# TEMPORARY: the "newdocs" branch builds and deploys like main so the
-# documentation site can be tested before it is merged. Remove "newdocs" from
-# the push trigger below and from the deploy job's `if` condition once testing
-# is done, so that only main publishes.
 on:
   push:
-    branches: [ main, newdocs ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -56,9 +52,7 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     # Pull requests build but do not publish; only main deploys.
-    # TEMPORARY: refs/heads/newdocs also deploys while the site is being
-    # tested. Drop that half of the condition when the branch is merged.
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/newdocs') && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
     environment:
