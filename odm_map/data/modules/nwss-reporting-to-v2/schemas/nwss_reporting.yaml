@@ -1639,7 +1639,7 @@ classes:
           or chemicals, such as chlorine, added to the wastewater treatment train
           upstream of the sample collection point. Do not be specify pasteurization
           here; it should be specified in the 'pasteurized' field.
-        range: vs_yne[pretreatment]
+        range: vs_yn[pretreatment]
         required: true
       pretreatment_specify:
         description: If 'pretreatment' is "yes", then specify the chemicals used
