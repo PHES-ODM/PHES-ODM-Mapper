@@ -38,6 +38,15 @@ steps:
         - "{shared}/ids/general_v3_id_code.xlsx"
       id_config: 
         - "{shared}/ids/general_v3_id_code.yaml"
+  - action: filter
+    params:
+      filters: "{shared}/filters/odm_vx_filter_required_values.csv"
+      mark_instead_of_drop: "{debug_mode}"
+  - action: drop_columns
+    if: "{not_debug_mode}"
+    params:
+      keep_columns_in_schema_only: True
+      schema: "{shared}/schemas/odm_v3.yaml"
   - action: save
     params:
       output_dir: "{output_dir}"

@@ -90,12 +90,6 @@ worth noticing:
   generated these keys so the output tables link to each other; nothing in the
   ODM v1 input had to provide them.
 
-You will also see columns whose names look like `(__source_file__)` and
-`(__source_row__)`. These are internal tracking columns: they record the input
-file and row each output row was built from, which is how the Mapper knows which
-rows to link together. They are described in
-[explanation/explanation.md](../explanation/explanation.md#internal-columns).
-
 ## Step 4: Run the full mapping
 
 Now drop `--max-rows` and let it map everything:
