@@ -5,7 +5,7 @@ Map data using a transformation module.
 from pipeline import Pipeline
 
 pipeline = Pipeline(
-    module="odm-v1-to-v2",
+    module="odm-v1-to-v3",
     module_path=None,
 )
 
@@ -15,7 +15,7 @@ pipeline.run(
         "samples": ["path/to/samples.csv"],
         # ...
     },
-    output_dir="../gen/odm-v1-to-v2",
+    output_dir="../gen/odm-v1-to-v3",
 )
 """
 
@@ -70,7 +70,7 @@ class Pipeline:
 
         Args:
             module (str | PipelineModule | None): Either the name of the built-in module for the mapping
-                (eg. "odm-v1-to-v2" or "nwss-reporting-to-v2") or an already loaded PipelineModule. If None then
+                (eg. "odm-v1-to-v3" or "nwss-reporting-to-v3") or an already loaded PipelineModule. If None then
                 module_path must be specified.
             module_path (str | Path | None): The path to the directory or zip file for the mapping module.
                 If None then module  must be specified.

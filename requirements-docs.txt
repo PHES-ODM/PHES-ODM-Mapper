@@ -1,0 +1,13 @@
+# Documentation build dependencies.
+#
+# These are deliberately kept separate from requirements.txt: building the site
+# only renders Markdown, so the runtime dependencies (linkml, pandas, ...) do
+# not need to be installed to preview or publish the documentation.
+#
+#   pip install -r requirements-docs.txt
+#   mkdocs serve
+
+# Upper-bounded because MkDocs 2.0 removes the plugin and theming systems that
+# mkdocs-material is built on, with no migration path.
+mkdocs>=1.6,<2
+mkdocs-material>=9.5,<10

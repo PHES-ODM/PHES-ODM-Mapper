@@ -11,10 +11,12 @@ Thank you for your interest in contributing to the PHES-ODM Mapper. This guide c
     - [Steps](#steps)
   - [Project Structure](#project-structure)
   - [How the Mapper Works](#how-the-mapper-works)
-    - [Key Concepts](#key-concepts)
   - [Code Style](#code-style)
   - [Adding a New Built-In Module](#adding-a-new-built-in-module)
   - [Adding a New Action](#adding-a-new-action)
+  - [Documentation](#documentation)
+    - [The four kinds of document](#the-four-kinds-of-document)
+    - [Keep docs in the same change as the code](#keep-docs-in-the-same-change-as-the-code)
   - [Submitting a Pull Request](#submitting-a-pull-request)
 
 ## Development Environment Setup
@@ -95,63 +97,52 @@ PHES-ODM-Mapper/
 │   └── data/
 │       └── modules/                       # Built-in conversion modules
 │           ├── _shared/                   # Schemas, IDs, and filters shared across modules
-│           ├── nwss-reporting-to-v2/      # NWSS Reporting → ODM v2
-│           ├── odm-v1-to-v2/              # ODM v1 → ODM v2
+│           ├── nwss-reporting-to-v3/      # NWSS Reporting → ODM v3
+│           ├── odm-v1-to-v3/              # ODM v1 → ODM v3
 │           ├── odm-v3-wide-to-long/       # ODM v3 wide format → ODM v3 long format
-│           └── pha4ge-to-v2/              # PHA4GE → ODM v2
-├── README.md                              # Main documentation
+│           └── pha4ge-to-v3/              # PHA4GE → ODM v3
+├── README.md                              # Landing page: install, supported mappings, doc map
 ├── CONTRIBUTING.md                        # This file
-├── docs/                                  # Documentation
-│   ├── custom_modules.md                  # Full reference for creating custom modules
-│   ├── actions/                           # One document per pipeline action
-│   │   ├── README.md                      # Concepts common to all actions, plus the index
-│   │   ├── clean.md                       # `clean` action
-│   │   ├── drop_columns.md                # `drop_columns` action
-│   │   ├── expand.md                      # `expand` action
-│   │   ├── filter.md                      # `filter` action
-│   │   ├── generate_ids.md                # `generate_ids` action
-│   │   ├── map.md                         # `map` action
-│   │   ├── prepare_wide_to_long.md        # `prepare_wide_to_long` action
-│   │   ├── save.md                        # `save` action
-│   │   └── select_enum_hierarchy.md       # `select_enum_hierarchy` action
-│   ├── filters.md                         # Filter system reference
-│   ├── id_generator.md                    # ID generator reference
-│   ├── merging_spec.md                    # Design spec for merging separately-mapped datasets
-│   ├── wide_to_long_spec.md               # Implementation spec for wide-to-long mapping
-│   ├── long_to_wide_spec.md               # Implementation spec for long-to-wide mapping (in development)
+├── docs/                                  # Documentation, one directory per Diataxis section
+│   ├── index.md                           # Landing page of the documentation site
+│   ├── tutorials/                         # Learning-oriented, start to finish
+│   │   └── tutorial.md                    # Tutorial: a complete first mapping
+│   ├── how-to/                            # Task-oriented recipes
+│   │   └── how_to.md                      # How-to guides: one section per problem
+│   ├── reference/                         # Exact descriptions of every interface
+│   │   ├── reference.md                   # Reference: CLI, Python API, module config.yaml
+│   │   ├── actions/                       # One document per pipeline action
+│   │   │   ├── README.md                  # Concepts common to all actions, plus the index
+│   │   │   ├── clean.md                   # `clean` action
+│   │   │   ├── drop_columns.md            # `drop_columns` action
+│   │   │   ├── expand.md                  # `expand` action
+│   │   │   ├── filter.md                  # `filter` action
+│   │   │   ├── generate_ids.md            # `generate_ids` action
+│   │   │   ├── map.md                     # `map` action
+│   │   │   ├── prepare_wide_to_long.md    # `prepare_wide_to_long` action
+│   │   │   ├── save.md                    # `save` action
+│   │   │   └── select_enum_hierarchy.md   # `select_enum_hierarchy` action
+│   │   ├── filters.md                     # Filter file reference
+│   │   ├── id_generator.md                # ID code and ID config reference
+│   │   └── wide_to_long_spec.md           # Wide-format column naming reference
+│   ├── explanation/                       # Background reading and design specs
+│   │   ├── explanation.md                 # Explanation: how the Mapper works
+│   │   ├── merging_spec.md                # Design spec: merging separately-mapped datasets
+│   │   └── long_to_wide_spec.md           # Design spec: long-to-wide mapping (in development)
 │   └── img/                               # Images used in documentation
+├── mkdocs.yml                             # Documentation site configuration
 ├── pyproject.toml                         # Package metadata and build configuration
-└── requirements.txt                       # Python dependencies
+├── requirements.txt                       # Python dependencies
+└── requirements-docs.txt                  # Documentation build dependencies
 ```
 
 ## How the Mapper Works
 
-The mapper executes a pipeline of actions defined in a module's `config.yaml` file. The typical flow is:
+[docs/explanation/explanation.md](docs/explanation/explanation.md) explains the design: what a module is, what the pipeline does to the data, why IDs have to be generated, and what the internal tracking and `_extra_` columns are for. Read it before working on the pipeline. This section covers only what is specific to the code.
 
-1. **Load data** — Input CSV/TSV/Excel files are loaded into pandas DataFrames, one per source table.
-2. **[`clean`](docs/actions/clean.md)** — Normalize column names, correct enumeration values, and check regex patterns against a LinkML schema.
-3. **[`select_enum_hierarchy`](docs/actions/select_enum_hierarchy.md)** *(optional)* — For multivalued enum slots, remove parent values when a more specific child value is present.
-4. **[`prepare_wide_to_long`](docs/actions/prepare_wide_to_long.md)** *(wide sources only)* — Restructure wide data and generate the mappers, schema, and ID code needed to map it to long format.
-5. **[`map`](docs/actions/map.md)** — Use LinkML-Map YAML schemas to transform DataFrames from the source format to the target format.
-6. **[`expand`](docs/actions/expand.md)** *(optional)* — Expand rows that contain multi-valued arrays so that each value gets its own row.
-7. **[`filter`](docs/actions/filter.md)** — Remove unwanted rows (e.g. rows with blank required values, or rows with sentinel values like `<ignore>`).
-8. **[`generate_ids`](docs/actions/generate_ids.md)** — Create primary and foreign keys to link tables together.
-9. **[`drop_columns`](docs/actions/drop_columns.md)** — Remove internal tracking and `_extra_` columns from the output.
-10. **[`save`](docs/actions/save.md)** — Write the final DataFrames to CSV files.
+The mapper executes a pipeline of actions defined in a module's `config.yaml`. Input CSV/TSV/Excel files are first loaded into pandas DataFrames, one per source table, and then `pipeline.py` dispatches each step to the corresponding function in `odm_map/actions/`. Each action function is self-contained and receives a `dict[str, list[pd.DataFrame]]` (a dictionary of class name → list of DataFrames) and returns the same structure after modification.
 
-The `pipeline.py` file dispatches each step to the corresponding function in `odm_map/actions/`. Each action function is self-contained and receives a `dict[str, list[pd.DataFrame]]` (a dictionary of class name → list of DataFrames) and returns the same structure after modification.
-
-Each action is documented in its own file under [docs/actions/](docs/actions/), with [docs/actions/README.md](docs/actions/README.md) covering what is common to all of them.
-
-### Key Concepts
-
-**Modules** are directories containing a `config.yaml` and all supporting files (LinkML schemas, LinkML-Map mapper files, filter CSVs, ID code files). The built-in modules live in `odm_map/data/modules/`. Custom modules can live anywhere on disk.
-
-**Tracking columns** are internal columns added automatically during the `map` step. They record the source file and row number each output row came from, which is used by the ID generator for linking between tables. They are named `(__source_file_and_row__)`, `(__source_file__)`, and `(__source_row__)`.
-
-**`_extra_` columns** are additional non-schema columns added by the mapper or ID generator to carry temporary data needed during processing (e.g. tags used for linking between tables). They are stripped before saving the final output.
-
-**The `_shared` module** at `odm_map/data/modules/_shared/` contains LinkML schemas, ID code files, and filter files shared by multiple modules. Use `{shared}` as a path prefix in a `config.yaml` to reference files from this directory.
+Each action is documented in its own file under [docs/reference/actions/](docs/reference/actions), with [docs/reference/actions/README.md](docs/reference/actions/README.md) covering what is common to all of them, and [A typical pipeline order](docs/reference/actions/README.md#a-typical-pipeline-order) showing the sequence most modules follow.
 
 ## Code Style
 
@@ -183,7 +174,7 @@ A module is a self-contained directory with a `config.yaml` and all supporting f
 
 1. Create a new directory under `odm_map/data/modules/` using a descriptive kebab-case name, such as `my-source-to-v3`.
 
-2. Write a `config.yaml` that defines the full transformation pipeline. See [custom_modules.md](docs/custom_modules.md) for the complete configuration reference, and [docs/actions/](docs/actions/) for the available actions and their parameters.
+2. Write a `config.yaml` that defines the full transformation pipeline. See [Module Configuration](docs/reference/reference.md#module-configuration) for the complete configuration reference, and [docs/reference/actions/](docs/reference/actions) for the available actions and their parameters.
 
     At a minimum, the config requires:
     - `title`: A short human-readable description of the conversion.
@@ -195,12 +186,12 @@ A module is a self-contained directory with a `config.yaml` and all supporting f
     | Subdirectory | Contents |
     |:-------------|:---------|
     | `schemas/`   | LinkML schema YAML files for the source and/or target datasets |
-    | `mappers/`   | LinkML-Map YAML files that define field-level transformations ([map](docs/actions/map.md)) |
-    | `filters/`   | CSV files defining row-filtering rules ([filter](docs/actions/filter.md)) |
-    | `ids/`       | Excel or CSV ID code files and YAML ID config files ([generate_ids](docs/actions/generate_ids.md)) |
-    | `expander/`  | Expander YAML config ([expand](docs/actions/expand.md)) |
-    | `enum_hierarchy/` | Enum hierarchy YAML config ([select_enum_hierarchy](docs/actions/select_enum_hierarchy.md)) |
-    | `wide_to_long/` | Wide-to-long YAML config ([prepare_wide_to_long](docs/actions/prepare_wide_to_long.md)) |
+    | `mappers/`   | LinkML-Map YAML files that define field-level transformations ([map](docs/reference/actions/map.md)) |
+    | `filters/`   | CSV files defining row-filtering rules ([filter](docs/reference/actions/filter.md)) |
+    | `ids/`       | Excel or CSV ID code files and YAML ID config files ([generate_ids](docs/reference/actions/generate_ids.md)) |
+    | `expander/`  | Expander YAML config ([expand](docs/reference/actions/expand.md)) |
+    | `enum_hierarchy/` | Enum hierarchy YAML config ([select_enum_hierarchy](docs/reference/actions/select_enum_hierarchy.md)) |
+    | `wide_to_long/` | Wide-to-long YAML config ([prepare_wide_to_long](docs/reference/actions/prepare_wide_to_long.md)) |
 
 4. Use `{shared}` as a path prefix in `config.yaml` to reference files in the `_shared` module (e.g. `{shared}/schemas/odm_v3.yaml`).
 
@@ -220,9 +211,89 @@ To add a new action type that can be used in a module `config.yaml`:
 
 2. Import and dispatch the new action in `odm_map/pipeline.py` by adding a new `elif action == "<name>":` branch in the `run` method.
 
-3. Document the new action in its own file, `docs/actions/<name>.md`, following the same structure as the existing action documents: what the action does, where it fits in a pipeline, a YAML example, a parameter table, and how to prepare any configuration or other files the action needs.
+3. Document the new action in its own file, `docs/reference/actions/<name>.md`, following the same structure as the existing action documents: what the action does, where it fits in a pipeline, a YAML example, a parameter table, and how to prepare any configuration or other files the action needs.
 
-4. Add the new action to the index tables in [docs/actions/README.md](docs/actions/README.md), [docs/custom_modules.md](docs/custom_modules.md), and [README.md](README.md), and to the `docs/actions/` tree in the [Project Structure](#project-structure) section above.
+4. Add the new action to the index tables in [docs/reference/actions/README.md](docs/reference/actions/README.md), [docs/reference/reference.md](docs/reference/reference.md#steps), and [docs/explanation/explanation.md](docs/explanation/explanation.md#the-pipeline), and to the `docs/reference/actions/` tree in the [Project Structure](#project-structure) section above.
+
+## Documentation
+
+Documentation lives in [docs/](docs) and is indexed by
+[docs/index.md](docs/index.md). It is built with
+[MkDocs](https://www.mkdocs.org/) with the
+[Material](https://squidfunk.github.io/mkdocs-material/) theme, and published to
+GitHub Pages by [.github/workflows/docs.yaml](.github/workflows/docs.yaml) on
+every push to `main`.
+
+Preview the site locally. `requirements-docs.txt` holds only the site build
+dependencies, so this works without installing the runtime packages:
+
+```console
+pip install -r requirements-docs.txt
+mkdocs serve                       # http://127.0.0.1:8000
+mkdocs build --strict              # what CI runs
+```
+
+CI also runs
+[.github/scripts/check_doc_links.py](.github/scripts/check_doc_links.py), which
+resolves every relative link and `#anchor` against the filesystem. `mkdocs.yml`
+has to switch off MkDocs' own broken-link check, because these documents are
+also read on GitHub and link to source files under `odm_map/` — targets that
+live outside `docs/` and that MkDocs cannot resolve. Write those links relative
+to the document (`../../odm_map/pipeline_cli.py` from `docs/reference/`,
+`../../../odm_map/...` from `docs/reference/actions/`), not as `/odm_map/...`: a leading `/`
+resolves against the domain root on both GitHub and the published site, so such
+a link is broken in both places.
+
+### The four kinds of document
+
+Documentation follows the [Divio/Diátaxis](https://diataxis.fr/) framework. New
+material belongs in exactly one of these — if it seems to fit two, it is
+probably two pieces of writing.
+
+- [docs/tutorials/tutorial.md](docs/tutorials/tutorial.md) — teaches a beginner by doing: followed
+  start to finish, on sample data, with no alternatives or caveats mid-step.
+- [docs/how-to/how_to.md](docs/how-to/how_to.md) — one section per stated problem: assumes
+  competence, starts from a goal, links out rather than explaining.
+- [docs/reference/reference.md](docs/reference/reference.md) and the documents it lists under
+  [Further Reference Documents](docs/reference/reference.md#further-reference-documents)
+  — describe the machinery: exhaustive, dry, and structured like the thing they
+  describe.
+- [docs/explanation/explanation.md](docs/explanation/explanation.md) — gives background and rationale:
+  no instructions to follow.
+
+The most common mistake is putting how-to material in a reference document. If
+you catch yourself writing "first…, then…" in `docs/reference/reference.md`, it belongs in
+`docs/how-to/how_to.md`.
+
+When you add a page, also add it to the `nav` section of
+[mkdocs.yml](mkdocs.yml), and to the table in
+[docs/index.md](docs/index.md) or [README.md](README.md#documentation) if it is
+a document a reader would look for by name.
+
+### Keep docs in the same change as the code
+
+Each fact is documented in exactly one place; the README links to `docs/` rather
+than repeating it. Update the one place, not several.
+
+| If you change | Also update |
+| --- | --- |
+| A command-line option | The Typer help text in `odm_map/pipeline_cli.py` and [docs/reference/reference.md](docs/reference/reference.md#command-line-interface) |
+| The `Pipeline` class signature | [docs/reference/reference.md](docs/reference/reference.md#python-api) |
+| A `config.yaml` key | [docs/reference/reference.md](docs/reference/reference.md#module-configuration) |
+| An action's parameters | That action's document in [docs/reference/actions/](docs/reference/actions) |
+| A new action | See [Adding a New Action](#adding-a-new-action) — one new document plus three index tables |
+| A filter operation | [docs/reference/filters.md](docs/reference/filters.md) |
+| The ID code or ID config format | [docs/reference/id_generator.md](docs/reference/id_generator.md) |
+| The wide-column naming scheme | [docs/reference/wide_to_long_spec.md](docs/reference/wide_to_long_spec.md) |
+| The pipeline, or an internal column | [docs/explanation/explanation.md](docs/explanation/explanation.md#the-pipeline) |
+| A step a newcomer would trip over | [docs/tutorials/tutorial.md](docs/tutorials/tutorial.md) |
+| A recurring support question | A new section in [docs/how-to/how_to.md](docs/how-to/how_to.md) |
+
+**The one deliberate exception.** The command shape and the table of built-in
+modules are repeated in [README.md](README.md#supported-mappings) and
+[docs/index.md](docs/index.md), so that a new arrival at either landing page can
+run a mapping without navigating anywhere. If you add or rename a module, update
+both. Nothing else in the README is allowed to duplicate `docs/`.
 
 ## Submitting a Pull Request
 

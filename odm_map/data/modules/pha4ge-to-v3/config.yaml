@@ -1,0 +1,78 @@
+title: PHA4GE to ODM v3
+
+source_schema: schemas/pha4ge.yaml
+
+steps:
+  - action: clean
+    params:
+      schema: schemas/pha4ge.yaml
+      log_file: "{output_dir}/logs/change_log_input.xlsx"
+      operations:
+        - format_and_match_columns: [ lowercase, { remove_chars: "-"}, alpha_numeric_underscore, single_underscores, trim_trailing_underscores ]
+        - add_ontology_ids_to_enums:
+            # Format of an enum is "myEnumValue [AB1:A12345]" where [AB1:A12345] is the ontology ID (with any number of alphanumeric characters)
+            # The ontology ID is matched by the regular expression match_ontology_id
+            match_ontology_id: "\\[[A-Za-z0-9_]+:[A-Za-z0-9_]+\\]$"
+        - correct_enums: True
+  - action: save
+    if: "{debug_mode}"
+    params:
+      output_dir: "{temp}/cleaned_data/"
+      output_name: "{class_name}[cleaned].csv"
+      progress_bar_title: Saving Cleaned Data
+  - action: select_enum_hierarchy
+    params:
+      schema: schemas/pha4ge.yaml
+  - action: map
+    params:
+      source_schema: schemas/pha4ge.yaml
+      target_schema: "{shared}/schemas/odm_v3.yaml"
+      mappers_dir: mappers
+  - action: expand
+    params:
+      config: expander/expander_config.yaml
+  - action: filter
+    params:
+      # Each PHA4GE row only has one sample ID, so drop all the samples other than the non-empty one
+      filters: filters/pha4ge_to_v3_filters_empty_samples.csv
+  - action: filter
+    params:
+      # Remove blank and <ignore> values
+      filters: filters/pha4ge_to_v3_filters_before_id.csv
+  - action: save
+    if: "{debug_mode}"
+    params:
+      output_dir: "{temp}/mapped_data/"
+      output_name: "{class_name}[preid].csv"
+  - action: generate_ids
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      id_code:
+        - "{shared}/ids/general_v3_id_code.xlsx"
+        - ids/pha4ge_to_v3_id_code.xlsx
+      id_config:
+        - "{shared}/ids/general_v3_id_code.yaml"
+        - ids/pha4ge_to_v3_id_code.yaml
+  # IMPORTANT: clean action must be after generate_ids action: Some enum values are purposely invalid after the map action, and
+  # get further processed by generate_ids, eg: sampleShed: and siteType: values in sites.sampleShed (eg. sampleShed:corFcil and
+  # siteType:ocean get processed to sites.sampleShed=corFcil and sites.siteType=ocean). The clean action would remove these
+  # invalid enum values, resulting in generate_ids not having access to the values.
+  - action: clean
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      operations:
+        - correct_enums: True
+  - action: filter
+    params:
+      filters: "{shared}/filters/odm_vx_filter_required_values.csv"
+      mark_instead_of_drop: "{debug_mode}"
+  - action: drop_columns
+    if: "{not_debug_mode}"
+    params:
+      keep_columns_in_schema_only: True
+      schema: "{shared}/schemas/odm_v3.yaml"
+  - action: save
+    params:
+      output_dir: "{output_dir}"
+      output_name: "{class_name}.csv"
+      progress_bar_title: Saving Data

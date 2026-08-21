@@ -1,21 +1,11 @@
-title: ODM v3 Wide to Long
+title: ODM v1 to ODM v3
 
-source_schema: schemas/odm_v3_wide.yaml
+source_schema: "{shared}/schemas/odm_v1.yaml"
 
 steps:
-  - action: prepare_wide_to_long
-    params:
-      config: "wide_to_long/wide_to_long_odm_v3.yaml"
-      target_schema: "{shared}/schemas/odm_v3.yaml"
-      output_dir: "{temp}/wide_to_long/"
-  - action: map
-    params:
-      source_schema: "{temp}/wide_to_long/schema/schema.yaml"
-      target_schema: "{shared}/schemas/odm_v3.yaml"
-      mappers_dir: "{temp}/wide_to_long/"
   - action: clean
     params:
-      schema: "{shared}/schemas/odm_v3.yaml"
+      schema: "{shared}/schemas/odm_v1.yaml"
       log_file: "{output_dir}/logs/change_log_input.xlsx"
       operations:
         - format_and_match_columns: True
@@ -23,20 +13,31 @@ steps:
   - action: save
     if: "{debug_mode}"
     params:
+      output_dir: "{temp}/cleaned_data/"
+      output_name: "{class_name}[cleaned].csv"
+      progress_bar_title: Saving Cleaned Data
+  - action: map
+    params:
+      source_schema: "{shared}/schemas/odm_v1.yaml"
+      target_schema: "{shared}/schemas/odm_v3.yaml"
+      mappers_dir: mappers
+  - action: clean
+    params:
+      schema: "{shared}/schemas/odm_v3.yaml"
+      operations:
+        - correct_enums: True
+  - action: save
+    if: "{debug_mode}"
+    params:
       output_dir: "{temp}/mapped_data/"
       output_name: "{class_name}[preid].csv"
-  - action: filter
-    params:
-      filters: filters/odm_wide_to_long_filters_before_id.csv
   - action: generate_ids
     params:
       schema: "{shared}/schemas/odm_v3.yaml"
-      id_code:
+      id_code: 
         - "{shared}/ids/general_v3_id_code.xlsx"
-        - "{temp}/wide_to_long/ids/id_code.csv"
-      id_config:
+      id_config: 
         - "{shared}/ids/general_v3_id_code.yaml"
-        - "{temp}/wide_to_long/ids/id_code_config.yaml"
   - action: filter
     params:
       filters: "{shared}/filters/odm_vx_filter_required_values.csv"

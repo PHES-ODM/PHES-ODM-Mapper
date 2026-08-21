@@ -30,7 +30,7 @@ MODULE_PARAMS_KEY = "params"
 SHARED_MODULE = "_shared"
 
 # Shared tag in all file paths of a module config file.
-# eg. "{shared}/ids/general_v2_id_code.xlsx" in config.yaml will point to "ids/general_v2_id_code.xlsx"
+# eg. "{shared}/ids/general_v3_id_code.xlsx" in config.yaml will point to "ids/general_v3_id_code.xlsx"
 # in the shared module.
 SHARED_DIR_TAG = "{shared}"
 # Temporary directory tag in all file paths of a module config file.

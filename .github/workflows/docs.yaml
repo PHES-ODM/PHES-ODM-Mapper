@@ -1,0 +1,64 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Allow deploying to GitHub Pages from this workflow.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time. Queued runs are not cancelled, so a push that lands
+# during a deploy still publishes rather than being dropped.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+      # Only the documentation dependencies: rendering Markdown does not need
+      # the runtime packages (linkml, pandas, ...) installed.
+      - name: Install documentation dependencies
+        run: pip install -r requirements-docs.txt
+      # mkdocs.yml has to disable its own not-found check, because these
+      # documents deliberately link to source files outside docs/. This checks
+      # cross-document links and heading anchors instead.
+      - name: Check documentation links
+        run: python .github/scripts/check_doc_links.py
+      # --strict turns MkDocs warnings (bad nav entries, unreadable files,
+      # absolute links) into build failures, so a broken docs change fails the
+      # pull request instead of silently publishing.
+      - name: Build documentation
+        run: mkdocs build --strict
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    # Pull requests build but do not publish; only main deploys.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
