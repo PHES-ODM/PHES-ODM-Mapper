@@ -12,9 +12,10 @@ create your own for formats that are not covered.
 
 ## Run a mapping
 
-After [installing](../README.md#installation), every mapping is run with the
-same command shape — pick the module with `--module`, choose where the output
-goes with `--output-dir`, and list the input files or directories last:
+After [installing](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/README.md#installation),
+every mapping is run with the same command shape — pick the module with
+`--module`, choose where the output goes with `--output-dir`, and list the input
+files or directories last:
 
 ```console
 odm-map --module <module-name> --output-dir <output-dir> <input> [<input> ...]
@@ -28,9 +29,10 @@ odm-map --module <module-name> --output-dir <output-dir> <input> [<input> ...]
 | `odm-v3-wide-to-long` | ODM v3 wide format | ODM v3 long format |
 
 For what each module expects its input files to be called, see
-[Supported Mappings](../README.md#supported-mappings). For a module you built
-yourself, replace `--module` with `--module-path` and point it at the module
-directory — see [Create a custom module](how-to/how_to.md#create-a-custom-module).
+[Supported Mappings](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/README.md#supported-mappings).
+For a module you built yourself, replace `--module` with `--module-path` and
+point it at the module directory — see
+[Create a custom module](how-to/how_to.md#create-a-custom-module).
 
 ## Where to start
 
@@ -42,7 +44,7 @@ directory — see [Create a custom module](how-to/how_to.md#create-a-custom-modu
 | Writing a pipeline step | [Pipeline Actions](reference/actions/README.md) |
 | Looking up an option | [Reference](reference/reference.md) |
 | Debugging an unexpected result | [Debug a mapping that produced the wrong output](how-to/how_to.md#debug-a-mapping-that-produced-the-wrong-output) |
-| Changing the code | [How the Mapper Works](explanation/explanation.md) and [Contributing](../CONTRIBUTING.md) |
+| Changing the code | [How the Mapper Works](explanation/explanation.md) and [Contributing](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/CONTRIBUTING.md) |
 
 Otherwise, browse by kind: the [tutorial](tutorials/tutorial.md) teaches,
 [how-to guides](how-to/how_to.md) solve a specific task,

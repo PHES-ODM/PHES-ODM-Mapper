@@ -154,9 +154,9 @@ namespaces, helper functions, linkage paths, and code selectors — is in
 
 Working examples:
 
-- [/odm_map/data/modules/_shared/ids/general_v3_id_code.xlsx](../../../odm_map/data/modules/_shared/ids/general_v3_id_code.xlsx)
+- [/odm_map/data/modules/_shared/ids/general_v3_id_code.xlsx](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/_shared/ids/general_v3_id_code.xlsx)
   and its config
-  [general_v3_id_code.yaml](../../../odm_map/data/modules/_shared/ids/general_v3_id_code.yaml)
+  [general_v3_id_code.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml)
   — the shared rules used by every built-in module.
 - The `ids/` directory of any built-in module for module-specific overrides.
 
@@ -171,5 +171,5 @@ Working examples:
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:
-  [/odm_map/actions/action_generate_ids.py](../../../odm_map/actions/action_generate_ids.py),
-  [/odm_map/id_generator/generator.py](../../../odm_map/id_generator/generator.py)
+  [/odm_map/actions/action_generate_ids.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/actions/action_generate_ids.py),
+  [/odm_map/id_generator/generator.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/id_generator/generator.py)

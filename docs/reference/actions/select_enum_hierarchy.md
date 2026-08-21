@@ -137,5 +137,5 @@ Notes on writing the config:
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:
-  [/odm_map/actions/action_select_enum_hierarchy.py](../../../odm_map/actions/action_select_enum_hierarchy.py),
-  [/odm_map/enum_hierarchy/enum_hierarchy_selector.py](../../../odm_map/enum_hierarchy/enum_hierarchy_selector.py)
+  [/odm_map/actions/action_select_enum_hierarchy.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/actions/action_select_enum_hierarchy.py),
+  [/odm_map/enum_hierarchy/enum_hierarchy_selector.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/enum_hierarchy/enum_hierarchy_selector.py)

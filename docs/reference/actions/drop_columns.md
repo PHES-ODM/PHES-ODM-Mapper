@@ -80,5 +80,5 @@ So:
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:
-  [/odm_map/actions/action_drop_columns.py](../../../odm_map/actions/action_drop_columns.py),
-  [/odm_map/column_dropper/drop_columns.py](../../../odm_map/column_dropper/drop_columns.py)
+  [/odm_map/actions/action_drop_columns.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/actions/action_drop_columns.py),
+  [/odm_map/column_dropper/drop_columns.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/column_dropper/drop_columns.py)

@@ -14,7 +14,7 @@ and the module configuration file. For task-oriented instructions see the
 ## Command-Line Interface
 
 Installing the package provides the `odm-map` command, implemented by
-[/odm_map/pipeline_cli.py](../../odm_map/pipeline_cli.py).
+[/odm_map/pipeline_cli.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/pipeline_cli.py).
 
 ```console
 odm-map [--options] input1 input2 input3 ...
@@ -238,15 +238,15 @@ my-source-to-v3/
 
 Only include the directories your steps actually use. Files shared between
 several modules belong in the `_shared` module at
-[/odm_map/data/modules/_shared](../../odm_map/data/modules/_shared) and are
-referenced with the `{shared}` prefix, as the built-in modules do for the ODM
-schemas, the general ID code, and the shared required-value filters.
+[/odm_map/data/modules/_shared](https://github.com/PHES-ODM/PHES-ODM-Mapper/tree/main/odm_map/data/modules/_shared)
+and are referenced with the `{shared}` prefix, as the built-in modules do for
+the ODM schemas, the general ID code, and the shared required-value filters.
 
 A module can be distributed as a ZIP file of this directory and run with
 `--module-path path/to/module.zip`.
 
-The built-in modules at [/odm_map/data/modules](../../odm_map/data/modules) are
-complete working examples of everything above.
+The built-in modules at [/odm_map/data/modules](https://github.com/PHES-ODM/PHES-ODM-Mapper/tree/main/odm_map/data/modules)
+are complete working examples of everything above.
 
 ## Further Reference Documents
 

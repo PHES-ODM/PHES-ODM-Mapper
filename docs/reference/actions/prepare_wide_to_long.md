@@ -121,7 +121,7 @@ File](#generating-the-config-file) below), while `see_headers` and
 `custom_id_code` are hand-written.
 
 The built-in example is
-[/odm_map/data/modules/odm-v3-wide-to-long/wide_to_long/wide_to_long_odm_v3.yaml](../../../odm_map/data/modules/odm-v3-wide-to-long/wide_to_long/wide_to_long_odm_v3.yaml).
+[/odm_map/data/modules/odm-v3-wide-to-long/wide_to_long/wide_to_long_odm_v3.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/odm-v3-wide-to-long/wide_to_long/wide_to_long_odm_v3.yaml).
 
 | Config key | Required/Optional | Description |
 | :--------- | :---------------- | :---------- |
@@ -304,5 +304,5 @@ under version control so the hand-written keys survive regeneration.
 - [reference/id_generator.md](../id_generator.md) — reference for the code used in
   `custom_id_code`
 - Implementation:
-  [/odm_map/actions/action_prepare_wide_to_long.py](../../../odm_map/actions/action_prepare_wide_to_long.py),
-  [/odm_map/prepare_wide_to_long/](../../../odm_map/prepare_wide_to_long)
+  [/odm_map/actions/action_prepare_wide_to_long.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/actions/action_prepare_wide_to_long.py),
+  [/odm_map/prepare_wide_to_long/](https://github.com/PHES-ODM/PHES-ODM-Mapper/tree/main/odm_map/prepare_wide_to_long)

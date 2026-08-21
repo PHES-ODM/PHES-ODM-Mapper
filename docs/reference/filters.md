@@ -12,7 +12,7 @@ of `<ignore>` in the `measure` slot should be removed, as is rows with a blank
 `value`.
 
 An example filter configuration file can be found at
-[/odm_map/data/modules/nwss-reporting-to-v3/filters/nwss_reporting_to_v3_filters.csv](../../odm_map/data/modules/nwss-reporting-to-v3/filters/nwss_reporting_to_v3_filters.csv).
+[/odm_map/data/modules/nwss-reporting-to-v3/filters/nwss_reporting_to_v3_filters.csv](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/nwss-reporting-to-v3/filters/nwss_reporting_to_v3_filters.csv).
 
 The location of the filter configuration file within a conversion module are
 specified in the module configuration file

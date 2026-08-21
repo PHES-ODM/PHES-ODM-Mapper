@@ -13,7 +13,7 @@ command is given in full. When you want to know *why* something happens, read
 - Python 3.10 or higher.
 - The Mapper installed (`pip install
   git+https://github.com/PHES-ODM/PHES-ODM-Mapper.git`). See
-  [Installation](../../README.md#installation).
+  [Installation](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/README.md#installation).
 - `git`, to fetch the sample data.
 
 Check that the Mapper is installed:
@@ -147,7 +147,7 @@ look when an output value is not what you expected.
 You have now run the Mapper end to end. From here:
 
 - To convert a different format, the command is the same with a different
-  `--module` — see [Supported Mappings](../../README.md#supported-mappings).
+  `--module` — see [Supported Mappings](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/README.md#supported-mappings).
 - To do something specific (map files that are not named after their tables, run
   from Python, build your own conversion), see the [How-to
   guides](../how-to/how_to.md).

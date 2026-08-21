@@ -50,7 +50,7 @@ tables_to_shortnames:
 ```
 
 The full configuration used by the built-in modules is at
-[/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml](../../odm_map/data/modules/_shared/ids/general_v3_id_code.yaml).
+[/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml).
 
 **Primary keys are not configured here.** The primary key of each class is read
 from the LinkML schema: it is the attribute marked with `identifier: true`.
@@ -557,7 +557,7 @@ versions of the full class name. For example, in ODM v3 the `measures` table has
 the short name `mr` and the `samples` table has the short name `sas`. The class
 shortnames are defined in the ID generator config file. See the
 `tables_to_shortnames` key in the config file
-[/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml](../../odm_map/data/modules/_shared/ids/general_v3_id_code.yaml)
+[/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml)
 for an example of how it is configured for ODM v3.
 
 The short names are also used to prefix IDs passed to fn.makeid if the

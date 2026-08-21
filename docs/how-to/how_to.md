@@ -3,7 +3,7 @@
 Each section here solves one problem. They assume you have already run a mapping
 — if you have not, work through the [tutorial](../tutorials/tutorial.md) first. For the
 command that performs each built-in conversion, see [Supported
-Mappings](../../README.md#supported-mappings).
+Mappings](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/README.md#supported-mappings).
 
 - [Choose which files and tables to map](#choose-which-files-and-tables-to-map)
 - [Map data spread over several files](#map-data-spread-over-several-files)
@@ -275,10 +275,10 @@ to. To build one for a source format that is not supported:
         "path/to/inputdata"
     ```
 
-The built-in modules at [/odm_map/data/modules](../../odm_map/data/modules) are
-complete working examples; starting from the one whose shape is closest to your
-conversion is usually quicker than starting from nothing. To contribute a module
-back as a built-in one, see [CONTRIBUTING.md](../../CONTRIBUTING.md).
+The built-in modules at [/odm_map/data/modules](https://github.com/PHES-ODM/PHES-ODM-Mapper/tree/main/odm_map/data/modules)
+are complete working examples; starting from the one whose shape is closest to
+your conversion is usually quicker than starting from nothing. To contribute a module
+back as a built-in one, see [CONTRIBUTING.md](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/CONTRIBUTING.md).
 
 ## Distribute a module as a ZIP file
 
