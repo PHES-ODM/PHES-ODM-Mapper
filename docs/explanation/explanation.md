@@ -3,8 +3,8 @@
 This document explains the ideas behind the Mapper: what a module is, what the
 pipeline does to your data, and why the output looks the way it does. It is
 background reading rather than instructions — for the commands, see the
-[tutorial](tutorial.md) and the [how-to guides](how_to.md); for exact
-parameters, see [reference.md](reference.md).
+[tutorial](../tutorials/tutorial.md) and the [how-to guides](../how-to/how_to.md); for exact
+parameters, see [reference/reference.md](../reference/reference.md).
 
 - [The problem being solved](#the-problem-being-solved)
 - [Modules](#modules)
@@ -63,7 +63,7 @@ the same on the way out and to know which columns belong in the final output.
 
 The transformation between the two is expressed in
 [LinkML-Map](https://github.com/linkml/linkml-map) files, which describe how
-each target slot is derived from source slots. The [`map`](actions/map.md) action
+each target slot is derived from source slots. The [`map`](../reference/actions/map.md) action
 runs them.
 
 ## The pipeline
@@ -73,25 +73,25 @@ available are:
 
 | Action | Purpose |
 | :----- | :------ |
-| [`clean`](actions/clean.md) | Normalize column names, correct enumeration values, check patterns |
-| [`select_enum_hierarchy`](actions/select_enum_hierarchy.md) | Drop enum values made redundant by a more specific value in the same cell |
-| [`map`](actions/map.md) | Transform source tables into target tables |
-| [`prepare_wide_to_long`](actions/prepare_wide_to_long.md) | Restructure wide data and generate what is needed to map it |
-| [`expand`](actions/expand.md) | Split multivalued cells into one row each |
-| [`filter`](actions/filter.md) | Remove rows that should not be in the output |
-| [`generate_ids`](actions/generate_ids.md) | Create primary and foreign keys |
-| [`drop_columns`](actions/drop_columns.md) | Remove internal and non-schema columns |
-| [`save`](actions/save.md) | Write the data to CSV files |
+| [`clean`](../reference/actions/clean.md) | Normalize column names, correct enumeration values, check patterns |
+| [`select_enum_hierarchy`](../reference/actions/select_enum_hierarchy.md) | Drop enum values made redundant by a more specific value in the same cell |
+| [`map`](../reference/actions/map.md) | Transform source tables into target tables |
+| [`prepare_wide_to_long`](../reference/actions/prepare_wide_to_long.md) | Restructure wide data and generate what is needed to map it |
+| [`expand`](../reference/actions/expand.md) | Split multivalued cells into one row each |
+| [`filter`](../reference/actions/filter.md) | Remove rows that should not be in the output |
+| [`generate_ids`](../reference/actions/generate_ids.md) | Create primary and foreign keys |
+| [`drop_columns`](../reference/actions/drop_columns.md) | Remove internal and non-schema columns |
+| [`save`](../reference/actions/save.md) | Write the data to CSV files |
 
 Steps are free-form: an action can appear as many times as it is useful, and a
 step can be made conditional on debug mode with the `if` key. What the built-in
 modules have in common is a shape rather than an exact sequence — clean the
 input, map it, tidy the result, generate keys, save — and modules differ in
 which of the optional steps they need. [A typical pipeline
-order](actions/README.md#a-typical-pipeline-order) sets out that shape in full.
+order](../reference/actions/README.md#a-typical-pipeline-order) sets out that shape in full.
 
 Because the steps are configuration, a module author can insert a debug-only
-[`save`](actions/save.md) anywhere to see the data at that point, which is the
+[`save`](../reference/actions/save.md) anywhere to see the data at that point, which is the
 main reason `--debug` and `--temp-dir` are so useful when something goes wrong.
 
 ## How data flows between steps
@@ -108,7 +108,7 @@ the first `clean` and the target schema to the second.
 
 **A class can hold several DataFrames.** If three files were loaded into the
 same table, they stay separate until an action merges them —
-[`filter`](actions/filter.md) and [`save`](actions/save.md) concatenate them
+[`filter`](../reference/actions/filter.md) and [`save`](../reference/actions/save.md) concatenate them
 before doing their work.
 
 ## Cleaning before and after mapping
@@ -138,7 +138,7 @@ often only visible in target terms.
 
 Modules commonly filter twice: once after mapping, and once after ID generation
 when a row's required values are finally known. The rules live in a filter file,
-described in [filters.md](filters.md).
+described in [reference/filters.md](../reference/filters.md).
 
 ## Why IDs have to be generated
 
@@ -154,7 +154,7 @@ from the same source row can be recognized as belonging together, and keys can
 be generated that link them. Key values themselves are produced by small pieces
 of code in the module's ID code file, which is what allows a module to control
 their format. The mechanism is described in
-[id_generator.md](id_generator.md).
+[reference/id_generator.md](../reference/id_generator.md).
 
 This is also the most expensive part of a large run, since it requires comparing
 rows across tables.
@@ -170,7 +170,7 @@ Two families of columns exist only inside the pipeline:
 - **Extra columns** carry temporary non-schema data needed during processing,
   such as tags used for linking. They start with `_extra_`.
 
-Modules that include a [`drop_columns`](actions/drop_columns.md) step remove
+Modules that include a [`drop_columns`](../reference/actions/drop_columns.md) step remove
 them before the final save, usually only when not running in debug mode; modules
 without one leave them in the output. Seeing them in a result is normal, not a
 sign that something went wrong.
@@ -180,7 +180,7 @@ sign that something went wrong.
 Some files are needed by several conversions — the ODM schemas, the general ID
 code, filters for required values. Rather than copying them into each module,
 they live in the `_shared` module at
-[/odm_map/data/modules/_shared](../odm_map/data/modules/_shared), and modules
+[/odm_map/data/modules/_shared](../../odm_map/data/modules/_shared), and modules
 refer to them with the `{shared}` path prefix. A fix to the ODM v3 schema then
 reaches every module that maps to ODM v3.
 
@@ -194,11 +194,11 @@ each value belongs to.
 Converting between the two is not a fixed mapping, because the set of columns
 differs from dataset to dataset — the mapping rules depend on the data being
 mapped. This is why the wide-to-long module has an extra
-[`prepare_wide_to_long`](actions/prepare_wide_to_long.md) step: it reads the
+[`prepare_wide_to_long`](../reference/actions/prepare_wide_to_long.md) step: it reads the
 wide column names, restructures the data, and *generates* the mapping files,
 schema, and ID code that the subsequent `map` and `generate_ids` steps then use
 in the ordinary way. The column naming scheme it reads is specified in
-[wide_to_long_spec.md](wide_to_long_spec.md).
+[reference/wide_to_long_spec.md](../reference/wide_to_long_spec.md).
 
 ## Performance
 
@@ -212,4 +212,4 @@ transformation to every row, and ID generation, which has to relate rows across
 tables. Mapping parallelizes across processes (`--max-processes`); large runs
 also need a substantial amount of RAM and benefit from fast storage for the
 temporary directory. [Speed up a large
-mapping](how_to.md#speed-up-a-large-mapping) covers what to do in practice.
+mapping](../how-to/how_to.md#speed-up-a-large-mapping) covers what to do in practice.

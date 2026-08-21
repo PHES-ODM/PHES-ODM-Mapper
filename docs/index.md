@@ -30,24 +30,24 @@ odm-map --module <module-name> --output-dir <output-dir> <input> [<input> ...]
 For what each module expects its input files to be called, see
 [Supported Mappings](../README.md#supported-mappings). For a module you built
 yourself, replace `--module` with `--module-path` and point it at the module
-directory — see [Create a custom module](how_to.md#create-a-custom-module).
+directory — see [Create a custom module](how-to/how_to.md#create-a-custom-module).
 
 ## Where to start
 
 | If you are… | Read |
 | --- | --- |
-| New to the Mapper | [Tutorial: Your First Mapping](tutorial.md) |
-| Mapping your own data | [Choose which files and tables to map](how_to.md#choose-which-files-and-tables-to-map) |
-| Building a module | [Create a custom module](how_to.md#create-a-custom-module), then [Module Configuration](reference.md#module-configuration) |
-| Writing a pipeline step | [Pipeline Actions](actions/README.md) |
-| Looking up an option | [Reference](reference.md) |
-| Debugging an unexpected result | [Debug a mapping that produced the wrong output](how_to.md#debug-a-mapping-that-produced-the-wrong-output) |
-| Changing the code | [How the Mapper Works](explanation.md) and [Contributing](../CONTRIBUTING.md) |
+| New to the Mapper | [Tutorial: Your First Mapping](tutorials/tutorial.md) |
+| Mapping your own data | [Choose which files and tables to map](how-to/how_to.md#choose-which-files-and-tables-to-map) |
+| Building a module | [Create a custom module](how-to/how_to.md#create-a-custom-module), then [Module Configuration](reference/reference.md#module-configuration) |
+| Writing a pipeline step | [Pipeline Actions](reference/actions/README.md) |
+| Looking up an option | [Reference](reference/reference.md) |
+| Debugging an unexpected result | [Debug a mapping that produced the wrong output](how-to/how_to.md#debug-a-mapping-that-produced-the-wrong-output) |
+| Changing the code | [How the Mapper Works](explanation/explanation.md) and [Contributing](../CONTRIBUTING.md) |
 
-Otherwise, browse by kind: the [tutorial](tutorial.md) teaches,
-[how-to guides](how_to.md) solve a specific task,
-[reference](reference.md) describes the file formats and options, and
-[explanation](explanation.md) gives the background.
+Otherwise, browse by kind: the [tutorial](tutorials/tutorial.md) teaches,
+[how-to guides](how-to/how_to.md) solve a specific task,
+[reference](reference/reference.md) describes the file formats and options, and
+[explanation](explanation/explanation.md) gives the background.
 
 ## Related repositories
 
@@ -57,4 +57,4 @@ Otherwise, browse by kind: the [tutorial](tutorial.md) teaches,
 - **[PHES-ODM](https://github.com/PHES-ODM/PHES-ODM)** — the Open Data Model
   itself.
 - **[linkml-map](https://github.com/linkml/linkml-map)** — the upstream
-  transformation framework used by the [map](actions/map.md) action.
+  transformation framework used by the [map](reference/actions/map.md) action.

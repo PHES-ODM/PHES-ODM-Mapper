@@ -72,7 +72,7 @@ schema must:
   tables.
 
 The built-in schemas in
-[/odm_map/data/modules/_shared/schemas](../../odm_map/data/modules/_shared/schemas)
+[/odm_map/data/modules/_shared/schemas](../../../odm_map/data/modules/_shared/schemas)
 are good models to follow. Schemas used by more than one module belong in the
 `_shared` module and are referenced with `{shared}`.
 
@@ -121,7 +121,7 @@ not write derivations for them yourself.
 
 For working examples, see the `mappers` directory of any built-in module, such
 as
-[/odm_map/data/modules/odm-v1-to-v3/mappers](../../odm_map/data/modules/odm-v1-to-v3/mappers).
+[/odm_map/data/modules/odm-v1-to-v3/mappers](../../../odm_map/data/modules/odm-v1-to-v3/mappers).
 
 > **⚠️ Security note:** Mapper files may use LinkML-Map `expr` slot derivations,
 > and the Mapper evaluates these expressions in _unrestricted_ mode by default.
@@ -142,5 +142,5 @@ as
 - [generate_ids](generate_ids.md) — the step that links the mapped tables
   together
 - Implementation:
-  [/odm_map/actions/action_map_data.py](../../odm_map/actions/action_map_data.py),
-  [/odm_map/mapper/map_data.py](../../odm_map/mapper/map_data.py)
+  [/odm_map/actions/action_map_data.py](../../../odm_map/actions/action_map_data.py),
+  [/odm_map/mapper/map_data.py](../../../odm_map/mapper/map_data.py)

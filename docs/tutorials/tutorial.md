@@ -6,14 +6,14 @@ came out. It should take about fifteen minutes, plus mapping time.
 
 You do not need to understand the Mapper's internals to follow along — every
 command is given in full. When you want to know *why* something happens, read
-[explanation.md](explanation.md) afterwards.
+[explanation/explanation.md](../explanation/explanation.md) afterwards.
 
 ## What you need
 
 - Python 3.10 or higher.
 - The Mapper installed (`pip install
   git+https://github.com/PHES-ODM/PHES-ODM-Mapper.git`). See
-  [Installation](../README.md#installation).
+  [Installation](../../README.md#installation).
 - `git`, to fetch the sample data.
 
 Check that the Mapper is installed:
@@ -94,7 +94,7 @@ You will also see columns whose names look like `(__source_file__)` and
 `(__source_row__)`. These are internal tracking columns: they record the input
 file and row each output row was built from, which is how the Mapper knows which
 rows to link together. They are described in
-[explanation.md](explanation.md#internal-columns).
+[explanation/explanation.md](../explanation/explanation.md#internal-columns).
 
 ## Step 4: Run the full mapping
 
@@ -108,8 +108,8 @@ odm-map \
 ```
 
 This dataset takes a few minutes. Larger datasets take considerably longer —
-see [Performance](explanation.md#performance) for what drives the cost and
-[Speed up a large mapping](how_to.md#speed-up-a-large-mapping) for what to do
+see [Performance](../explanation/explanation.md#performance) for what drives the cost and
+[Speed up a large mapping](../how-to/how_to.md#speed-up-a-large-mapping) for what to do
 about it.
 
 ## Step 5: See what the Mapper did
@@ -147,10 +147,10 @@ look when an output value is not what you expected.
 You have now run the Mapper end to end. From here:
 
 - To convert a different format, the command is the same with a different
-  `--module` — see [Supported Mappings](../README.md#supported-mappings).
+  `--module` — see [Supported Mappings](../../README.md#supported-mappings).
 - To do something specific (map files that are not named after their tables, run
   from Python, build your own conversion), see the [How-to
-  guides](how_to.md).
+  guides](../how-to/how_to.md).
 - To understand what happened in Step 3 — why class names changed, where the IDs
-  came from — read [explanation.md](explanation.md).
-- For the full list of options, see [reference.md](reference.md).
+  came from — read [explanation/explanation.md](../explanation/explanation.md).
+- For the full list of options, see [reference/reference.md](../reference/reference.md).

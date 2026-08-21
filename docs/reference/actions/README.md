@@ -162,7 +162,7 @@ Actions can be combined in any order, but most modules follow this shape:
 13. [`save`](save.md) — write the final output.
 
 For complete, working examples read the `config.yaml` of any built-in module in
-[/odm_map/data/modules](../../odm_map/data/modules).
+[/odm_map/data/modules](../../../odm_map/data/modules).
 
 ## Internal Columns
 
@@ -183,7 +183,7 @@ are normally removed by [`drop_columns`](drop_columns.md) before the final
 
 | Document | Description |
 | :------- | :---------- |
-| [reference.md](../reference.md) | The module configuration file, the command line, and the Python API |
-| [filters.md](../filters.md) | The filtering rules used by the `filter` action |
-| [id_generator.md](../id_generator.md) | The ID code and ID config files used by the `generate_ids` action |
-| [wide_to_long_spec.md](../wide_to_long_spec.md) | Wide-format column naming, used by `prepare_wide_to_long` |
+| [reference/reference.md](../reference.md) | The module configuration file, the command line, and the Python API |
+| [reference/filters.md](../filters.md) | The filtering rules used by the `filter` action |
+| [reference/id_generator.md](../id_generator.md) | The ID code and ID config files used by the `generate_ids` action |
+| [reference/wide_to_long_spec.md](../wide_to_long_spec.md) | Wide-format column naming, used by `prepare_wide_to_long` |

@@ -1,9 +1,9 @@
 # How-To Guides
 
 Each section here solves one problem. They assume you have already run a mapping
-— if you have not, work through the [tutorial](tutorial.md) first. For the
+— if you have not, work through the [tutorial](../tutorials/tutorial.md) first. For the
 command that performs each built-in conversion, see [Supported
-Mappings](../README.md#supported-mappings).
+Mappings](../../README.md#supported-mappings).
 
 - [Choose which files and tables to map](#choose-which-files-and-tables-to-map)
 - [Map data spread over several files](#map-data-spread-over-several-files)
@@ -126,7 +126,7 @@ data_files = {
 }
 ```
 
-Every parameter of `run()` is listed in [reference.md](reference.md#python-api).
+Every parameter of `run()` is listed in [reference/reference.md](../reference/reference.md#python-api).
 
 ## Run a mapping in a Jupyter notebook
 
@@ -178,7 +178,7 @@ effect:
 4. **Try it on a slice first.** `--max-rows 1000` confirms the mapping is
    configured correctly before you commit hours to the full dataset.
 
-See [Performance](explanation.md#performance) for what makes a run expensive.
+See [Performance](../explanation/explanation.md#performance) for what makes a run expensive.
 
 ## Debug a mapping that produced the wrong output
 
@@ -214,7 +214,7 @@ Work outward from the output:
    afterwards the cause is in the mapping.
 
 4. **Read the document for the step at fault.** Each action's document describes
-   its parameters and the files it reads — see [actions/](actions/).
+   its parameters and the files it reads — see [actions/](../reference/actions).
 
 ## Use a custom module
 
@@ -247,20 +247,20 @@ to. To build one for a source format that is not supported:
 
 2. **Create the module directory** and give it a `config.yaml` with `title`,
    `source_schema`, and `steps`. The [module
-   reference](reference.md#module-configuration) describes each key, and
-   [actions/README.md](actions/README.md) covers step structure, the `if` key,
+   reference](../reference/reference.md#module-configuration) describes each key, and
+   [actions/README.md](../reference/actions/README.md) covers step structure, the `if` key,
    the interpolation variables, and the order actions are usually combined in.
 
 3. **Add the steps your conversion needs.** Most modules clean the input, map
    it, filter it, generate IDs, and save — see [A typical pipeline
-   order](actions/README.md#a-typical-pipeline-order). Each action has its own
-   document under [actions/](actions/) explaining its parameters and how to
+   order](../reference/actions/README.md#a-typical-pipeline-order). Each action has its own
+   document under [actions/](../reference/actions) explaining its parameters and how to
    prepare the files it reads.
 
 4. **Add those files** in subdirectories: `mappers/` for the LinkML-Map files,
    `filters/` for filter rules, `ids/` for ID code and config, and so on. The
    layout is given in [Module directory
-   layout](reference.md#module-directory-layout). Reference shared files with
+   layout](../reference/reference.md#module-directory-layout). Reference shared files with
    the `{shared}` prefix.
 
 5. **Test it on a small slice**, with debugging turned on:
@@ -275,10 +275,10 @@ to. To build one for a source format that is not supported:
         "path/to/inputdata"
     ```
 
-The built-in modules at [/odm_map/data/modules](../odm_map/data/modules) are
+The built-in modules at [/odm_map/data/modules](../../odm_map/data/modules) are
 complete working examples; starting from the one whose shape is closest to your
 conversion is usually quicker than starting from nothing. To contribute a module
-back as a built-in one, see [CONTRIBUTING.md](../CONTRIBUTING.md).
+back as a built-in one, see [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Distribute a module as a ZIP file
 

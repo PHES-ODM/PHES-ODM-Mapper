@@ -14,7 +14,7 @@ often use it more than once:
 - After [`generate_ids`](generate_ids.md) to drop rows still missing required
   values, once IDs have had their chance to fill slots in. The built-in modules
   do this with the shared filter file
-  [`{shared}/filters/odm_vx_filter_required_values.csv`](../../odm_map/data/modules/_shared/filters/odm_vx_filter_required_values.csv).
+  [`{shared}/filters/odm_vx_filter_required_values.csv`](../../../odm_map/data/modules/_shared/filters/odm_vx_filter_required_values.csv).
 
 Before filtering, all DataFrames belonging to a class are concatenated into a
 single DataFrame, and each class ends up with exactly one DataFrame afterwards.
@@ -74,7 +74,7 @@ row narrows it, and a final `apply_filter` row actually applies it to the
 DataFrame. Most operations only change the filter, not the data, so a filter
 file that never calls `apply_filter` changes nothing.
 
-[filters.md](../filters.md) is the complete reference: the meaning of each
+[reference/filters.md](../filters.md) is the complete reference: the meaning of each
 column, how filters are named and combined, and every available operation
 (`create_filter`, `exclude_equals`, `include_equals`, `requires_any`,
 `requires_all`, `drop_duplicates`, `and_filters`, `or_filters`, `invert_filter`,
@@ -115,10 +115,10 @@ there.
 
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
-- [filters.md](../filters.md) — the complete filter file and operation reference
+- [reference/filters.md](../filters.md) — the complete filter file and operation reference
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:
-  [/odm_map/actions/action_filter_data.py](../../odm_map/actions/action_filter_data.py),
-  [/odm_map/filter/filter_data.py](../../odm_map/filter/filter_data.py),
-  [/odm_map/filter/filter_funcs.py](../../odm_map/filter/filter_funcs.py)
+  [/odm_map/actions/action_filter_data.py](../../../odm_map/actions/action_filter_data.py),
+  [/odm_map/filter/filter_data.py](../../../odm_map/filter/filter_data.py),
+  [/odm_map/filter/filter_funcs.py](../../../odm_map/filter/filter_funcs.py)

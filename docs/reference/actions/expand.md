@@ -104,7 +104,7 @@ A list item can be written two ways:
   name and the value is a dictionary of the options below.
 
 Classes and slots that are not listed are left untouched. A working example is
-[/odm_map/data/modules/pha4ge-to-v3/expander/expander_config.yaml](../../odm_map/data/modules/pha4ge-to-v3/expander/expander_config.yaml).
+[/odm_map/data/modules/pha4ge-to-v3/expander/expander_config.yaml](../../../odm_map/data/modules/pha4ge-to-v3/expander/expander_config.yaml).
 
 The options are applied in this order: `remove_nulls`, then `max_length`, then
 `select_items`, then `expand`.
@@ -234,5 +234,5 @@ value belongs in `sampleShed` or `siteType`.
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:
-  [/odm_map/actions/action_expand_data.py](../../odm_map/actions/action_expand_data.py),
-  [/odm_map/expander/array_expander.py](../../odm_map/expander/array_expander.py)
+  [/odm_map/actions/action_expand_data.py](../../../odm_map/actions/action_expand_data.py),
+  [/odm_map/expander/array_expander.py](../../../odm_map/expander/array_expander.py)

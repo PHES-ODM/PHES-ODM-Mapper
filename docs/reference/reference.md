@@ -2,8 +2,8 @@
 
 Exact descriptions of the Mapper's interfaces: the command line, the Python API,
 and the module configuration file. For task-oriented instructions see the
-[How-to guides](how_to.md); for the ideas behind these interfaces see
-[explanation.md](explanation.md).
+[How-to guides](../how-to/how_to.md); for the ideas behind these interfaces see
+[explanation/explanation.md](../explanation/explanation.md).
 
 - [Command-Line Interface](#command-line-interface)
 - [Python API](#python-api)
@@ -14,7 +14,7 @@ and the module configuration file. For task-oriented instructions see the
 ## Command-Line Interface
 
 Installing the package provides the `odm-map` command, implemented by
-[/odm_map/pipeline_cli.py](../odm_map/pipeline_cli.py).
+[/odm_map/pipeline_cli.py](../../odm_map/pipeline_cli.py).
 
 ```console
 odm-map [--options] input1 input2 input3 ...
@@ -238,14 +238,14 @@ my-source-to-v3/
 
 Only include the directories your steps actually use. Files shared between
 several modules belong in the `_shared` module at
-[/odm_map/data/modules/_shared](../odm_map/data/modules/_shared) and are
+[/odm_map/data/modules/_shared](../../odm_map/data/modules/_shared) and are
 referenced with the `{shared}` prefix, as the built-in modules do for the ODM
 schemas, the general ID code, and the shared required-value filters.
 
 A module can be distributed as a ZIP file of this directory and run with
 `--module-path path/to/module.zip`.
 
-The built-in modules at [/odm_map/data/modules](../odm_map/data/modules) are
+The built-in modules at [/odm_map/data/modules](../../odm_map/data/modules) are
 complete working examples of everything above.
 
 ## Further Reference Documents
@@ -253,6 +253,6 @@ complete working examples of everything above.
 | Document | Description |
 | :------- | :---------- |
 | [actions/README.md](actions/README.md) | Concepts common to all actions, plus the index of the per-action documents |
-| [filters.md](filters.md) | The filter file format and every filter operation, used by the [`filter`](actions/filter.md) action |
-| [id_generator.md](id_generator.md) | The ID code and ID config files, used by the [`generate_ids`](actions/generate_ids.md) action |
-| [wide_to_long_spec.md](wide_to_long_spec.md) | The wide-format column naming scheme, used by the [`prepare_wide_to_long`](actions/prepare_wide_to_long.md) action |
+| [reference/filters.md](filters.md) | The filter file format and every filter operation, used by the [`filter`](actions/filter.md) action |
+| [reference/id_generator.md](id_generator.md) | The ID code and ID config files, used by the [`generate_ids`](actions/generate_ids.md) action |
+| [reference/wide_to_long_spec.md](wide_to_long_spec.md) | The wide-format column naming scheme, used by the [`prepare_wide_to_long`](actions/prepare_wide_to_long.md) action |

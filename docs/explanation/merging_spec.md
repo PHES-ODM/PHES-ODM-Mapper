@@ -57,7 +57,7 @@ In order to understand how the proposed merging works, it's important to
 understand how the ID generator performs linking between tables and how IDs get
 generated. The following two sections summarize these steps. If you are already
 familiar with the ID generator then you can skip this background section. This
-information is also available in the [ID Generator](id_generator.md)
+information is also available in the [ID Generator](../reference/id_generator.md)
 documentation.
 
 ### How Linking Works

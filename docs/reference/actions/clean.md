@@ -227,5 +227,5 @@ are not overwritten. When there is nothing to report, a single log containing
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:
-  [/odm_map/actions/action_clean_data.py](../../odm_map/actions/action_clean_data.py),
-  [/odm_map/cleaner/clean_data.py](../../odm_map/cleaner/clean_data.py)
+  [/odm_map/actions/action_clean_data.py](../../../odm_map/actions/action_clean_data.py),
+  [/odm_map/cleaner/clean_data.py](../../../odm_map/cleaner/clean_data.py)

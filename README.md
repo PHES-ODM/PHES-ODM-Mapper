@@ -68,7 +68,7 @@ The Mapper works out which source table each input file belongs to from the file
 name (or, for Excel workbooks, from each sheet tab name), so the sections below
 differ only in the module name and in what the input files must be called. See
 [How the input files are matched to
-tables](docs/how_to.md#choose-which-files-and-tables-to-map) if your files are
+tables](docs/how-to/how_to.md#choose-which-files-and-tables-to-map) if your files are
 named differently.
 
 ### ODM v1 → ODM v3
@@ -122,7 +122,7 @@ odm-map \
 The wide format is a single table named `odm_wide`, in which each row carries
 many measures across its columns. The column names encode which measure, unit,
 and compartment each value belongs to; that naming scheme is described in
-[wide_to_long_spec.md](docs/wide_to_long_spec.md).
+[reference/wide_to_long_spec.md](docs/reference/wide_to_long_spec.md).
 
 ### A custom mapping
 
@@ -136,13 +136,13 @@ odm-map \
     "path/to/inputdata"
 ```
 
-See [Create a custom module](docs/how_to.md#create-a-custom-module) to build
+See [Create a custom module](docs/how-to/how_to.md#create-a-custom-module) to build
 one.
 
 ## Documentation
 
 Full documentation is published at
-<https://phes-odm.github.io/PHES-ODM-Mapper/> and lives in [docs/](docs/),
+<https://phes-odm.github.io/PHES-ODM-Mapper/> and lives in [docs/](docs),
 indexed by [docs/index.md](docs/index.md).
 
 It is organized into four kinds of material. Start with the tutorial if you have
@@ -150,19 +150,19 @@ not run the Mapper before.
 
 | | Document | Read it when you want to |
 | :--- | :------- | :----------------------- |
-| **Tutorial** | [tutorial.md](docs/tutorial.md) | Learn the Mapper by running a complete mapping on sample data, start to finish |
-| **How-to guides** | [how_to.md](docs/how_to.md) | Accomplish a specific task: select input tables, run from Python, build a custom module, speed up or debug a run |
-| **Reference** | [reference.md](docs/reference.md) | Look up an exact detail: command-line options, the Python API, or the module `config.yaml` |
-| **Explanation** | [explanation.md](docs/explanation.md) | Understand how the Mapper works and why it is built this way |
+| **Tutorial** | [tutorials/tutorial.md](docs/tutorials/tutorial.md) | Learn the Mapper by running a complete mapping on sample data, start to finish |
+| **How-to guides** | [how-to/how_to.md](docs/how-to/how_to.md) | Accomplish a specific task: select input tables, run from Python, build a custom module, speed up or debug a run |
+| **Reference** | [reference/reference.md](docs/reference/reference.md) | Look up an exact detail: command-line options, the Python API, or the module `config.yaml` |
+| **Explanation** | [explanation/explanation.md](docs/explanation/explanation.md) | Understand how the Mapper works and why it is built this way |
 
 Reference material for the individual parts of a module has its own documents:
 
 | Document | Description |
 | :------- | :---------- |
-| [actions/](docs/actions/) | One document per pipeline action, plus [actions/README.md](docs/actions/README.md) for what applies to every action |
-| [filters.md](docs/filters.md) | The filter file format and every filter operation |
-| [id_generator.md](docs/id_generator.md) | The ID code and ID config files used to generate primary and foreign keys |
-| [wide_to_long_spec.md](docs/wide_to_long_spec.md) | The wide-format column naming and expansion rules |
+| [actions/](docs/reference/actions) | One document per pipeline action, plus [actions/README.md](docs/reference/actions/README.md) for what applies to every action |
+| [reference/filters.md](docs/reference/filters.md) | The filter file format and every filter operation |
+| [reference/id_generator.md](docs/reference/id_generator.md) | The ID code and ID config files used to generate primary and foreign keys |
+| [reference/wide_to_long_spec.md](docs/reference/wide_to_long_spec.md) | The wide-format column naming and expansion rules |
 
 More database formats will be supported as needed. If you require help creating
 a custom module, contact [mwellman@ohri.ca](mailto:mwellman@ohri.ca).

@@ -3,7 +3,7 @@
 
 Generate IDs in database tables and columns. The ID generator can also be used to generate non-ID values (eg. to parse date/time/timezone into properly formatted strings).
 
-See [/docs/id_generator.md](/docs/id_generator.md) for details.
+See [/docs/reference/id_generator.md](/docs/reference/id_generator.md) for details.
 """
 
 import contextlib

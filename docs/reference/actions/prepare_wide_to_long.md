@@ -108,7 +108,7 @@ Expansion rewrites these into `tableShortName_attribute` columns, with a group
 flag appended after a colon (eg. `mr_measure:g0`) when a single wide row
 contains several measures or protocol steps that must not collide.
 
-[wide_to_long_spec.md](../wide_to_long_spec.md) is the reference for the wide
+[reference/wide_to_long_spec.md](../wide_to_long_spec.md) is the reference for the wide
 column name format, including the `#_AND_` and `#_OR_` forms and how column
 groups work. Read it before writing or debugging a wide-format input schema.
 
@@ -121,7 +121,7 @@ File](#generating-the-config-file) below), while `see_headers` and
 `custom_id_code` are hand-written.
 
 The built-in example is
-[/odm_map/data/modules/odm-v3-wide-to-long/wide_to_long/wide_to_long_odm_v3.yaml](../../odm_map/data/modules/odm-v3-wide-to-long/wide_to_long/wide_to_long_odm_v3.yaml).
+[/odm_map/data/modules/odm-v3-wide-to-long/wide_to_long/wide_to_long_odm_v3.yaml](../../../odm_map/data/modules/odm-v3-wide-to-long/wide_to_long/wide_to_long_odm_v3.yaml).
 
 | Config key | Required/Optional | Description |
 | :--------- | :---------------- | :---------- |
@@ -251,7 +251,7 @@ custom_id_code:
 | `code…` | Python code evaluated to produce the value. Any key beginning with `code` is a code column; they are renumbered into `code000`, `code001`, … in the order they appear, and are tried in that order until one produces a non-empty value. |
 
 The code uses the same namespaces (`dat`, `datEmpty`, `fn`) as any hand-written
-ID code — see [id_generator.md](../id_generator.md) for the full reference.
+ID code — see [reference/id_generator.md](../id_generator.md) for the full reference.
 
 Custom rows are appended **after** the generated rows, and duplicates on
 (`class`, `slot`) keep the last occurrence, so a custom entry overrides the
@@ -296,13 +296,13 @@ under version control so the hand-written keys survive regeneration.
 
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
-- [wide_to_long_spec.md](../wide_to_long_spec.md) — the wide column name format
+- [reference/wide_to_long_spec.md](../wide_to_long_spec.md) — the wide column name format
   and expansion rules
 - [map](map.md) — the step that consumes the generated schema and mappers
 - [generate_ids](generate_ids.md) — the step that consumes the generated ID code
   and ID config
-- [id_generator.md](../id_generator.md) — reference for the code used in
+- [reference/id_generator.md](../id_generator.md) — reference for the code used in
   `custom_id_code`
 - Implementation:
-  [/odm_map/actions/action_prepare_wide_to_long.py](../../odm_map/actions/action_prepare_wide_to_long.py),
-  [/odm_map/prepare_wide_to_long/](../../odm_map/prepare_wide_to_long/)
+  [/odm_map/actions/action_prepare_wide_to_long.py](../../../odm_map/actions/action_prepare_wide_to_long.py),
+  [/odm_map/prepare_wide_to_long/](../../../odm_map/prepare_wide_to_long)
