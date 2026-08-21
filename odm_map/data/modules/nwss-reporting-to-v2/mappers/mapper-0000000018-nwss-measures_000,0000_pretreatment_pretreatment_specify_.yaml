@@ -46,3 +46,7 @@ enum_derivations:
     name: vs_reporting_jurisdiction[=mirrored=]
     mirror_source: true
     populated_from: vs_reporting_jurisdiction
+  vs_yn[pretreatment][=mirrored=]:
+    name: vs_yn[pretreatment][=mirrored=]
+    mirror_source: true
+    populated_from: vs_yn[pretreatment]
