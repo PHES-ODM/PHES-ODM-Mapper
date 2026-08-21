@@ -82,8 +82,8 @@ tables = pipeline.run(
 
 | Parameter | Type | Description |
 |:----------|:-----|:------------|
-| `module` | `str \| PipelineModule \| None` | The name of a built-in module, or an already-loaded `PipelineModule`. Pass `None` to use `module_path` instead. |
-| `module_path` | `str \| Path \| None` | The directory or ZIP file of the module to use. Pass `None` when `module` names a built-in module. |
+| `module` | <code>str &#124; PipelineModule &#124; None</code> | The name of a built-in module, or an already-loaded `PipelineModule`. Pass `None` to use `module_path` instead. |
+| `module_path` | <code>str &#124; Path &#124; None</code> | The directory or ZIP file of the module to use. Pass `None` when `module` names a built-in module. |
 
 Exactly one of `module` and `module_path` is used; giving a `module` name takes
 precedence.
@@ -92,9 +92,9 @@ precedence.
 
 | Parameter | Type | Default | Description |
 |:----------|:-----|:--------|:------------|
-| `data_files` | `Dict[str, List[str \| Path \| dict]]` | required | Source table name to the list of files holding that table. Unlike the command line, the table is stated directly, so file names do not matter. For a sheet in an Excel workbook, give `{"excel_file": <path>, "sheet": <sheet name>}` in place of a path. |
+| `data_files` | <code>Dict[str, List[str &#124; Path &#124; dict]]</code> | required | Source table name to the list of files holding that table. Unlike the command line, the table is stated directly, so file names do not matter. For a sheet in an Excel workbook, give `{"excel_file": <path>, "sheet": <sheet name>}` in place of a path. |
 | `output_dir` | `str` | required | Directory to save the output CSV files to. |
-| `temp_dir` | `str \| Path` | `None` | Directory for intermediate files. If `None`, a temporary directory is created and deleted when the run finishes. Set it to keep the intermediate files for inspection. |
+| `temp_dir` | <code>str &#124; Path</code> | `None` | Directory for intermediate files. If `None`, a temporary directory is created and deleted when the run finishes. Set it to keep the intermediate files for inspection. |
 | `max_rows` | `int` | `None` | Maximum rows to load per input file. `None` or `0` loads all rows. |
 | `max_processes` | `int` | `1` | Number of processes to use for the mapping step. Non-positive uses every available processor. |
 | `multi_bar_progress` | `bool` | `True` | Show several simultaneous progress bars. Set to `False` in Jupyter notebooks. |
