@@ -126,7 +126,8 @@ data_files = {
 }
 ```
 
-Every parameter of `run()` is listed in [reference/reference.md](../reference/reference.md#python-api).
+Every parameter of `run()` is listed in the
+[Python API reference](../reference/reference.md#python-api).
 
 ## Run a mapping in a Jupyter notebook
 
@@ -247,9 +248,10 @@ to. To build one for a source format that is not supported:
 
 2. **Create the module directory** and give it a `config.yaml` with `title`,
    `source_schema`, and `steps`. The [module
-   reference](../reference/reference.md#module-configuration) describes each key, and
-   [actions/README.md](../reference/actions/README.md) covers step structure, the `if` key,
-   the interpolation variables, and the order actions are usually combined in.
+   reference](../reference/reference.md#module-configuration) describes each key,
+   and [Pipeline Actions](../reference/actions/README.md) covers step structure,
+   the `if` key, the interpolation variables, and the order actions are usually
+   combined in.
 
 3. **Add the steps your conversion needs.** Most modules clean the input, map
    it, filter it, generate IDs, and save — see [A typical pipeline

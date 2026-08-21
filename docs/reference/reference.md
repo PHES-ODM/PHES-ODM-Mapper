@@ -3,7 +3,7 @@
 Exact descriptions of the Mapper's interfaces: the command line, the Python API,
 and the module configuration file. For task-oriented instructions see the
 [How-to guides](../how-to/how_to.md); for the ideas behind these interfaces see
-[explanation/explanation.md](../explanation/explanation.md).
+[How the Mapper Works](../explanation/explanation.md).
 
 - [Command-Line Interface](#command-line-interface)
 - [Python API](#python-api)
@@ -190,24 +190,24 @@ condition, and the action's `params`.
     output_name: "{class_name}[preid].csv"
 ```
 
-[actions/README.md](actions/README.md) is the reference for what applies to
+[Pipeline Actions](actions/README.md) is the reference for what applies to
 every step — the structure of a step, conditional steps, the string
 interpolation variables such as `{output_dir}`, `{temp}`, `{shared}`, and
 `{debug_mode}`, how module-relative and output paths are resolved, and the order
 actions are usually combined in. Each action then has its own document
 describing its parameters and the files it reads:
 
-| Action | Document | Purpose |
-| :----- | :------- | :------ |
-| `clean` | [clean.md](actions/clean.md) | Normalize column names, correct enumeration values, and check patterns against a LinkML schema |
-| `select_enum_hierarchy` | [select_enum_hierarchy.md](actions/select_enum_hierarchy.md) | For multivalued enum slots, drop values that are ancestors of other values in the same cell |
-| `map` | [map.md](actions/map.md) | Transform data from the source format to the target format with LinkML-Map schemas |
-| `prepare_wide_to_long` | [prepare_wide_to_long.md](actions/prepare_wide_to_long.md) | Rearrange wide-format data and generate the mappers, schema, and ID code needed to map it to long format |
-| `expand` | [expand.md](actions/expand.md) | Turn multivalued (array) cells into one row per array item |
-| `filter` | [filter.md](actions/filter.md) | Remove unwanted rows using filtering rules |
-| `generate_ids` | [generate_ids.md](actions/generate_ids.md) | Generate primary and foreign keys to link the output tables |
-| `drop_columns` | [drop_columns.md](actions/drop_columns.md) | Remove internal tracking, `_extra_`, and non-schema columns |
-| `save` | [save.md](actions/save.md) | Write the current data to CSV files |
+| Action | Purpose |
+| :----- | :------ |
+| [`clean`](actions/clean.md) | Normalize column names, correct enumeration values, and check patterns against a LinkML schema |
+| [`select_enum_hierarchy`](actions/select_enum_hierarchy.md) | For multivalued enum slots, drop values that are ancestors of other values in the same cell |
+| [`map`](actions/map.md) | Transform data from the source format to the target format with LinkML-Map schemas |
+| [`prepare_wide_to_long`](actions/prepare_wide_to_long.md) | Rearrange wide-format data and generate the mappers, schema, and ID code needed to map it to long format |
+| [`expand`](actions/expand.md) | Turn multivalued (array) cells into one row per array item |
+| [`filter`](actions/filter.md) | Remove unwanted rows using filtering rules |
+| [`generate_ids`](actions/generate_ids.md) | Generate primary and foreign keys to link the output tables |
+| [`drop_columns`](actions/drop_columns.md) | Remove internal tracking, `_extra_`, and non-schema columns |
+| [`save`](actions/save.md) | Write the current data to CSV files |
 
 An unrecognized action name stops the run with an error.
 
@@ -252,7 +252,7 @@ are complete working examples of everything above.
 
 | Document | Description |
 | :------- | :---------- |
-| [actions/README.md](actions/README.md) | Concepts common to all actions, plus the index of the per-action documents |
-| [reference/filters.md](filters.md) | The filter file format and every filter operation, used by the [`filter`](actions/filter.md) action |
-| [reference/id_generator.md](id_generator.md) | The ID code and ID config files, used by the [`generate_ids`](actions/generate_ids.md) action |
-| [reference/wide_to_long_spec.md](wide_to_long_spec.md) | The wide-format column naming scheme, used by the [`prepare_wide_to_long`](actions/prepare_wide_to_long.md) action |
+| [Pipeline Actions](actions/README.md) | Concepts common to all actions, plus the index of the per-action documents |
+| [Filtering](filters.md) | The filter file format and every filter operation, used by the [`filter`](actions/filter.md) action |
+| [ID Generator](id_generator.md) | The ID code and ID config files, used by the [`generate_ids`](actions/generate_ids.md) action |
+| [Wide-Long Spec](wide_to_long_spec.md) | The wide-format column naming scheme, used by the [`prepare_wide_to_long`](actions/prepare_wide_to_long.md) action |

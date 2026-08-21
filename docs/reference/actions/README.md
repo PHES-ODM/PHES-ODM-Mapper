@@ -14,17 +14,17 @@ describes what the action does, where it belongs in a pipeline, its parameters,
 and how to prepare the configuration files and any other files that the action
 needs.
 
-| Action | Document | Purpose |
-| :----- | :------- | :------ |
-| `clean` | [clean.md](clean.md) | Normalize column names, correct enumeration values, and check patterns against a LinkML schema |
-| `select_enum_hierarchy` | [select_enum_hierarchy.md](select_enum_hierarchy.md) | For multivalued enum slots, drop values that are ancestors of other values in the same cell |
-| `map` | [map.md](map.md) | Transform data from the source format to the target format with LinkML-Map schemas |
-| `prepare_wide_to_long` | [prepare_wide_to_long.md](prepare_wide_to_long.md) | Rearrange wide-format data and generate the mappers, schema, and ID code needed to map it to long format |
-| `expand` | [expand.md](expand.md) | Turn multivalued (array) cells into one row per array item |
-| `filter` | [filter.md](filter.md) | Remove unwanted rows using filtering rules |
-| `generate_ids` | [generate_ids.md](generate_ids.md) | Generate primary and foreign keys to link the output tables |
-| `drop_columns` | [drop_columns.md](drop_columns.md) | Remove internal tracking, `_extra_`, and non-schema columns |
-| `save` | [save.md](save.md) | Write the current data to CSV files |
+| Action | Purpose |
+| :----- | :------ |
+| [`clean`](clean.md) | Normalize column names, correct enumeration values, and check patterns against a LinkML schema |
+| [`select_enum_hierarchy`](select_enum_hierarchy.md) | For multivalued enum slots, drop values that are ancestors of other values in the same cell |
+| [`map`](map.md) | Transform data from the source format to the target format with LinkML-Map schemas |
+| [`prepare_wide_to_long`](prepare_wide_to_long.md) | Rearrange wide-format data and generate the mappers, schema, and ID code needed to map it to long format |
+| [`expand`](expand.md) | Turn multivalued (array) cells into one row per array item |
+| [`filter`](filter.md) | Remove unwanted rows using filtering rules |
+| [`generate_ids`](generate_ids.md) | Generate primary and foreign keys to link the output tables |
+| [`drop_columns`](drop_columns.md) | Remove internal tracking, `_extra_`, and non-schema columns |
+| [`save`](save.md) | Write the current data to CSV files |
 
 ## Anatomy of a Step
 
@@ -183,7 +183,7 @@ are normally removed by [`drop_columns`](drop_columns.md) before the final
 
 | Document | Description |
 | :------- | :---------- |
-| [reference/reference.md](../reference.md) | The module configuration file, the command line, and the Python API |
-| [reference/filters.md](../filters.md) | The filtering rules used by the `filter` action |
-| [reference/id_generator.md](../id_generator.md) | The ID code and ID config files used by the `generate_ids` action |
-| [reference/wide_to_long_spec.md](../wide_to_long_spec.md) | Wide-format column naming, used by `prepare_wide_to_long` |
+| [Reference](../reference.md) | The module configuration file, the command line, and the Python API |
+| [Filtering](../filters.md) | The filtering rules used by the `filter` action |
+| [ID Generator](../id_generator.md) | The ID code and ID config files used by the `generate_ids` action |
+| [Wide-Long Spec](../wide_to_long_spec.md) | Wide-format column naming, used by `prepare_wide_to_long` |

@@ -6,7 +6,7 @@ came out. It should take about fifteen minutes, plus mapping time.
 
 You do not need to understand the Mapper's internals to follow along — every
 command is given in full. When you want to know *why* something happens, read
-[explanation/explanation.md](../explanation/explanation.md) afterwards.
+[How the Mapper Works](../explanation/explanation.md) afterwards.
 
 ## What you need
 
@@ -146,5 +146,5 @@ You have now run the Mapper end to end. From here:
   from Python, build your own conversion), see the [How-to
   guides](../how-to/how_to.md).
 - To understand what happened in Step 3 — why class names changed, where the IDs
-  came from — read [explanation/explanation.md](../explanation/explanation.md).
-- For the full list of options, see [reference/reference.md](../reference/reference.md).
+  came from — read [How the Mapper Works](../explanation/explanation.md).
+- For the full list of options, see the [Reference](../reference/reference.md).

@@ -108,7 +108,7 @@ Expansion rewrites these into `tableShortName_attribute` columns, with a group
 flag appended after a colon (eg. `mr_measure:g0`) when a single wide row
 contains several measures or protocol steps that must not collide.
 
-[reference/wide_to_long_spec.md](../wide_to_long_spec.md) is the reference for the wide
+The [Wide-Long Spec](../wide_to_long_spec.md) is the reference for the wide
 column name format, including the `#_AND_` and `#_OR_` forms and how column
 groups work. Read it before writing or debugging a wide-format input schema.
 
@@ -251,7 +251,7 @@ custom_id_code:
 | `code…` | Python code evaluated to produce the value. Any key beginning with `code` is a code column; they are renumbered into `code000`, `code001`, … in the order they appear, and are tried in that order until one produces a non-empty value. |
 
 The code uses the same namespaces (`dat`, `datEmpty`, `fn`) as any hand-written
-ID code — see [reference/id_generator.md](../id_generator.md) for the full reference.
+ID code — see the [ID Generator](../id_generator.md) reference for details.
 
 Custom rows are appended **after** the generated rows, and duplicates on
 (`class`, `slot`) keep the last occurrence, so a custom entry overrides the
@@ -296,13 +296,12 @@ under version control so the hand-written keys survive regeneration.
 
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
-- [reference/wide_to_long_spec.md](../wide_to_long_spec.md) — the wide column name format
-  and expansion rules
+- [Wide-Long Spec](../wide_to_long_spec.md) — the wide column name format and
+  expansion rules
 - [map](map.md) — the step that consumes the generated schema and mappers
 - [generate_ids](generate_ids.md) — the step that consumes the generated ID code
   and ID config
-- [reference/id_generator.md](../id_generator.md) — reference for the code used in
-  `custom_id_code`
+- [ID Generator](../id_generator.md) — reference for the code used in `custom_id_code`
 - Implementation:
   [/odm_map/actions/action_prepare_wide_to_long.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/actions/action_prepare_wide_to_long.py),
   [/odm_map/prepare_wide_to_long/](https://github.com/PHES-ODM/PHES-ODM-Mapper/tree/main/odm_map/prepare_wide_to_long)

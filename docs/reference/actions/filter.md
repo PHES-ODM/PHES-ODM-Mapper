@@ -74,8 +74,8 @@ row narrows it, and a final `apply_filter` row actually applies it to the
 DataFrame. Most operations only change the filter, not the data, so a filter
 file that never calls `apply_filter` changes nothing.
 
-[reference/filters.md](../filters.md) is the complete reference: the meaning of each
-column, how filters are named and combined, and every available operation
+[Filtering](../filters.md) is the complete reference: the meaning of each column,
+how filters are named and combined, and every available operation
 (`create_filter`, `exclude_equals`, `include_equals`, `requires_any`,
 `requires_all`, `drop_duplicates`, `and_filters`, `or_filters`, `invert_filter`,
 `copy_filter`, `delete_filter`, `copy_class`, `delete_class`, and
@@ -115,7 +115,7 @@ there.
 
 - [Pipeline Actions](README.md) — step structure, interpolation variables, and
   path resolution
-- [reference/filters.md](../filters.md) — the complete filter file and operation reference
+- [Filtering](../filters.md) — the complete filter file and operation reference
 - [Reference](../reference.md#module-configuration) — the module
   configuration file
 - Implementation:

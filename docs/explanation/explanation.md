@@ -4,7 +4,7 @@ This document explains the ideas behind the Mapper: what a module is, what the
 pipeline does to your data, and why the output looks the way it does. It is
 background reading rather than instructions — for the commands, see the
 [tutorial](../tutorials/tutorial.md) and the [how-to guides](../how-to/how_to.md); for exact
-parameters, see [reference/reference.md](../reference/reference.md).
+parameters, see the [Reference](../reference/reference.md).
 
 - [The problem being solved](#the-problem-being-solved)
 - [Modules](#modules)
@@ -138,7 +138,7 @@ often only visible in target terms.
 
 Modules commonly filter twice: once after mapping, and once after ID generation
 when a row's required values are finally known. The rules live in a filter file,
-described in [reference/filters.md](../reference/filters.md).
+described in [Filtering](../reference/filters.md).
 
 ## Why IDs have to be generated
 
@@ -153,8 +153,8 @@ output row remembers the source file and row it was built from, so rows derived
 from the same source row can be recognized as belonging together, and keys can
 be generated that link them. Key values themselves are produced by small pieces
 of code in the module's ID code file, which is what allows a module to control
-their format. The mechanism is described in
-[reference/id_generator.md](../reference/id_generator.md).
+their format. The mechanism is described in the
+[ID Generator](../reference/id_generator.md) reference.
 
 This is also the most expensive part of a large run, since it requires comparing
 rows across tables.
@@ -197,8 +197,8 @@ mapped. This is why the wide-to-long module has an extra
 [`prepare_wide_to_long`](../reference/actions/prepare_wide_to_long.md) step: it reads the
 wide column names, restructures the data, and *generates* the mapping files,
 schema, and ID code that the subsequent `map` and `generate_ids` steps then use
-in the ordinary way. The column naming scheme it reads is specified in
-[reference/wide_to_long_spec.md](../reference/wide_to_long_spec.md).
+in the ordinary way. The column naming scheme it reads is specified in the
+[Wide-Long Spec](../reference/wide_to_long_spec.md).
 
 ## Performance
 
