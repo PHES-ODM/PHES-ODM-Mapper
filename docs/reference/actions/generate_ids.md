@@ -143,8 +143,7 @@ A CSV or Excel table with a `class` column, a `slot` column, and one or more
 
 For each row of the named class, the code columns are evaluated left to right
 until one produces a non-empty value (or sets the variable `target`), and that
-value is written into the slot. This is how a fallback chain is expressed: use
-the incoming value if there is one, otherwise construct an ID.
+value is written into the slot.
 
 The code has access to the `dat` and `datEmpty` namespaces for reading values
 from the current and linked rows, and the `fn` namespace for helpers such as
