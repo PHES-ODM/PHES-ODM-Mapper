@@ -120,7 +120,7 @@ class TestDataFilterInit:
         )
         df_filter = DataFilter(config_path)
         val = df_filter.config_df[FilterConfigColumns.VALUE].iloc[0]
-        assert val == True
+        assert val
 
     def test_yaml_parses_boolean_false(self, tmp_path):
         config_path = write_config(
@@ -138,7 +138,7 @@ class TestDataFilterInit:
         )
         df_filter = DataFilter(config_path)
         val = df_filter.config_df[FilterConfigColumns.VALUE].iloc[0]
-        assert val == False
+        assert not val
 
     def test_yaml_parses_list_value(self, tmp_path):
         config_path = write_config(
