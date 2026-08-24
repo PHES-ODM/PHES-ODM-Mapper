@@ -12,15 +12,50 @@ rows. When set up properly we can link rows between the various classes (ie.
 tables) using the generated IDs.
 
 Generating IDs is fairly flexible and can be expressed as short Python code
-segments specified in configuration files. It is also possible to generate
-non-ID values, such as formatting dates and times correctly.
+segments specified in configuration files.
+
+The generator's main job is to generate the primary keys of each output table,
+and to populate the foreign keys where necessary so that rows in different
+tables link to each other. A second purpose is to populate non-ID slots with
+custom values, computed programmatically in exactly the same way. This is
+useful whenever a value is easier to produce once mapping is complete, or when
+it must be assembled from several mapped values.
+
+Dates and times are the most common case. An upstream map step can emit the
+parts of a date-time packed into a single string, in the format
+`date/!/time/!/timezone`, which the ID generator then parses into a full
+date-time. For example, the mapper for the NWSS reporting module populates
+`collDT` in the `samples` table with:
+
+```yaml
+collDT:
+  name: collDT
+  expr: sample_collect_date + '/!/' + sample_collect_time + '/!/' + time_zone
+```
+
+and the ID code file then converts that packed value into a properly formatted
+date-time with:
+
+```python
+fn.datetimetz(dat.samples.__collDT, split_at='/!/')
+```
+
+The `__` prefix on `__collDT` accesses the value the slot had before ID
+generation (see [dat and datEmpty](#dat-and-datempty-namespaces)), so the code
+above reads the packed string produced by the map step and overwrites the slot
+with the parsed date-time. This pattern is used throughout the built-in
+modules, for `collDT`, `aDateStart`, `reportDate`, `lastEdited`, and the other
+date-time slots. See
+[fn.datetimetz](#fndatetimetzd-split_atnone) for details.
 
 ID generation is performed by the
 [`generate_ids`](actions/generate_ids.md) action, which reads the two
 configuration files described in this document:
 
 1. **ID config file**: Specifies general settings, such as the short name of
-   each class and the linkages between classes.
+   each class and the linkages between classes. These linkages determine how a
+   foreign key properly points to the correct row containing the primary key in
+   another table.
 2. **ID code file**: Specifies the Python code that is executed to generate the
    IDs or values of the various slots.
 
@@ -37,8 +72,8 @@ keys, all of which are optional:
 | Key | Description |
 | :-- | :---------- |
 | `tables_to_shortnames` | A dictionary mapping each class (table) name to a short name. The short name is returned by `fn.class_shortname` and is used to prefix generated IDs that do not begin with an alphabetic character. See [fn.class_name and fn.class_shortname](#fnclass_name-and-fnclass_shortname). |
-| `class_linkages` | Overrides how the generator finds the related row in another class when resolving a value from it. See [class_linkages](#class_linkages). |
-| `named_class_linkages` | Named linkages that can be referenced from the code, without overriding the default linking behaviour. See [named_class_linkages](#named_class_linkages). |
+| `class_linkages` | Overrides how the generator finds the related row in another class when resolving a value from it. This is how we link a foreign key to a primary key. See [class_linkages](#class_linkages). |
+| `named_class_linkages` | Named linkages that can be referenced from the code, without overriding the default linking behaviour. While `class_linkages` specifies the default linking behaviour, `named_class_linkages` allow us to reference a custom class linkage by name in the ID code. See [named_class_linkages](#named_class_linkages). |
 
 An example is shown below:
 
@@ -80,10 +115,10 @@ For all the mapped data, we generate values according to the configuration, and
 populate the specified `slot` within each specified `class`. The code from each
 `code` column will be executed starting with the left-most `code` column,
 working rightward. If the code for a column generates a non-empty value (or
-sets the variable "target" to a non-empty value), that value is used as the ID
-for the slot. If an empty value is generated, then the next `code` column is
-executed. This is repeated until a non-empty value is generated or the last
-code column is executed.
+sets the variable "target" to a non-empty value), that value is used as the
+ID/value for the slot. If an empty value is generated, then the next `code`
+column is executed. This is repeated until a non-empty value is generated or
+the last code column is executed.
 
 An example configuration table is shown below:
 
@@ -459,7 +494,7 @@ Try to convert the value `v` to a float. If it cannot be cast to a float then
 
 #### fn.try_int(v)
 
-Try to convert the value `v` to an integer. If it cannot be cast to a integer
+Try to convert the value `v` to an integer. If it cannot be cast to an integer
 then `v` is returned unchanged. String values with underscores are not valid
 integers.
 
@@ -537,21 +572,41 @@ else:
 Attribute (integer): The zero-based row number in the original source database
 and source class (`fn.sourceclass`) that was used to populate the current row.
 
-#### fn.datetimetz(d)
+#### fn.datetimetz(d, split_at=None)
 
-Convert array of values to a date-time-timezone string in the format
-YYYY-mm-ddTHH:MM:SS.f+0000 (YYYY=year, mm=month number, dd=day, HH=24-hour
-time, MM=minutes, SS=seconds, f=ms). For example:
+Convert a date, time, and timezone into a single date-time-timezone string in
+the format YYYY-mm-ddTHH:MM:SS.f+0000 (YYYY=year, mm=month number, dd=day,
+HH=24-hour time, MM=minutes, SS=seconds, f=ms). Several input formats are
+recognized for each of the three components.
+
+The input `d` can be a list of up to three strings, in the order `[date, time,
+timezone]`, `[date, time]`, or `[date]`. For example:
 
 ```python3
 fn.datetimetz(dat.samples.__collDT.split("/"))
 ```
 
+The input can also be a single string that packs the components together. If
+`split_at` is provided, then the string is first split on that separator and
+the resulting list is used as the input. This is how the built-in modules
+handle dates and times: a map step emits the packed string
+`date/!/time/!/timezone` and the ID code file parses it with:
+
+```python3
+fn.datetimetz(dat.samples.__collDT, split_at="/!/")
+```
+
+If `d` is a single string and `split_at` is not given (or the separator is not
+found in the string), then the same string is used for all three components,
+and whichever components can be parsed out of it are used. `split_at` is
+ignored when `d` is already a list.
+
 An example value of `dat.samples.__collDT` is `2022-11-16/7:00/utc-04:00`,
 which would result in the output string `2022-11-16T07:00:00-0400`. If the time
 is empty, then just the date is returned (eg. `2022-11-16`). If the date is
 empty, then just the time is returned (eg. `07:00:00-0400`). If both are empty,
-then an empty string is returned. The timezone can also be omitted.
+then an empty string is returned. The timezone can also be omitted. Any
+component that cannot be parsed is treated as empty.
 
 #### fn.class_name and fn.class_shortname
 
@@ -620,8 +675,6 @@ comma with no value after it. So in the data we are generating IDs for we can
 use something like `pooling,,main` to execute code for `name:pooling`, then the
 default (no code selector) `name`, and finally the code for `name:main`. Using
 `pooling,main,` with a trailing comma will execute the default `name` code last.
-This same pattern can also be used in the `slot` column of the ID code file (eg.
-a slot of `name:pooling,,main`).
 
 ## Related Documentation
 
