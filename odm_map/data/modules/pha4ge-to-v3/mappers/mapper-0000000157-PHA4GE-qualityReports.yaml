@@ -18,8 +18,8 @@ class_derivations:
       qualityReports:
         populated_from: PHA4GE
 enum_derivations:
-  genMissingnessSet:
-    name: genMissingnessSet
+  qualityIndicators:
+    name: qualityIndicators
     mirror_source: false
     populated_from: QualityControlIssuesMenu
     permissible_value_derivations:
