@@ -282,7 +282,10 @@ enums:
       gcMl:
         description: Gene or variant copies per millilitre of solution.
         title: Gene copies per mL
-      gcDay100K: {}
+      gcDay100k:
+        description: The unit for measures reflecting the gene copies per day per
+          100,000 people in the population.
+        title: gene copies per day per 100,000 people
       det:
         description: Substance detected or not detected.
         title: Detected
@@ -1137,6 +1140,10 @@ enums:
           specified is English. The short name for the table (partID) can be found
           in the instructions field.
         title: Translation look-up table
+      wideNames:
+        description: The table for wide names. The short name for the table (partID)
+          can be found in the instructions field.
+        title: Wide name table
   dissGasUnitSet:
     description: Unit set for carbon dioxide concentrations measurements in water
       or air.
@@ -1158,7 +1165,9 @@ enums:
     title: Electrical potential unit set
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
-      mVolt: {}
+      mvolt:
+        description: milliVolt (mV)
+        title: MilliVolt
       hUn:
         description: An indicator to show in a wide-name that unit information is
           located in a different column.
@@ -1243,11 +1252,6 @@ enums:
           for samples and measures. The short name for the table (partID) can be found
           in the instructions field.
         title: Quality reports table
-      reportersDep:
-        description: The table that contains information about a reporter of a sample,
-          method, measure, or attribute. The short name for the table (partID) can
-          be found in the instructions field.
-        title: Reporter table depreciated
       sampleRelationships:
         description: Table for recording the relationships between samples.Samples
           can be pooled or split. The sample relationships table holds information
@@ -1284,6 +1288,33 @@ enums:
           the MeasureReport table if the infomation changes often. The short name
           for the table (partID) can be found in the instructions field.
         title: Sites table
+      accessions:
+        description: Table for recording accession IDs for external data, namely sequences
+          in large sequencing databases and repositories. The short name for the table
+          (partID) can be found in the instructions field.
+        title: accessions Table
+      calculations:
+        description: Table for recording data on data treatments and calculations
+          applied to measurements and reported values.
+        title: Calculations Table
+      phActions:
+        description: Table for recording information on public health actions. The
+          short name for the table (partID) can be found in the instructions field.
+        title: Public Health Actions Report Table
+      polygonRelationships:
+        description: Table for recording the relationships between polygons. The short
+          name for the table (partID) can be found in the instructions field.
+        title: Polygon Relationships Table
+      wideNames:
+        description: The table for wide names. The short name for the table (partID)
+          can be found in the instructions field.
+        title: Wide name table
+      translations:
+        description: Look up table for translations of the description, label, and
+          instruction for all parts. The default language if a translation is not
+          specified is English. The short name for the table (partID) can be found
+          in the instructions field.
+        title: Translation look-up table
   extractSet:
     description: set used for storing all the valid category values for the nucleic
       acid extraction method.
@@ -1627,6 +1658,23 @@ enums:
         description: The table for wide names. The short name for the table (partID)
           can be found in the instructions field.
         title: Wide name table
+      accessions:
+        description: Table for recording accession IDs for external data, namely sequences
+          in large sequencing databases and repositories. The short name for the table
+          (partID) can be found in the instructions field.
+        title: accessions Table
+      calculations:
+        description: Table for recording data on data treatments and calculations
+          applied to measurements and reported values.
+        title: Calculations Table
+      phActions:
+        description: Table for recording information on public health actions. The
+          short name for the table (partID) can be found in the instructions field.
+        title: Public Health Actions Report Table
+      polygonRelationships:
+        description: Table for recording the relationships between polygons. The short
+          name for the table (partID) can be found in the instructions field.
+        title: Polygon Relationships Table
   genMissingnessSet:
     description: The general set for missingness values.
     title: General missingness set
@@ -1643,7 +1691,7 @@ enums:
         description: A general missingness value for missing data, used when data
           is not included for an unknown reason.
         title: Missing data
-      'null':
+      'NULL':
         description: A logical representation of a statement that is neither TRUE
           nor FALSE.
         title: 'Null'
@@ -1707,7 +1755,10 @@ enums:
       gcCrA:
         description: Gene or variant copies per copy of crAssphage.
         title: Gene copies per copy of crAssphage
-      gcDay100K: {}
+      gcDay100k:
+        description: The unit for measures reflecting the gene copies per day per
+          100,000 people in the population.
+        title: gene copies per day per 100,000 people
       gCGS:
         description: Gene or variant copies per gram solids.
         title: Gene copies per gram solids
@@ -1785,6 +1836,16 @@ enums:
         description: Percent of the surrogate recovery for a recovery efficiency control
           assay (as a unit).
         title: Percent recovery
+  geoRefMissingnessSet:
+    description: A missingness set for field populated by the geographical reference
+      tables (countries, zones)
+    title: Geographical Reference Missingness Set
+    from_schema: https://onto.phes-odm.org/odm/v3
+    permissible_values:
+      'NULL':
+        description: A logical representation of a statement that is neither TRUE
+          nor FALSE.
+        title: 'Null'
   geoTypeSet:
     description: set for different type of geographic components.
     title: Geographic set
@@ -2247,7 +2308,16 @@ enums:
     title: List set
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
-      dataTypes: {}
+      dataTypes:
+        description: 'The data type for a part. Data types used in the ODM include:
+          varchar, booleen, float, category, date, time, datetime, url, email. dataType
+          corresponds the the entry or cell within a data table, most commonly within
+          a report table. If the data entry has a unit, then the dataType corresponds
+          to the unit and the dataType refers to ''unit''. If the data entry is a
+          category, then the dataType refers to ''category''. All categories are varchar.
+          Otherwise the dataType is identifed within the part entry. TBA: dataType
+          for dictionary.'
+        title: Data types part type
       aggregationScales:
         description: The scale of an aggregation set. Aggregation scales include quantitative
           and qualitative.
@@ -2319,6 +2389,67 @@ enums:
         description: The unit of the measurement. Every measurement must have a unit.
           Meaning, `units` are a mandatory field whenever a measurement is recorded.
         title: Units
+      partTypes:
+        description: 'Part types describe the purpose or use of the part. Enivornment
+          data has three main part types: measure (i.e. covN1 viral measures, wasteawater
+          flow rate, temperature), method (e.g. how the measure was taken), and attribute
+          (such as a site name). See description of each of the part types within
+          setID = partTypeCatSets.'
+        title: Part types part type
+      aggregationSets:
+        description: Sets of aggregations. Examples of aggregation sets include logarithm,
+          linear and boolean.
+        title: Aggregation sets
+      categories:
+        description: 'A discrete list of values that can be reported for a measure,
+          method or attribute. A use-case example of categories would be how they
+          are used to record the site where a measure is taken (partID = geoType).
+          For the geoType attribute there are different type of sites where samples
+          can be taken: a wastwater treatment plant, airplane holding tank, wastwater
+          pumping station, etc. Each of these site types is recorded as a category
+          that can be identified in categorySetID = sTypeCatSets'
+        title: Categories
+      compartmentSets:
+        description: Sets of compartments. Compartment sets are used to identify when
+          a measure can be recorded for more than one compartment. For example, SARS-CoV-2
+          can be measured in people (humans), water, surface, or air.
+        title: Compartment sets
+      dictionarySupport:
+        description: 'Additional sheets for the Excel version of the ODM dictionary.
+          Sheets or tabs for the ODM Excel dictionary include: all ERD tables (look-up
+          tables and data entry tables) and additional supportig tables.'
+        title: Additional dictionary sheets
+      exceptions:
+        description: An exception part type for use in creating wide names that do
+          not follow the general structure.
+        title: Exceptions Part Type
+      missingnessSets:
+        description: Set of missingness values. Examples of missingness sets may include
+          NR or NA esclusive sets, or general all-purpose sets.
+        title: Missingness sets
+      mmaSets:
+        description: A set of categories. For example, site type has a list of different
+          sites, such as a wastewater treatment plant, a septic tank, or a pumping
+          station. Only used for the dictionary entries of parts.
+        title: Measure, method, or attribute sets
+      qualityIndSets:
+        description: Sets of quality indicators or measures. For example, PCR have
+          a quality measure set.
+        title: Quality indicator sets
+      specimenSets:
+        description: Sets of specimens.  Specimen sets are used when a measure or
+          attribute can be recorded for more than one specimen.
+        title: Specimen sets
+      unitSets:
+        description: Sets of units. Contains units that are associated with part types
+          such as measures. Sets are lists of input values. Each input value within
+          a set is a part (has a partID) that can be reused between sets. For example,
+          a set A could contain the values of 'yes' and 'no'; and set B could contain
+          the values of 'yes', 'no', and 'maybe.' partTypes with sets include aggregations,
+          compartments, missingness, quality flags, specimens, and units. Measures
+          with categories and dataTypes have their own specific sets (catSetID) because
+          their input values are unique and are not reused.
+        title: Unit sets
   logAggrSet:
     description: The aggregation set that contains all aggregations that exist on
       the logarithmic scale (rather than linear or qualitative).
@@ -5952,6 +6083,37 @@ enums:
       lists:
         description: Parts lists for template dropdowns and other documentation.
         title: List worksheet
+      countries:
+        description: Look up table for the possible country inputs. The short name
+          for the table (partID) can be found in the instructions field.
+        title: Countries look-up tables
+      zones:
+        description: Look up table for the possible sub-national region or zone inputs.
+          The short name for the table (partID) can be found in the instructions field.
+        title: Zones look-up table
+      accessions:
+        description: Table for recording accession IDs for external data, namely sequences
+          in large sequencing databases and repositories. The short name for the table
+          (partID) can be found in the instructions field.
+        title: accessions Table
+      calculations:
+        description: Table for recording data on data treatments and calculations
+          applied to measurements and reported values.
+        title: Calculations Table
+      phActions:
+        description: Table for recording information on public health actions. The
+          short name for the table (partID) can be found in the instructions field.
+        title: Public Health Actions Report Table
+      polygonRelationships:
+        description: Table for recording the relationships between polygons. The short
+          name for the table (partID) can be found in the instructions field.
+        title: Polygon Relationships Table
+      translations:
+        description: Look up table for translations of the description, label, and
+          instruction for all parts. The default language if a translation is not
+          specified is English. The short name for the table (partID) can be found
+          in the instructions field.
+        title: Translation look-up table
   threatDesSet:
     description: A set of valid categories for the public health action field, where
       the action type is 'threat designation'.
@@ -6375,6 +6537,11 @@ enums:
         description: Provisional ID to act as a primary key for each row of the accessions
           table.
         title: Accessions Index ID
+      wideName:
+        description: 'Unique identifier for wide table only. Use when all measures
+          are performed on a single sample at the same time and same laboratory. Suggestion:
+          siteID_sampleID_LabID_reportDate_ID.'
+        title: Wide Name
       accessNum:
         description: The accession number for the data entry in the given data repository
           or hosting platform.
@@ -6395,36 +6562,44 @@ enums:
       addL1:
         description: Line 1 (the street name, number and direction) for a given address.
         title: Address Line 1
-      aggragationScale:
-        description: A scale used for an aggregation. Only applicable for measures
-          and units.
-        title: Aggregation scale
+      fKAliasID:
+        description: The primary key that is being referenced by another name in another
+          table as a foreign key.
+        title: Foreign Key Alias ID
       setCompID:
         description: A composite ID generated by concatennating the 'setID' and 'partID'
           of a given row in the sets table. This allows for a unique primary key and
           robust relational database structure.
         title: Composite Set ID
-      aggregationInput:
-        description: The partID for the aggregation being used in a wide name.
-        title: Aggregation input (wide table)
-      aggregationName:
-        description: The aggregation referenced for the wide name.
-        title: Aggregation name (wide table)
-      aggregationSet:
-        description: The aggregation set for a unit.
-        title: Aggregation set
+      aggregationScale:
+        description: A scale used for an aggregation. Only applicable for measures
+          and units.
+        title: Aggregation scale
+      aggregation:
+        description: Statistical measures used to report a measure. Each aggregation
+          has a corresponding value.
+        title: Aggregation
+      charLength:
+        description: The number of characters used for the wide names.
+        title: character length
+      domain:
+        description: Domain is the highest level of describing of a measure.
+        title: Domain
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
+      aggregationSet:
+        description: The aggregation set for a unit.
+        title: Aggregation set
       custodyCont:
         description: A unique identifier for data custodians.
         title: Custody Contact ID
-      attributeInput:
-        description: The partID for the attribute being used in a wide name.
-        title: Attribute input (wide table)
-      attributeName:
-        description: The attribute referenced for the wide name.
-        title: Attribute name (wide table)
+      descr:
+        description: A detailed description of a measure, method, or attribute.
+        title: Description
+      source:
+        description: The database or table sourced for the wide name.
+        title: Wide name source
       custodyID:
         description: The data custodian of a database.
         title: Data custodian ID
@@ -6432,6 +6607,18 @@ enums:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
         title: Dataset ID
+      specimenSet:
+        description: An idenfication of a set of specimens that can be applied for
+          a measure or method.
+        title: Specimen Set Header
+      compartmentSet:
+        description: An idenfication of a set of compartments that can be applied
+          for a measure or method.
+        title: Compartment Set Header
+      group:
+        description: Unique identifier for a group of measures. Mostly applicable
+          for measures, methods, units, and aggregations.
+        title: Group
       capitalEndonym:
         description: "The name locals use for their country\u2019s capital."
         title: Capital city endonym
@@ -6441,17 +6628,21 @@ enums:
       funderCont:
         description: A unique identifier for a funder.
         title: Funder contact ID
-      charLength:
-        description: The number of characters used for the wide names.
-        title: character length
-      addL2:
-        description: Line 2 (the unit number) for a given address.
-        title: Address Line 2
       class:
         description: A unique identifier for a class, which is akin to a sub-group;
           it's a way of grouping parts within a given group. A group can have one
           or more classes to describe different parts of the class.
         title: Class
+      wideMeasure:
+        description: Unique identifier for a measure in a wide table only.
+        title: Measure identification (wide table)
+      addL2:
+        description: Line 2 (the unit number) for a given address.
+        title: Address Line 2
+      nomenclature:
+        description: A classification system to report the measure class. Only applicable
+          to variants, mutations, and diseases.
+        title: Nomenclature
       collAppxT:
         description: The general time period (ie. Morning, afternoon, evening) of
           sample collection.
@@ -6487,22 +6678,32 @@ enums:
         description: The attribute identifying the substance from which where a sample
           was taken. For more information, see partID = compartment.
         title: Compartment
-      compartmentInput:
-        description: The partID for the compartment being used in a wide name.
-        title: Compartment input (wide table)
-      compartmentName:
-        description: The compartment referenced for the wide name.
-        title: Compartment name (wide table)
-      compartmentSet:
-        description: An idenfication of a set of compartments that can be applied
-          for a measure or method.
-        title: Compartment Set Header
+      wideProtocol:
+        description: Unique identifier for a protocol in a wide table only.
+        title: Specified protocol (wide table)
+      wideAttribute:
+        description: Unique identifier for an attribute in a wide table only.
+        title: Specified attribute (wide table)
       method:
         description: A procedure for collecting a sample or performing a measure.
         title: Method
+      mmaSet:
+        description: The set for a measure, method, or attribute. Only applicable
+          for categorical fields, and the categories that populate them. The use has
+          meean extended to include 'partType' values as well, to codify instances
+          where a catgeorical variable takes any part of a certain part type.
+        title: Measure, Method, or Attribute Set Header
+      unitSet:
+        description: An idenfication of a set of units that can be used for a measure
+          or method.
+        title: Unit set
       funderID:
         description: The funding agency of the dataset.
         title: Funding agency ID
+      qualityIndSet:
+        description: The quality set that corresponds to a given part. Only applicable
+          for samples and measures.
+        title: Quality Indicator Set Header
       city:
         description: The city where a site or organization is located; part of the
           address.
@@ -6528,12 +6729,13 @@ enums:
           for each translation, other than the default English. Uses the ISO-6393
           code.
         title: Language ID
-      domain:
-        description: Domain is the highest level of describing of a measure.
-        title: Domain
-      wideMeasure:
-        description: Unique identifier for a measure in a wide table only.
-        title: Measure identification (wide table)
+      missingnessSet:
+        description: Missingness sets for measures, methods or attributes.
+        title: Missingness Set
+      wideNameType:
+        description: The type of wide name generated. Possible options are measure,
+          protocol or attribute.
+        title: Wide name type
       enaMap:
         description: ENA header
         title: European Nucleotide Association Mapping Column
@@ -6568,18 +6770,18 @@ enums:
       fraction:
         description: Fraction of the sample that is analyzed.
         title: Fraction analyzed
-      fractionInput:
-        description: The partID for the fraction being used in a wide name.
-        title: Fraction input (wide table)
-      fractionName:
-        description: The fraction analyzed referenced for the wide name.
-        title: Fraction name (wide table)
+      reportTableName:
+        description: The report table that the wide name calls from.
+        title: Report table name (wide table)
+      reportTableInput:
+        description: The short name for the listed source table.
+        title: Report table input (wide table)
       license:
         description: The license of a dataset.
         title: License
-      descr:
-        description: A detailed description of a measure, method, or attribute.
-        title: Description
+      partTypeName:
+        description: The part type being used in a wide name.
+        title: Part type name (wide table)
       measureSetRepID:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
@@ -6596,24 +6798,13 @@ enums:
       geoWKT:
         description: Well-known text of the polygon
         title: Well-known text
-      group:
-        description: Unique identifier for a group of measures. Mostly applicable
-          for measures, methods, units, and aggregations.
-        title: Group
-      siteLevel:
-        description: Specifies the level of aggregation that occurs at the site -
-          essentially, what size and type of region is represented by the base sewershed.
-          This can be used to pool together or average results across similar sewersheds,
-          and avoid trying to average different scales of sewershed together without
-          a correction for size.
-        title: Level of Aggregation of a Sampling Site
       hostVersion:
         description: The version of the data repository or hosting platform being
           used.
         title: Version of Data Hosting Platform/Repository
-      index:
-        description: Index number in case the measurement was taken multiple times.
-        title: Index
+      partTypeInput:
+        description: The partID for the part type being used in a wide name.
+        title: Part type input (wide table)
       measure:
         description: A measurement or observation of any substance including a biological,
           physical or chemical substance.
@@ -6655,10 +6846,6 @@ enums:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
         title: Organization ID
-      refLink:
-        description: Link to the reference material for a part. May link to literature
-          on a method, measure, etc.
-        title: Reference link
       langFam:
         description: Specifies the language family of a given language for translation
           and language tracking purposes.
@@ -6684,15 +6871,15 @@ enums:
         description: The siteID that is a parent to another siteID; usually the sub-site
           will be contained in the parentSite.
         title: Parent Site ID
-      measureInput:
-        description: The partID for the measure being used in a wide name.
-        title: Measure input (wide table)
+      compartmentName:
+        description: The compartment referenced for the wide name.
+        title: Compartment name (wide table)
       measureLic:
         description: Specifies the access and use licensing for a given single measurement.
         title: Measure license
-      measureName:
-        description: The measure referenced for the wide name.
-        title: Measure name (wide table)
+      compartmentInput:
+        description: The partID for the compartment being used in a wide name.
+        title: Compartment input (wide table)
       stateProvReg:
         description: The state, province, or region where a site or organization is
           located; part of the address.
@@ -6701,19 +6888,12 @@ enums:
         description: Short description of the assay and how it is different from the
           other assay methods.
         title: Summary
-      methodInput:
-        description: The partID for the method being used in a wide name.
-        title: Method input (wide table)
-      methodName:
-        description: The method referenced for the wide name.
-        title: Method name (wide table)
-      missingnessSet:
-        description: Missingness sets for measures, methods or attributes.
-        title: Missingness Set
-      mmaSet:
-        description: The set for a measure, method, or attribute. Only applicable
-          for categorical fields, and the categories that populate them.
-        title: Measure, Method, or Attribute Set Header
+      specimenName:
+        description: The specimen referenced for the wide name.
+        title: Specimen name (wide table)
+      specimenInput:
+        description: The partID for the specimen being used in a wide name.
+        title: Specimen input (wide table)
       model:
         description: Model number or version of the instrument.
         title: Model
@@ -6738,10 +6918,6 @@ enums:
       ncbiNotes:
         description: NCBI notes
         title: NCBI - notes
-      nomenclature:
-        description: A classification system to report the measure class. Only applicable
-          to variants, mutations, and diseases.
-        title: Nomenclature
       norman:
         description: NORMAN header
         title: NORMAN
@@ -6801,12 +6977,12 @@ enums:
         description: The primary or most responsible authority for rountine surveillance
           reports or findings, or where the site is located.
         title: Primary reporting authority ID
-      partTypeInput:
-        description: The partID for the part type being used in a wide name.
-        title: Part type input (wide table)
-      partTypeName:
-        description: The part type being used in a wide name.
-        title: Part type name (wide table)
+      fractionName:
+        description: The fraction analyzed referenced for the wide name.
+        title: Fraction name (wide table)
+      fractionInput:
+        description: The partID for the fraction being used in a wide name.
+        title: Fraction input (wide table)
       pCode:
         description: The zip code or postal code for a given address, specifying a
           specifc geographic area.
@@ -6877,10 +7053,6 @@ enums:
         description: A field for reporting any quality concerns - of lack thereof
           - for a sample or measure.
         title: Quality flag
-      qualityIndSet:
-        description: The quality set that corresponds to a given part. Only applicable
-          for samples and measures.
-        title: Quality Indicator Set Header
       phActionID:
         description: Unique identifier for public health actions.
         title: Public Health Action ID
@@ -6912,12 +7084,12 @@ enums:
       reportDate:
         description: The date a measure was reported.
         title: Report date
-      reportTableInput:
-        description: The short name for the listed source table.
-        title: Report table input (wide table)
-      reportTableName:
-        description: The report table that the wide name calls from.
-        title: Report table name (wide table)
+      measureName:
+        description: The measure referenced for the wide name.
+        title: Measure name (wide table)
+      measureInput:
+        description: The partID for the measure being used in a wide name.
+        title: Measure input (wide table)
       repType:
         description: Attirbute of a sample, specifying whether the sample is unique,
           or a replicate. And if it is a replicate, what type of replicate is it?
@@ -6976,9 +7148,9 @@ enums:
       geoEPSG:
         description: The unique EPSG code specifying a given geospatial area.
         title: European Petroleum Survey Group Coordinates
-      source:
-        description: The database or table sourced for the wide name.
-        title: Wide name source
+      methodName:
+        description: The method referenced for the wide name.
+        title: Method name (wide table)
       order:
         description: The order a single calculation/data treatment takes within the
           full container pipeline/workflow.
@@ -6996,16 +7168,12 @@ enums:
       specimen:
         description: The substance or thing upon which the observation was made.
         title: Specimen
-      specimenInput:
-        description: The partID for the specimen being used in a wide name.
-        title: Specimen input (wide table)
-      specimenName:
-        description: The specimen referenced for the wide name.
-        title: Specimen name (wide table)
-      specimenSet:
-        description: An idenfication of a set of specimens that can be applied for
-          a measure or method.
-        title: Specimen Set Header
+      methodInput:
+        description: The partID for the method being used in a wide name.
+        title: Method input (wide table)
+      unitName:
+        description: The unit referenced for the wide name.
+        title: Unit name (wide table)
       equation:
         description: The equation used in the calculation/data treatment.
         title: Equation
@@ -7035,10 +7203,13 @@ enums:
       unit:
         description: The units of a measurement.
         title: Unit
-      aggregation:
-        description: Statistical measures used to report a measure. Each aggregation
-          has a corresponding value.
-        title: Aggregation
+      siteLevel:
+        description: Specifies the level of aggregation that occurs at the site -
+          essentially, what size and type of region is represented by the base sewershed.
+          This can be used to pool together or average results across similar sewersheds,
+          and avoid trying to average different scales of sewershed together without
+          a correction for size.
+        title: Level of Aggregation of a Sampling Site
       relDateEnd:
         description: The end date of the relevancy period of a measure - mostly for
           time-varrying metrics for sites or polygons.
@@ -7066,13 +7237,9 @@ enums:
       unitInput:
         description: The partID for the unit being used in a wide name.
         title: Unit input (wide table)
-      unitName:
-        description: The unit referenced for the wide name.
-        title: Unit name (wide table)
-      unitSet:
-        description: An idenfication of a set of units that can be used for a measure
-          or method.
-        title: Unit set
+      aggregationName:
+        description: The aggregation referenced for the wide name.
+        title: Aggregation name (wide table)
       utc:
         description: "UTC \u2013 Time zone."
         title: Coordinated universal time (UTC) zone
@@ -7102,21 +7269,22 @@ enums:
       version1Variable:
         description: ODM V1 variable
         title: ODM V1 variable
-      wideAttribute:
-        description: Unique identifier for an attribute in a wide table only.
-        title: Specified attribute (wide table)
-      wideName:
-        description: 'Unique identifier for wide table only. Use when all measures
-          are performed on a single sample at the same time and same laboratory. Suggestion:
-          siteID_sampleID_LabID_reportDate_ID.'
-        title: Wide Name
-      wideNameType:
-        description: The type of wide name generated. Possible options are measure,
-          protocol or attribute.
-        title: Wide name type
-      wideProtocol:
-        description: Unique identifier for a protocol in a wide table only.
-        title: Specified protocol (wide table)
+      aggregationInput:
+        description: The partID for the aggregation being used in a wide name.
+        title: Aggregation input (wide table)
+      index:
+        description: Index number in case the measurement was taken multiple times.
+        title: Index
+      refLink:
+        description: Link to the reference material for a part. May link to literature
+          on a method, measure, etc.
+        title: Reference link
+      attributeName:
+        description: The attribute referenced for the wide name.
+        title: Attribute name (wide table)
+      attributeInput:
+        description: The partID for the attribute being used in a wide name.
+        title: Attribute input (wide table)
       wSphere:
         description: World Sphere header
         title: World Sphere (W-SPHERE)
@@ -7126,6 +7294,20 @@ enums:
       zoneName:
         description: The english-language name for a given country sub-domain.
         title: English name of country sub-domains
+      dataType:
+        description: The recorded data type for every part in the part table. This
+          is the attribute in the parts table, not to be confused with dataTypes,
+          the part type.
+        title: Data Type column (Reported)
+      partType:
+        description: The recorded part type for every part in the part table. This
+          is the attribute in the parts table, not to be confused with partTypes,
+          the part type.
+        title: Part type column (Reported)
+      tag:
+        description: A tag used in wide names to clarify relationship and linkage
+          in the flattened, single table format.
+        title: Wide name measurement and linkage tag
   categories:
     description: 'A discrete list of values that can be reported for a measure, method
       or attribute. A use-case example of categories would be how they are used to
@@ -7268,12 +7450,6 @@ enums:
       areaPr:
         description: An area proportional sample.
         title: Area proportional sample
-      aRegLevel:
-        description: Specifies that a sewershed/site represents an entire region -
-          where region here is an "A-Tier" region and refers to large, dense urban
-          areas made up of multiple overlapping cities/boroughs. This would be a greater
-          metropolitan area.
-        title: A-Tier Region-level Aggregation at Site
       argAnnotSoft:
         description: Software annotation tool for antimicrobial resistance genes.
         title: "ARG-ANNOT\_Annotation Tool"
@@ -7510,12 +7686,6 @@ enums:
           that can also be used to identify contamination and assess data quality
           in metagenomics.
         title: Bracken
-      bRegLevel:
-        description: Specifies that a sewershed/site represents an entire region -
-          where region here is an "B-Tier" region, and thus a region within a greater
-          metropolitan area and larger than a single municipality, but smaller than
-          the entire metropolitan area.
-        title: B-Tier Region-level Aggregation at Site
       brsvCul:
         description: Cultured bovine respiratory syncytial virus (BRSV) is used as
           the recovery efficiency control target.
@@ -7828,10 +7998,18 @@ enums:
       count:
         description: A count of residents for determining site/polygon population.
         title: Population count
-      countLevel:
-        description: Specifies that a sewershed/site represents an entire nation or
-          country.
-        title: Country-level Aggregation at Site
+      aRegLevel:
+        description: Specifies that a sewershed/site represents an entire region -
+          where region here is an "A-Tier" region and refers to large, dense urban
+          areas made up of multiple overlapping cities/boroughs. This would be a greater
+          metropolitan area.
+        title: A-Tier Region-level Aggregation at Site
+      bRegLevel:
+        description: Specifies that a sewershed/site represents an entire region -
+          where region here is an "B-Tier" region, and thus a region within a greater
+          metropolitan area and larger than a single municipality, but smaller than
+          the entire metropolitan area.
+        title: B-Tier Region-level Aggregation at Site
       countryLevel:
         description: Countries or sovereign states
         title: Countries or sovereign states
@@ -8142,10 +8320,10 @@ enums:
         description: A sequencing software that is an assembler for long-read data,
           particularly effective on nanopore sequencing data.
         title: Flye
-      fnmiLevel:
-        description: "Specifies that a sewershed/site represents the entirety of a\
-          \ First Nations territory or reservation, or a M\xE9tis settlement."
-        title: "First Nation Territory/M\xE9tis Settlement-level Aggregation at Site"
+      countLevel:
+        description: Specifies that a sewershed/site represents an entire nation or
+          country.
+        title: Country-level Aggregation at Site
       foggy:
         description: Qualitative category for the weather measure, specifying a foggy
           or hazy day.
@@ -8261,6 +8439,10 @@ enums:
         description: A buffer solution/medium that serves as a strong preservative
           for viral RNA, commonly used in molecular biology for RNA preservation.
         title: Guanidine Thiocyanate
+      fnmiLevel:
+        description: "Specifies that a sewershed/site represents the entirety of a\
+          \ First Nations territory or reservation, or a M\xE9tis settlement."
+        title: "First Nation Territory/M\xE9tis Settlement-level Aggregation at Site"
       handHygAdv:
         description: Public guidance promoting handwashing or sanitizing to reduce
           infection risk.
@@ -10441,6 +10623,14 @@ enums:
           including wastewater.
         title: Water compartment
   dataTypes:
+    description: 'The data type for a part. Data types used in the ODM include: varchar,
+      booleen, float, category, date, time, datetime, url, email. dataType corresponds
+      the the entry or cell within a data table, most commonly within a report table.
+      If the data entry has a unit, then the dataType corresponds to the unit and
+      the dataType refers to ''unit''. If the data entry is a category, then the dataType
+      refers to ''category''. All categories are varchar. Otherwise the dataType is
+      identifed within the part entry. TBA: dataType for dictionary.'
+    title: Data types part type
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
       blob:
@@ -12527,7 +12717,7 @@ enums:
       nr:
         description: A value could have been recorded, however, it was not.
         title: Not reported
-      'null':
+      'NULL':
         description: A logical representation of a statement that is neither TRUE
           nor FALSE.
         title: 'Null'
@@ -12550,6 +12740,10 @@ enums:
       nrNAMissingnessSet:
         description: Not reported, Not applicable missing set.
         title: Not reported, Not applicable missing set
+      geoRefMissingnessSet:
+        description: A missingness set for field populated by the geographical reference
+          tables (countries, zones)
+        title: Geographical Reference Missingness Set
   mmaSets:
     description: A set of categories. For example, site type has a list of different
       sites, such as a wastewater treatment plant, a septic tank, or a pumping station.
@@ -12849,37 +13043,9 @@ enums:
     title: Part Support
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
-      firstReleased:
-        description: The version in which a part was first released
-        title: First released version
-      label:
-        description: A human readable label of a part.
-        title: Label
-      lastUpdated:
-        description: The version in which the part was last updated.
-        title: Last updated version
-      latExp:
-        description: LaTeX expression used to generate formulas, symbols, etc.  Mainly
-          relevant for units.
-        title: LaTeX expression
-      maxLength:
-        description: The maximum length of the value of a part or measure.
-        title: Maximum length
-      maxValue:
-        description: The maximum value of a part.
-        title: Maximum value part support
       partID:
         description: The unique identify of any entity within the dictionary.
         title: Part identifier
-      minLength:
-        description: The maximum value of measure.
-        title: Minimum length
-      minValue:
-        description: The minimum value of part.
-        title: Minimum value part support
-      ontologyRef:
-        description: Ontology reference for a part.
-        title: Ontology reference
       partDesc:
         description: The description of the part.
         title: Part description
@@ -12887,22 +13053,61 @@ enums:
         description: Additional notes and instructions on how a part is used and/or
           defined.
         title: Part instruction
-      setType:
-        description: The type of set. i.e. quality set, aggregation set, unit set
-        title: Set type
+      label:
+        description: A human readable label of a part.
+        title: Label
+      ontologyRef:
+        description: Ontology reference for a part.
+        title: Ontology reference
+      latExp:
+        description: LaTeX expression used to generate formulas, symbols, etc.  Mainly
+          relevant for units.
+        title: LaTeX expression
       status:
         description: Whether the part is still active and can be used in the most
           current ODM version. Values are 'active' or 'inactive'.
         title: Status
-  partType:
+      firstReleased:
+        description: The version in which a part was first released
+        title: First released version
+      lastUpdated:
+        description: The version in which the part was last updated.
+        title: Last updated version
+      setType:
+        description: The type of set. i.e. quality set, aggregation set, unit set
+        title: Set type
+      minValue:
+        description: The minimum value of part.
+        title: Minimum value part support
+      maxValue:
+        description: The maximum value of a part.
+        title: Maximum value part support
+      minLength:
+        description: The maximum value of measure.
+        title: Minimum length
+      maxLength:
+        description: The maximum length of the value of a part or measure.
+        title: Maximum length
+  partTypes:
     description: 'Part types describe the purpose or use of the part. Enivornment
       data has three main part types: measure (i.e. covN1 viral measures, wasteawater
       flow rate, temperature), method (e.g. how the measure was taken), and attribute
       (such as a site name). See description of each of the part types within setID
       = partTypeCatSets.'
-    title: Part types
+    title: Part types part type
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
+      partTypes:
+        description: 'Part types describe the purpose or use of the part. Enivornment
+          data has three main part types: measure (i.e. covN1 viral measures, wasteawater
+          flow rate, temperature), method (e.g. how the measure was taken), and attribute
+          (such as a site name). See description of each of the part types within
+          setID = partTypeCatSets.'
+        title: Part types part type
+      shortName:
+        description: Shortened names for tables and other important parts for use
+          in wide names.
+        title: Short names
       aggregations:
         description: Statistical measures used to report a measure. Each measure reported
           as a number should be reported with an aggregation. The default aggregation
@@ -12912,10 +13117,6 @@ enums:
         description: The scale of an aggregation set. Aggregation scales include quantitative
           and qualitative.
         title: Aggregation scales
-      aggregationSets:
-        description: Sets of aggregations. Examples of aggregation sets include logarithm,
-          linear and boolean.
-        title: Aggregation sets
       attributes:
         description: Attributes describe the who, where, when, and why of environmental
           surveillance. There are attributes for domain, specimen, compartment, or
@@ -12923,6 +13124,10 @@ enums:
           environment surviellence data. The other two components are measures and
           methods.
         title: Attributes
+      aggregationSets:
+        description: Sets of aggregations. Examples of aggregation sets include logarithm,
+          linear and boolean.
+        title: Aggregation sets
       categories:
         description: 'A discrete list of values that can be reported for a measure,
           method or attribute. A use-case example of categories would be how they
@@ -12947,7 +13152,7 @@ enums:
           a measure can be recorded for more than one compartment. For example, SARS-CoV-2
           can be measured in people (humans), water, surface, or air.
         title: Compartment sets
-      dataType:
+      dataTypes:
         description: 'The data type for a part. Data types used in the ODM include:
           varchar, booleen, float, category, date, time, datetime, url, email. dataType
           corresponds the the entry or cell within a data table, most commonly within
@@ -12956,7 +13161,7 @@ enums:
           category, then the dataType refers to ''category''. All categories are varchar.
           Otherwise the dataType is identifed within the part entry. TBA: dataType
           for dictionary.'
-        title: Data type
+        title: Data types part type
       dictionarySupport:
         description: 'Additional sheets for the Excel version of the ODM dictionary.
           Sheets or tabs for the ODM Excel dictionary include: all ERD tables (look-up
@@ -13008,13 +13213,6 @@ enums:
         description: Parts designed to support the metadata definition of other parts
           in the parts table.
         title: Part Support
-      partType:
-        description: 'Part types describe the purpose or use of the part. Enivornment
-          data has three main part types: measure (i.e. covN1 viral measures, wasteawater
-          flow rate, temperature), method (e.g. how the measure was taken), and attribute
-          (such as a site name). See description of each of the part types within
-          setID = partTypeCatSets.'
-        title: Part types
       qualityIndicators:
         description: A measure of the quality of a reported value or sample. Only
           used for the dictionary entries of parts.
@@ -13023,10 +13221,6 @@ enums:
         description: Sets of quality indicators or measures. For example, PCR have
           a quality measure set.
         title: Quality indicator sets
-      shortName:
-        description: Shortened names for tables and other important parts for use
-          in wide names.
-        title: Short names
       shortSets:
         description: Sets used to group together short names for tables or part types
           in ODM.
@@ -13442,174 +13636,174 @@ enums:
     title: Table Support
     from_schema: https://onto.phes-odm.org/odm/v3
     permissible_values:
-      accessionsOrder:
-        description: Specifies the order of the columns in the accessions table.
-        title: Accessions table column order
-      accessionsRequired:
-        description: Required headers in the accessions table.
-        title: Accessions table required headers
-      addressesOrder:
-        description: Specifies the order of the columns in the Addresses table.
-        title: Addresses table column order
-      addressesRequired:
-        description: Specifies the columns required in a Addresses table.
-        title: Address table required headers
-      calculationsOrder:
-        description: Specifies the order of the columns in the calculations table.
-        title: Calculations table column order
-      calculationsRequired:
-        description: Required headers in the calculations table.
-        title: Calculations table required headers
-      changes:
-        description: A column for recording the changes from a previous version.
-        title: Changes column
-      contactsOrder:
-        description: Specifies the order of the columns in a Contacts table.
-        title: Contacts table column order
-      contactsRequired:
-        description: Specifies the columns required in a Contacts table.
-        title: Contact table required headers
-      countriesOrder:
-        description: Specifies the order of the columns in the countries table.
-        title: Countries table column order
-      countriesRequired:
-        description: Required headers in the countries table.
-        title: Counries table required headers
-      datasetsOrder:
-        description: Specifies the order of the columns in a Datasets table.
-        title: Datasets table column order
-      datasetsRequired:
-        description: Specifies the columns required in a Datasets table.
-        title: Dataset table required headers
       descrChange:
         description: A description of change in a part from the previous version.
         title: Description of change
-      instrumentsOrder:
-        description: Specifies the order of the columns in the Instruments table.
-        title: Instruments table column order
-      instrumentsRequired:
-        description: Specifies the columns required in the Instruments table.
-        title: Instrutment table required headers
-      languagesOrder:
-        description: Specifies the order of the columns in the Languages table.
-        title: Language table column order
-      languagesRequired:
-        description: Required headers in the Languages  table.
-        title: Language table required headers
+      changes:
+        description: A column for recording the changes from a previous version.
+        title: Changes column
+      protocolStepsRequired:
+        description: Specifies the columns required in a Protocol Steps table.
+        title: Protocol steps table required headers
+      protocolStepsOrder:
+        description: Specifies the order of the columns in a Protocol Steps table.
+        title: Protocol steps table column order
+      protocolRelationshipsRequired:
+        description: Specifies the columns required in the Protocol Organization table.
+        title: Protocol Relationship table required headers
+      protocolRelationshipsOrder:
+        description: Specifies the order of the columns in the Protocol Organization
+          table.
+        title: Protocol relationships table column order
+      measuresRequired:
+        description: Specifies the columns required in a Measures table.
+        title: Measures table required headers
+      measuresOrder:
+        description: Specifies the order of the columns in a Measures table.
+        title: Measures table column order
       measureSetsOrder:
         description: Specifies the order of the columns in a Measure Sets table.
         title: Measure sets table column order
       measureSetsRequired:
         description: Specifies the columns required in a Measure Sets table.
         title: Measure Set table required headers
-      measuresOrder:
-        description: Specifies the order of the columns in a Measures table.
-        title: Measures table column order
-      measuresRequired:
-        description: Specifies the columns required in a Measures table.
-        title: Measures table required headers
-      organizationsOrder:
-        description: Specifies the order of the columns in a Organizations table.
-        title: Organizations table column order
+      datasetsRequired:
+        description: Specifies the columns required in a Datasets table.
+        title: Dataset table required headers
+      datasetsOrder:
+        description: Specifies the order of the columns in a Datasets table.
+        title: Datasets table column order
+      sitesRequired:
+        description: Specifies the columns required in a Sites table.
+        title: Sites table required headers
+      sitesOrder:
+        description: Specifies the order of the columns in a Sites table.
+        title: Sites table column order
+      samplesRequired:
+        description: Specifies the columns required in a Samples table.
+        title: Sample table required headers
+      samplesOrder:
+        description: Specifies the order of the columns in a Samples table.
+        title: Samples table column order
+      addressesRequired:
+        description: Specifies the columns required in a Addresses table.
+        title: Address table required headers
+      addressesOrder:
+        description: Specifies the order of the columns in the Addresses table.
+        title: Addresses table column order
+      contactsRequired:
+        description: Specifies the columns required in a Contacts table.
+        title: Contact table required headers
+      contactsOrder:
+        description: Specifies the order of the columns in a Contacts table.
+        title: Contacts table column order
       organizationsRequired:
         description: Specifies the columns required in a Organizations table.
         title: Organziation table required headers
-      partsOrder:
-        description: Order of headers in the Parts table.
-        title: Parts table column order
-      partsRequired:
-        description: Required headers in the Parts table.
-        title: Parts table required headers
+      organizationsOrder:
+        description: Specifies the order of the columns in a Organizations table.
+        title: Organizations table column order
+      phActionsRequired:
+        description: Required headers in the public health actions table.
+        title: Public health actions table required headers
       phActionsOrder:
         description: Specifies the order of the columns in the public health actions
           table.
         title: Public health actions table column order
-      phActionsRequired:
-        description: Required headers in the public health actions table.
-        title: Public health actions table required headers
+      calculationsRequired:
+        description: Required headers in the calculations table.
+        title: Calculations table required headers
+      calculationsOrder:
+        description: Specifies the order of the columns in the calculations table.
+        title: Calculations table column order
+      instrumentsRequired:
+        description: Specifies the columns required in the Instruments table.
+        title: Instrutment table required headers
+      instrumentsOrder:
+        description: Specifies the order of the columns in the Instruments table.
+        title: Instruments table column order
+      polygonRelationshipsRequired:
+        description: Required headers in the polygon relationships table.
+        title: Polygon relationships table required headers
       polygonRelationshipsOrder:
         description: Specifies the order of the columns in the polygon relationships
           table.
         title: Polygon relationships table column order
-      polygonRelationshipsRequired:
-        description: Required headers in the polygon relationships table.
-        title: Polygon relationships table required headers
-      polygonsOrder:
-        description: Specifies the order of the columns in a Polygons table.
-        title: Polygons table column order
       polygonsRequired:
         description: Specifies the columns required in a Polygons table.
         title: Polygon table required headers
-      protocolRelationshipsOrder:
-        description: Specifies the order of the columns in the Protocol Organization
-          table.
-        title: Protocol relationships table column order
-      protocolRelationshipsRequired:
-        description: Specifies the columns required in the Protocol Organization table.
-        title: Protocol Relationship table required headers
-      protocolsOrder:
-        description: Specifies the order of the columns in the Protocols table.
-        title: Protocols table column order
-      protocolsRequired:
-        description: Specifies the columns required in the Protocols table.
-        title: Protocols table required headers
-      protocolStepsOrder:
-        description: Specifies the order of the columns in a Protocol Steps table.
-        title: Protocol steps table column order
-      protocolStepsRequired:
-        description: Specifies the columns required in a Protocol Steps table.
-        title: Protocol steps table required headers
-      qualityReportsOrder:
-        description: Specifies the order of the columns in the Quality Reports table.
-        title: Quality rerpots table column order
+      polygonsOrder:
+        description: Specifies the order of the columns in a Polygons table.
+        title: Polygons table column order
+      accessionsRequired:
+        description: Required headers in the accessions table.
+        title: Accessions table required headers
+      accessionsOrder:
+        description: Specifies the order of the columns in the accessions table.
+        title: Accessions table column order
+      languagesRequired:
+        description: Required headers in the Languages  table.
+        title: Language table required headers
+      languagesOrder:
+        description: Specifies the order of the columns in the Languages table.
+        title: Language table column order
+      translationsRequired:
+        description: Required headers in the Translations table.
+        title: Translation table required headers
+      translationsOrder:
+        description: Specifies the order of the columns in the Translation table.
+        title: Translation table column order
+      partsRequired:
+        description: Required headers in the Parts table.
+        title: Parts table required headers
+      partsOrder:
+        description: Order of headers in the Parts table.
+        title: Parts table column order
+      setsRequired:
+        description: Required headers in the Sets table.
+        title: Sets table required headers
+      setsOrder:
+        description: Specifies the order of the columns in the Sets table.
+        title: Sets table column order
       qualityReportsRequired:
         description: Specifies the columns required in the Quality Reports table.
         title: Quality report table required headers
+      qualityReportsOrder:
+        description: Specifies the order of the columns in the Quality Reports table.
+        title: Quality rerpots table column order
+      sampleRelationshipsRequired:
+        description: Specifies the columns required in a Sample Relationships table.
+        title: Sample relationships table required headers
       sampleRelationshipsOrder:
         description: Specifies the order of the columns in a Sample Relationships
           table.
         title: Sample relationships table column order
-      sampleRelationshipsRequired:
-        description: Specifies the columns required in a Sample Relationships table.
-        title: Sample relationships table required headers
-      samplesOrder:
-        description: Specifies the order of the columns in a Samples table.
-        title: Samples table column order
-      samplesRequired:
-        description: Specifies the columns required in a Samples table.
-        title: Sample table required headers
-      setsOrder:
-        description: Specifies the order of the columns in the Sets table.
-        title: Sets table column order
-      setsRequired:
-        description: Required headers in the Sets table.
-        title: Sets table required headers
-      sitesOrder:
-        description: Specifies the order of the columns in a Sites table.
-        title: Sites table column order
-      sitesRequired:
-        description: Specifies the columns required in a Sites table.
-        title: Sites table required headers
-      translationsOrder:
-        description: Specifies the order of the columns in the Translation table.
-        title: Translation table column order
-      translationsRequired:
-        description: Required headers in the Translations table.
-        title: Translation table required headers
-      wideNamesOrder:
-        description: Column for indicating the order of the fields in the wide names
-          table.
-        title: Wide name table order
+      protocolsRequired:
+        description: Specifies the columns required in the Protocols table.
+        title: Protocols table required headers
+      protocolsOrder:
+        description: Specifies the order of the columns in the Protocols table.
+        title: Protocols table column order
+      countriesRequired:
+        description: Required headers in the countries table.
+        title: Counries table required headers
+      countriesOrder:
+        description: Specifies the order of the columns in the countries table.
+        title: Countries table column order
+      zonesRequired:
+        description: Required headers in the zones table.
+        title: Zones table required headers
+      zonesOrder:
+        description: Specifies the order of the columns in the zones table.
+        title: Zones table column order
       wideNamesRequired:
         description: Column for indicating which fields in the wide names table are
           mandatory.
         title: Wide name table required
-      zonesOrder:
-        description: Specifies the order of the columns in the zones table.
-        title: Zones table column order
-      zonesRequired:
-        description: Required headers in the zones table.
-        title: Zones table required headers
+      wideNamesOrder:
+        description: Column for indicating the order of the fields in the wide names
+          table.
+        title: Wide name table order
   tables:
     description: Tables are where measures, methods and attributes are recorded. Tables
       represent the main entities of the environmental surveillance. An example of
@@ -14427,6 +14621,8 @@ slots:
     from_schema: https://onto.phes-odm.org/odm/v3
   attributeInput:
     from_schema: https://onto.phes-odm.org/odm/v3
+  tag:
+    from_schema: https://onto.phes-odm.org/odm/v3
   organizationID:
     from_schema: https://onto.phes-odm.org/odm/v3
   name:
@@ -14663,7 +14859,7 @@ slots:
     from_schema: https://onto.phes-odm.org/odm/v3
   partType:
     from_schema: https://onto.phes-odm.org/odm/v3
-  shortName:
+  fKAliasID:
     from_schema: https://onto.phes-odm.org/odm/v3
   domain:
     from_schema: https://onto.phes-odm.org/odm/v3
@@ -14679,7 +14875,7 @@ slots:
     from_schema: https://onto.phes-odm.org/odm/v3
   unitSet:
     from_schema: https://onto.phes-odm.org/odm/v3
-  aggragationScale:
+  aggregationScale:
     from_schema: https://onto.phes-odm.org/odm/v3
   aggregationSet:
     from_schema: https://onto.phes-odm.org/odm/v3
@@ -14992,6 +15188,7 @@ classes:
     - index
     - attributeName
     - attributeInput
+    - tag
     slot_usage:
       wideName:
         description: 'Unique identifier for wide table only. Use when all measures
@@ -15025,11 +15222,9 @@ classes:
           should allow any person who generates environment surveillance data to know
           how to identify how to record their data elements in the ODM. partReference
           can be used to further describe a part.
+        range: string
         required: true
         pattern: ^.{0,1000}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       source:
         description: The database or table sourced for the wide name.
         title: Wide name source
@@ -15060,92 +15255,92 @@ classes:
       reportTableName:
         description: The report table that the wide name calls from.
         title: Report table name (wide table)
-        range: string
+        range: tables
         pattern: ^.{0,30}$
       reportTableInput:
         description: The short name for the listed source table.
         title: Report table input (wide table)
-        range: string
+        range: shortName
         pattern: ^.{0,30}$
       partTypeName:
         description: The part type being used in a wide name.
         title: Part type name (wide table)
-        range: string
+        range: partTypes
         pattern: ^.{0,30}$
       partTypeInput:
         description: The partID for the part type being used in a wide name.
         title: Part type input (wide table)
-        range: string
+        range: partTypes
         pattern: ^.{0,30}$
       compartmentName:
         description: The compartment referenced for the wide name.
         title: Compartment name (wide table)
-        range: string
+        range: compartments
         pattern: ^.{0,30}$
       compartmentInput:
         description: The partID for the compartment being used in a wide name.
         title: Compartment input (wide table)
-        range: string
+        range: compartments
         pattern: ^.{0,30}$
       specimenName:
         description: The specimen referenced for the wide name.
         title: Specimen name (wide table)
-        range: string
+        range: specimens
         pattern: ^.{0,30}$
       specimenInput:
         description: The partID for the specimen being used in a wide name.
         title: Specimen input (wide table)
-        range: string
+        range: specimens
         pattern: ^.{0,30}$
       fractionName:
         description: The fraction analyzed referenced for the wide name.
         title: Fraction name (wide table)
-        range: string
+        range: fractionSet
         pattern: ^.{0,30}$
       fractionInput:
         description: The partID for the fraction being used in a wide name.
         title: Fraction input (wide table)
-        range: string
+        range: fractionSet
         pattern: ^.{0,30}$
       measureName:
         description: The measure referenced for the wide name.
         title: Measure name (wide table)
-        range: string
+        range: measurements
         pattern: ^.{0,60}$
       measureInput:
         description: The partID for the measure being used in a wide name.
         title: Measure input (wide table)
-        range: string
+        range: measurements
         pattern: ^.{0,100}$
       methodName:
         description: The method referenced for the wide name.
         title: Method name (wide table)
-        range: string
+        range: methods
         pattern: ^.{0,30}$
       methodInput:
         description: The partID for the method being used in a wide name.
         title: Method input (wide table)
-        range: string
+        range: methods
         pattern: ^.{0,30}$
       unitName:
         description: The unit referenced for the wide name.
         title: Unit name (wide table)
-        range: string
+        range: units
         pattern: ^.{0,30}$
       unitInput:
         description: The partID for the unit being used in a wide name.
         title: Unit input (wide table)
-        range: string
+        range: units
         pattern: ^.{0,30}$
       aggregationName:
         description: The aggregation referenced for the wide name.
         title: Aggregation name (wide table)
-        range: string
+        range: aggregations
         pattern: ^.{0,30}$
       aggregationInput:
         description: The partID for the aggregation being used in a wide name.
         title: Aggregation input (wide table)
-        range: string
+        range: aggregations
         pattern: ^.{0,30}$
       index:
         description: Index number in case the measurement was taken multiple times.
@@ -15157,13 +15352,29 @@ classes:
       attributeName:
         description: The attribute referenced for the wide name.
         title: Attribute name (wide table)
-        range: string
+        range: attributes
         pattern: ^.{0,30}$
       attributeInput:
         description: The partID for the attribute being used in a wide name.
         title: Attribute input (wide table)
-        range: string
+        range: attributes
         pattern: ^.{0,30}$
+      tag:
+        description: A tag used in wide names to clarify relationship and linkage
+          in the flattened, single table format.
+        title: Wide name measurement and linkage tag
+        notes:
+        - "If a column doesn\u2019t have tag value at the end, then it means it applies\
+          \ to all groups, while one with a tag only applie to fields with the same\
+          \ tag value. For example, a value under qr_qualityFlag (with no tag) applies\
+          \ to fields in the group with tag == .odm10 and all other groups. If there\u2019\
+          s a column called qr_qualityFlag.odm10, however, then the group with that\
+          \ .odm10 tag uses the value from qr_qualityFlag.odm10 instead of from qr_qualityFlag\
+          \ (like wat_sa_nr_hMe_hUn_hAg_NR_value.odm10 and mr_unit.odm10, for example)."
+        pattern: ^.{0,8}$
+        any_of:
+        - range: string
+        - range: genMissingnessSet
   organizations:
     description: The table that contains information about a laboratory. The short
       name for the table (partID) can be found in the instructions field.
@@ -15185,11 +15396,9 @@ classes:
           is affiliated.
         title: Organization ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,100}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -15218,11 +15427,9 @@ classes:
       addressID:
         description: A unique identifier for an address.
         title: Address ID
+        range: addresses
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: addresses
-        - range: genMissingnessSet
       orgType:
         description: Specifies the type or purpose of a given organization.
         title: Organization Type
@@ -15297,11 +15504,9 @@ classes:
         description: A unique identifier for a given quality report.
         title: Quality report ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       measureRepID:
         description: Unique identifier for a measurement.
         title: Measure Report ID
@@ -15334,11 +15539,9 @@ classes:
         notes:
         - Types of quality flag vary on context; please see the qulaityFlagSet to
           be confirm.
+        range: qualityIndicators
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: qualityIndicators
-        - range: genMissingnessSet
       severity:
         description: An indicator of the severity or seriousness of a quality flag.
         title: Severity indicator
@@ -15399,11 +15602,9 @@ classes:
           and primary key for each row of the translations table.
         title: Synthetic ID for the translations table
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,50}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       lang:
         description: Language code for translation purposes. Specifies the langage
           for each translation, other than the default English. Uses the ISO-6393
@@ -15411,11 +15612,9 @@ classes:
         title: Language ID
         notes:
         - Follow the ISO639-3 codes for now.
+        range: languages
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: languages
-        - range: genMissingnessSet
       partID:
         description: The unique identify of any entity within the dictionary.
         title: Part identifier
@@ -15519,44 +15718,36 @@ classes:
         notes:
         - Follow the ISO639-3 codes for now.
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       langFam:
         description: Specifies the language family of a given language for translation
           and language tracking purposes.
         title: Language family
         notes:
         - Part of the metedata for a languageID.
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       langName:
         description: Specifies the name of the language in roman alphabet characters
           for translation and language tracking purposes.
         title: Language name
         notes:
         - Part of the metedata for a languageID.
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       natName:
         description: The native name of the language, i.e. what the language is called
           by its speakers.
         title: Native Name
         notes:
         - Part of the metedata for a languageID.
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       iso6391:
         description: The first part of the ISO 639 series of international standards
           for language codes. Part 1 covers the registration of two-letter codes.
@@ -15565,11 +15756,9 @@ classes:
         title: ISO639-1
         notes:
         - Part of the metedata for a languageID.
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       iso6392T:
         description: A set of international standards that lists short codes for language
           names. These ISO639-2 are the three-letter codes defined in part two (ISO
@@ -15578,11 +15767,9 @@ classes:
         title: ISO639-2T
         notes:
         - Part of the metedata for a languageID.
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       firstReleased:
         description: The version in which a part was first released
         title: First released version
@@ -15885,11 +16072,9 @@ classes:
         - Protocol Steps are the component parts of a larger protocols, the latter
           being linked to specific measure reports.
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       method:
         description: A procedure for collecting a sample or performing a measure.
         title: Method
@@ -16054,22 +16239,18 @@ classes:
           and primary key for each row of the protocolRelationships table.
         title: Synthetic ID for the protocolRelationships table
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,50}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       protocolIDContainer:
         description: Unique identifier for the protocol and the steps and other protocols
           that make it up.
         title: Protocol ID container
         notes:
         - Protocol ID Container in popuated by a protocolID (partID = protocolID)
+        range: protocols
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: protocols
-        - range: genMissingnessSet
       protocolIDObj:
         description: The object of the relationship between one protocol and another
           protocol or step, within a given protocol ID container.
@@ -16103,11 +16284,9 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
+        range: relSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: relSet
-        - range: genMissingnessSet
       protocolIDSub:
         description: The subject of the relationship between one protocol and another
           protocol or step, within a given protocol ID container.
@@ -16208,11 +16387,9 @@ classes:
         notes:
         - Suggestion:siteID-date-index.
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
@@ -16238,11 +16415,9 @@ classes:
       siteID:
         description: Unique identifier for the location where a sample was taken.
         title: Site ID
+        range: sites
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: sites
-        - range: genMissingnessSet
       purpose:
         description: The reason the measure or sample was taken.
         title: Purpose
@@ -16255,11 +16430,9 @@ classes:
       saMaterial:
         description: Type of sample.
         title: Sample material
+        range: sampleMatSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: sampleMatSet
-        - range: genMissingnessSet
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
@@ -16290,31 +16463,25 @@ classes:
       collType:
         description: The type of collection.
         title: Sample collection type
+        range: collectSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: collectSet
-        - range: genMissingnessSet
       collPer:
         description: Collection period. The time period over which the sample was
           collected, in hours. Alternatively, use collectionStart and collectionEnd.
         title: Collection period
         notes:
         - 'Examples: 1 hour, 6 hours, 24 hours'
+        range: float
         required: true
         minimum_value: 1
-        any_of:
-        - range: float
-        - range: genMissingnessSet
       collNum:
         description: The number of subsamples that were combined to create the sample.
           Use NA for continuous, proportional or passive sampling.
         title: Collection number
+        range: integer
         required: true
         minimum_value: 1
-        any_of:
-        - range: integer
-        - range: genMissingnessSet
       pooled:
         description: Is this a pooled sample, and therefore composed of multiple child
           samples obtained at different sites
@@ -16327,11 +16494,9 @@ classes:
         description: For grab samples this is the date, time and timezone the sample
           was taken.
         title: Collection date time
+        range: datetime
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: datetime
-        - range: genMissingnessSet
       collDTStart:
         description: For integrated time averaged samples this is the date, time and
           timezone the sample was started being taken.
@@ -16565,8 +16730,8 @@ classes:
     - reportable
     - organizationID
     - contactID
-    - refLink
     - lastEdited
+    - refLink
     - notes
     slot_usage:
       measureRepID:
@@ -16575,11 +16740,9 @@ classes:
         notes:
         - Report IDs cannot be repeated.
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
@@ -16592,11 +16755,9 @@ classes:
         title: Sample ID
         notes:
         - Suggestion:siteID-date-index.
+        range: samples
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: samples
-        - range: genMissingnessSet
       purpose:
         description: The reason the measure or sample was taken.
         title: Purpose
@@ -16664,11 +16825,9 @@ classes:
       aDateEnd:
         description: Date the measurement or analysis was completed.
         title: Analysis date end
+        range: datetime
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: datetime
-        - range: genMissingnessSet
       epiWeekStart:
         description: Start date of a given epi week. Noted that not all epi weeks
           use the same start dates, despite being a standard, so including the start
@@ -16730,11 +16889,9 @@ classes:
         title: Specimen
         notes:
         - 'Specimens include: site, sample, person and population.'
+        range: specimens
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: specimens
-        - range: genMissingnessSet
       fraction:
         description: Fraction of the sample that is analyzed.
         title: Fraction analyzed
@@ -16775,11 +16932,9 @@ classes:
         notes:
         - An measurement is recorded from a specimen (i.e. a site, sample, person
           or population). Measures are organized into groups and classes (sub-groups).
+        range: measurements
         required: true
         pattern: ^.{0,100}$
-        any_of:
-        - range: measurements
-        - range: genMissingnessSet
       value:
         description: Value of a measure, observation or attribute.
         title: Value
@@ -16795,22 +16950,18 @@ classes:
         - Different units that are used to describe measurement values. Units are
           combined into UnitSetIDs. Please requests new units by creating an issue
           in the ODM repository.
+        range: units
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: units
-        - range: genMissingnessSet
       aggregation:
         description: Statistical measures used to report a measure. Each aggregation
           has a corresponding value.
         title: Aggregation
         notes:
         - The default aggregation is `single`, which corresponds to a single measurement.
+        range: aggregations
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: aggregations
-        - range: genMissingnessSet
       valTreat:
         description: A field which specifies what kinds of data treatments or the
           nature of the measurement value.
@@ -16827,7 +16978,7 @@ classes:
         notes:
         - Can be used to link multiple data treatments together - rows of differe
           related treatments will share the same pipelineID.
-        range: calculations
+        range: string
         pattern: ^.{0,30}$
       nomenclature:
         description: A classification system to report the measure class. Only applicable
@@ -16879,18 +17030,6 @@ classes:
         any_of:
         - range: contacts
         - range: genMissingnessSet
-      refLink:
-        description: Link to the reference material for a part. May link to literature
-          on a method, measure, etc.
-        title: Reference link
-        notes:
-        - Link to standard operating procedure for a measure or part. Part reference
-          is a reference to a technical document that describes the part in detail.
-          The reference could be a URL, DOI, or reference to a techincal report.
-        pattern: ^.{0,255}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -16910,6 +17049,18 @@ classes:
         pattern: ^.{0,30}$
         any_of:
         - range: datetime
+        - range: genMissingnessSet
+      refLink:
+        description: Link to the reference material for a part. May link to literature
+          on a method, measure, etc.
+        title: Reference link
+        notes:
+        - Link to standard operating procedure for a measure or part. Part reference
+          is a reference to a technical document that describes the part in detail.
+          The reference could be a URL, DOI, or reference to a techincal report.
+        pattern: ^.{0,255}$
+        any_of:
+        - range: string
         - range: genMissingnessSet
       notes:
         description: A note used to describe details that are not captured in other
@@ -16931,9 +17082,9 @@ classes:
     - partID
     - label
     - partType
-    - shortName
     - partDesc
     - partInstr
+    - fKAliasID
     - domain
     - specimenSet
     - compartmentSet
@@ -16944,7 +17095,7 @@ classes:
     - latExp
     - mmaSet
     - unitSet
-    - aggragationScale
+    - aggregationScale
     - aggregationSet
     - qualityIndSet
     - missingnessSet
@@ -17070,20 +17221,12 @@ classes:
         required: true
         pattern: ^.{0,30}$
       partType:
-        description: 'Part types describe the purpose or use of the part. Enivornment
-          data has three main part types: measure (i.e. covN1 viral measures, wasteawater
-          flow rate, temperature), method (e.g. how the measure was taken), and attribute
-          (such as a site name). See description of each of the part types within
-          setID = partTypeCatSets.'
-        title: Part types
-        range: partType
+        description: The recorded part type for every part in the part table. This
+          is the attribute in the parts table, not to be confused with partTypes,
+          the part type.
+        title: Part type column (Reported)
+        range: partTypes
         required: true
-        pattern: ^.{0,30}$
-      shortName:
-        description: Shortened names for tables and other important parts for use
-          in wide names.
-        title: Short names
-        range: string
         pattern: ^.{0,30}$
       partDesc:
         description: The description of the part.
@@ -17099,35 +17242,39 @@ classes:
         title: Part instruction
         range: string
         pattern: ^.{0,200}$
+      fKAliasID:
+        description: The primary key that is being referenced by another name in another
+          table as a foreign key.
+        title: Foreign Key Alias ID
+        notes:
+        - For example, in the relationships tables, like sampleRelationships, "sampleIDObj"
+          takes the value of a sampleID. It is sampleID as a foreign key, but under
+          a different name. This column says what value is actually linked.
+        range: string
+        pattern: ^.{0,30}$
       domain:
         description: Domain is the highest level of describing of a measure.
         title: Domain
         notes:
         - The domain ID that corresponds to a given part. Mostly applicable for measures,
           methods, units, and aggregations.
+        range: domains
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: domains
-        - range: genMissingnessSet
       specimenSet:
         description: An idenfication of a set of specimens that can be applied for
           a measure or method.
         title: Specimen Set Header
+        range: specimenSets
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       compartmentSet:
         description: An idenfication of a set of compartments that can be applied
           for a measure or method.
         title: Compartment Set Header
+        range: compartmentSets
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       group:
         description: Unique identifier for a group of measures. Mostly applicable
           for measures, methods, units, and aggregations.
@@ -17137,11 +17284,9 @@ classes:
           the SARS-CoV-2 group, there are measure classes tht include RNA alleles
           (N1, N2, E, etc.), mutations, (E484K0), an entire sequence, viral proteins,
           etc. Currently groups are used for measures only.
+        range: groups
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: groups
-        - range: genMissingnessSet
       class:
         description: A unique identifier for a class, which is akin to a sub-group;
           it's a way of grouping parts within a given group. A group can have one
@@ -17151,11 +17296,9 @@ classes:
         - Currently, class is only used for biologics. For example, SARS-CoV-2 is
           a group of measures with the following classes of allele, variant, mutation,
           sequence, and protein.
+        range: classes
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: classes
-        - range: genMissingnessSet
       nomenclature:
         description: A classification system to report the measure class. Only applicable
           to variants, mutations, and diseases.
@@ -17185,8 +17328,14 @@ classes:
         pattern: ^.{0,30}$
       mmaSet:
         description: The set for a measure, method, or attribute. Only applicable
-          for categorical fields, and the categories that populate them.
+          for categorical fields, and the categories that populate them. The use has
+          meean extended to include 'partType' values as well, to codify instances
+          where a catgeorical variable takes any part of a certain part type.
         title: Measure, Method, or Attribute Set Header
+        notes:
+        - Examples of the part type use case insclude using the 'measurements' partType
+          in this column to illustrate that the part 'measure' takes any part of that
+          part type as a valid entry.
         pattern: ^.{0,30}$
         any_of:
         - range: mmaSets
@@ -17197,9 +17346,9 @@ classes:
         title: Unit set
         pattern: ^.{0,30}$
         any_of:
-        - range: string
+        - range: unitSets
         - range: genMissingnessSet
-      aggragationScale:
+      aggregationScale:
         description: A scale used for an aggregation. Only applicable for measures
           and units.
         title: Aggregation scale
@@ -17210,18 +17359,16 @@ classes:
       aggregationSet:
         description: The aggregation set for a unit.
         title: Aggregation set
+        range: aggregationSets
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: aggregationSets
-        - range: genMissingnessSet
       qualityIndSet:
         description: The quality set that corresponds to a given part. Only applicable
           for samples and measures.
         title: Quality Indicator Set Header
         pattern: ^.{0,30}$
         any_of:
-        - range: string
+        - range: qualityIndSets
         - range: genMissingnessSet
       missingnessSet:
         description: Missingness sets for measures, methods or attributes.
@@ -17796,15 +17943,10 @@ classes:
         - range: string
         - range: genMissingnessSet
       dataType:
-        description: 'The data type for a part. Data types used in the ODM include:
-          varchar, booleen, float, category, date, time, datetime, url, email. dataType
-          corresponds the the entry or cell within a data table, most commonly within
-          a report table. If the data entry has a unit, then the dataType corresponds
-          to the unit and the dataType refers to ''unit''. If the data entry is a
-          category, then the dataType refers to ''category''. All categories are varchar.
-          Otherwise the dataType is identifed within the part entry. TBA: dataType
-          for dictionary.'
-        title: Data type
+        description: The recorded data type for every part in the part table. This
+          is the attribute in the parts table, not to be confused with dataTypes,
+          the part type.
+        title: Data Type column (Reported)
         range: dataTypes
         required: true
         pattern: ^.{0,30}$
@@ -17866,7 +18008,6 @@ classes:
         notes:
         - Can be used to link multiple data treatments together - rows of differe
           related treatments will share the same pipelineID.
-        identifier: true
         range: string
         required: true
         pattern: ^.{0,30}$
@@ -17879,7 +18020,6 @@ classes:
           This is done by having all related treatments share the same pipelineID,
           and specifying the order of the treatments in the pipeline using the order
           field.
-        identifier: true
         range: string
         required: true
         pattern: ^.{0,30}$
@@ -18064,7 +18204,7 @@ classes:
         title: Public health threat targeted by action
         notes:
         - Populated by a 'measurement' part type.
-        range: string
+        range: measurements
         pattern: ^.{0,50}$
       actionDT:
         description: The date and Time of the public health action.
@@ -18144,11 +18284,9 @@ classes:
         description: A unique identifier for a given protocol.
         title: Protocol ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -18261,22 +18399,18 @@ classes:
           robust relational database structure.
         title: Composite Set ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,60}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       setID:
         description: The unique identifier of a value set.
         title: Set ID
         notes:
         - A set is a group of units, attributes, categories, specimens, or compartments
           that can be used for a measure, method or attribute.
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       setType:
         description: The type of set. i.e. quality set, aggregation set, unit set
         title: Set type
@@ -18318,12 +18452,10 @@ classes:
         description: The numeric value that corresponds to a given value in a set,
           defined in the sets table.
         title: Enumeration for set values
+        range: integer
         required: true
         minimum_value: 0
         maximum_value: 100
-        any_of:
-        - range: integer
-        - range: genMissingnessSet
       status:
         description: Whether the part is still active and can be used in the most
           current ODM version. Values are 'active' or 'inactive'.
@@ -18396,11 +18528,9 @@ classes:
         - A polygon is a geographic are representing the capment area of an environmental
           sample.
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
@@ -18441,27 +18571,21 @@ classes:
       geoType:
         description: Type of geography that is represented by the polygon.
         title: Type of geography
+        range: geoTypeSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: geoTypeSet
-        - range: genMissingnessSet
       geoEPSG:
         description: The unique EPSG code specifying a given geospatial area.
         title: European Petroleum Survey Group Coordinates
+        range: float
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: float
-        - range: genMissingnessSet
       geoWKT:
         description: Well-known text of the polygon
         title: Well-known text
+        range: string
         required: true
-        pattern: ^.{0,63}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
+        pattern: ^.{0,}$
       fileLocation:
         description: The location of the file containing the geometry of the polygon.
         title: File location of polygon
@@ -18572,11 +18696,9 @@ classes:
           responsible for generating environmental data. (suggestion for a default
           name convention.)
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       datasetDate:
         description: Specifies the date a given dataset was created.
         title: Dataset creation date
@@ -18603,11 +18725,9 @@ classes:
         - Specify the dataset's license name or provide a description of the license.
           Individual measures may possess their own licenses, which take precedence
           over the overall database license.
+        range: licSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: licSet
-        - range: genMissingnessSet
       descr:
         description: A detailed description of a measure, method, or attribute.
         title: Description
@@ -18680,11 +18800,9 @@ classes:
         notes:
         - Use Organization ID to populate this field, and the organizations table
           to describe contact information and other details for the data custodian.
+        range: organizations
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: organizations
-        - range: genMissingnessSet
       originalFormat:
         description: The original structure or model used to record and store the
           data. This helps indicate if data have been transformed or mapped into the
@@ -18744,19 +18862,15 @@ classes:
         description: A unique identifier for an address.
         title: Address ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       addL1:
         description: Line 1 (the street name, number and direction) for a given address.
         title: Address Line 1
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       addL2:
         description: Line 2 (the unit number) for a given address.
         title: Address Line 2
@@ -18768,20 +18882,16 @@ classes:
         description: The city where a site or organization is located; part of the
           address.
         title: City
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       stateProvReg:
         description: The state, province, or region where a site or organization is
           located; part of the address.
         title: State, Province, or Region
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       pCode:
         description: The zip code or postal code for a given address, specifying a
           specifc geographic area.
@@ -18794,11 +18904,9 @@ classes:
         description: The country where a site or organization is located; part of
           the address.
         title: Country
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -18850,11 +18958,9 @@ classes:
           and primary key for each row of the sampleRelationships table.
         title: Synthetic ID for the sampleRelationships table
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,50}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       sampleIDSubject:
         description: Populated by `sampleID` - this specifies the subject of a sample
           relationship.
@@ -18863,11 +18969,9 @@ classes:
         - 'Use `sampleID` for this field. Together with `sampleIDSub` and `relationshipID`
           the row of the `sampleRelationships` should say: [sampleIDSubject] is a[relationshipID]
           of [sampleIDObject]'
+        range: samples
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: samples
-        - range: genMissingnessSet
       relationshipID:
         description: Attribute for specifying the relationship between a sample subject
           and object.
@@ -18875,11 +18979,9 @@ classes:
         notes:
         - 'Together with `sampleIDSubject` and `sampleRelID`, a row of the `sampleRelationships`
           should say: [sampleIDSubject] is a [sampleID] of [sampleIDObject]'
+        range: relSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: relSet
-        - range: genMissingnessSet
       sampleIDObject:
         description: Populated by `sampleID` - this specifies the object of a sample
           relationship.
@@ -18888,11 +18990,9 @@ classes:
         - 'Use `sampleID` for this field. Together with `sampleIDSub` and `relationshipID`
           the row of the `sampleRelationships` should say: [sampleIDSubject] is a[relationshipID]
           of [sampleIDObject]'
+        range: samples
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: samples
-        - range: genMissingnessSet
       lastEdited:
         description: The date the entry was last updated.
         title: Last edited
@@ -18945,11 +19045,9 @@ classes:
         description: A unique identifier for an instrument.
         title: Instrument ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -18965,11 +19063,9 @@ classes:
       model:
         description: Model number or version of the instrument.
         title: Model
+        range: string
         required: true
         pattern: ^.{0,100}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       manufacturer:
         description: Manufacturer of an instrument.
         title: Manufacturer
@@ -19005,11 +19101,9 @@ classes:
       insType:
         description: Type of instrument used to perform the measurement.
         title: Instrument Type
+        range: insTypeSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: insTypeSet
-        - range: genMissingnessSet
       insTypeOth:
         description: Description of the instrument in case it is not listed in instrumentType.
         title: Describe other instrument type, if applicable
@@ -19100,11 +19194,9 @@ classes:
         description: Unique identifier for the location where a sample was taken.
         title: Site ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       datasetID:
         description: The name of the dataset that stores information for MeasureReport,
           SampleReport and other reporting tables.
@@ -19130,11 +19222,9 @@ classes:
       siteType:
         description: Type of site or institution where sample was taken.
         title: Site Type
+        range: siteTypeSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: siteTypeSet
-        - range: genMissingnessSet
       sampleShed:
         description: A geographic area, physical space, or structure. A sample is
           taken from a sampleshed for a representative measurement of a substance(s).
@@ -19142,11 +19232,9 @@ classes:
         notes:
         - 'Examples: Airplane, Long-term care home, Neighbourhood, University campus,
           Municipality'
+        range: shedSet
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: shedSet
-        - range: genMissingnessSet
       siteLevel:
         description: Specifies the level of aggregation that occurs at the site -
           essentially, what size and type of region is represented by the base sewershed.
@@ -19176,11 +19264,9 @@ classes:
       contactID:
         description: A unique identifier for a given contact person.
         title: Contact ID
+        range: contacts
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: contacts
-        - range: genMissingnessSet
       name:
         description: Name of a domain, specimen, group, class, attribute, unit, nomeclature
           or other entity.
@@ -19323,11 +19409,9 @@ classes:
         description: A unique identifier for a given contact person.
         title: Contact ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       organizationID:
         description: A unique identifier for the organization to which the reporter
           is affiliated.
@@ -19353,11 +19437,9 @@ classes:
       email:
         description: Contact e-mail address, for the lab.
         title: Contact email
+        range: string
         required: true
         pattern: ^.{0,100}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       coPhone:
         description: Contact phone number, for the lab.
         title: Contact phone
@@ -19422,11 +19504,9 @@ classes:
         description: Unique identifier that links together a group of related measures.
         title: Measure set report set ID
         identifier: true
+        range: string
         required: true
         pattern: ^.{0,30}$
-        any_of:
-        - range: string
-        - range: genMissingnessSet
       protocolID:
         description: A unique identifier for a given protocol.
         title: Protocol ID
