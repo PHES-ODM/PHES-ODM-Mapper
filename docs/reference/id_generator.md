@@ -37,7 +37,7 @@ and the ID code file then converts that packed value into a properly formatted
 date-time with:
 
 ```python
-fn.datetimetz(dat.samples.__collDT, split_at='/!/')
+fn.datetimetz(dat.samples.__collDT, split_at="/!/")
 ```
 
 The `__` prefix on `__collDT` accesses the value the slot had before ID
