@@ -2,40 +2,43 @@
 
 ## Introduction
 
-After the initial mapping step with the LinkML-Map schemas and the filtering
-step to remove unwanted rows, IDs can be generated for all rows in the output
-tables. These IDs can act as primary and foreign keys, and it can be ensured
-that primary keys are all unique. Because ID generation is performed after
-mapping it is possible to use the final values in the output to construct the
-IDs by combining various values in the rows. When set up properly we can link
-rows between the various tables using the generated IDs.
+IDs can be generated for all rows in the output tables, where they can act as
+primary and foreign keys, and where it can be ensured that primary keys are all
+unique. This step is typically performed after the initial mapping step with the
+LinkML-Map schemas and after the filtering step that removes unwanted rows.
+Because ID generation is performed after mapping it is possible to use the final
+values in the output to construct the IDs by combining various values in the
+rows. When set up properly we can link rows between the various classes (ie.
+tables) using the generated IDs.
 
 Generating IDs is fairly flexible and can be expressed as short Python code
 segments specified in configuration files. It is also possible to generate
 non-ID values, such as formatting dates and times correctly.
 
-There are two configuration files that must be created:
+ID generation is performed by the
+[`generate_ids`](actions/generate_ids.md) action, which reads the two
+configuration files described in this document:
 
-1. *General Configuration File*: Specifies some general settings, such as which
-   slot is the primary key for each class.
-2. *Code Configuration File*: Species the Python code that is executed to
-   generate the IDs or values of the various slots.
+1. **ID config file**: Specifies general settings, such as the short name of
+   each class and the linkages between classes.
+2. **ID code file**: Specifies the Python code that is executed to generate the
+   IDs or values of the various slots.
 
-The location of these files within a conversion module are specified in the
+The location of these files within a conversion module is specified in the
 module configuration file
-([Reference](reference.md#module-configuration)). See below for details of both
-files.
+([Reference](reference.md#module-configuration)). Both files are described
+below.
 
-## General Configuration File
+## ID Config File
 
-This is a YAML file that specifies some general configuration. It supports the
-following top-level keys, all of which are optional:
+This is a YAML file of general settings. It supports the following top-level
+keys, all of which are optional:
 
 | Key | Description |
 | :-- | :---------- |
 | `tables_to_shortnames` | A dictionary mapping each class (table) name to a short name. The short name is returned by `fn.class_shortname` and is used to prefix generated IDs that do not begin with an alphabetic character. See [fn.class_name and fn.class_shortname](#fnclass_name-and-fnclass_shortname). |
 | `class_linkages` | Overrides how the generator finds the related row in another class when resolving a value from it. See [class_linkages](#class_linkages). |
-| `named_class_linkages` | Named linkages that can be referenced from the code, without overriding the default linking behavior. See [named_class_linkages](#named_class_linkages). |
+| `named_class_linkages` | Named linkages that can be referenced from the code, without overriding the default linking behaviour. See [named_class_linkages](#named_class_linkages). |
 
 An example is shown below:
 
@@ -49,35 +52,36 @@ tables_to_shortnames:
   # ...
 ```
 
-The full configuration used by the built-in modules is at
-[/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml).
+A working example is
+[/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml),
+which is the config used by all the built-in modules.
 
-**Primary keys are not configured here.** The primary key of each class is read
-from the LinkML schema: it is the attribute marked with `identifier: true`.
-Every class (other than the tree root) must have exactly one such attribute,
-otherwise ID generation stops with an error. If a class defines more than one, a
-warning is logged and the first is used.
+**Primary keys are not configured in this file.** The primary key of each class
+is read from the LinkML schema: it is the attribute marked with
+`identifier: true`. Every class (other than the tree root) must have exactly one
+such attribute, otherwise ID generation stops with an error. If a class defines
+more than one, a warning is logged and the first is used.
 
-## Code Configuration File
+## ID Code File
 
-The code configuration file specifies the Python code to generate IDs can be
-stored in either a CSV file or an Excel file. The following columns should be
-included:
+This is the file that specifies the Python code used to generate the IDs, and it
+can be stored in either a CSV file or an Excel file. The following columns
+should be included:
 
-1. *class*: The class that the current configuration row is for.
-2. *slot*: The slot that the current configuration row is for.
-3. *code*: The Python code that is executed to generate the ID for the slot.
-   Any column that starts with the word *code* will be considered a code
+1. `class`: The class (ie. table) that the current configuration row is for.
+2. `slot`: The slot that the current configuration row is for.
+3. `code`: The Python code that is executed to generate the ID for the slot.
+   Any column that starts with the word `code` will be considered a code
    column. (eg. "code1", "codeb", etc.). After executing the code, the
    resulting value from code execution will be used. Or if the variable
    "target" is set by the code, then that value is used instead.
 
 For all the mapped data, we generate values according to the configuration, and
 populate the specified `slot` within each specified `class`. The code from each
-*code* column will be executed starting with the left-most *code* column,
+`code` column will be executed starting with the left-most `code` column,
 working rightward. If the code for a column generates a non-empty value (or
 sets the variable "target" to a non-empty value), that value is used as the ID
-for the slot. If an empty value is generated, then the next *code* column is
+for the slot. If an empty value is generated, then the next `code` column is
 executed. This is repeated until a non-empty value is generated or the last
 code column is executed.
 
@@ -151,8 +155,8 @@ later matching rows. This is discussed more below.
 The default linking behaviour, as described previously, is to match the value
 in the column `(__source_file_and_row__)` between the source and target tables.
 It's possible, however, to match by any column, as well as to match by multiple
-columns. This is specified in the ID Generator config file, using either the
-`class_linkages` top-level key or the `named_class_linkages` top-level key.
+columns. This is specified in the ID config file, using either the
+`class_linkages` or the `named_class_linkages` top-level key.
 
 #### class_linkages
 
@@ -256,10 +260,10 @@ match.
 
 #### named_class_linkages
 
-Specifying `class_linkages` will override the default behavior for linking from
-a source to a target table, providing a new default linkage. We can also used
-named linkages in a similar fashion. These linkages do not override the default
-behaviour, but in the ID code generation file they can be used by explicitly
+Specifying `class_linkages` will override the default behaviour for linking
+from a source to a target table, providing a new default linkage. We can also
+use named linkages in a similar fashion. These linkages do not override the
+default behaviour, but in the ID code file they can be used by explicitly
 providing the name of the linkage path to use instead of the default behaviour.
 
 The example configuration below will create a linkage named
@@ -276,9 +280,9 @@ named_class_linkages:
         target_slot: ["(__source_file_and_row__)", "_extra_contacts_tag"]
 ```
 
-The name is usually provided when accessing data in the ID configuration file
-using any of the `dat` or `datEmpty` variables, which are described below. An
-example would be:
+The name is usually provided when accessing data in the ID code file using any
+of the `dat` or `datEmpty` variables, which are described below. An example
+would be:
 
 ```python
 dat.contacts.get_first_linked_value(
@@ -305,9 +309,9 @@ tables and slots. Accessing these namespaces will return values from linked
 rows. The format is `dat.className.slotName`. For example,
 `dat.samples.sampleID` will return the `sampleID` of the *first* linked row in
 the `samples` table. In this case, the source class is the class name for the
-current row (under the `class` column of the ID code config file) and the
-target class is the `className` in `dat.className.slotName`. It will use the
-default linkage path specified in the config file under the
+current row (under the `class` column of the ID code file) and the target class
+is the `className` in `dat.className.slotName`. It will use the default linkage
+path specified in the ID config file under the
 [class_linkages](#class_linkages) key, from the source to the target class.
 
 There are two very important differences between *dat* and *datEmpty*:
@@ -315,7 +319,7 @@ There are two very important differences between *dat* and *datEmpty*:
 1. If *dat* is used and the slot is a primary key (eg.
    `dat.contacts.contactID`), then the returned value will also have an index
    associated with it. This index is added to the primary keys in case more
-   than one row as the same primary key value, but those rows are not
+   than one row has the same primary key value, but those rows are not
    identical. It ensures that the primary keys are unique. For example, in the
    following table `contactID` is the primary key. Each row has the same root
    ID for `contactID` (ie. `myContact`). To ensure that the primary keys are
@@ -360,7 +364,7 @@ must be created. If it is not unique, an existing index from another
 already-existing identical row is used. To determine if rows are unique, all
 values in that row must be calculated, and within those values if `dat` is used
 then it will also trigger other indices to be calculated in other tables. This
-triggering of index calculations can propogate and can easily lead to circular
+triggering of index calculations can propagate and can easily lead to circular
 dependencies. Since `datEmpty` does not require the index, it is much less
 likely that it would lead to circular dependencies. The `datEmpty` namespace is
 especially useful when creating IDs with the `fn.makeid()` function (see
@@ -440,8 +444,8 @@ linkage_path = [
 ]
 ```
 
-This is again the same as found in the ID generator config file, as described
-in the [class_linkages](#class_linkages) section above.
+This is again the same as found in the ID config file, as described in the
+[class_linkages](#class_linkages) section above.
 
 ### fn Namespace
 
@@ -464,7 +468,7 @@ integers.
 Concatenate all arguments into a single string and format to be a valid primary
 key ID. All characters that are not alphanumeric or underscores are replaced
 with underscores. After character replacement, leading and trailing underscores
-are returned.
+are removed.
 
 If only one argument is passed to `fn.makeid` then the capitalization is left
 unchanged. If more than one argument is passed then the first character of the
@@ -555,20 +559,25 @@ These return the current class and class short name (as strings), respectively.
 The class is equivalent to the table name. The class short names are shorter
 versions of the full class name. For example, in ODM v3 the `measures` table has
 the short name `mr` and the `samples` table has the short name `sas`. The class
-shortnames are defined in the ID generator config file. See the
-`tables_to_shortnames` key in the config file
+shortnames are defined in the ID config file. See the `tables_to_shortnames`
+key in
 [/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/data/modules/_shared/ids/general_v3_id_code.yaml)
 for an example of how it is configured for ODM v3.
 
-The short names are also used to prefix IDs passed to fn.makeid if the
+The short names are also used to prefix IDs passed to `fn.makeid` if the
 generated ID does not begin with an alphabetic character.
 
 ## Code Selectors
 
-It's possible to specify to use a different code row in the code configuration file. This is done through code selectors. There are two parts to code selectors:
+It's possible to specify to use a different code row in the ID code file. This
+is done through code selectors. There are two parts to code selectors:
 
-1. The code selector column in the actual data that we are generating IDs for. This column is named `extra_code_selector`. Within this column, a list of comma-separated code selectors can be specified.
-2. The code selector markers in the ID generation code config file. This is also a list of comma-separated code selectors, with the code selectors being specified in the `slot` column.
+1. The code selector column in the actual data that we are generating IDs for.
+   This column is named `_extra_code_selector`. Within this column, a list of
+   comma-separated code selectors can be specified.
+2. The code selector markers in the ID code file. This is also a list of
+   comma-separated code selectors, with the code selectors being specified in
+   the `slot` column.
 
 Below is an example of code selectors in the data:
 
@@ -576,12 +585,14 @@ Below is an example of code selectors in the data:
 |-----------|------|----------------------|
 | mySample1 |      | pooling,main         |
 | mySample2 |      | main                 |
-| mySample2 |      | other2               |
-| mySample3 |      |                      |
+| mySample3 |      | other2               |
+| mySample4 |      |                      |
 
-The code selectors above are `pooling` and `main` for the first sample, `main` for the second sample, `other2` for the third sample, and no selector for the fourth sample.
+The code selectors above are `pooling` and `main` for the first sample, `main`
+for the second sample, `other2` for the third sample, and no selector for the
+fourth sample.
 
-Below is an example of code selectors in the ID generation config file:
+Below is an example of code selectors in the ID code file:
 
 | class   | slot               | code                                       |
 |---------|--------------------|--------------------------------------------|
@@ -590,12 +601,40 @@ Below is an example of code selectors in the ID generation config file:
 | samples | name:main          | fn.makeid(dat.samples.sampleID, "main")    |
 | samples | name:other1,other2 | fn.makeid(dat.samples.sampleID, "other")   |
 
-For `mySample1`, with `pooling` and `main` as the selectors, we will first execute the code for `name:pooling`. If that code produces an output, then it will be used to populate the `name` column. If it doesn't produce output, then we will execute the code for `name:main` and use the resulting value.
+For `mySample1`, with `pooling` and `main` as the selectors, we will first
+execute the code for `name:pooling`. If that code produces an output, then it
+will be used to populate the `name` column. If it doesn't produce output, then
+we will execute the code for `name:main` and use the resulting value.
 
 For `mySample2`, we will only execute the code for `name:main`.
 
-For `mySample3`, we will only execute the code for `name:other1,other2`. Note that if the code selector for `mySample3` was `other1` then the same code for `name:other1,other2` will be executed, since within the comma-separated list of code-selectors we have `other1`.
+For `mySample3`, we will only execute the code for `name:other1,other2`. Note
+that if the code selector for `mySample3` was `other1` then the same code for
+`name:other1,other2` will be executed, since within the comma-separated list of
+code-selectors we have `other1`.
 
-For `mySample3`, we will only execute the code for `name`.
+For `mySample4`, we will only execute the code for `name`.
 
-Note that we can also specify the default (or blank) code selector by using a comma with no value after it. So in the data we are generating code for we can use something like `pooling,,main` to execute code for `name:pooling`, then the default (no code selector) `name`, and finally the code for `name:main`. Using `pooling,main,` with a trailing comma will execute the default `name` code last. This pattern can also be used in the `_extra_code_selector` column.
+Note that we can also specify the default (or blank) code selector by using a
+comma with no value after it. So in the data we are generating IDs for we can
+use something like `pooling,,main` to execute code for `name:pooling`, then the
+default (no code selector) `name`, and finally the code for `name:main`. Using
+`pooling,main,` with a trailing comma will execute the default `name` code last.
+This same pattern can also be used in the `slot` column of the ID code file (eg.
+a slot of `name:pooling,,main`).
+
+## Related Documentation
+
+- [generate_ids](actions/generate_ids.md) — the action that reads the ID config
+  and ID code files, and where they belong in a pipeline
+- [prepare_wide_to_long](actions/prepare_wide_to_long.md) — generates an ID code
+  file and ID config for wide-to-long modules
+- [Filtering](filters.md) — the filtering rules normally applied before and
+  after ID generation
+- [Pipeline Actions](actions/README.md) — step structure and the internal
+  tracking columns used to link rows between tables
+- [Reference](reference.md#module-configuration) — the module configuration file
+- Implementation:
+  [/odm_map/id_generator/generator.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/id_generator/generator.py),
+  [/odm_map/id_generator/id_function_bindings.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/id_generator/id_function_bindings.py),
+  [/odm_map/id_generator/id_data_bindings.py](https://github.com/PHES-ODM/PHES-ODM-Mapper/blob/main/odm_map/id_generator/id_data_bindings.py)
