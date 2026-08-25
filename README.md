@@ -6,15 +6,6 @@
 [![docs.yaml](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/docs.yaml/badge.svg)](https://github.com/PHES-ODM/PHES-ODM-Mapper/actions/workflows/docs.yaml)
 <!-- badges: end -->
 
-## Important Notice
-
-This repository currently uses custom features in
-[LinkML-Map](https://github.com/linkml/linkml-map) that have not yet been added
-to a branch of the LinkML-Map repository. These new features will be added and
-merged soon. As such, the PHES-ODM-Mapper will not work unless you have access
-to these changes. Please contact [mwellman@ohri.ca](mailto:mwellman@ohri.ca)
-for questions.
-
 ## Introduction
 
 The PHES-ODM Mapper converts wastewater surveillance data between reporting
@@ -166,6 +157,47 @@ Reference material for the individual parts of a module has its own documents:
 
 More database formats will be supported as needed. If you require help creating
 a custom module, contact [mwellman@ohri.ca](mailto:mwellman@ohri.ca).
+
+## LinkML-Map Fork
+
+This repository uses a fork of the official [LinkML-Map
+repository](https://github.com/linkml/linkml-map/), kept on the PHES-ODM org at
+[PHES-ODM/linkml-map](https://github.com/PHES-ODM/linkml-map). The two differ in
+one place only: how a slot with several ranges is mapped.
+
+When every range is an enumeration:
+
+```yaml
+siteLevel:
+    any_of:
+    - range: siteLevelSet
+    - range: genMissingnessSet
+```
+
+both versions behave the same way — `siteLevel` is mapped with the enumeration
+mapping for `siteLevelSet`, then with `genMissingnessSet` if the first one does
+not exist, and `None` if neither does.
+
+They differ when a non-enumeration range is listed as well:
+
+```yaml
+siteLevel:
+    any_of:
+    - range: string
+    - range: siteLevelSet
+    - range: genMissingnessSet
+```
+
+**The official LinkML-Map** ignores the non-enumeration ranges whenever at least
+one enumeration range is present, so this is mapped exactly as the example
+above, returning `None` if neither enumeration mapping exists.
+
+**The PHES-ODM fork** attempts the same enumeration mappings first, and if both
+fail it maps the slot as its non-enumeration ranges, in the order they appear in
+`any_of`. Here that is `string`, which copies the source slot to the target
+slot.
+
+In the future, the PHES-ODM fork should be merged with the official LinkML-Map.
 
 ## Contributing
 
