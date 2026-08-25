@@ -3,8 +3,9 @@ pandas>=2.2.3
 pyyaml>=6.0.2
 tqdm>=4.67.1
 linkml>=1.9.2,<2
-linkml-map>=0.3.8
+linkml-map @ git+https://github.com/PHES-ODM/linkml-map@main
 openpyxl>=3.1.5
+pytz>=2024.1
 sortedcontainers>=2.4.0
 # 0.13.0 is the first release whose type dispatcher understands PEP 604
 # annotations (X | None), which the CLI signatures use.

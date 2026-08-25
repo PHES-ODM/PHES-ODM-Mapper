@@ -420,6 +420,9 @@ class GeneratorData:
             )
             for s in slots:
                 mask = has_code_mask[s]
+                # Must convert column to type object, to ensure assignment to column
+                # s works (this allows multiple data types for the values in the column)
+                self.orig_df[s] = self.orig_df[s].astype(object)
                 self.orig_df.loc[mask, s] = None
                 self.orig_df.loc[~mask, s] = self.orig_df.loc[~mask, s].map(
                     lambda x: IDValue(
