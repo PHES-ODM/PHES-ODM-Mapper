@@ -163,7 +163,10 @@ a custom module, contact [mwellman@ohri.ca](mailto:mwellman@ohri.ca).
 This repository uses a fork of the official [LinkML-Map
 repository](https://github.com/linkml/linkml-map/), kept on the PHES-ODM org at
 [PHES-ODM/linkml-map](https://github.com/PHES-ODM/linkml-map). The two differ in
-one place only: how a slot with several ranges is mapped.
+two places: how a slot with several ranges is mapped, and what an unsuccessful
+enumeration mapping returns when `mirror_source` is set.
+
+### Slots with several ranges
 
 When every range is an enumeration:
 
@@ -196,6 +199,17 @@ above, returning `None` if neither enumeration mapping exists.
 fail it maps the slot as its non-enumeration ranges, in the order they appear in
 `any_of`. Here that is `string`, which copies the source slot to the target
 slot.
+
+### Unsuccessful enumeration mappings with `mirror_source`
+
+When an enumeration is mapped, no mapping is successful, and `mirror_source` is
+`True`, both versions fall back to the source value.
+
+**The official LinkML-Map** always casts that source value to a string, so a
+source value of `None` or `NaN` becomes the string `"None"` or `"nan"`.
+
+**The PHES-ODM fork** returns `None` when the source value is `None` or `NaN`,
+and otherwise casts to a string as before.
 
 In the future, the PHES-ODM fork should be merged with the official LinkML-Map.
 
