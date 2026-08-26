@@ -2,8 +2,8 @@
 
 Thank you for your interest in contributing to the PHES-ODM Mapper. This guide
 covers everything you need to get started: setting up a development
-environment, understanding the codebase, following code style requirements, and
-submitting changes.
+environment, understanding the codebase, following code style requirements,
+and submitting changes.
 
 ## Table of Contents
 
