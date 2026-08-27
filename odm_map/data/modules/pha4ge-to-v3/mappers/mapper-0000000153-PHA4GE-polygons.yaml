@@ -26,12 +26,12 @@ enum_derivations:
     mirror_source: false
     populated_from: WatershedShapefileAvailabilityMenu
     permissible_value_derivations:
-      open:
-        name: open
-        populated_from: Available [GENEPIO:0100993]
       nr:
         name: nr
         populated_from: Unknown [GENEPIO:0100995]
+      open:
+        name: open
+        populated_from: Available [GENEPIO:0100993]
   ODMv3_enum_from_NullValueMenu:
     name: ODMv3_enum_from_NullValueMenu
     mirror_source: false
