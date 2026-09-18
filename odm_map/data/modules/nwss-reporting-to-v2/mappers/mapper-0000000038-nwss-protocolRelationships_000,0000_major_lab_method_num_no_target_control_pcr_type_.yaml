@@ -1,0 +1,37 @@
+class_derivations:
+  protocolRelationships[000,0000=major_lab_method-num_no_target_control-pcr_type]:
+    name: protocolRelationships[000,0000=major_lab_method-num_no_target_control-pcr_type]
+    populated_from: nwss
+    slot_derivations:
+      protocolIDContainer:
+        name: protocolIDContainer
+        populated_from: major_lab_method
+      stepIDObj:
+        name: stepIDObj
+        populated_from: num_no_target_control
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''num_no_target_control'''
+      relationshipID:
+        name: relationshipID
+        expr: '''specifies'''
+      stepIDSub:
+        name: stepIDSub
+        populated_from: pcr_type
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''pcr_type'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolRelationships[000,0000=major_lab_method-num_no_target_control-pcr_type]:
+        populated_from: nwss
+enum_derivations:
+  vs_num_no_target_control[=mirrored=]:
+    name: vs_num_no_target_control[=mirrored=]
+    mirror_source: true
+    populated_from: vs_num_no_target_control
+  vs_pcr_type[=mirrored=]:
+    name: vs_pcr_type[=mirrored=]
+    mirror_source: true
+    populated_from: vs_pcr_type

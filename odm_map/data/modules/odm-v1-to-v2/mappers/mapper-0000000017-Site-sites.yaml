@@ -1,0 +1,112 @@
+class_derivations:
+  sites:
+    name: sites
+    populated_from: Site
+    slot_derivations:
+      descr:
+        name: descr
+        populated_from: description
+      geoLat:
+        name: geoLat
+        populated_from: geoLat
+      geoLong:
+        name: geoLong
+        populated_from: geoLong
+      healthRegion:
+        name: healthRegion
+        populated_from: healthRegion
+      name:
+        name: name
+        populated_from: name
+      notes:
+        name: notes
+        populated_from: notes
+      organizationID:
+        name: organizationID
+        populated_from: publicHealthDepartment
+      polygonID:
+        name: polygonID
+        populated_from: polygonID
+      sampleShed:
+        name: sampleShed
+        populated_from: type
+      siteID:
+        name: siteID
+        populated_from: siteID
+      siteType:
+        name: siteType
+        populated_from: type
+  Container:
+    name: Container
+    slot_derivations:
+      sites:
+        populated_from: Site
+enum_derivations:
+  ODMv2_enum_from_SiteType:
+    name: ODMv2_enum_from_SiteType
+    mirror_source: false
+    populated_from: SiteType
+    permissible_value_derivations:
+      airpln:
+        name: airpln
+        populated_from: airPln
+      corFcil:
+        name: corFcil
+        populated_from: corFcil
+      estuary:
+        name: estuary
+        populated_from: estuary
+      hosptl:
+        name: hosptl
+        populated_from: hosptl
+      htSite:
+        name: htSite
+        populated_from: holdTnk
+      lagoon:
+        name: lagoon
+        populated_from: lagoon
+      lake:
+        name: lake
+        populated_from: lake
+      ltcf:
+        name: ltcf
+        populated_from: ltcf
+      mSwrPpl:
+        name: mSwrPpl
+        populated_from: mSwrPpl
+      ocean:
+        name: ocean
+        populated_from: ocean
+      pStat:
+        name: pStat
+        populated_from: pStat
+      retPond:
+        name: retPond
+        populated_from: retPond
+      river:
+        name: river
+        populated_from: river
+      school:
+        name: school
+        populated_from: school
+      sea:
+        name: sea
+        populated_from: sea
+      septTnk:
+        name: septTnk
+        populated_from: septTnk
+      swgTrck:
+        name: swgTrck
+        populated_from: swgTrck
+      uCampus:
+        name: uCampus
+        populated_from: uCampus
+      wwtpInd:
+        name: wwtpInd
+        populated_from: wwtpInd
+      wwtpMuC:
+        name: wwtpMuC
+        populated_from: wwtpMuC
+      wwtpMuS:
+        name: wwtpMuS
+        populated_from: wwtpMuS

@@ -1,0 +1,36 @@
+class_derivations:
+  contacts:
+    name: contacts
+    populated_from: Reporter
+    slot_derivations:
+      coPhone:
+        name: coPhone
+        populated_from: contactPhone
+      contactID:
+        name: contactID
+        populated_from: reporterID
+      email:
+        name: email
+        populated_from: contactEmail
+      firstName:
+        name: firstName
+        expr: "def get_name(full_name, get_first):\n    names = full_name.strip().rsplit(\"\
+          \ \", 1)\n    idx = 0 if get_first else 1\n    return names[idx] if len(names)\
+          \ > idx else \"\"\ntarget = get_name(src.contactName, True)"
+      lastName:
+        name: lastName
+        expr: "def get_name(full_name, get_first):\n    names = full_name.strip().rsplit(\"\
+          \ \", 1)\n    idx = 0 if get_first else 1\n    return names[idx] if len(names)\
+          \ > idx else \"\"\ntarget = get_name(src.contactName, False)"
+      notes:
+        name: notes
+        populated_from: notes
+      organizationID:
+        name: organizationID
+        populated_from: organization
+  Container:
+    name: Container
+    slot_derivations:
+      contacts:
+        populated_from: Reporter
+enum_derivations: {}

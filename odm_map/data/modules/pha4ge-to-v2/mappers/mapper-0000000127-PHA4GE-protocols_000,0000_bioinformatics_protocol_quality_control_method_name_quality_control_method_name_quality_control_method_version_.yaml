@@ -1,0 +1,38 @@
+class_derivations:
+  ? protocols[000,0000=bioinformatics_protocol-quality_control_method_name-quality_control_method_name-quality_control_method_version]
+  : name: protocols[000,0000=bioinformatics_protocol-quality_control_method_name-quality_control_method_name-quality_control_method_version]
+    populated_from: PHA4GE
+    slot_derivations:
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sequenced by'''
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sequenced by'''
+      _extra_protocolID_tag:
+        name: _extra_protocolID_tag
+        expr: '''quality control method name'''
+      summ:
+        name: summ
+        populated_from: bioinformatics_protocol
+      protocolID:
+        name: protocolID
+        populated_from: quality_control_method_name
+      _extra_protocol_filter:
+        name: _extra_protocol_filter
+        populated_from: quality_control_method_name
+      protocolVersion:
+        name: protocolVersion
+        populated_from: quality_control_method_version
+      name:
+        name: name
+        expr: '"quality control method name: " + str(quality_control_method_name)'
+  Container:
+    name: Container
+    slot_derivations:
+      ? protocols[000,0000=bioinformatics_protocol-quality_control_method_name-quality_control_method_name-quality_control_method_version]
+      : populated_from: PHA4GE
+enum_derivations: {}
