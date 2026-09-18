@@ -1,0 +1,52 @@
+class_derivations:
+  measures[000,0000=pretreatment-pretreatment_specify]:
+    name: measures[000,0000=pretreatment-pretreatment_specify]
+    populated_from: nwss
+    slot_derivations:
+      datasetID:
+        name: datasetID
+        populated_from: lab_id
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      protocolID:
+        name: protocolID
+        populated_from: major_lab_method
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      sampleID:
+        name: sampleID
+        populated_from: sample_id
+      aDateEnd:
+        name: aDateEnd
+        populated_from: test_result_date
+      compartment:
+        name: compartment
+        expr: '"wat"'
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        expr: '''pretreat'''
+      value:
+        name: value
+        populated_from: pretreatment
+      notes:
+        name: notes
+        populated_from: pretreatment_specify
+  Container:
+    name: Container
+    slot_derivations:
+      measures[000,0000=pretreatment-pretreatment_specify]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
+  vs_yn[pretreatment][=mirrored=]:
+    name: vs_yn[pretreatment][=mirrored=]
+    mirror_source: true
+    populated_from: vs_yn[pretreatment]

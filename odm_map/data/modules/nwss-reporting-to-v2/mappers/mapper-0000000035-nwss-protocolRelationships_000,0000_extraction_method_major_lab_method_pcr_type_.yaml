@@ -1,0 +1,37 @@
+class_derivations:
+  protocolRelationships[000,0000=extraction_method-major_lab_method-pcr_type]:
+    name: protocolRelationships[000,0000=extraction_method-major_lab_method-pcr_type]
+    populated_from: nwss
+    slot_derivations:
+      protocolIDContainer:
+        name: protocolIDContainer
+        populated_from: major_lab_method
+      stepIDObj:
+        name: stepIDObj
+        populated_from: extraction_method
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''extraction_method'''
+      relationshipID:
+        name: relationshipID
+        expr: '''before'''
+      stepIDSub:
+        name: stepIDSub
+        populated_from: pcr_type
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''pcr_type'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolRelationships[000,0000=extraction_method-major_lab_method-pcr_type]:
+        populated_from: nwss
+enum_derivations:
+  vs_extraction_method[=mirrored=]:
+    name: vs_extraction_method[=mirrored=]
+    mirror_source: true
+    populated_from: vs_extraction_method
+  vs_pcr_type[=mirrored=]:
+    name: vs_pcr_type[=mirrored=]
+    mirror_source: true
+    populated_from: vs_pcr_type

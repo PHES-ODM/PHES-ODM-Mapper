@@ -1,0 +1,29 @@
+class_derivations:
+  protocolRelationships[000,0000=major_lab_method-pre_ext_storage_temp-pre_ext_storage_time]:
+    name: protocolRelationships[000,0000=major_lab_method-pre_ext_storage_temp-pre_ext_storage_time]
+    populated_from: nwss
+    slot_derivations:
+      protocolIDContainer:
+        name: protocolIDContainer
+        populated_from: major_lab_method
+      stepIDObj:
+        name: stepIDObj
+        populated_from: pre_ext_storage_temp
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''pre_ext_storage_temp'''
+      relationshipID:
+        name: relationshipID
+        expr: '''specifies'''
+      stepIDSub:
+        name: stepIDSub
+        populated_from: pre_ext_storage_time
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''pre_ext_storage_time'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolRelationships[000,0000=major_lab_method-pre_ext_storage_temp-pre_ext_storage_time]:
+        populated_from: nwss
+enum_derivations: {}

@@ -1,0 +1,17 @@
+class_derivations:
+  organizations:
+    name: organizations
+    populated_from: Reporter
+    slot_derivations:
+      notes:
+        name: notes
+        populated_from: notes
+      organizationID:
+        name: organizationID
+        populated_from: organization
+  Container:
+    name: Container
+    slot_derivations:
+      organizations:
+        populated_from: Reporter
+enum_derivations: {}

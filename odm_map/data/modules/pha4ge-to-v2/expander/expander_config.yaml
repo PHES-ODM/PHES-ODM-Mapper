@@ -1,0 +1,63 @@
+expand_columns:
+    instruments:
+        - name:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+        - manufacturer:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+    measures:
+        - group:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+        - value:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+        - reportable:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+    protocolSteps:
+        - method:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+        - value:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+    qualityReports:
+        - qualityFlag:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+    samples:
+        - purpose:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+        - saMaterial:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+        - repType:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+        - collType:
+            remove_nulls: True
+            max_length: 1
+            select_items: 0
+    sites:
+        - sampleShed:
+            # IMPORTANT: We keep all items (except for NULLs) by specifying "expand: False" because the
+            # downstream ID generator will process ALL items for sampleShed. Some items might have a
+            # "siteType:" prefix while others a "sampleShed:" prefix, in order to know if the value
+            # belongs in the "siteType" or "sampleShed" slot. environmental_site in PHA4GE (that maps
+            # to sampleShed) has both sampleSheds and siteTypes.
+            remove_nulls: True
+            expand: False

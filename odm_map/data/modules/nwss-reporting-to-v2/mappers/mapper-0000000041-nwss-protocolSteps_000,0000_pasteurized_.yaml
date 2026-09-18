@@ -1,0 +1,34 @@
+class_derivations:
+  protocolSteps[000,0000=pasteurized]:
+    name: protocolSteps[000,0000=pasteurized]
+    populated_from: nwss
+    slot_derivations:
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''pasteurized'''
+      method:
+        name: method
+        expr: '''pasteur'''
+      value:
+        name: value
+        populated_from: pasteurized
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=pasteurized]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
+  vs_yn[pasteurized][=mirrored=]:
+    name: vs_yn[pasteurized][=mirrored=]
+    mirror_source: true
+    populated_from: vs_yn[pasteurized]

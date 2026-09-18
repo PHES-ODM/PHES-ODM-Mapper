@@ -1,0 +1,24 @@
+class_derivations:
+  polygons:
+    name: polygons
+    populated_from: nwss
+    slot_derivations:
+      datasetID:
+        name: datasetID
+        populated_from: lab_id
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+  Container:
+    name: Container
+    slot_derivations:
+      polygons:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
