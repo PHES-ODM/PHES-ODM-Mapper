@@ -1,0 +1,52 @@
+class_derivations:
+  instruments:
+    name: instruments
+    populated_from: Instrument
+    slot_derivations:
+      descr:
+        name: descr
+        populated_from: description
+      insType:
+        name: insType
+        populated_from: type
+      insTypeOth:
+        name: insTypeOth
+        populated_from: typeOther
+      instrumentID:
+        name: instrumentID
+        populated_from: instrumentID
+      model:
+        name: model
+        populated_from: model
+      name:
+        name: name
+        populated_from: name
+      refLink:
+        name: refLink
+        populated_from: referenceLink
+  Container:
+    name: Container
+    slot_derivations:
+      instruments:
+        populated_from: Instrument
+enum_derivations:
+  insTypeSet:
+    name: insTypeSet
+    mirror_source: false
+    populated_from: InstrumentType
+    permissible_value_derivations:
+      aas:
+        name: aas
+        populated_from: atline
+      hma:
+        name: hma
+        populated_from: hand
+      instrumentTypeOther:
+        name: instrumentTypeOther
+        populated_from: other
+      ola:
+        name: ola
+        populated_from: lab
+      onse:
+        name: onse
+        populated_from: online

@@ -38,8 +38,8 @@ class_derivations:
       sites:
         populated_from: PHA4GE
 enum_derivations:
-  ODMv3_enum_from_EnvironmentalSiteMenu:
-    name: ODMv3_enum_from_EnvironmentalSiteMenu
+  ODMv2_enum_from_EnvironmentalSiteMenu:
+    name: ODMv2_enum_from_EnvironmentalSiteMenu
     mirror_source: false
     populated_from: EnvironmentalSiteMenu
     permissible_value_derivations:
@@ -193,8 +193,8 @@ enum_derivations:
       siteType:sDryer:
         name: siteType:sDryer
         populated_from: Sludge dryer [ENVO:03501473]
-  ODMv3_enum_from_NullValueMenu:
-    name: ODMv3_enum_from_NullValueMenu
+  ODMv2_enum_from_NullValueMenu:
+    name: ODMv2_enum_from_NullValueMenu
     mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:

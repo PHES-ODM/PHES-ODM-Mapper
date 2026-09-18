@@ -1,0 +1,37 @@
+class_derivations:
+  protocolRelationships[000,0000=major_lab_method-pcr_type-quant_stan_type]:
+    name: protocolRelationships[000,0000=major_lab_method-pcr_type-quant_stan_type]
+    populated_from: nwss
+    slot_derivations:
+      protocolIDContainer:
+        name: protocolIDContainer
+        populated_from: major_lab_method
+      stepIDObj:
+        name: stepIDObj
+        populated_from: quant_stan_type
+      _extra_stepIDObj_tag:
+        name: _extra_stepIDObj_tag
+        expr: '''quant_stan_type'''
+      relationshipID:
+        name: relationshipID
+        expr: '''specifies'''
+      stepIDSub:
+        name: stepIDSub
+        populated_from: pcr_type
+      _extra_stepIDSub_tag:
+        name: _extra_stepIDSub_tag
+        expr: '''pcr_type'''
+  Container:
+    name: Container
+    slot_derivations:
+      protocolRelationships[000,0000=major_lab_method-pcr_type-quant_stan_type]:
+        populated_from: nwss
+enum_derivations:
+  vs_quant_stan_type[=mirrored=]:
+    name: vs_quant_stan_type[=mirrored=]
+    mirror_source: true
+    populated_from: vs_quant_stan_type
+  vs_pcr_type[=mirrored=]:
+    name: vs_pcr_type[=mirrored=]
+    mirror_source: true
+    populated_from: vs_pcr_type

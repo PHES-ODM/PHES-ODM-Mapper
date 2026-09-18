@@ -67,8 +67,8 @@ class_derivations:
       samples[000,0000=specimen_collector_subsample_id]:
         populated_from: PHA4GE
 enum_derivations:
-  ODMv3_enum_from_CollectionDeviceMenu:
-    name: ODMv3_enum_from_CollectionDeviceMenu
+  ODMv2_enum_from_CollectionDeviceMenu:
+    name: ODMv2_enum_from_CollectionDeviceMenu
     mirror_source: false
     populated_from: CollectionDeviceMenu
     permissible_value_derivations:
@@ -111,8 +111,8 @@ enum_derivations:
       bagFilt:
         name: bagFilt
         populated_from: Bag filtration device [GENEPIO:0102027]
-  ODMv3_enum_from_NullValueMenu:
-    name: ODMv3_enum_from_NullValueMenu
+  ODMv2_enum_from_NullValueMenu:
+    name: ODMv2_enum_from_NullValueMenu
     mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
@@ -131,8 +131,8 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  ODMv3_enum_from_CollectionMethodMenu:
-    name: ODMv3_enum_from_CollectionMethodMenu
+  ODMv2_enum_from_CollectionMethodMenu:
+    name: ODMv2_enum_from_CollectionMethodMenu
     mirror_source: false
     populated_from: CollectionMethodMenu
     permissible_value_derivations:
@@ -154,8 +154,8 @@ enum_derivations:
       bagFilt:
         name: bagFilt
         populated_from: Bag Mediated Filtration [GENEPIO:0102028]
-  ODMv3_enum_from_EnvironmentalMaterialMenu:
-    name: ODMv3_enum_from_EnvironmentalMaterialMenu
+  ODMv2_enum_from_EnvironmentalMaterialMenu:
+    name: ODMv2_enum_from_EnvironmentalMaterialMenu
     mirror_source: false
     populated_from: EnvironmentalMaterialMenu
     permissible_value_derivations:
@@ -189,8 +189,8 @@ enum_derivations:
       ? ''
       : name: ''
         populated_from: Bar screen [ENVO:03501474]
-  collAppxSet:
-    name: collAppxSet
+  collAppxT_from_SampleCollectionTimeOfDayMenu:
+    name: collAppxT_from_SampleCollectionTimeOfDayMenu
     mirror_source: false
     populated_from: SampleCollectionTimeOfDayMenu
     permissible_value_derivations:

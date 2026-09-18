@@ -66,8 +66,8 @@ class_derivations:
       ? measures[000,0000=breadth_of_coverage_value-gene_symbol_1-organism-purpose_of_sequencing-purpose_of_sequencing_details-sequencing_protocol]
       : populated_from: PHA4GE
 enum_derivations:
-  ODMv3_enum_from_NullValueMenu:
-    name: ODMv3_enum_from_NullValueMenu
+  ODMv2_enum_from_NullValueMenu:
+    name: ODMv2_enum_from_NullValueMenu
     mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
@@ -86,8 +86,8 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  ODMv3_enum_from_GeneSymbolMenu:
-    name: ODMv3_enum_from_GeneSymbolMenu
+  ODMv2_enum_from_GeneSymbolMenu:
+    name: ODMv2_enum_from_GeneSymbolMenu
     mirror_source: false
     populated_from: GeneSymbolMenu
     permissible_value_derivations:
@@ -190,16 +190,16 @@ enum_derivations:
       covUTR5:
         name: covUTR5
         populated_from: SARS-COV-2 5' UTR [GENEPIO:0100183]
-  ODMv3_enum_from_OrganismMenu:
-    name: ODMv3_enum_from_OrganismMenu
+  ODMv2_enum_from_OrganismMenu:
+    name: ODMv2_enum_from_OrganismMenu
     mirror_source: false
     populated_from: OrganismMenu
     permissible_value_derivations:
       sarsCov2:
         name: sarsCov2
         populated_from: Severe acute respiratory syndrome coronavirus 2  [NCBITaxon:2697049]
-  ODMv3_enum_from_PurposeOfSequencingMenu:
-    name: ODMv3_enum_from_PurposeOfSequencingMenu
+  ODMv2_enum_from_PurposeOfSequencingMenu:
+    name: ODMv2_enum_from_PurposeOfSequencingMenu
     mirror_source: false
     populated_from: PurposeOfSequencingMenu
     permissible_value_derivations:

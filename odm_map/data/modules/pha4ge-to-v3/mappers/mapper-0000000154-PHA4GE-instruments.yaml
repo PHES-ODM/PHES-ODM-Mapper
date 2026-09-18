@@ -1,0 +1,29 @@
+class_derivations:
+  instruments:
+    name: instruments
+    populated_from: PHA4GE
+    slot_derivations:
+      insType:
+        name: insType
+        expr: '"ngsInst"'
+      name:
+        name: name
+        expr: target = [v.split("[")[0].strip() for v in src.sequencing_instrument]
+      manufacturer:
+        name: manufacturer
+        expr: target = [v.split("[")[0].strip() for v in src.sequencing_platform]
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '"sequenced by"'
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '"sequenced by"'
+      _extra_instrumentID_tag:
+        name: _extra_instrumentID_tag
+        expr: '"sequencing instrument"'
+  Container:
+    name: Container
+    slot_derivations:
+      instruments:
+        populated_from: PHA4GE
+enum_derivations: {}

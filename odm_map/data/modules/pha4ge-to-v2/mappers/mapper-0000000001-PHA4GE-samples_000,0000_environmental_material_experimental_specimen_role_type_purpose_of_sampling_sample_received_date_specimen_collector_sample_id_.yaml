@@ -83,8 +83,8 @@ class_derivations:
       ? samples[000,0000=environmental_material-experimental_specimen_role_type-purpose_of_sampling-sample_received_date-specimen_collector_sample_id]
       : populated_from: PHA4GE
 enum_derivations:
-  ODMv3_enum_from_CollectionDeviceMenu:
-    name: ODMv3_enum_from_CollectionDeviceMenu
+  ODMv2_enum_from_CollectionDeviceMenu:
+    name: ODMv2_enum_from_CollectionDeviceMenu
     mirror_source: false
     populated_from: CollectionDeviceMenu
     permissible_value_derivations:
@@ -127,8 +127,8 @@ enum_derivations:
       bagFilt:
         name: bagFilt
         populated_from: Bag filtration device [GENEPIO:0102027]
-  ODMv3_enum_from_NullValueMenu:
-    name: ODMv3_enum_from_NullValueMenu
+  ODMv2_enum_from_NullValueMenu:
+    name: ODMv2_enum_from_NullValueMenu
     mirror_source: false
     populated_from: NullValueMenu
     permissible_value_derivations:
@@ -147,8 +147,8 @@ enum_derivations:
       restrict:
         name: restrict
         populated_from: Restricted Access [GENEPIO:0001810]
-  ODMv3_enum_from_CollectionMethodMenu:
-    name: ODMv3_enum_from_CollectionMethodMenu
+  ODMv2_enum_from_CollectionMethodMenu:
+    name: ODMv2_enum_from_CollectionMethodMenu
     mirror_source: false
     populated_from: CollectionMethodMenu
     permissible_value_derivations:
@@ -170,8 +170,8 @@ enum_derivations:
       bagFilt:
         name: bagFilt
         populated_from: Bag Mediated Filtration [GENEPIO:0102028]
-  ODMv3_enum_from_EnvironmentalMaterialMenu:
-    name: ODMv3_enum_from_EnvironmentalMaterialMenu
+  ODMv2_enum_from_EnvironmentalMaterialMenu:
+    name: ODMv2_enum_from_EnvironmentalMaterialMenu
     mirror_source: false
     populated_from: EnvironmentalMaterialMenu
     permissible_value_derivations:
@@ -205,8 +205,8 @@ enum_derivations:
       ? ''
       : name: ''
         populated_from: Bar screen [ENVO:03501474]
-  ODMv3_enum_from_ExperimentalSpecimenRoleTypeMenu:
-    name: ODMv3_enum_from_ExperimentalSpecimenRoleTypeMenu
+  ODMv2_enum_from_ExperimentalSpecimenRoleTypeMenu:
+    name: ODMv2_enum_from_ExperimentalSpecimenRoleTypeMenu
     mirror_source: false
     populated_from: ExperimentalSpecimenRoleTypeMenu
     permissible_value_derivations:
@@ -222,8 +222,8 @@ enum_derivations:
       bioRep:
         name: bioRep
         populated_from: Biological replicate [EFO:0002091]
-  collAppxSet:
-    name: collAppxSet
+  collAppxT_from_SampleCollectionTimeOfDayMenu:
+    name: collAppxT_from_SampleCollectionTimeOfDayMenu
     mirror_source: false
     populated_from: SampleCollectionTimeOfDayMenu
     permissible_value_derivations:
@@ -239,8 +239,8 @@ enum_derivations:
       night:
         name: night
         populated_from: Night [NCIT:C65001]
-  ODMv3_enum_from_PurposeOfSamplingMenu:
-    name: ODMv3_enum_from_PurposeOfSamplingMenu
+  ODMv2_enum_from_PurposeOfSamplingMenu:
+    name: ODMv2_enum_from_PurposeOfSamplingMenu
     mirror_source: false
     populated_from: PurposeOfSamplingMenu
     permissible_value_derivations:

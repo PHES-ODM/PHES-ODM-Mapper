@@ -1,0 +1,26 @@
+class_derivations:
+  sampleRelationships[000,0000=specimen_collector_sample_id-specimen_collector_subsample_id]:
+    name: sampleRelationships[000,0000=specimen_collector_sample_id-specimen_collector_subsample_id]
+    populated_from: PHA4GE
+    slot_derivations:
+      sampleIDSubject:
+        name: sampleIDSubject
+        populated_from: specimen_collector_subsample_id
+      relationshipID:
+        name: relationshipID
+        expr: '''child'''
+      sampleIDObject:
+        name: sampleIDObject
+        populated_from: specimen_collector_sample_id
+      _extra_sampleIDSubject_tag:
+        name: _extra_sampleIDSubject_tag
+        expr: '''specimen collector subsample ID'''
+      _extra_sampleIDObject_tag:
+        name: _extra_sampleIDObject_tag
+        expr: '''specimen collector sample ID'''
+  Container:
+    name: Container
+    slot_derivations:
+      sampleRelationships[000,0000=specimen_collector_sample_id-specimen_collector_subsample_id]:
+        populated_from: PHA4GE
+enum_derivations: {}

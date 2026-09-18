@@ -1,0 +1,82 @@
+class_derivations:
+  protocolSteps[000,0000=rec_eff_target_name]:
+    name: protocolSteps[000,0000=rec_eff_target_name]
+    populated_from: nwss
+    slot_derivations:
+      contactID:
+        name: contactID
+        populated_from: reporting_jurisdiction
+      organizationID:
+        name: organizationID
+        populated_from: lab_id
+      _extra_stepID_tag:
+        name: _extra_stepID_tag
+        expr: '''rec_eff_target_name'''
+      method:
+        name: method
+        expr: '''spikeTarget'''
+      value:
+        name: value
+        populated_from: rec_eff_target_name
+  Container:
+    name: Container
+    slot_derivations:
+      protocolSteps[000,0000=rec_eff_target_name]:
+        populated_from: nwss
+enum_derivations:
+  vs_reporting_jurisdiction[=mirrored=]:
+    name: vs_reporting_jurisdiction[=mirrored=]
+    mirror_source: true
+    populated_from: vs_reporting_jurisdiction
+  ODMv3_enum_from_vs_rec_eff_target_name:
+    name: ODMv3_enum_from_vs_rec_eff_target_name
+    mirror_source: false
+    populated_from: vs_rec_eff_target_name
+    permissible_value_derivations:
+      ? ''
+      : name: ''
+        populated_from: ''
+      bcovGen:
+        name: bcovGen
+        populated_from: BCoV (GT-Digital)
+      bcovCul:
+        name: bcovCul
+        populated_from: bcov culture
+      bcovVac:
+        name: bcovVac
+        populated_from: bcov vaccine
+      brsvCul:
+        name: brsvCul
+        populated_from: brsv culture
+      brsvVac:
+        name: brsvVac
+        populated_from: brsv vaccine
+      heatInacSARS:
+        name: heatInacSARS
+        populated_from: heat inactivated sars-cov-2 virus
+      hepGRnaMat:
+        name: hepGRnaMat
+        populated_from: hep g armored rna
+      ms2ColMat:
+        name: ms2ColMat
+        populated_from: MHV (PREvalence)
+      muCoMat:
+        name: muCoMat
+        populated_from: ms2 coliphage
+      oc43Mat:
+        name: oc43Mat
+        sources:
+        - murine coronavirus
+        - oc43
+      mhvSpike:
+        name: mhvSpike
+        populated_from: murine hepatitis virus
+      parapoxSpike:
+        name: parapoxSpike
+        populated_from: parapoxvirus
+      phi6Mat:
+        name: phi6Mat
+        populated_from: phi6
+      puroMat:
+        name: puroMat
+        populated_from: puro

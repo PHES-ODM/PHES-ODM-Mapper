@@ -1,0 +1,237 @@
+class_derivations:
+  ? measures[000,0000=diagnostic_target_presence_1-gene_symbol_1-organism-purpose_of_sequencing-taxonomic_analysis_report_filename]
+  : name: measures[000,0000=diagnostic_target_presence_1-gene_symbol_1-organism-purpose_of_sequencing-taxonomic_analysis_report_filename]
+    populated_from: PHA4GE
+    slot_derivations:
+      siteID:
+        name: siteID
+        populated_from: sampling_site_id
+      aDateStart:
+        name: aDateStart
+        populated_from: sample_processing_date
+      aDateEnd:
+        name: aDateEnd
+        populated_from: sequencing_date
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '"specimen collector project ID"'
+      _extra_sampleID_tag:
+        name: _extra_sampleID_tag
+        expr: '"specimen collector sample ID"'
+      _extra_measureRepID_tag:
+        name: _extra_measureRepID_tag
+        expr: '""'
+      _extra_contactID_tag:
+        name: _extra_contactID_tag
+        expr: '''sequenced by'''
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sequenced by'''
+      specimen:
+        name: specimen
+        expr: '''sa'''
+      measure:
+        name: measure
+        populated_from: gene_symbol_1
+      group:
+        name: group
+        populated_from: organism
+      notes:
+        name: notes
+        populated_from: taxonomic_analysis_report_filename
+      purpose:
+        name: purpose
+        populated_from: purpose_of_sequencing
+      value:
+        name: value
+        populated_from: diagnostic_target_presence_1
+      unit:
+        name: unit
+        expr: '''det'''
+      aggregation:
+        name: aggregation
+        expr: '''me'''
+  Container:
+    name: Container
+    slot_derivations:
+      ? measures[000,0000=diagnostic_target_presence_1-gene_symbol_1-organism-purpose_of_sequencing-taxonomic_analysis_report_filename]
+      : populated_from: PHA4GE
+enum_derivations:
+  ODMv3_enum_from_NullValueMenu:
+    name: ODMv3_enum_from_NullValueMenu
+    mirror_source: false
+    populated_from: NullValueMenu
+    permissible_value_derivations:
+      NA:
+        name: NA
+        populated_from: Not Applicable [GENEPIO:0001619]
+      miss:
+        name: miss
+        populated_from: Missing [GENEPIO:0001618]
+      dnc:
+        name: dnc
+        populated_from: Not Collected [GENEPIO:0001620]
+      undisc:
+        name: undisc
+        populated_from: Not Provided [GENEPIO:0001668]
+      restrict:
+        name: restrict
+        populated_from: Restricted Access [GENEPIO:0001810]
+  ODMv3_enum_from_GeneSymbolMenu:
+    name: ODMv3_enum_from_GeneSymbolMenu
+    mirror_source: false
+    populated_from: GeneSymbolMenu
+    permissible_value_derivations:
+      covE:
+        name: covE
+        populated_from: E gene (orf4) [GENEPIO:0100151]
+      covM:
+        name: covM
+        populated_from: M gene (orf5) [GENEPIO:0100152]
+      n:
+        name: n
+        populated_from: N gene (orf9) [GENEPIO:0100153]
+      spikeGene:
+        name: spikeGene
+        populated_from: Spike gene (orf2) [GENEPIO:0100154]
+      orf1ab:
+        name: orf1ab
+        populated_from: orf1ab (rep) [GENEPIO:0100155]
+      orf1a:
+        name: orf1a
+        populated_from: orf1a (pp1a) [GENEPIO:0100156]
+      nsp11:
+        name: nsp11
+        populated_from: nsp11 [GENEPIO:0100157]
+      nsp1:
+        name: nsp1
+        populated_from: nsp1  [GENEPIO:0100158]
+      nsp2:
+        name: nsp2
+        populated_from: nsp2  [GENEPIO:0100159]
+      nsp3:
+        name: nsp3
+        populated_from: nsp3  [GENEPIO:0100160]
+      nsp4:
+        name: nsp4
+        populated_from: nsp4  [GENEPIO:0100161]
+      nsp5:
+        name: nsp5
+        populated_from: nsp5  [GENEPIO:0100162]
+      nsp6:
+        name: nsp6
+        populated_from: nsp6  [GENEPIO:0100163]
+      nsp7:
+        name: nsp7
+        populated_from: nsp7  [GENEPIO:0100164]
+      nsp8:
+        name: nsp8
+        populated_from: nsp8  [GENEPIO:0100165]
+      nsp9:
+        name: nsp9
+        populated_from: nsp9  [GENEPIO:0100166]
+      nsp10:
+        name: nsp10
+        populated_from: nsp10  [GENEPIO:0100167]
+      covRdrp:
+        name: covRdrp
+        populated_from: RdRp gene (nsp12) [GENEPIO:0100168]
+      hel:
+        name: hel
+        populated_from: hel gene (nsp13) [GENEPIO:0100169]
+      exoNnsp14:
+        name: exoNnsp14
+        populated_from: exoN gene (nsp14) [GENEPIO:0100170]
+      nsp15:
+        name: nsp15
+        populated_from: nsp15 [GENEPIO:0100171]
+      nsp16:
+        name: nsp16
+        populated_from: nsp16 [GENEPIO:0100172]
+      orf3a:
+        name: orf3a
+        populated_from: orf3a [GENEPIO:0100173]
+      orf3b:
+        name: orf3b
+        populated_from: orf3b [GENEPIO:0100174]
+      orf6:
+        name: orf6
+        populated_from: orf6 (ns6) [GENEPIO:0100175]
+      orf7a:
+        name: orf7a
+        populated_from: orf7a [GENEPIO:0100176]
+      orf7b:
+        name: orf7b
+        populated_from: orf7b (ns7b) [GENEPIO:0100177]
+      orf8:
+        name: orf8
+        populated_from: orf8 (ns8) [GENEPIO:0100178]
+      orf9b:
+        name: orf9b
+        populated_from: orf9b [GENEPIO:0100179]
+      orf9c:
+        name: orf9c
+        populated_from: orf9c [GENEPIO:0100180]
+      orf10:
+        name: orf10
+        populated_from: orf10 [GENEPIO:0100181]
+      orf14:
+        name: orf14
+        populated_from: orf14 [GENEPIO:0100182]
+      covUTR5:
+        name: covUTR5
+        populated_from: SARS-COV-2 5' UTR [GENEPIO:0100183]
+  ODMv3_enum_from_OrganismMenu:
+    name: ODMv3_enum_from_OrganismMenu
+    mirror_source: false
+    populated_from: OrganismMenu
+    permissible_value_derivations:
+      sarsCov2:
+        name: sarsCov2
+        populated_from: Severe acute respiratory syndrome coronavirus 2  [NCBITaxon:2697049]
+  ODMv3_enum_from_PurposeOfSequencingMenu:
+    name: ODMv3_enum_from_PurposeOfSequencingMenu
+    mirror_source: false
+    populated_from: PurposeOfSequencingMenu
+    permissible_value_derivations:
+      randomSurv:
+        name: randomSurv
+        populated_from: Baseline surveillance (random sampling) [GENEPIO:0100005]
+      targetSurv:
+        name: targetSurv
+        populated_from: Targeted surveillance (non-random sampling) [GENEPIO:0100006]
+      emergSurv:
+        name: emergSurv
+        populated_from: Priority surveillance project [GENEPIO:0100007]
+      longSurv:
+        name: longSurv
+        populated_from: Longitudinal surveillance (repeat sampling) [GENEPIO:0100009]
+      travelSurv:
+        name: travelSurv
+        populated_from: Travel-associated surveillance [GENEPIO:0100012]
+      domSurv:
+        name: domSurv
+        populated_from: Domestic travel surveillance [GENEPIO:0100013]
+      internatSurv:
+        name: internatSurv
+        populated_from: International travel surveillance [GENEPIO:0100014]
+      researchPurp:
+        name: researchPurp
+        populated_from: Research [GENEPIO:0100022]
+      viralPass:
+        name: viralPass
+        populated_from: Viral passage experiment [GENEPIO:0100023]
+      testing:
+        name: testing
+        populated_from: Protocol testing experiment [GENEPIO:0100024]
+  ODMv3_enum_from_DiagnosticTargetPresenceMenu:
+    name: ODMv3_enum_from_DiagnosticTargetPresenceMenu
+    mirror_source: false
+    populated_from: DiagnosticTargetPresenceMenu
+    permissible_value_derivations:
+      'True':
+        name: 'True'
+        populated_from: diagnostic target present [GENEPIO:0100987]
+      'False':
+        name: 'False'
+        populated_from: diagnostic target absent [GENEPIO:0100988]

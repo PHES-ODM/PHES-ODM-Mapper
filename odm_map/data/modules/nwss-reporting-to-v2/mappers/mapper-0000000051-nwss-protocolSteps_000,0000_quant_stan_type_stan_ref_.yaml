@@ -31,8 +31,8 @@ enum_derivations:
     name: vs_reporting_jurisdiction[=mirrored=]
     mirror_source: true
     populated_from: vs_reporting_jurisdiction
-  ODMv3_enum_from_vs_quant_stan_type:
-    name: ODMv3_enum_from_vs_quant_stan_type
+  ODMv2_enum_from_vs_quant_stan_type:
+    name: ODMv2_enum_from_vs_quant_stan_type
     mirror_source: false
     populated_from: vs_quant_stan_type
     permissible_value_derivations:

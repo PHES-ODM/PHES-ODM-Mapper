@@ -29,7 +29,7 @@ class_derivations:
         expr: '''sa'''
       measure:
         name: measure
-        expr: '''extractRecov'''
+        expr: '''percRec'''
       unit:
         name: unit
         expr: '''perc'''

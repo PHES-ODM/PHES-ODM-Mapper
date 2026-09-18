@@ -52,8 +52,8 @@ enum_derivations:
     name: vs_reporting_jurisdiction[=mirrored=]
     mirror_source: true
     populated_from: vs_reporting_jurisdiction
-  ODMv3_enum_from_vs_mic_chem_units:
-    name: ODMv3_enum_from_vs_mic_chem_units
+  ODMv2_enum_from_vs_mic_chem_units:
+    name: ODMv2_enum_from_vs_mic_chem_units
     mirror_source: false
     populated_from: vs_mic_chem_units
     permissible_value_derivations:

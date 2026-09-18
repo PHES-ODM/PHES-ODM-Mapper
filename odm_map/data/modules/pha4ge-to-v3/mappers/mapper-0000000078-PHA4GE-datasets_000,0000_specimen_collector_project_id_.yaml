@@ -1,0 +1,29 @@
+class_derivations:
+  datasets[000,0000=specimen_collector_project_id]:
+    name: datasets[000,0000=specimen_collector_project_id]
+    populated_from: PHA4GE
+    slot_derivations:
+      originalFormat:
+        name: originalFormat
+        expr: '"pha4geForm"'
+      _extra_datasetID_tag:
+        name: _extra_datasetID_tag
+        expr: '''specimen collector project ID'''
+      _extra_custodyCont_contactID_tag:
+        name: _extra_custodyCont_contactID_tag
+        expr: '''sample collected by'''
+      _extra_funderCont_contactID_tag:
+        name: _extra_funderCont_contactID_tag
+        expr: '''<blank>'''
+      _extra_organizationID_tag:
+        name: _extra_organizationID_tag
+        expr: '''sample collected by'''
+      datasetID:
+        name: datasetID
+        populated_from: specimen_collector_project_id
+  Container:
+    name: Container
+    slot_derivations:
+      datasets[000,0000=specimen_collector_project_id]:
+        populated_from: PHA4GE
+enum_derivations: {}
