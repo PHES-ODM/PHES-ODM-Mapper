@@ -1,0 +1,4 @@
+inputFilter,outputFilter,class,slot,operation,value
+,0,samples,,create_filter,TRUE
+0,0,samples,sampleID,exclude_equals,
+0,,samples,,apply_filter,samples
